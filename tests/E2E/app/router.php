@@ -110,6 +110,21 @@ if ( '/page/memory' === $uri ) {
 	return true;
 }
 
+if ( '/page/light' === $uri ) {
+	// A light block theme: base/contrast presets defined, no accent-8 — the
+	// panel inverts to light while the button keeps the green accent fallback.
+	// This is the configuration where deriving the button text colour from
+	// --cg-bg failed WCAG 1.4.3 (~3.1:1); axe's colour-contrast check on this
+	// page is the regression test for the --cg-accent-fg pairing.
+	$content = '<iframe title="Video on a light theme" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>';
+
+	$theme_css = ':root{--wp--preset--color--base:#f9f9f9;--wp--preset--color--contrast:#111111;}'
+		. 'body{background:var(--wp--preset--color--base);color:var(--wp--preset--color--contrast);}';
+
+	cg_e2e_page( $content, $theme_css );
+	return true;
+}
+
 if ( '/page/aspect' === $uri ) {
 	// The §5.3 layout-preservation cases: a core reserved aspect box
 	// (wp-has-aspect-ratio + ::before spacer, iframe lifted out of flow),

@@ -608,6 +608,7 @@ override war:
   --cg-bg:        var(--wp--preset--color--base, #1b1b1b);
   --cg-fg:        var(--wp--preset--color--contrast, #f0f0f0);
   --cg-accent:    var(--wp--preset--color--accent-8, #5c9e00);
+  --cg-accent-fg: #1b1b1b; /* button text; pairs with --cg-accent, never with --cg-bg */
   --cg-radius:    4px;
   --cg-gap:       0.75rem;
   --cg-font:      inherit;

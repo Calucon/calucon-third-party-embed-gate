@@ -9,15 +9,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Domain: consent-gate\n"
 
-#: src/Admin/SettingsPage.php:145
+#: src/Admin/SettingsPage.php:158
 msgid "Additional own hosts"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:194
+#: src/Admin/SettingsPage.php:207
 msgid "All embeds"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:193
+#: src/Admin/SettingsPage.php:206
 msgid "All embeds of the same provider"
 msgstr ""
 
@@ -27,11 +27,12 @@ msgstr ""
 msgid "Consent Gate"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:175
+#: src/Admin/SettingsPage.php:188
 msgid "Consent memory"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:207
+#: src/Admin/SettingsPage.php:220
+#: src/Admin/SettingsPage.php:222
 msgid "Content-Security-Policy snippet"
 msgstr ""
 
@@ -39,11 +40,19 @@ msgstr ""
 msgid "Custom button text (optional)"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:123
+msgid "Custom button text for %s"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:95
 msgid "Custom note (optional)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:133
+#: src/Admin/SettingsPage.php:121
+msgid "Custom note for %s"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:146
 msgid "Detection"
 msgstr ""
 
@@ -55,11 +64,11 @@ msgstr ""
 msgid "Embedded content from %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:155
+#: src/Admin/SettingsPage.php:168
 msgid "Embeds from these hosts load without a placeholder. Use only for third parties you have covered elsewhere — this plugin then no longer prevents their requests."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:183
+#: src/Admin/SettingsPage.php:196
 msgid "For this browser session"
 msgstr ""
 
@@ -67,23 +76,27 @@ msgstr ""
 msgid "Gate"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:162
+#: src/Admin/SettingsPage.php:117
+msgid "Gate %s embeds"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:175
 msgid "Gate the whole page output (for Elementor, Divi, WPBakery, Bricks)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:139
+#: src/Admin/SettingsPage.php:152
 msgid "Gate third-party iframes"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:141
+#: src/Admin/SettingsPage.php:154
 msgid "Gate third-party scripts in content"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:167
+#: src/Admin/SettingsPage.php:180
 msgid "Host matching"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:208
+#: src/Admin/SettingsPage.php:221
 msgid "If your site sends a Content-Security-Policy, it needs to allow the enabled providers' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic."
 msgstr ""
 
@@ -260,23 +273,23 @@ msgstr ""
 msgid "Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:152
+#: src/Admin/SettingsPage.php:165
 msgid "Never gate these hosts"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:182
+#: src/Admin/SettingsPage.php:195
 msgid "No (default) — ask on every page view"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:176
+#: src/Admin/SettingsPage.php:189
 msgid "Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor's browser only — after their first click, never before — and a withdrawal control becomes available via the [consent_gate_withdraw] shortcode for your privacy policy page."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:148
+#: src/Admin/SettingsPage.php:161
 msgid "One host per line, e.g. cdn.example.com or *.example.com. These are treated as the site itself and never gated."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:163
+#: src/Admin/SettingsPage.php:176
 msgid "Only enable this if embeds from a page builder are not being gated. It buffers the entire page, which can conflict with other buffering or streaming plugins. Any error inside the buffer returns the page unmodified."
 msgstr ""
 
@@ -284,15 +297,15 @@ msgstr ""
 msgid "Open on %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:159
+#: src/Admin/SettingsPage.php:172
 msgid "Page builders"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:199
+#: src/Admin/SettingsPage.php:212
 msgid "Persistent lifetime (days)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:184
+#: src/Admin/SettingsPage.php:197
 msgid "Persistently, with an expiry"
 msgstr ""
 
@@ -308,15 +321,15 @@ msgstr ""
 msgid "Providers"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:179
+#: src/Admin/SettingsPage.php:192
 msgid "Remember consent"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:136
+#: src/Admin/SettingsPage.php:149
 msgid "Rules"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:189
+#: src/Admin/SettingsPage.php:202
 msgid "Scope"
 msgstr ""
 
@@ -328,12 +341,16 @@ msgstr ""
 msgid "Third-party embeds are replaced with a placeholder until the visitor clicks to load them. Nothing is contacted, and nothing is stored, before that click."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:192
+#: src/Admin/SettingsPage.php:205
 msgid "This embed only"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:170
+#: src/Admin/SettingsPage.php:183
 msgid "Treat www.example.com and example.com as the same site"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:119
+msgid "Use the privacy-preserving load for %s"
 msgstr ""
 
 #: src/Integration/WithdrawShortcode.php:34
