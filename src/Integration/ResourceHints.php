@@ -15,11 +15,23 @@ use ConsentGate\Support\ResourceHints as Scrubber;
  */
 final class ResourceHints {
 
-	/** @var Scrubber */
-	private Scrubber $scrubber;
+	/** @var callable Returns the Scrubber; resolved lazily so the filtered
+	 *                provider set (theme-registered providers included) is
+	 *                complete by the time hints are filtered. */
+	private $scrubber_source;
 
-	public function __construct( Scrubber $scrubber ) {
-		$this->scrubber = $scrubber;
+	/**
+	 * @param callable $scrubber_source fn(): Scrubber.
+	 */
+	public function __construct( callable $scrubber_source ) {
+		$this->scrubber_source = $scrubber_source;
+	}
+
+	/**
+	 * @return Scrubber
+	 */
+	private function scrubber(): Scrubber {
+		return call_user_func( $this->scrubber_source );
 	}
 
 	/**
@@ -38,7 +50,7 @@ final class ResourceHints {
 	 * @return array
 	 */
 	public function filter( $urls, $relation ): array {
-		return $this->scrubber->filter( (array) $urls, (string) $relation );
+		return $this->scrubber()->filter( (array) $urls, (string) $relation );
 	}
 
 	/**
@@ -46,6 +58,6 @@ final class ResourceHints {
 	 * @return array
 	 */
 	public function filter_preload( $resources ): array {
-		return $this->scrubber->filter_preload( (array) $resources );
+		return $this->scrubber()->filter_preload( (array) $resources );
 	}
 }
