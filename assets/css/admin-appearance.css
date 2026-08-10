@@ -6,6 +6,24 @@
  * class-based switching — keep them in sync.
  */
 
+/* Tab bar: real <button role="tab"> elements carrying core's .nav-tab look —
+   core styles the class, but buttons need their UA borders/background reset
+   only where core's rules don't already cover them. */
+.cg-tabs button.nav-tab {
+	cursor: pointer;
+	font-size: 14px;
+	font-family: inherit;
+}
+
+.cg-tabs button.nav-tab:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: -2px;
+}
+
+.cg-tab-panel {
+	margin-top: 1em;
+}
+
 .cg-preview-stage {
 	box-sizing: border-box;
 	max-width: 32rem;
