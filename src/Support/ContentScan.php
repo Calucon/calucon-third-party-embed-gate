@@ -76,6 +76,43 @@ final class ContentScan {
 	}
 
 	/**
+	 * Aggregate per-source scan rows into one row per (tag, host, status)
+	 * with a count and the first source it was seen in. Pure — shared by the
+	 * Status screen and the WP-CLI `scan` command so both report identically.
+	 *
+	 * @param array[] $scanned Entries of shape:
+	 *                         array( 'source' => string, 'rows' => array[] )
+	 *                         where rows are what scan() returns.
+	 * @return array[] Rows: tag, host, label, status, count, first_seen, url
+	 *                 (the first URL seen for the group).
+	 */
+	public static function aggregate( array $scanned ): array {
+		$groups = array();
+
+		foreach ( $scanned as $entry ) {
+			$source = isset( $entry['source'] ) ? (string) $entry['source'] : '';
+			$rows   = isset( $entry['rows'] ) && is_array( $entry['rows'] ) ? $entry['rows'] : array();
+			foreach ( $rows as $row ) {
+				$key = $row['tag'] . '|' . $row['host'] . '|' . $row['status'];
+				if ( ! isset( $groups[ $key ] ) ) {
+					$groups[ $key ] = array(
+						'tag'        => $row['tag'],
+						'host'       => $row['host'],
+						'label'      => $row['label'],
+						'status'     => $row['status'],
+						'count'      => 0,
+						'first_seen' => $source,
+						'url'        => $row['url'],
+					);
+				}
+				++$groups[ $key ]['count'];
+			}
+		}
+
+		return array_values( $groups );
+	}
+
+	/**
 	 * @param array    $attributes Tag attributes.
 	 * @param string[] $names      Attribute names that may carry the URL.
 	 * @return string

@@ -13,6 +13,7 @@ namespace ConsentGate;
 
 use ConsentGate\Admin\BlockEditor;
 use ConsentGate\Admin\SettingsPage;
+use ConsentGate\Cli\Commands as CliCommands;
 use ConsentGate\Detection\EmbedObjectRule;
 use ConsentGate\Detection\EmbedStripper;
 use ConsentGate\Detection\HostMatcher;
@@ -82,6 +83,9 @@ final class Plugin {
 	/** @var array[]|null Filtered provider descriptors; resolved lazily. */
 	private ?array $providers_cache = null;
 
+	/** @var bool True while render_ungated() runs; see should_bail(). */
+	private bool $gating_suspended = false;
+
 	/**
 	 * Bootstraps the plugin once, on plugins_loaded.
 	 *
@@ -150,6 +154,25 @@ final class Plugin {
 				return $this->hint_scrubber;
 			}
 		) )->register();
+
+		// Read-only inspection for shells, CI and AI agents (docs/customizing.md):
+		// the Status screen's answers without wp-admin.
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			\WP_CLI::add_command(
+				'consent-gate',
+				new CliCommands(
+					function (): array {
+						return $this->providers();
+					},
+					function (): ContentScan {
+						return $this->content_scanner();
+					},
+					function ( string $content ): string {
+						return $this->render_ungated( $content );
+					}
+				)
+			);
+		}
 
 		if ( $this->options['detection']['output_buffer'] ) {
 			( new OutputBuffer( $this ) )->register();
@@ -330,6 +353,27 @@ final class Plugin {
 	}
 
 	/**
+	 * Render content through the_content with this plugin's gating
+	 * suspended: what the front end WOULD serve without Consent Gate.
+	 *
+	 * The scanner must see original markup to classify it — in wp-admin
+	 * should_bail() already guarantees that, but WP-CLI is neither admin
+	 * nor front end, and rendering there would gate the iframes into
+	 * placeholders the scanner cannot see.
+	 *
+	 * @param string $content Raw post content.
+	 * @return string Rendered HTML, ungated.
+	 */
+	public function render_ungated( string $content ): string {
+		$this->gating_suspended = true;
+		try {
+			return (string) apply_filters( 'the_content', $content ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- deliberately rendering through core's own content pipeline so embeds appear as they would on the front end.
+		} finally {
+			$this->gating_suspended = false;
+		}
+	}
+
+	/**
 	 * The read-only content scanner behind the Status screen (§7.1).
 	 *
 	 * @return ContentScan
@@ -438,6 +482,9 @@ final class Plugin {
 	 * @return bool
 	 */
 	public function should_bail(): bool {
+		if ( $this->gating_suspended ) {
+			return true;
+		}
 		if ( wp_doing_ajax() ) {
 			return current_user_can( 'edit_posts' );
 		}

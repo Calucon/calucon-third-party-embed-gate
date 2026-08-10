@@ -21,8 +21,10 @@ mkdir -p "$STAGE"
 
 # The production surface, nothing else: no tests, no dev tooling, no
 # node_modules/vendor (the plugin has no runtime Composer dependencies).
+# docs/ ships deliberately: customizing.md is the on-site reference for
+# developers and AI agents (the deep docs stay in the repo).
 cp consent-gate.php uninstall.php readme.txt LICENSE "$STAGE/"
-cp -R src assets templates languages "$STAGE/"
+cp -R src assets templates languages docs "$STAGE/"
 
 ( cd build && zip -rq "consent-gate-${VERSION}.zip" consent-gate )
 
