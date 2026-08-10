@@ -76,6 +76,9 @@ final class Plugin {
 	/** @var ResourceHints|null */
 	private ?ResourceHints $hint_scrubber = null;
 
+	/** @var PlaceholderRenderer|null */
+	private ?PlaceholderRenderer $renderer = null;
+
 	/** @var array[]|null Filtered provider descriptors; resolved lazily. */
 	private ?array $providers_cache = null;
 
@@ -136,6 +139,9 @@ final class Plugin {
 			},
 			function (): ContentScan {
 				return $this->content_scanner();
+			},
+			function (): string {
+				return $this->preview_placeholder_html();
 			}
 		) )->register();
 		( new ResourceHintsIntegration(
@@ -286,6 +292,7 @@ final class Plugin {
 
 		$this->scanner           = $scanner;
 		$this->registry          = $registry;
+		$this->renderer          = $renderer;
 		$this->host_matcher      = $hosts;
 		$this->iframe_rule       = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
 		$this->embed_object_rule = new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
@@ -293,6 +300,33 @@ final class Plugin {
 		$this->image_rule        = new ImageRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
 		$this->stripper          = new EmbedStripper( $scanner, $hosts, $registry, $translate );
 		$this->hint_scrubber     = new ResourceHints( $this->provider_hosts( $providers ), $hosts );
+	}
+
+	/**
+	 * A sample placeholder for the settings screen's live preview (§7.1).
+	 *
+	 * Rendered through the real pipeline — theme template overrides, text
+	 * filters and all — so the preview cannot drift from what visitors see.
+	 * The markup is inert data: gate.js is not enqueued in the admin, and
+	 * admin-appearance.js suppresses the panel's link navigation.
+	 *
+	 * @return string
+	 */
+	public function preview_placeholder_html(): string {
+		$this->build_pipeline();
+		$url      = 'https://www.youtube.com/embed/preview';
+		$provider = $this->registry->resolve_for_url( $url, 'www.youtube.com' );
+
+		return $this->renderer->render(
+			$provider,
+			$url,
+			array(
+				'width'  => '480',
+				'height' => '270',
+				'title'  => __( 'Example embed', 'consent-gate' ),
+			),
+			array( 'integration' => 'admin-preview' )
+		);
 	}
 
 	/**
@@ -495,6 +529,23 @@ final class Plugin {
 			$css .= '.cg-embed:not(.cg-embed--active){background:transparent;border:1px solid var(--cg-fg);}';
 		} elseif ( 'card' === $a['preset'] ) {
 			$css .= '.cg-embed:not(.cg-embed--active){border:1px solid rgba(0,0,0,0.12);border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.18);}';
+		}
+
+		// Emitted after the preset rules at equal specificity, so an explicit
+		// corner choice beats the card preset's radius. The admin preview
+		// (assets/js/admin-appearance.js) mirrors these values inline —
+		// change them in both places.
+		$radii = array(
+			'square'  => '0',
+			'rounded' => '12px',
+			'pill'    => '12px',
+		);
+		if ( isset( $radii[ $a['corners'] ] ) ) {
+			$radius = $radii[ $a['corners'] ];
+			$css   .= '.cg-embed{--cg-radius:' . $radius . ';}.cg-embed:not(.cg-embed--active){border-radius:' . $radius . ';}';
+			if ( 'pill' === $a['corners'] ) {
+				$css .= '.cg-embed .cg-embed__button{border-radius:999px;}';
+			}
 		}
 
 		return $css;

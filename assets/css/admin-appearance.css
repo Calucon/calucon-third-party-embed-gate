@@ -1,0 +1,41 @@
+/**
+ * Settings-screen appearance preview (admin only).
+ *
+ * The stage hosts real placeholder markup styled by the real gate.css; the
+ * preset rules below mirror Plugin::appearance_css() for the preview's
+ * class-based switching — keep them in sync.
+ */
+
+.cg-preview-stage {
+	box-sizing: border-box;
+	max-width: 32rem;
+	margin: 0.5em 0;
+	padding: 1.5em;
+	border: 1px dashed #c3c4c7;
+	background: #fff;
+}
+
+.cg-preview-stage--dark {
+	background: #101010;
+}
+
+.cg-preview--minimal .cg-embed:not( .cg-embed--active ) {
+	background: transparent;
+	border: 1px solid var( --cg-fg );
+}
+
+.cg-preview--card .cg-embed:not( .cg-embed--active ) {
+	border: 1px solid rgba( 0, 0, 0, 0.12 );
+	border-radius: 8px;
+	box-shadow: 0 1px 4px rgba( 0, 0, 0, 0.18 );
+}
+
+/* One line per colour pair; populated by admin-appearance.js. */
+.cg-contrast-report {
+	max-width: 32rem;
+	white-space: pre-line;
+}
+
+.cg-contrast-report:empty {
+	display: none;
+}
