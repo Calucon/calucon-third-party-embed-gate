@@ -197,6 +197,7 @@ test( 'admin: settings screen lists providers and detection options', async ( { 
 	await expect( page.locator( 'td', { hasText: 'YouTube' } ).first() ).toBeVisible();
 	await expect( page.locator( '#cg-own-hosts' ) ).toBeVisible();
 	await expect( page.locator( '#cg-memory' ) ).toBeVisible();
-	// The CSP snippet is generated from the enabled provider set.
-	await expect( page.locator( 'textarea[readonly]' ) ).toContainText( 'frame-src' );
+	// The CSP snippet is generated from the enabled provider set. Scoped by
+	// accessible name — the page has other readonly textareas (disclosure).
+	await expect( page.locator( 'textarea[aria-label="Content-Security-Policy snippet"]' ) ).toContainText( 'frame-src' );
 } );
