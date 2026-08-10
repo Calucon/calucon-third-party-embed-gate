@@ -6,9 +6,9 @@ Hold third-party embeds until the visitor asks for them, so nothing is
 contacted and nothing is stored before a click. No cookie banner, no
 subscription, no consent platform.
 
-**Status: M1–M6 implemented** (M5 without the CMP bridges, M6 without local
-thumbnails — see below). The core claim — zero third-party requests before
-interaction — is enforced by an end-to-end test that is never skipped.
+**Status: M1–M6 implemented** (M5 without the CMP bridges — see below). The
+core claim — zero third-party requests before interaction — is enforced by
+an end-to-end test that is never skipped.
 
 ## What it does
 
@@ -27,6 +27,9 @@ interaction — is enforced by an end-to-end test that is never skipped.
   exactly, `autoplay` never survives, `style`/`srcdoc`/`on*` never copied.
 - Strips `preconnect`/`dns-prefetch` hints to gated providers; strips embeds
   from feeds and excerpts instead of gating them.
+- Optional **poster images** behind the consent panel, chosen per embed from
+  the site's own media library — served from the site's origin, validated
+  against the own-host list, never fetched from the provider.
 - Optional, **off by default**: consent memory in the visitor's browser
   (nothing is ever written before the first click), with a withdrawal
   control via `[consent_gate_withdraw]`.
@@ -67,8 +70,11 @@ pass-through case is asserted byte-identical.
 - **CMP bridges** (Complianz, Borlabs, …): shipping an untested bridge is
   worse than none — without one the plugin simply keeps gating, which is the
   fail-closed behaviour PLAN.md §6.4 requires.
-- **Local thumbnails**: off-by-default by design with a licensing caveat
-  (PLAN.md §5.4); needs real-filesystem testing before it ships.
+- **Auto-fetched provider thumbnails**: rejected, not merely postponed.
+  Downloading a poster from the provider is an outbound request — the thing
+  this plugin exists to prevent — and a cached copy goes stale with no
+  invalidation signal. Posters are therefore **owner-supplied** from the
+  media library (per-embed, in the block editor) instead.
 - **Compliance claims**: the plugin is a technical measure. It prevents the
   requests; it cannot know your site's processing purposes. Your privacy
   policy still has to name your providers (PLAN.md §14).
