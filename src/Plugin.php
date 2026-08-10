@@ -113,6 +113,17 @@ final class Plugin {
 		$this->iframe_rule = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
 		$this->script_rule = new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
 
+		add_action(
+			'init',
+			static function (): void {
+				load_plugin_textdomain(
+					'consent-gate',
+					false,
+					dirname( plugin_basename( CONSENT_GATE_FILE ) ) . '/languages'
+				);
+			}
+		);
+
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
 
 		( new RenderBlock( $this ) )->register();

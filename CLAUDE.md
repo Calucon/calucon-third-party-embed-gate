@@ -9,8 +9,9 @@ nothing third-party loads before a click.** It is a technical measure, not a
 consent management platform, and it never claims compliance.
 
 The full design rationale lives in `PLAN.md`; this file is the traps and the
-rules. Milestone status: M1 (core gate), M2 (providers + script strategy)
-and M3 (configuration) are implemented; see PLAN.md §13.
+rules. Milestone status: M1 (core gate), M2 (providers + script strategy),
+M3 (configuration) and M4 (a11y + layout polish) are implemented; see
+PLAN.md §13.
 
 ## Invariants (PLAN.md §1) — if a change would break one of these, stop and ask
 
@@ -71,6 +72,7 @@ composer install               # dev deps (PHPUnit)
 composer test                  # unit + fixture suite (no WordPress needed)
 vendor/bin/phpunit --filter youtube-minified   # one fixture by name
 php tests/bin/generate-fixtures.php            # write missing expected.html — review before committing
+php tests/bin/generate-pot.php                 # regenerate languages/consent-gate.pot
 npm install                    # Playwright
 npm run test:e2e               # E2E; in the remote/CI image:
 PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run test:e2e

@@ -1,0 +1,270 @@
+# Consent Gate.
+# This file is distributed under the same license as the Consent Gate plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Consent Gate 0.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/Calucon/WP-Embed/issues\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: consent-gate\n"
+
+#: src/Admin/SettingsPage.php:144
+msgid "Additional own hosts"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:44
+#: src/Admin/SettingsPage.php:45
+#: src/Admin/SettingsPage.php:80
+msgid "Consent Gate"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:95
+msgid "Custom button text (optional)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:94
+msgid "Custom note (optional)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:132
+msgid "Detection"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:87
+msgid "Disabling a provider stops gating its embeds — they load exactly as WordPress renders them. Unknown third-party iframes and scripts are always gated by the generic entries."
+msgstr ""
+
+#: src/Rendering/PlaceholderRenderer.php:86
+msgid "Embedded content from %s"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:154
+msgid "Embeds from these hosts load without a placeholder. Use only for third parties you have covered elsewhere — this plugin then no longer prevents their requests."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:92
+msgid "Gate"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:138
+msgid "Gate third-party iframes"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:140
+msgid "Gate third-party scripts in content"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:158
+msgid "Host matching"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:229
+msgid "Load activity from Strava"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:152
+msgid "Load calendar from Google"
+msgstr ""
+
+#: src/Providers/Registry.php:106
+#: src/Providers/Registry.php:134
+msgid "Load content from %s"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:299
+msgid "Load content from Facebook"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:165
+msgid "Load form from Google"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:204
+msgid "Load form from Typeform"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:325
+msgid "Load image from GIPHY"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:87
+msgid "Load map from Google Maps"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:100
+msgid "Load map from OpenStreetMap"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:191
+msgid "Load model from Sketchfab"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:139
+msgid "Load player from Apple"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:127
+msgid "Load player from SoundCloud"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:114
+msgid "Load player from Spotify"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:273
+msgid "Load post from Instagram"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:312
+msgid "Load post from Reddit"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:260
+msgid "Load post from X (Twitter)"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:217
+msgid "Load scheduler from Calendly"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:178
+msgid "Load tour from Matterport"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:286
+msgid "Load video from TikTok"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:71
+msgid "Load video from Vimeo"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:52
+msgid "Load video from YouTube"
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:228
+msgid "Loading this activity contacts Strava, which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:151
+msgid "Loading this calendar contacts Google, which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Registry.php:132
+msgid "Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:298
+msgid "Loading this content contacts Facebook (Meta), which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Registry.php:104
+msgid "Loading this content runs a script from %s, which receives your IP address and which page you are on, and may set cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:164
+msgid "Loading this form contacts Google, which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:203
+msgid "Loading this form contacts Typeform, which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:324
+msgid "Loading this image contacts GIPHY, which receives your IP address and which page you are on."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:86
+msgid "Loading this map contacts Google Maps, which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:99
+msgid "Loading this map contacts OpenStreetMap, which receives your IP address and which page you are on."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:190
+msgid "Loading this model contacts Sketchfab, which receives your IP address and which page you are on."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:138
+msgid "Loading this player contacts Apple, which receives your IP address and which page you are on."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:126
+msgid "Loading this player contacts SoundCloud, which receives your IP address and which page you are on, and may set cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:113
+msgid "Loading this player contacts Spotify, which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:272
+msgid "Loading this post contacts Instagram (Meta), which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:311
+msgid "Loading this post contacts Reddit, which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:259
+msgid "Loading this post contacts X (Twitter), which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:216
+msgid "Loading this scheduler contacts Calendly, which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:177
+msgid "Loading this tour contacts Matterport, which receives your IP address and which page you are on."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:285
+msgid "Loading this video contacts TikTok, which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:70
+msgid "Loading this video contacts Vimeo, which receives your IP address and which page you are on, and may set cookies."
+msgstr ""
+
+#: src/Providers/Builtin/Descriptors.php:51
+msgid "Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:151
+msgid "Never gate these hosts"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:147
+msgid "One host per line, e.g. cdn.example.com or *.example.com. These are treated as the site itself and never gated."
+msgstr ""
+
+#: src/Rendering/PlaceholderRenderer.php:88
+msgid "Open on %s"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:93
+msgid "Privacy-preserving load"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:91
+msgid "Provider"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:86
+msgid "Providers"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:135
+msgid "Rules"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:81
+msgid "Third-party embeds are replaced with a placeholder until the visitor clicks to load them. Nothing is contacted, and nothing is stored, before that click."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:161
+msgid "Treat www.example.com and example.com as the same site"
+msgstr ""
+

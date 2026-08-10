@@ -19,6 +19,26 @@
 	border-radius: var( --cg-radius );
 	font-family: var( --cg-font );
 	overflow: auto; /* Contents scroll rather than clip in a short reserved box (WCAG 1.4.10). */
+
+	/* Layout preservation where no reserved box exists (PLAN.md §5.3):
+	   occupy the space the embed would, or the page reflows on activation.
+	   The renderer sets --cg-aspect from the embed's own width/height. */
+	aspect-ratio: var( --cg-aspect, auto );
+}
+
+/* The core block-theme trap (PLAN.md §5.3): wp-has-aspect-ratio reserves
+   height with an empty ::before spacer and lifts the iframe out of flow on
+   top of it. A placeholder left in flow renders *underneath* a large empty
+   rectangle. Position the panel into the reserved box — scoped so it only
+   applies where a box was actually reserved. */
+.wp-has-aspect-ratio .wp-block-embed__wrapper {
+	position: relative;
+}
+
+.wp-has-aspect-ratio .wp-block-embed__wrapper > .cg-embed {
+	position: absolute;
+	inset: 0;
+	aspect-ratio: auto; /* The spacer already fixes the size. */
 }
 
 .cg-embed__panel {
@@ -74,6 +94,21 @@
 .cg-embed--active {
 	background: transparent;
 	overflow: visible;
+	aspect-ratio: auto; /* Let the real content size itself after the click. */
+}
+
+/* Inside a reserved box the activated iframe fills it, exactly as the
+   original would have (core positions `iframe` absolutely in the wrapper;
+   our container is the positioned ancestor, so 100% resolves to the box). */
+.wp-has-aspect-ratio .wp-block-embed__wrapper > .cg-embed--active {
+	aspect-ratio: auto;
+}
+
+.wp-has-aspect-ratio .wp-block-embed__wrapper > .cg-embed--active iframe {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
 }
 
 .cg-embed--active:focus {
