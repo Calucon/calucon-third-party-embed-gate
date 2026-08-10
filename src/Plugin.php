@@ -11,6 +11,7 @@
 
 namespace ConsentGate;
 
+use ConsentGate\Admin\SettingsPage;
 use ConsentGate\Detection\HostMatcher;
 use ConsentGate\Detection\HtmlScanner;
 use ConsentGate\Detection\IframeRule;
@@ -20,6 +21,8 @@ use ConsentGate\Integration\TheContent;
 use ConsentGate\Providers\Builtin\Descriptors;
 use ConsentGate\Providers\Registry;
 use ConsentGate\Rendering\PlaceholderRenderer;
+use ConsentGate\Rendering\TemplateLoader;
+use ConsentGate\Support\Options;
 
 /**
  * Builds the pipeline and registers the integrations.
@@ -34,6 +37,9 @@ final class Plugin {
 
 	/** @var ScriptRule */
 	private ScriptRule $script_rule;
+
+	/** @var array Sanitised option tree. */
+	private array $options;
 
 	/**
 	 * Bootstraps the plugin once, on plugins_loaded.
@@ -55,6 +61,8 @@ final class Plugin {
 	}
 
 	private function __construct() {
+		$this->options = Options::sanitize( get_option( Options::OPTION, Options::defaults() ) );
+
 		$translate = static function ( string $text ): string {
 			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText -- bridged strings are extracted where they are defined.
 			return __( $text, 'consent-gate' );
@@ -62,14 +70,19 @@ final class Plugin {
 
 		$hosts = new HostMatcher(
 			$this->own_hosts(),
-			(bool) apply_filters( 'consent_gate_www_equivalence', true ),
+			(bool) apply_filters( 'consent_gate_www_equivalence', $this->options['detection']['www_equivalence'] ),
 			static function ( bool $own, string $host ): bool {
 				return (bool) apply_filters( 'consent_gate_is_own_host', $own, $host );
 			}
 		);
 
+		$providers = Options::apply_provider_overrides(
+			Descriptors::all( $translate ),
+			$this->options
+		);
+
 		$registry = new Registry(
-			(array) apply_filters( 'consent_gate_providers', Descriptors::all( $translate ) ),
+			(array) apply_filters( 'consent_gate_providers', $providers ),
 			$translate
 		);
 
@@ -80,7 +93,12 @@ final class Plugin {
 			},
 			static function ( array $payload, array $provider ): array {
 				return (array) apply_filters( 'consent_gate_payload', $payload, $provider );
-			}
+			},
+			new TemplateLoader(
+				static function ( string $relative ): string {
+					return function_exists( 'locate_template' ) ? (string) locate_template( $relative ) : '';
+				}
+			)
 		);
 
 		$scanner     = new HtmlScanner();
@@ -99,17 +117,24 @@ final class Plugin {
 
 		( new RenderBlock( $this ) )->register();
 		( new TheContent( $this ) )->register();
+		( new SettingsPage( $providers ) )->register();
 	}
 
 	/**
-	 * Run the iframe rule over a fragment.
+	 * Run the enabled detection rules over a fragment.
 	 *
 	 * @param string $html Content.
 	 * @param array  $ctx  Integration context.
 	 * @return string
 	 */
 	public function gate( string $html, array $ctx ): string {
-		return $this->script_rule->apply( $this->iframe_rule->apply( $html, $ctx ), $ctx );
+		if ( $this->options['detection']['iframes'] ) {
+			$html = $this->iframe_rule->apply( $html, $ctx );
+		}
+		if ( $this->options['detection']['scripts'] ) {
+			$html = $this->script_rule->apply( $html, $ctx );
+		}
+		return $html;
 	}
 
 	/**
@@ -184,7 +209,13 @@ final class Plugin {
 				$hosts[] = $host;
 			}
 		}
-		$extra = (array) apply_filters( 'consent_gate_own_hosts', array() );
+		// The configured never-gate list has the same effect as an own host:
+		// the embed passes through. Kept as a separate setting because the
+		// meaning differs — the owner is accepting those requests.
+		$extra = (array) apply_filters(
+			'consent_gate_own_hosts',
+			array_merge( $this->options['detection']['own_hosts'], $this->options['detection']['never_gate'] )
+		);
 		return array_values( array_unique( array_merge( $hosts, $extra ) ) );
 	}
 }

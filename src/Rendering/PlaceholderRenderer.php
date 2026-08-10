@@ -45,17 +45,27 @@ final class PlaceholderRenderer {
 	/** @var callable|null Bridge for consent_gate_payload. */
 	private $filter_payload;
 
+	/** @var TemplateLoader|null Theme override lookup (PLAN.md §7.4). */
+	private ?TemplateLoader $templates;
+
 	/**
-	 * @param callable|null $translate      Maps English strings to the site language.
-	 * @param callable|null $filter_html    fn( string $html, array $provider, array $ctx ): string.
-	 * @param callable|null $filter_payload fn( array $payload, array $provider ): array.
+	 * @param callable|null       $translate      Maps English strings to the site language.
+	 * @param callable|null       $filter_html    fn( string $html, array $provider, array $ctx ): string.
+	 * @param callable|null       $filter_payload fn( array $payload, array $provider ): array.
+	 * @param TemplateLoader|null $templates      Theme template override lookup.
 	 */
-	public function __construct( ?callable $translate = null, ?callable $filter_html = null, ?callable $filter_payload = null ) {
+	public function __construct(
+		?callable $translate = null,
+		?callable $filter_html = null,
+		?callable $filter_payload = null,
+		?TemplateLoader $templates = null
+	) {
 		$this->translate = $translate ?: static function ( string $text ): string {
 			return $text;
 		};
 		$this->filter_html    = $filter_html;
 		$this->filter_payload = $filter_payload;
+		$this->templates      = $templates;
 	}
 
 	/**
@@ -78,7 +88,31 @@ final class PlaceholderRenderer {
 		$fallback_label = sprintf( $t( 'Open on %s' ), $label );
 		$fallback_url   = '' !== $provider['fallback'] ? $provider['fallback'] : $src;
 
-		$html = '<div class="cg-embed"'
+		$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx );
+
+		if ( '' === $html ) {
+			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label );
+		}
+
+		if ( null !== $this->filter_html ) {
+			$html = (string) call_user_func( $this->filter_html, $html, $provider, $ctx );
+		}
+
+		return $html;
+	}
+
+	/**
+	 * The built-in §5.1 markup.
+	 *
+	 * @param array  $provider       Descriptor.
+	 * @param array  $payload        Payload array.
+	 * @param string $aria_label     Accessible name.
+	 * @param string $fallback_url   Fallback link target.
+	 * @param string $fallback_label Fallback link text.
+	 * @return string
+	 */
+	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label ): string {
+		return '<div class="cg-embed"'
 			. ' role="group"'
 			. ' aria-label="' . $this->esc( $aria_label ) . '"'
 			. ' data-cg-provider="' . $this->esc( $provider['id'] ) . '"'
@@ -89,12 +123,41 @@ final class PlaceholderRenderer {
 			. '<p class="cg-embed__fallback"><a href="' . $this->esc( $fallback_url ) . '" rel="noopener nofollow">' . $this->esc( $fallback_label ) . '</a></p>'
 			. '</div>'
 			. '</div>';
+	}
 
-		if ( null !== $this->filter_html ) {
-			$html = (string) call_user_func( $this->filter_html, $html, $provider, $ctx );
+	/**
+	 * Render through a theme override template when one exists (§7.4).
+	 *
+	 * @param array  $provider       Descriptor.
+	 * @param array  $payload        Payload array.
+	 * @param string $aria_label     Accessible name.
+	 * @param string $fallback_url   Fallback link target.
+	 * @param string $fallback_label Fallback link text.
+	 * @param array  $ctx            Integration context.
+	 * @return string '' when no template applies.
+	 */
+	private function render_via_template( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, array $ctx ): string {
+		if ( null === $this->templates ) {
+			return '';
+		}
+		$template = $this->templates->placeholder_template();
+		if ( '' === $template ) {
+			return '';
 		}
 
-		return $html;
+		return $this->templates->render(
+			$template,
+			array(
+				'provider'       => $provider,
+				'ctx'            => $ctx,
+				'aria_label'     => $aria_label,
+				'note'           => $provider['note'],
+				'action'         => $provider['action'],
+				'fallback_url'   => $fallback_url,
+				'fallback_label' => $fallback_label,
+				'payload_attr'   => $this->esc_json( $payload ),
+			)
+		);
 	}
 
 	/**

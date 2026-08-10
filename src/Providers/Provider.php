@@ -26,6 +26,7 @@ final class Provider {
 		return array_merge(
 			array(
 				'id'           => 'generic',
+				'enabled'      => true,
 				'label'        => '',
 				'match'        => array(),
 				'load_host'    => null,
