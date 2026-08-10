@@ -9,8 +9,10 @@ nothing third-party loads before a click.** It is a technical measure, not a
 consent management platform, and it never claims compliance.
 
 The full design rationale lives in `PLAN.md`; this file is the traps and the
-rules. Milestone status: M1–M5 are implemented (M5 without the CMP bridges,
-which need real-CMP testing); see PLAN.md §13.
+rules. Milestone status: M1–M7 are implemented, with three deliberate gaps —
+CMP bridges (§6.4, need real-CMP testing; gating stays the fail-closed
+default), local thumbnails (§5.4, needs real-filesystem testing), and the
+WordPress.org submission itself (a human act). See PLAN.md §13.
 
 ## Invariants (PLAN.md §1) — if a change would break one of these, stop and ask
 
