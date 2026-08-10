@@ -28,13 +28,18 @@ final class SettingsPage {
 	/** @var callable|null Returns the ContentScan behind the Status screen. */
 	private $scanner_source;
 
+	/** @var callable|null Returns sample placeholder HTML for the live preview. */
+	private $preview_source;
+
 	/**
 	 * @param callable      $providers_source fn(): array[] — builtins + filtered.
 	 * @param callable|null $scanner_source   fn(): \ConsentGate\Support\ContentScan.
+	 * @param callable|null $preview_source   fn(): string — rendered sample placeholder.
 	 */
-	public function __construct( callable $providers_source, ?callable $scanner_source = null ) {
+	public function __construct( callable $providers_source, ?callable $scanner_source = null, ?callable $preview_source = null ) {
 		$this->providers_source = $providers_source;
 		$this->scanner_source   = $scanner_source;
+		$this->preview_source   = $preview_source;
 	}
 
 	/**
@@ -50,6 +55,58 @@ final class SettingsPage {
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_setting' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+	}
+
+	/**
+	 * Assets for the Appearance controls: WordPress's own colour picker, the
+	 * front-end panel stylesheet (so the live preview IS the real panel) and
+	 * the preview/contrast script. Settings screen only — everything is
+	 * bundled or core, nothing remote (invariant 9).
+	 *
+	 * @param string $hook Current admin page hook suffix.
+	 * @return void
+	 */
+	public function enqueue_assets( string $hook ): void {
+		if ( 'settings_page_consent-gate' !== $hook ) {
+			return;
+		}
+
+		wp_enqueue_style( 'wp-color-picker' );
+		wp_enqueue_style(
+			'consent-gate',
+			plugins_url( 'assets/css/gate.css', CONSENT_GATE_FILE ),
+			array(),
+			CONSENT_GATE_VERSION
+		);
+		wp_enqueue_style(
+			'consent-gate-admin',
+			plugins_url( 'assets/css/admin-appearance.css', CONSENT_GATE_FILE ),
+			array( 'consent-gate' ),
+			CONSENT_GATE_VERSION
+		);
+		wp_enqueue_script(
+			'consent-gate-admin',
+			plugins_url( 'assets/js/admin-appearance.js', CONSENT_GATE_FILE ),
+			array( 'jquery', 'wp-color-picker' ),
+			CONSENT_GATE_VERSION,
+			true
+		);
+		wp_add_inline_script(
+			'consent-gate-admin',
+			'window.consentGateAdminI18n = ' . wp_json_encode(
+				array(
+					/* translators: contrast-report line. 1: which colour pair, 2: measured ratio like "4.9:1", 3: verdict. */
+					'line'       => __( '%1$s: %2$s — %3$s', 'consent-gate' ),
+					'panelText'  => __( 'Panel text on the panel background', 'consent-gate' ),
+					'buttonText' => __( 'Button text on the button background', 'consent-gate' ),
+					'linkText'   => __( 'Fallback link on the panel background', 'consent-gate' ),
+					'pass'       => __( 'readable (meets the 4.5:1 minimum)', 'consent-gate' ),
+					'fail'       => __( 'hard to read — below the 4.5:1 minimum. Pick a lighter or darker colour for this pair.', 'consent-gate' ),
+				)
+			) . ';',
+			'before'
+		);
 	}
 
 	/**
@@ -210,9 +267,10 @@ final class SettingsPage {
 				</table>
 
 				<h2><?php esc_html_e( 'Appearance', 'consent-gate' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Style the placeholder panel without writing any CSS: pick a style, pick colours, and watch the preview below update as you go. The readability check tells you immediately if a colour combination would be hard to read.', 'consent-gate' ); ?></p>
 				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><label for="cg-preset"><?php esc_html_e( 'Preset', 'consent-gate' ); ?></label></th>
+						<th scope="row"><label for="cg-preset"><?php esc_html_e( 'Panel style', 'consent-gate' ); ?></label></th>
 						<td>
 							<select id="cg-preset" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][preset]">
 								<option value="default" <?php selected( $options['appearance']['preset'], 'default' ); ?>><?php esc_html_e( 'Default — filled panel', 'consent-gate' ); ?></option>
@@ -222,26 +280,37 @@ final class SettingsPage {
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Colours', 'consent-gate' ); ?></th>
+						<th scope="row"><label for="cg-corners"><?php esc_html_e( 'Corners', 'consent-gate' ); ?></label></th>
 						<td>
-							<?php
-							$color_fields = array(
-								'bg'        => __( 'Panel background', 'consent-gate' ),
-								'fg'        => __( 'Panel text', 'consent-gate' ),
-								'accent'    => __( 'Button background', 'consent-gate' ),
-								'accent_fg' => __( 'Button text', 'consent-gate' ),
-							);
-							foreach ( $color_fields as $color_key => $color_label ) :
-								?>
-								<label style="display:inline-block;margin:0 1.5em 0.5em 0;">
-									<?php echo esc_html( $color_label ); ?><br>
-									<input type="text" class="small-text code" placeholder="#rrggbb" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $color_key . ']' ); ?>" value="<?php echo esc_attr( $options['appearance'][ $color_key ] ); ?>">
-								</label>
-							<?php endforeach; ?>
-							<p class="description"><?php esc_html_e( 'Hex colours (#rrggbb); leave empty to inherit the theme\'s palette. If you set the button background, set the button text too and keep them at a 4.5:1 contrast ratio — the defaults are chosen to meet WCAG and custom colours are your responsibility.', 'consent-gate' ); ?></p>
+							<select id="cg-corners" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][corners]">
+								<option value="" <?php selected( $options['appearance']['corners'], '' ); ?>><?php esc_html_e( 'Default — slightly rounded', 'consent-gate' ); ?></option>
+								<option value="square" <?php selected( $options['appearance']['corners'], 'square' ); ?>><?php esc_html_e( 'Square', 'consent-gate' ); ?></option>
+								<option value="rounded" <?php selected( $options['appearance']['corners'], 'rounded' ); ?>><?php esc_html_e( 'Rounded', 'consent-gate' ); ?></option>
+								<option value="pill" <?php selected( $options['appearance']['corners'], 'pill' ); ?>><?php esc_html_e( 'Rounded, with a pill-shaped button', 'consent-gate' ); ?></option>
+							</select>
 						</td>
 					</tr>
+					<?php
+					$color_fields = array(
+						'bg'        => __( 'Panel background', 'consent-gate' ),
+						'fg'        => __( 'Panel text', 'consent-gate' ),
+						'accent'    => __( 'Button background', 'consent-gate' ),
+						'accent_fg' => __( 'Button text', 'consent-gate' ),
+					);
+					foreach ( $color_fields as $color_key => $color_label ) :
+						$color_id = 'cg-color-' . str_replace( '_', '-', $color_key );
+						?>
+						<tr>
+							<th scope="row"><label for="<?php echo esc_attr( $color_id ); ?>"><?php echo esc_html( $color_label ); ?></label></th>
+							<td>
+								<input type="text" id="<?php echo esc_attr( $color_id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $color_key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $color_key . ']' ); ?>" value="<?php echo esc_attr( $options['appearance'][ $color_key ] ); ?>">
+							</td>
+						</tr>
+					<?php endforeach; ?>
 				</table>
+				<p class="description"><?php esc_html_e( 'A cleared colour inherits your theme\'s palette — that is the default, and usually the best choice. The preview cannot use your theme\'s palette here in the admin, so with cleared colours it shows the plugin\'s built-in look; on your site the panel follows the theme.', 'consent-gate' ); ?></p>
+
+				<?php $this->render_preview(); ?>
 
 				<h2><?php esc_html_e( 'Consent memory', 'consent-gate' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor\'s browser only — after their first click, never before — and a withdrawal control becomes available via the [consent_gate_withdraw] shortcode for your privacy policy page.', 'consent-gate' ); ?></p>
@@ -309,6 +378,38 @@ final class SettingsPage {
 		<h2 id="cg-disclosure"><?php esc_html_e( 'Privacy policy disclosure (draft)', 'consent-gate' ); ?></h2>
 		<p class="description"><?php esc_html_e( 'A starting point for the section of your privacy policy that names your embed providers, generated from the enabled providers above. Review it, adapt it to your site and your language, and remove providers you do not embed from — your privacy policy remains your responsibility, and this text is generated data, not legal advice.', 'consent-gate' ); ?></p>
 		<textarea readonly rows="14" class="large-text" aria-label="<?php echo esc_attr( __( 'Privacy policy disclosure draft', 'consent-gate' ) ); ?>"><?php echo esc_textarea( $draft ); ?></textarea>
+		<?php
+	}
+
+	/**
+	 * Live preview of the placeholder panel, driven by admin-appearance.js:
+	 * the sample is real renderer output styled by the real front-end
+	 * stylesheet, so what the owner sees here is what visitors get. Inert by
+	 * design — gate.js is not loaded in the admin and the script suppresses
+	 * link navigation inside the stage.
+	 *
+	 * @return void
+	 */
+	private function render_preview(): void {
+		if ( null === $this->preview_source ) {
+			return;
+		}
+		$sample = (string) call_user_func( $this->preview_source );
+		if ( '' === $sample ) {
+			return;
+		}
+		?>
+		<h3><?php esc_html_e( 'Preview', 'consent-gate' ); ?></h3>
+		<div id="cg-preview-stage" class="cg-preview-stage">
+			<?php echo $sample; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- placeholder HTML escaped by the renderer, same output as the front end. ?>
+		</div>
+		<p>
+			<label>
+				<input type="checkbox" id="cg-preview-dark">
+				<?php esc_html_e( 'Preview on a dark page background', 'consent-gate' ); ?>
+			</label>
+		</p>
+		<p id="cg-contrast-report" class="cg-contrast-report" role="status" aria-live="polite"></p>
 		<?php
 	}
 
