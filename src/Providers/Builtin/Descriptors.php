@@ -79,7 +79,10 @@ final class Descriptors {
 				'label'       => 'Google Maps',
 				'match'       => array(
 					'iframe_host' => array( 'www.google.com', 'google.com', 'maps.google.com' ),
-					'iframe_path' => '#^/maps/embed#',
+					// Three shapes in the field: /maps/embed (Share → Embed a
+					// map), /maps/d/embed (My Maps), and the legacy
+					// /maps?q=…&output=embed which is bare /maps as a path.
+					'iframe_path' => '#^/maps(?:/|$)#',
 				),
 				// No privacy-preserving variant exists; gate only. The README
 				// suggests OpenStreetMap as the replacement.
