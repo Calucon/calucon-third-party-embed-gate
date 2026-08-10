@@ -139,13 +139,38 @@ test( 'feeds strip embeds instead of gating them', async ( { request } ) => {
 	expect( xml ).toContain( 'Intro paragraph.' );
 } );
 
-test( 'REST content is not gated — editing surfaces see the original markup', async ( { request } ) => {
+test( 'anonymous REST content is gated — headless/load-more consumers get placeholders', async ( { request } ) => {
 	const response = await request.get( '/wp-json/wp/v2/posts?slug=gated-classic' );
 	expect( response.ok() ).toBe( true );
 	const [ post ] = await response.json();
 
-	// Invariant 4: the block editor fetches through REST and must get the
-	// original embed, or gating looks like data loss.
+	// §9.2: themes fetch archive pages over /wp-json for "load more" and
+	// render them into the live page. An anonymous requester is a visitor,
+	// and visitors get gated markup — the blanket REST bail was a bypass.
+	expect( post.content.rendered ).toContain( 'cg-embed' );
+	expect( post.content.rendered ).not.toMatch( /<iframe[^>]*youtube\.com\/embed/ );
+} );
+
+test( 'editor REST content is NOT gated — invariant 4', async ( { page, request } ) => {
+	// A cookie fetch without a nonce is anonymous to the REST API, so this
+	// goes through the block editor itself: its wp.apiFetch carries the
+	// authenticated nonce, exactly like real editor traffic.
+	const listResponse = await request.get( '/wp-json/wp/v2/posts?slug=gated-classic' );
+	const [ { id } ] = await listResponse.json();
+
+	await page.goto( '/wp-login.php' );
+	await page.fill( '#user_login', 'admin' );
+	await page.fill( '#user_pass', 'password' );
+	await page.click( '#wp-submit' );
+	await page.goto( `/wp-admin/post.php?post=${ id }&action=edit` );
+	await page.waitForFunction( () => window.wp && window.wp.apiFetch );
+
+	const post = await page.evaluate( ( postId ) => {
+		return window.wp.apiFetch( { path: `/wp/v2/posts/${ postId }` } );
+	}, id );
+
+	// Invariant 4: an editor fetching through REST must get the original
+	// embed, or gating looks like data loss.
 	expect( post.content.rendered ).toContain( 'youtube.com/embed' );
 	expect( post.content.rendered ).not.toContain( 'cg-embed' );
 } );

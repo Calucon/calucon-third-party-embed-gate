@@ -41,7 +41,7 @@ final class TheContent {
 	public function filter( $content ): string {
 		$content = (string) $content;
 
-		if ( false === stripos( $content, '<iframe' ) && false === stripos( $content, '<script' ) ) {
+		if ( ! Plugin::has_gateable_markup( $content ) ) {
 			return $content;
 		}
 

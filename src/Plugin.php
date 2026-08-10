@@ -18,6 +18,8 @@ use ConsentGate\Detection\HostMatcher;
 use ConsentGate\Detection\HtmlScanner;
 use ConsentGate\Detection\IframeRule;
 use ConsentGate\Detection\ScriptRule;
+use ConsentGate\Integration\Comments;
+use ConsentGate\Integration\Descriptions;
 use ConsentGate\Integration\Excerpt;
 use ConsentGate\Integration\OutputBuffer;
 use ConsentGate\Integration\RenderBlock;
@@ -146,6 +148,8 @@ final class Plugin {
 		( new RenderBlock( $this ) )->register();
 		( new TheContent( $this ) )->register();
 		( new Widgets( $this ) )->register();
+		( new Comments( $this ) )->register();
+		( new Descriptions( $this ) )->register();
 		( new Excerpt( $this ) )->register();
 		( new WithdrawShortcode() )->register();
 		( new SettingsPage( $providers ) )->register();
@@ -163,6 +167,24 @@ final class Plugin {
 				CacheFlush::flush_all();
 			}
 		);
+	}
+
+	/**
+	 * Cheap pre-parse probe shared by every integration (PLAN.md §9.16):
+	 * whether a fragment can contain anything gateable at all. Must name
+	 * every tag a detection rule handles — a probe that misses a tag makes
+	 * the integration skip the rule silently.
+	 *
+	 * @param string $html Content.
+	 * @return bool
+	 */
+	public static function has_gateable_markup( string $html ): bool {
+		foreach ( array( '<iframe', '<script', '<embed', '<object' ) as $probe ) {
+			if ( false !== stripos( $html, $probe ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -200,17 +222,30 @@ final class Plugin {
 	 * Never gate where an editor is looking (invariant 4) or where a
 	 * placeholder is nonsense (PLAN.md §9.2, §9.3).
 	 *
+	 * AJAX and REST are deliberately NOT blanket-bailed: infinite scroll,
+	 * "load more" and AJAX product filters deliver front-end content over
+	 * admin-ajax.php and /wp-json/ to anonymous visitors, and a blanket bail
+	 * injects raw third-party iframes into live pages — page two of an
+	 * infinite-scroll archive was simply unprotected. The discriminator is
+	 * the requester: editors fetch raw content to edit it (the block
+	 * renderer, page-builder edit modes), and every editor request is
+	 * authenticated with edit capability. Anonymous requests are visitors,
+	 * and visitors get gated markup (§9.2).
+	 *
 	 * @return bool
 	 */
 	public function should_bail(): bool {
-		if ( is_admin() || wp_doing_ajax() || is_customize_preview() ) {
+		if ( wp_doing_ajax() ) {
+			return current_user_can( 'edit_posts' );
+		}
+		if ( is_admin() || is_customize_preview() ) {
 			return true;
 		}
 		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-			return true;
+			return current_user_can( 'edit_posts' );
 		}
 		if ( function_exists( 'wp_is_json_request' ) && wp_is_json_request() ) {
-			return true;
+			return current_user_can( 'edit_posts' );
 		}
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only context probe.
 		if ( isset( $_GET['context'] ) && 'edit' === $_GET['context'] ) {
@@ -245,23 +280,38 @@ final class Plugin {
 
 		// Consent-memory config (§6.2): only shipped when the site enabled
 		// memory. The default build stores nothing and needs no config.
-		$consent = $this->options['consent'];
-		if ( 'off' !== $consent['memory'] ) {
+		$config = $this->inline_config_json();
+		if ( null !== $config ) {
 			wp_add_inline_script(
 				'consent-gate',
-				'window.consentGateConfig = ' . wp_json_encode(
-					array(
-						'memory'       => $consent['memory'],
-						'scope'        => $consent['scope'],
-						'durationDays' => $consent['duration_days'],
-						'i18n'         => array(
-							'withdrawn' => __( 'Stored embed consents have been removed. Embeds will ask again.', 'consent-gate' ),
-						),
-					)
-				) . ';',
+				'window.consentGateConfig = ' . $config . ';',
 				'before'
 			);
 		}
+	}
+
+	/**
+	 * The consentGateConfig JSON, or null when memory is off and no config
+	 * is needed. Shared by the enqueue path and the output-buffer path,
+	 * which injects tags directly because it runs after wp_footer.
+	 *
+	 * @return string|null
+	 */
+	public function inline_config_json(): ?string {
+		$consent = $this->options['consent'];
+		if ( 'off' === $consent['memory'] ) {
+			return null;
+		}
+		return (string) wp_json_encode(
+			array(
+				'memory'       => $consent['memory'],
+				'scope'        => $consent['scope'],
+				'durationDays' => $consent['duration_days'],
+				'i18n'         => array(
+					'withdrawn' => __( 'Stored embed consents have been removed. Embeds will ask again.', 'consent-gate' ),
+				),
+			)
+		);
 	}
 
 	/**

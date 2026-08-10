@@ -11,8 +11,9 @@ namespace ConsentGate\Integration;
 use ConsentGate\Plugin;
 
 /**
- * Hooks widget_block_content (block widgets) and widget_text (legacy text
- * widgets).
+ * Hooks widget_block_content (block widgets), widget_text (legacy text
+ * widgets and the Custom HTML widget's back-compat pass) and
+ * widget_text_content (the Text widget's visual mode).
  */
 final class Widgets {
 
@@ -29,6 +30,12 @@ final class Widgets {
 	public function register(): void {
 		add_filter( 'widget_block_content', array( $this, 'filter' ), 10 );
 		add_filter( 'widget_text', array( $this, 'filter' ), 10 );
+		// The Text widget's visual mode runs autoembed (priority 8) and
+		// do_shortcode (priority 11) on widget_text_content AFTER widget_text
+		// has been applied — a bare YouTube URL or [embed] shortcode expands
+		// to an iframe only there. Priority 20 runs after both; re-gating
+		// already-gated markup is a no-op (§9.1 probes).
+		add_filter( 'widget_text_content', array( $this, 'filter' ), 20 );
 	}
 
 	/**
@@ -38,8 +45,7 @@ final class Widgets {
 	public function filter( $content ): string {
 		$content = (string) $content;
 
-		if ( ( false === stripos( $content, '<iframe' ) && false === stripos( $content, '<script' ) )
-			|| $this->plugin->should_bail() ) {
+		if ( ! Plugin::has_gateable_markup( $content ) || $this->plugin->should_bail() ) {
 			return $content;
 		}
 

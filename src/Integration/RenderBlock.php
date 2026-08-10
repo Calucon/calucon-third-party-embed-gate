@@ -44,8 +44,7 @@ final class RenderBlock {
 	public function filter( $content, $block ): string {
 		$content = (string) $content;
 
-		if ( ( false === stripos( $content, '<iframe' ) && false === stripos( $content, '<script' ) )
-			|| $this->plugin->should_bail() ) {
+		if ( ! Plugin::has_gateable_markup( $content ) || $this->plugin->should_bail() ) {
 			return $content;
 		}
 
