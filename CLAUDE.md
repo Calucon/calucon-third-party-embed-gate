@@ -9,7 +9,8 @@ nothing third-party loads before a click.** It is a technical measure, not a
 consent management platform, and it never claims compliance.
 
 The full design rationale lives in `PLAN.md`; this file is the traps and the
-rules. Milestone status: M1 (core gate) is implemented; see PLAN.md §13.
+rules. Milestone status: M1 (core gate) and M2 (providers + script strategy)
+are implemented; see PLAN.md §13.
 
 ## Invariants (PLAN.md §1) — if a change would break one of these, stop and ask
 

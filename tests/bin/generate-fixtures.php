@@ -18,7 +18,6 @@ use ConsentGate\Tests\Support\PipelineFactory;
 
 $force = in_array( '--force', $argv, true );
 $root  = dirname( __DIR__ ) . '/Fixtures';
-$rule  = PipelineFactory::rule();
 
 foreach ( scandir( $root ) as $entry ) {
 	$dir = $root . '/' . $entry;
@@ -32,7 +31,7 @@ foreach ( scandir( $root ) as $entry ) {
 	}
 
 	$input  = (string) file_get_contents( $dir . '/input.html' );
-	$output = $rule->apply( $input, array( 'integration' => 'test' ) );
+	$output = PipelineFactory::gate( $input, array( 'example.test' ), array( 'integration' => 'test' ) );
 
 	file_put_contents( $expected_file, $output );
 	echo ( $output === $input ? 'PASS-THROUGH ' : 'GATED        ' ) . $entry . PHP_EOL;

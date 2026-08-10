@@ -73,6 +73,43 @@ final class Registry {
 	}
 
 	/**
+	 * Resolve a provider for a third-party script src (script strategy).
+	 *
+	 * @param string $url  Absolute script URL (entity-decoded).
+	 * @param string $host Normalised host of that URL.
+	 * @return array Provider descriptor; never null (generic fallback).
+	 */
+	public function resolve_for_script_url( string $url, string $host ): array {
+		foreach ( $this->providers as $descriptor ) {
+			$descriptor = Provider::normalize( $descriptor );
+			$hosts      = isset( $descriptor['match']['script_host'] )
+				? (array) $descriptor['match']['script_host'] : array();
+
+			if ( in_array( $host, $hosts, true ) ) {
+				return $descriptor;
+			}
+		}
+
+		$t = $this->translate;
+
+		// Unknown third-party script: gated by default (invariant 6). The
+		// fallback link cannot point at a .js file (PLAN.md §9.5), so it
+		// points at the provider's origin — weak, but a real page.
+		return Provider::normalize(
+			array(
+				'id'       => 'generic-script',
+				'label'    => $host,
+				'fallback' => 'https://' . $host . '/',
+				/* translators: %s: host name of the third-party script. */
+				'note'     => sprintf( $t( 'Loading this content runs a script from %s, which receives your IP address and which page you are on, and may set cookies.' ), $host ),
+				/* translators: %s: host name of the third-party script. */
+				'action'   => sprintf( $t( 'Load content from %s' ), $host ),
+				'strategy' => 'script',
+			)
+		);
+	}
+
+	/**
 	 * The generic fallback provider for any unknown cross-origin iframe.
 	 *
 	 * Label is the host name; the fallback URL is the embed URL with a

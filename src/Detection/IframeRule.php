@@ -101,6 +101,12 @@ final class IframeRule {
 			}
 
 			$provider = $this->providers->resolve_for_url( $src, $host );
+			// The rule that matched decides the mechanics: this rule always
+			// rebuilds an iframe, even for providers that also ship a script
+			// variant (X/Twitter appears both ways in the field).
+			$provider['strategy'] = 'iframe';
+
+			$load_src = $this->load_src( $provider, $src );
 
 			$span_start = $match['start'];
 			$span_end   = $match['end'];
@@ -116,7 +122,13 @@ final class IframeRule {
 				}
 			}
 
-			$placeholder = $this->renderer->render( $provider, $src, $attributes, $ctx );
+			if ( '' === $provider['fallback'] ) {
+				// Never a placeholder whose link points nowhere (§9.5): the
+				// original embed URL is always a real page.
+				$provider['fallback'] = $src;
+			}
+
+			$placeholder = $this->renderer->render( $provider, $load_src, $attributes, $ctx );
 
 			$html = substr( $html, 0, $span_start ) . $placeholder . substr( $html, $span_end );
 
@@ -126,6 +138,61 @@ final class IframeRule {
 		}
 
 		return $html;
+	}
+
+	/**
+	 * The URL the embed is loaded from AFTER consent (PLAN.md §4.1).
+	 *
+	 * Data minimisation, GDPR Art. 5(1)(c): prefer the provider's
+	 * privacy-preserving host where one exists — measured 0 cookies on
+	 * youtube-nocookie.com against 5 on the default host.
+	 *
+	 * @param array  $provider Normalised provider descriptor.
+	 * @param string $src      Original (entity-decoded) embed URL.
+	 * @return string
+	 */
+	private function load_src( array $provider, string $src ): string {
+		if ( is_string( $provider['load_host'] ) && '' !== $provider['load_host'] ) {
+			$path = ( is_string( $provider['load_path'] ) && '' !== $provider['load_path'] )
+				? $provider['load_path']
+				: (string) parse_url( 0 === strpos( $src, '//' ) ? 'https:' . $src : $src, PHP_URL_PATH );
+			return 'https://' . $provider['load_host'] . $path;
+		}
+
+		if ( array() !== $provider['load_query'] && is_array( $provider['load_query'] ) ) {
+			return $this->merge_query( $src, $provider['load_query'] );
+		}
+
+		return $src;
+	}
+
+	/**
+	 * Merge query parameters into a URL, dropping autoplay flags — audio
+	 * starting unbidden is not what was asked for (invariant 8).
+	 *
+	 * @param string $src   URL (may be protocol-relative).
+	 * @param array  $extra Parameters to merge.
+	 * @return string
+	 */
+	private function merge_query( string $src, array $extra ): string {
+		$absolute = 0 === strpos( $src, '//' ) ? 'https:' . $src : $src;
+		$parts    = parse_url( $absolute );
+		if ( ! isset( $parts['scheme'], $parts['host'] ) ) {
+			return $src;
+		}
+
+		$params = array();
+		if ( isset( $parts['query'] ) ) {
+			parse_str( $parts['query'], $params );
+		}
+		unset( $params['autoplay'], $params['auto_play'] );
+		$params = array_merge( $params, $extra );
+
+		return $parts['scheme'] . '://' . $parts['host']
+			. ( isset( $parts['port'] ) ? ':' . $parts['port'] : '' )
+			. ( isset( $parts['path'] ) ? $parts['path'] : '' )
+			. ( array() !== $params ? '?' . http_build_query( $params, '', '&', PHP_QUERY_RFC3986 ) : '' )
+			. ( isset( $parts['fragment'] ) ? '#' . $parts['fragment'] : '' );
 	}
 
 	/**
