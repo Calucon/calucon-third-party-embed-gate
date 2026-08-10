@@ -30,6 +30,37 @@ final class ContentScanTest extends TestCase {
 		);
 	}
 
+	public function test_aggregate_groups_by_tag_host_status_and_keeps_first_source(): void {
+		$scanned = array(
+			array(
+				'source' => 'First post',
+				'rows'   => $this->scanner()->scan(
+					'<iframe src="https://www.youtube.com/embed/a"></iframe>'
+					. '<iframe src="https://www.youtube.com/embed/b"></iframe>'
+				),
+			),
+			array(
+				'source' => 'Second post',
+				'rows'   => $this->scanner()->scan(
+					'<iframe src="https://www.youtube.com/embed/c"></iframe>'
+					. '<iframe src="https://player.vimeo.com/video/1"></iframe>'
+				),
+			),
+		);
+
+		$rows = ContentScan::aggregate( $scanned );
+
+		self::assertCount( 2, $rows );
+		$youtube = $rows[0];
+		self::assertSame( 'www.youtube.com', $youtube['host'] );
+		self::assertSame( 3, $youtube['count'] );
+		self::assertSame( 'First post', $youtube['first_seen'] );
+		self::assertSame( 'https://www.youtube.com/embed/a', $youtube['url'] );
+		self::assertSame( ContentScan::GATED, $youtube['status'] );
+		self::assertSame( 'player.vimeo.com', $rows[1]['host'] );
+		self::assertSame( 'Second post', $rows[1]['first_seen'] );
+	}
+
 	public function test_reports_gated_and_not_gated_rows(): void {
 		$html = '<iframe src="https://www.youtube.com/embed/y_pjE_p1HwE"></iframe>'
 			. '<img src="https://i.ytimg.com/vi/x/hq.jpg" alt="">'
