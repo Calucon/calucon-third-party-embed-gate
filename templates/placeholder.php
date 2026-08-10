@@ -22,6 +22,9 @@
  * @var string $fallback_url   Fallback link target (URL, escape it).
  * @var string $fallback_label Fallback link text (plain text, escape it).
  * @var string $payload_attr   data-cg-payload value, already HTML-escaped.
+ * @var string $aspect         CSS aspect ratio ('16/9') or '' — reserve the
+ *                             embed's space via the --cg-aspect custom
+ *                             property so the page does not reflow (§5.3).
  *
  * The template runs outside WordPress in the fixture suite, so it uses
  * htmlspecialchars() rather than esc_attr()/esc_html(); both are correct
@@ -31,4 +34,4 @@
  */
 
 ?>
-<div class="cg-embed" role="group" aria-label="<?php echo htmlspecialchars( $aria_label, ENT_QUOTES, 'UTF-8' ); ?>" data-cg-provider="<?php echo htmlspecialchars( $provider['id'], ENT_QUOTES, 'UTF-8' ); ?>" data-cg-payload="<?php echo $payload_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by the renderer. ?>"><div class="cg-embed__panel"><p class="cg-embed__note"><?php echo htmlspecialchars( $note, ENT_QUOTES, 'UTF-8' ); ?></p><button type="button" class="cg-embed__button"><?php echo htmlspecialchars( $action, ENT_QUOTES, 'UTF-8' ); ?></button><p class="cg-embed__fallback"><a href="<?php echo htmlspecialchars( $fallback_url, ENT_QUOTES, 'UTF-8' ); ?>" rel="noopener nofollow"><?php echo htmlspecialchars( $fallback_label, ENT_QUOTES, 'UTF-8' ); ?></a></p></div></div>
+<div class="cg-embed" role="group" aria-label="<?php echo htmlspecialchars( $aria_label, ENT_QUOTES, 'UTF-8' ); ?>" data-cg-provider="<?php echo htmlspecialchars( $provider['id'], ENT_QUOTES, 'UTF-8' ); ?>"<?php echo '' !== $aspect ? ' style="--cg-aspect:' . htmlspecialchars( $aspect, ENT_QUOTES, 'UTF-8' ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?> data-cg-payload="<?php echo $payload_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by the renderer. ?>"><div class="cg-embed__panel"><p class="cg-embed__note"><?php echo htmlspecialchars( $note, ENT_QUOTES, 'UTF-8' ); ?></p><button type="button" class="cg-embed__button"><?php echo htmlspecialchars( $action, ENT_QUOTES, 'UTF-8' ); ?></button><p class="cg-embed__fallback"><a href="<?php echo htmlspecialchars( $fallback_url, ENT_QUOTES, 'UTF-8' ); ?>" rel="noopener nofollow"><?php echo htmlspecialchars( $fallback_label, ENT_QUOTES, 'UTF-8' ); ?></a></p></div></div>

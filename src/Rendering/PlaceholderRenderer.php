@@ -112,10 +112,13 @@ final class PlaceholderRenderer {
 	 * @return string
 	 */
 	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label ): string {
+		$aspect = $this->aspect_of( $provider, $payload );
+
 		return '<div class="cg-embed"'
 			. ' role="group"'
 			. ' aria-label="' . $this->esc( $aria_label ) . '"'
 			. ' data-cg-provider="' . $this->esc( $provider['id'] ) . '"'
+			. ( '' !== $aspect ? ' style="--cg-aspect:' . $this->esc( $aspect ) . '"' : '' )
 			. ' data-cg-payload="' . $this->esc_json( $payload ) . '">'
 			. '<div class="cg-embed__panel">'
 			. '<p class="cg-embed__note">' . $this->esc( $provider['note'] ) . '</p>'
@@ -156,6 +159,7 @@ final class PlaceholderRenderer {
 				'fallback_url'   => $fallback_url,
 				'fallback_label' => $fallback_label,
 				'payload_attr'   => $this->esc_json( $payload ),
+				'aspect'         => $this->aspect_of( $provider, $payload ),
 			)
 		);
 	}
@@ -212,6 +216,39 @@ final class PlaceholderRenderer {
 		}
 
 		return $payload;
+	}
+
+	/**
+	 * Aspect hint for layout preservation where no reserved box exists
+	 * (PLAN.md §5.3): a gated embed must occupy the space the real one would,
+	 * or the page reflows on activation.
+	 *
+	 * The embed's own width/height wins over the provider's declared aspect:
+	 * a 422×750 YouTube short is 9:16 even though the provider default says
+	 * 16:9, and the per-embed attributes are the measured truth.
+	 *
+	 * @param array $provider Descriptor.
+	 * @param array $payload  Built payload.
+	 * @return string CSS ratio like '16/9', '' when unknown.
+	 */
+	private function aspect_of( array $provider, array $payload ): string {
+		if ( isset( $payload['strategy'] ) && 'iframe' !== $payload['strategy'] ) {
+			return ''; // Script embeds size themselves via their companion.
+		}
+
+		$attrs = is_array( $payload['attrs'] ) ? $payload['attrs'] : array();
+		if ( isset( $attrs['width'], $attrs['height'] )
+			&& preg_match( '/^[0-9]+$/', (string) $attrs['width'] )
+			&& preg_match( '/^[0-9]+$/', (string) $attrs['height'] )
+			&& (int) $attrs['width'] > 0 && (int) $attrs['height'] > 0 ) {
+			return (int) $attrs['width'] . '/' . (int) $attrs['height'];
+		}
+
+		if ( is_string( $provider['aspect'] ) && preg_match( '/^([0-9]+):([0-9]+)$/', $provider['aspect'], $m ) ) {
+			return $m[1] . '/' . $m[2];
+		}
+
+		return '';
 	}
 
 	/**

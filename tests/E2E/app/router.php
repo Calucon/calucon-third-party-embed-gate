@@ -95,13 +95,38 @@ if ( '/page/scripts' === $uri ) {
 	return true;
 }
 
+if ( '/page/aspect' === $uri ) {
+	// The §5.3 layout-preservation cases: a core reserved aspect box
+	// (wp-has-aspect-ratio + ::before spacer, iframe lifted out of flow),
+	// and a bare iframe with only width/height attributes.
+	$content = implode(
+		"\n",
+		array(
+			'<figure class="wp-block-embed is-type-video wp-block-embed-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">',
+			'<iframe title="Reserved box" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0" allowfullscreen></iframe>',
+			'</div></figure>',
+			'<div style="width: 640px;"><iframe src="https://widgets.example-partner.com/embed/9" title="Bare" width="640" height="360"></iframe></div>',
+		)
+	);
+
+	// Equivalent of core's wp-embed-responsive rules, which real WordPress
+	// themes ship; the harness must reproduce the trap to test the fix.
+	$core_css = '.wp-block-embed{margin:0;max-width:600px;}'
+		. '.wp-has-aspect-ratio .wp-block-embed__wrapper::before{content:"";display:block;padding-top:56.25%;}'
+		. '.wp-has-aspect-ratio iframe{position:absolute;top:0;left:0;width:100%;height:100%;}';
+
+	cg_e2e_page( $content, $core_css );
+	return true;
+}
+
 /**
  * Gate raw content through the real pipeline and emit a full page.
  *
- * @param string $content Pre-gating content HTML.
+ * @param string $content   Pre-gating content HTML.
+ * @param string $extra_css Page-specific CSS (theme/core simulation).
  * @return void
  */
-function cg_e2e_page( string $content ) {
+function cg_e2e_page( string $content, string $extra_css = '' ) {
 	$gated = PipelineFactory::gate(
 		$content,
 		array( '127.0.0.1', 'localhost' ),
@@ -113,8 +138,13 @@ function cg_e2e_page( string $content ) {
 		. '<meta name="viewport" content="width=device-width, initial-scale=1">'
 		. '<title>Consent Gate E2E</title>'
 		. '<link rel="stylesheet" href="/assets/gate.css">'
+		. ( '' !== $extra_css ? '<style>' . $extra_css . '</style>' : '' )
 		. '</head><body>'
+		// A real theme provides the page scaffold (landmark + h1); the panel
+		// itself deliberately adds neither (PLAN.md §5.1).
+		. '<main><h1>Consent Gate E2E</h1>'
 		. $gated
+		. '</main>'
 		. '<script src="/assets/gate.js"></script>'
 		. '</body></html>';
 }
