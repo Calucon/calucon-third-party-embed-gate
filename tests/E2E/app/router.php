@@ -149,6 +149,41 @@ if ( '/page/aspect' === $uri ) {
 	return true;
 }
 
+if ( '/page/shapes' === $uri ) {
+	// The detection-hardening shapes: attribute-swapped lazy loading, legacy
+	// object/embed, the srcdoc lazy-YouTube snippet, and a GTM-style hidden
+	// pixel that must vanish rather than become a visible dead panel.
+	$content = implode(
+		"\n",
+		array(
+			'<iframe class="lazyloaded" title="Lazy video" width="560" height="315" src="about:blank" data-lazy-src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>',
+			'<object width="560" height="315"><param name="movie" value="https://www.youtube.com/v/y_pjE_p1HwE?version=3"><embed src="https://www.youtube.com/v/y_pjE_p1HwE?version=3" type="application/x-shockwave-flash" width="560" height="315"></object>',
+			'<iframe width="560" height="315" title="Srcdoc video" srcdoc="&lt;a href=&quot;https://www.youtube.com/watch?v=y_pjE_p1HwE&quot;&gt;&lt;img src=&quot;https://img.youtube.com/vi/y_pjE_p1HwE/hqdefault.jpg&quot; alt=&quot;Poster&quot;&gt;&lt;/a&gt;" frameborder="0"></iframe>',
+			'<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TEST123" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>',
+		)
+	);
+
+	cg_e2e_page( $content );
+	return true;
+}
+
+if ( '/page/collision' === $uri ) {
+	// Two UNKNOWN third-party widgets (both resolve to the generic-script
+	// provider) plus one unknown iframe: activating one widget must not
+	// delete the other's placeholder or its fallback link.
+	$content = implode(
+		"\n",
+		array(
+			'<div class="booking-widget"><a href="https://booking.example-a.com/calucon">Book a tour</a></div><script src="https://cdn.example-a.com/widget.js"></script>',
+			'<div class="reviews-widget"><a href="https://reviews.example-b.com/calucon">Our reviews</a></div><script src="https://cdn.example-b.com/reviews.js"></script>',
+			'<iframe src="https://widgets.example-partner.com/embed/9" title="Unknown widget" width="400" height="300"></iframe>',
+		)
+	);
+
+	cg_e2e_page( $content );
+	return true;
+}
+
 /**
  * Gate raw content through the real pipeline and emit a full page.
  *
