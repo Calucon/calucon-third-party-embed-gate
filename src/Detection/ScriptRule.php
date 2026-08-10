@@ -90,7 +90,7 @@ final class ScriptRule {
 				continue;
 			}
 
-			if ( null !== $this->should_gate
+			if ( empty( $ctx['force_gate'] ) && null !== $this->should_gate
 				&& ! call_user_func( $this->should_gate, true, $src, $ctx ) ) {
 				continue;
 			}
@@ -101,7 +101,7 @@ final class ScriptRule {
 			}
 
 			$provider = $this->providers->resolve_for_script_url( $src, $host );
-			if ( false === $provider['enabled'] ) {
+			if ( empty( $ctx['force_gate'] ) && false === $provider['enabled'] ) {
 				continue;
 			}
 			$provider['strategy'] = 'script';
