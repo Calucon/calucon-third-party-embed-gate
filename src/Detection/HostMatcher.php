@@ -1,0 +1,191 @@
+<?php
+/**
+ * Decides whether a URL points at the site itself or at a third party.
+ *
+ * WordPress-free by design (PLAN.md §2.2): the own-host list is injected by
+ * the integration layer, which is where home_url()/site_url() live.
+ *
+ * @package ConsentGate
+ */
+
+namespace ConsentGate\Detection;
+
+/**
+ * Classifies embed URLs. The failure mode must always be "gated something
+ * harmless", never "let a new tracker through" (PLAN.md §1, invariant 6) —
+ * but URLs that cannot trigger a network request at all are never gated,
+ * because a placeholder whose fallback link points nowhere is worse than
+ * the original (PLAN.md §9.5).
+ */
+final class HostMatcher {
+
+	/** URL cannot cause a third-party request; pass through, never rebuild. */
+	public const SKIP = 'skip';
+
+	/** Same-origin (or declared own host); pass through. */
+	public const OWN = 'own';
+
+	/** Cross-origin http(s); gate it. */
+	public const FOREIGN = 'foreign';
+
+	/** @var string[] Normalised exact own hosts. */
+	private array $own_hosts = array();
+
+	/** @var string[] Normalised wildcard suffixes, e.g. '.example.com'. */
+	private array $wildcards = array();
+
+	/** @var bool Treat www.example.com and example.com as the same site. */
+	private bool $www_equivalence;
+
+	/** @var callable|null Extra veto/approve hook: fn( bool $own, string $host ): bool */
+	private $is_own_filter;
+
+	/**
+	 * @param string[]      $own_hosts       Hosts that count as "ours". Entries
+	 *                                       starting with '*.' match any subdomain.
+	 * @param bool          $www_equivalence On by default (PLAN.md §3.4).
+	 * @param callable|null $is_own_filter   Bridge for the consent_gate_is_own_host filter.
+	 */
+	public function __construct( array $own_hosts, bool $www_equivalence = true, ?callable $is_own_filter = null ) {
+		$this->www_equivalence = $www_equivalence;
+		$this->is_own_filter   = $is_own_filter;
+
+		foreach ( $own_hosts as $host ) {
+			$host = trim( (string) $host );
+			if ( '' === $host ) {
+				continue;
+			}
+			if ( 0 === strpos( $host, '*.' ) ) {
+				$this->wildcards[] = $this->normalize_host( substr( $host, 1 ) ); // Keep the leading dot.
+			} else {
+				$this->own_hosts[] = $this->normalize_host( $host );
+			}
+		}
+	}
+
+	/**
+	 * Classify a URL as SKIP, OWN or FOREIGN.
+	 *
+	 * @param string $url Raw (already entity-decoded) URL from the markup.
+	 * @return string One of the class constants.
+	 */
+	public function classify( string $url ): string {
+		$url = trim( $url );
+		if ( '' === $url ) {
+			return self::SKIP;
+		}
+
+		// Schemes that never produce a third-party request: never gated,
+		// never rebuilt (PLAN.md §3.4).
+		if ( preg_match( '/^(data|blob|about|javascript):/i', $url ) ) {
+			return self::SKIP;
+		}
+
+		if ( 0 === strpos( $url, '//' ) ) {
+			// Protocol-relative: resolves against the page scheme, host decides.
+			$host = $this->extract_host( 'https:' . $url );
+		} elseif ( preg_match( '/^https?:\/\//i', $url ) ) {
+			$host = $this->extract_host( $url );
+		} elseif ( preg_match( '/^[a-z][a-z0-9+.-]*:/i', $url ) ) {
+			// Unknown scheme (mailto:, tel:, …): an iframe will not fetch it.
+			return self::SKIP;
+		} else {
+			// Relative URL: same-origin by definition, never gated.
+			return self::OWN;
+		}
+
+		if ( null === $host || '' === $host ) {
+			// Unparseable http(s) URL: the browser will not load it either,
+			// and a placeholder would have no working fallback link.
+			return self::SKIP;
+		}
+
+		return $this->is_own_host( $host ) ? self::OWN : self::FOREIGN;
+	}
+
+	/**
+	 * Normalised host of an absolute or protocol-relative URL.
+	 *
+	 * @param string $url URL.
+	 * @return string|null Null when the URL carries no host.
+	 */
+	public function host_of( string $url ) {
+		$url = trim( $url );
+		if ( 0 === strpos( $url, '//' ) ) {
+			$url = 'https:' . $url;
+		}
+		$host = $this->extract_host( $url );
+		return null === $host ? null : $this->normalize_host( $host );
+	}
+
+	/**
+	 * Is this (already extracted) host one of ours?
+	 *
+	 * @param string $host Host name, possibly mixed case / IDN.
+	 * @return bool
+	 */
+	public function is_own_host( string $host ): bool {
+		$host = $this->normalize_host( $host );
+		$own  = $this->matches_own( $host );
+
+		if ( null !== $this->is_own_filter ) {
+			$own = (bool) call_user_func( $this->is_own_filter, $own, $host );
+		}
+
+		return $own;
+	}
+
+	/**
+	 * @param string $host Normalised host.
+	 * @return bool
+	 */
+	private function matches_own( string $host ): bool {
+		$variants = array( $host );
+		if ( $this->www_equivalence ) {
+			$variants[] = ( 0 === strpos( $host, 'www.' ) ) ? substr( $host, 4 ) : 'www.' . $host;
+		}
+
+		foreach ( $variants as $variant ) {
+			if ( in_array( $variant, $this->own_hosts, true ) ) {
+				return true;
+			}
+			foreach ( $this->wildcards as $suffix ) {
+				// '*.example.com' matches sub.example.com and example.com itself.
+				if ( substr( $variant, -strlen( $suffix ) ) === $suffix || $variant === substr( $suffix, 1 ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Lowercase, strip trailing dot, and punycode IDNs so 'münchen.de'
+	 * and 'xn--mnchen-3ya.de' compare equal (PLAN.md §3.4).
+	 *
+	 * @param string $host Raw host.
+	 * @return string
+	 */
+	private function normalize_host( string $host ): string {
+		$host = strtolower( rtrim( trim( $host ), '.' ) );
+
+		if ( '' !== $host && function_exists( 'idn_to_ascii' ) && preg_match( '/[^\x00-\x7f]/', $host ) ) {
+			$ascii = idn_to_ascii( $host, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46 );
+			if ( false !== $ascii && null !== $ascii ) {
+				$host = $ascii;
+			}
+		}
+
+		return $host;
+	}
+
+	/**
+	 * @param string $url Absolute URL.
+	 * @return string|null Host, or null when unparseable.
+	 */
+	private function extract_host( string $url ) {
+		$host = parse_url( $url, PHP_URL_HOST );
+		return is_string( $host ) ? $host : null;
+	}
+}

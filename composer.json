@@ -1,0 +1,28 @@
+{
+    "name": "calucon/consent-gate",
+    "description": "Two-click embeds for WordPress: nothing third-party loads before the visitor asks for it.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "ConsentGate\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ConsentGate\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

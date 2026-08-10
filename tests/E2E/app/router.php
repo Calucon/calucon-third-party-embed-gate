@@ -1,0 +1,98 @@
+<?php
+/**
+ * Router for the E2E test server (php -S).
+ *
+ * Serves pages whose embed markup went through the real PHP pipeline
+ * (HtmlScanner → HostMatcher → Registry → PlaceholderRenderer via
+ * IframeRule) plus the plugin's actual front-end assets — no WordPress, but
+ * nothing mocked on the path the product claim depends on.
+ *
+ * @package ConsentGate
+ */
+
+declare( strict_types=1 );
+
+$root = dirname( __DIR__, 3 );
+
+spl_autoload_register(
+	static function ( $class ) use ( $root ) {
+		$prefixes = array(
+			'ConsentGate\\Tests\\' => $root . '/tests/',
+			'ConsentGate\\'        => $root . '/src/',
+		);
+		foreach ( $prefixes as $prefix => $dir ) {
+			if ( 0 === strpos( $class, $prefix ) ) {
+				$path = $dir . str_replace( '\\', '/', substr( $class, strlen( $prefix ) ) ) . '.php';
+				if ( is_file( $path ) ) {
+					require $path;
+				}
+				return;
+			}
+		}
+	}
+);
+
+use ConsentGate\Tests\Support\PipelineFactory;
+
+$uri = (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
+
+if ( '/healthz' === $uri ) {
+	header( 'Content-Type: text/plain' );
+	echo 'ok';
+	return true;
+}
+
+if ( '/assets/gate.js' === $uri ) {
+	header( 'Content-Type: application/javascript' );
+	readfile( $root . '/assets/js/gate.js' );
+	return true;
+}
+
+if ( '/assets/gate.css' === $uri ) {
+	header( 'Content-Type: text/css' );
+	readfile( $root . '/assets/css/gate.css' );
+	return true;
+}
+
+if ( '/frame.html' === $uri ) {
+	header( 'Content-Type: text/html; charset=utf-8' );
+	echo '<!doctype html><meta charset="utf-8"><title>Same-origin frame</title><p>local frame</p>';
+	return true;
+}
+
+if ( '/page/gated' === $uri ) {
+	// Raw content as WordPress would render it, before gating: one embed per
+	// authoring style from the fixture corpus, plus a same-origin iframe that
+	// must survive untouched.
+	$content = implode(
+		"\n",
+		array(
+			'<figure class="wp-block-embed"><div class="wp-block-embed__wrapper">',
+			'<iframe title="Kolkja Cycling" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>',
+			'</div></figure>',
+			"<div\nclass=wp-block-embed__wrapper> <iframe\nloading=lazy title=\"Minified\" width=422 height=750 src=\"https://www.youtube-nocookie.com/embed/y_pjE_p1HwE\" frameborder=0></iframe> </div>",
+			'<iframe src="//player.vimeo.com/video/76979871" title="Vimeo" width="640" height="360"></iframe>',
+			'<iframe src="https://widgets.example-partner.com/embed/9" title="Unknown widget" sandbox="allow-scripts" width="400" height="300"></iframe>',
+			'<iframe src="/frame.html" title="Same origin" width="300" height="100"></iframe>',
+		)
+	);
+
+	$gated = PipelineFactory::rule( array( '127.0.0.1', 'localhost' ) )
+		->apply( $content, array( 'integration' => 'e2e' ) );
+
+	header( 'Content-Type: text/html; charset=utf-8' );
+	echo '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+		. '<meta name="viewport" content="width=device-width, initial-scale=1">'
+		. '<title>Consent Gate E2E</title>'
+		. '<link rel="stylesheet" href="/assets/gate.css">'
+		. '</head><body>'
+		. $gated
+		. '<script src="/assets/gate.js"></script>'
+		. '</body></html>';
+	return true;
+}
+
+http_response_code( 404 );
+header( 'Content-Type: text/plain' );
+echo 'not found';
+return true;
