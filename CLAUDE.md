@@ -69,8 +69,10 @@ green, and any new fixture must include a minified variant.
 ## Commands
 
 ```sh
-composer install               # dev deps (PHPUnit)
+composer install               # dev deps (PHPUnit, PHPCS + WordPress standards)
 composer test                  # unit + fixture suite (no WordPress needed)
+composer lint                  # PHPCS: WordPress-Extra + PHPCompatibilityWP (phpcs.xml.dist)
+composer lint:fix              # phpcbf auto-fixes; keep the report clean — no new warnings
 vendor/bin/phpunit --filter youtube-minified   # one fixture by name
 php tests/bin/generate-fixtures.php            # write missing expected.html — review before committing
 php tests/bin/generate-pot.php                 # regenerate languages/consent-gate.pot

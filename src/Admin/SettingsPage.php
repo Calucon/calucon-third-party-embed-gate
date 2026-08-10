@@ -99,15 +99,15 @@ final class SettingsPage {
 					<tbody>
 					<?php foreach ( $this->providers as $descriptor ) : ?>
 						<?php
-						$id  = isset( $descriptor['id'] ) ? (string) $descriptor['id'] : '';
+						$id = isset( $descriptor['id'] ) ? (string) $descriptor['id'] : '';
 						if ( '' === $id ) {
 							continue;
 						}
-						$row          = isset( $providers[ $id ] ) ? $providers[ $id ] : array();
-						$enabled      = ! isset( $row['enabled'] ) || $row['enabled'];
-						$privacy      = ! isset( $row['privacy_variant'] ) || $row['privacy_variant'];
-						$has_variant  = ! empty( $descriptor['load_host'] ) || ! empty( $descriptor['load_query'] );
-						$name_prefix  = esc_attr( Options::OPTION . '[providers][' . $id . ']' );
+						$row         = isset( $providers[ $id ] ) ? $providers[ $id ] : array();
+						$enabled     = ! isset( $row['enabled'] ) || $row['enabled'];
+						$privacy     = ! isset( $row['privacy_variant'] ) || $row['privacy_variant'];
+						$has_variant = ! empty( $descriptor['load_host'] ) || ! empty( $descriptor['load_query'] );
+						$name_prefix = esc_attr( Options::OPTION . '[providers][' . $id . ']' );
 						?>
 						<tr>
 							<td><?php echo esc_html( isset( $descriptor['label'] ) ? $descriptor['label'] : $id ); ?></td>

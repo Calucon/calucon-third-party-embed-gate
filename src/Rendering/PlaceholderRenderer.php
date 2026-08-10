@@ -60,7 +60,7 @@ final class PlaceholderRenderer {
 		?callable $filter_payload = null,
 		?TemplateLoader $templates = null
 	) {
-		$this->translate = $translate ?: static function ( string $text ): string {
+		$this->translate      = $translate ?? static function ( string $text ): string {
 			return $text;
 		};
 		$this->filter_html    = $filter_html;
@@ -83,7 +83,7 @@ final class PlaceholderRenderer {
 
 		$label = '' !== $provider['label'] ? $provider['label'] : 'embed';
 		/* translators: %s: provider label (usually a host name). */
-		$aria_label     = sprintf( $t( 'Embedded content from %s' ), $label );
+		$aria_label = sprintf( $t( 'Embedded content from %s' ), $label );
 		/* translators: %s: provider label (usually a host name). */
 		$fallback_label = sprintf( $t( 'Open on %s' ), $label );
 		$fallback_url   = '' !== $provider['fallback'] ? $provider['fallback'] : $src;

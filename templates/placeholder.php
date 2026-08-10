@@ -33,5 +33,11 @@
  * @package ConsentGate
  */
 
+// Not loaded through the renderer (e.g. requested directly): render nothing.
+// Deliberately not an ABSPATH check — the fixture suite runs this template
+// outside WordPress.
+if ( ! isset( $provider, $aria_label, $note, $action, $fallback_url, $fallback_label, $payload_attr, $aspect ) ) {
+	return;
+}
 ?>
 <div class="cg-embed" role="group" aria-label="<?php echo htmlspecialchars( $aria_label, ENT_QUOTES, 'UTF-8' ); ?>" data-cg-provider="<?php echo htmlspecialchars( $provider['id'], ENT_QUOTES, 'UTF-8' ); ?>"<?php echo '' !== $aspect ? ' style="--cg-aspect:' . htmlspecialchars( $aspect, ENT_QUOTES, 'UTF-8' ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?> data-cg-payload="<?php echo $payload_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by the renderer. ?>"><div class="cg-embed__panel"><p class="cg-embed__note"><?php echo htmlspecialchars( $note, ENT_QUOTES, 'UTF-8' ); ?></p><button type="button" class="cg-embed__button"><?php echo htmlspecialchars( $action, ENT_QUOTES, 'UTF-8' ); ?></button><p class="cg-embed__fallback"><a href="<?php echo htmlspecialchars( $fallback_url, ENT_QUOTES, 'UTF-8' ); ?>" rel="noopener nofollow"><?php echo htmlspecialchars( $fallback_label, ENT_QUOTES, 'UTF-8' ); ?></a></p></div></div>

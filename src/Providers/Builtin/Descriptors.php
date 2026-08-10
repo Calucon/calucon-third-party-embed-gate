@@ -23,7 +23,7 @@ final class Descriptors {
 	 * @return array[] Provider descriptors, most specific first.
 	 */
 	public static function all( ?callable $translate = null ): array {
-		$t = $translate ?: static function ( string $text ): string {
+		$t = $translate ?? static function ( string $text ): string {
 			return $text;
 		};
 
@@ -88,9 +88,9 @@ final class Descriptors {
 				'strategy'    => 'iframe',
 			),
 			array(
-				'id'         => 'openstreetmap',
-				'label'      => 'OpenStreetMap',
-				'match'      => array(
+				'id'          => 'openstreetmap',
+				'label'       => 'OpenStreetMap',
+				'match'       => array(
 					'iframe_host' => array( 'www.openstreetmap.org', 'openstreetmap.org' ),
 					'iframe_path' => '#^/export/embed#',
 				),

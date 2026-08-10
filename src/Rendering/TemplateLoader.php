@@ -26,7 +26,7 @@ final class TemplateLoader {
 	 *                               file, '' when the theme has none.
 	 */
 	public function __construct( ?callable $locator = null ) {
-		$this->locator = $locator ?: static function ( string $relative ): string {
+		$this->locator = $locator ?? static function (): string {
 			return '';
 		};
 	}
