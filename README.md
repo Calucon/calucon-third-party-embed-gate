@@ -1,3 +1,5 @@
+<img src=".wordpress-org/icon.svg" alt="" width="96" align="right">
+
 # Consent Gate — a two-click embed plugin for WordPress
 
 Hold third-party embeds until the visitor asks for them, so nothing is
