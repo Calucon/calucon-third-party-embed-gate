@@ -61,8 +61,11 @@ final class PlaceholderRendererTest extends TestCase {
 			)
 		);
 
-		self::assertSame( array( 'title', 'width', 'sandbox' ), array_keys( $payload['attrs'] ) );
+		// 'class' is safelisted (identity, no capability — wp-embed.js keys
+		// its resize handshake on it); style/srcdoc/on* must never survive.
+		self::assertSame( array( 'title', 'width', 'sandbox', 'class' ), array_keys( $payload['attrs'] ) );
 		self::assertSame( 'allow-scripts', $payload['attrs']['sandbox'] );
+		self::assertSame( 'wp-embedded-content', $payload['attrs']['class'] );
 	}
 
 	public function test_autoplay_never_survives_the_rebuild(): void {

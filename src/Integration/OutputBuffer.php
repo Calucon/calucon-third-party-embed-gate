@@ -89,6 +89,11 @@ final class OutputBuffer {
 				return $buffer;
 			}
 
+			// Hint tags printed directly by themes/performance plugins bypass
+			// the wp_resource_hints filter; the buffer is the only place the
+			// whole document (head included) is in hand to scrub them (§9.14).
+			$buffer = $this->plugin->scrub_hint_tags( $buffer );
+
 			// Gate only inside <body>. The head carries the site's own
 			// enqueued scripts (analytics, tag managers, payment SDKs) and a
 			// visible panel there is invalid markup that breaks the page —

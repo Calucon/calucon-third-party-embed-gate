@@ -8,7 +8,7 @@
  * keep working:
  *
  *  - the outer element carries class="cg-embed", role="group", the
- *    aria-label, data-cg-provider and data-cg-payload;
+ *    aria-label, data-cg-provider, data-cg-host and data-cg-payload;
  *  - a real <button type="button" class="cg-embed__button">;
  *  - a working fallback link (class="cg-embed__fallback" on its wrapper).
  *
@@ -25,6 +25,9 @@
  * @var string $aspect         CSS aspect ratio ('16/9') or '' — reserve the
  *                             embed's space via the --cg-aspect custom
  *                             property so the page does not reflow (§5.3).
+ * @var string $host           Host the embed will contact ('' when unknown);
+ *                             carried as data-cg-host so activation and
+ *                             consent memory can scope generic embeds.
  *
  * The template runs outside WordPress in the fixture suite, so it uses
  * htmlspecialchars() rather than esc_attr()/esc_html(); both are correct
@@ -40,4 +43,4 @@ if ( ! isset( $provider, $aria_label, $note, $action, $fallback_url, $fallback_l
 	return;
 }
 ?>
-<div class="cg-embed" role="group" aria-label="<?php echo htmlspecialchars( $aria_label, ENT_QUOTES, 'UTF-8' ); ?>" data-cg-provider="<?php echo htmlspecialchars( $provider['id'], ENT_QUOTES, 'UTF-8' ); ?>"<?php echo '' !== $aspect ? ' style="--cg-aspect:' . htmlspecialchars( $aspect, ENT_QUOTES, 'UTF-8' ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?> data-cg-payload="<?php echo $payload_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by the renderer. ?>"><div class="cg-embed__panel"><p class="cg-embed__note"><?php echo htmlspecialchars( $note, ENT_QUOTES, 'UTF-8' ); ?></p><button type="button" class="cg-embed__button"><?php echo htmlspecialchars( $action, ENT_QUOTES, 'UTF-8' ); ?></button><p class="cg-embed__fallback"><a href="<?php echo htmlspecialchars( $fallback_url, ENT_QUOTES, 'UTF-8' ); ?>" rel="noopener nofollow"><?php echo htmlspecialchars( $fallback_label, ENT_QUOTES, 'UTF-8' ); ?></a></p></div></div>
+<div class="cg-embed" role="group" aria-label="<?php echo htmlspecialchars( $aria_label, ENT_QUOTES, 'UTF-8' ); ?>" data-cg-provider="<?php echo htmlspecialchars( $provider['id'], ENT_QUOTES, 'UTF-8' ); ?>"<?php echo isset( $host ) && is_string( $host ) && '' !== $host ? ' data-cg-host="' . htmlspecialchars( $host, ENT_QUOTES, 'UTF-8' ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?><?php echo '' !== $aspect ? ' style="--cg-aspect:' . htmlspecialchars( $aspect, ENT_QUOTES, 'UTF-8' ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?> data-cg-payload="<?php echo $payload_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by the renderer. ?>"><div class="cg-embed__panel"><p class="cg-embed__note"><?php echo htmlspecialchars( $note, ENT_QUOTES, 'UTF-8' ); ?></p><button type="button" class="cg-embed__button"><?php echo htmlspecialchars( $action, ENT_QUOTES, 'UTF-8' ); ?></button><p class="cg-embed__fallback"><a href="<?php echo htmlspecialchars( $fallback_url, ENT_QUOTES, 'UTF-8' ); ?>" rel="noopener nofollow"><?php echo htmlspecialchars( $fallback_label, ENT_QUOTES, 'UTF-8' ); ?></a></p></div></div>

@@ -58,6 +58,12 @@ final class Plugin {
 	/** @var EmbedStripper */
 	private EmbedStripper $stripper;
 
+	/** @var HtmlScanner */
+	private HtmlScanner $scanner;
+
+	/** @var ResourceHints */
+	private ResourceHints $hint_scrubber;
+
 	/**
 	 * Bootstraps the plugin once, on plugins_loaded.
 	 *
@@ -151,9 +157,18 @@ final class Plugin {
 		( new Comments( $this ) )->register();
 		( new Descriptions( $this ) )->register();
 		( new Excerpt( $this ) )->register();
-		( new WithdrawShortcode() )->register();
+		( new WithdrawShortcode(
+			function (): void {
+				// The withdrawal control's intended home is a privacy-policy
+				// page with no embeds — without this enqueue the button is a
+				// dead element there (invariant 2's spirit).
+				$this->enqueue_assets();
+			}
+		) )->register();
 		( new SettingsPage( $providers ) )->register();
-		( new ResourceHintsIntegration( new ResourceHints( $this->provider_hosts( $providers ), $hosts ) ) )->register();
+		$this->scanner       = $scanner;
+		$this->hint_scrubber = new ResourceHints( $this->provider_hosts( $providers ), $hosts );
+		( new ResourceHintsIntegration( $this->hint_scrubber ) )->register();
 
 		if ( $this->options['detection']['output_buffer'] ) {
 			( new OutputBuffer( $this ) )->register();
@@ -216,6 +231,18 @@ final class Plugin {
 	 */
 	public function strip( string $html ): string {
 		return $this->stripper->strip( $html );
+	}
+
+	/**
+	 * Remove literal <link> hint tags for gated hosts — performance plugins
+	 * and themes print these directly, bypassing wp_resource_hints (§9.14).
+	 * Used by the output buffer, the only place the whole document exists.
+	 *
+	 * @param string $html Document HTML.
+	 * @return string
+	 */
+	public function scrub_hint_tags( string $html ): string {
+		return $this->hint_scrubber->scrub_tags( $html, $this->scanner );
 	}
 
 	/**
@@ -291,27 +318,29 @@ final class Plugin {
 	}
 
 	/**
-	 * The consentGateConfig JSON, or null when memory is off and no config
-	 * is needed. Shared by the enqueue path and the output-buffer path,
-	 * which injects tags directly because it runs after wp_footer.
+	 * The consentGateConfig JSON. Shared by the enqueue path and the
+	 * output-buffer path, which injects tags directly because it runs after
+	 * wp_footer. Always present: the loading/error announcements (§8) must
+	 * be translatable even when consent memory is off.
 	 *
 	 * @return string|null
 	 */
 	public function inline_config_json(): ?string {
 		$consent = $this->options['consent'];
-		if ( 'off' === $consent['memory'] ) {
-			return null;
-		}
-		return (string) wp_json_encode(
-			array(
-				'memory'       => $consent['memory'],
-				'scope'        => $consent['scope'],
-				'durationDays' => $consent['duration_days'],
-				'i18n'         => array(
-					'withdrawn' => __( 'Stored embed consents have been removed. Embeds will ask again.', 'consent-gate' ),
-				),
-			)
+		$config  = array(
+			'i18n' => array(
+				'withdrawn' => __( 'Stored embed consents have been removed. Embeds will ask again.', 'consent-gate' ),
+				'loading'   => __( 'Loading embedded content…', 'consent-gate' ),
+				'error'     => __( 'The embedded content could not be loaded.', 'consent-gate' ),
+				'errorLink' => __( 'Open it on the provider’s site.', 'consent-gate' ),
+			),
 		);
+		if ( 'off' !== $consent['memory'] ) {
+			$config['memory']       = $consent['memory'];
+			$config['scope']        = $consent['scope'];
+			$config['durationDays'] = $consent['duration_days'];
+		}
+		return (string) wp_json_encode( $config );
 	}
 
 	/**
@@ -358,8 +387,9 @@ final class Plugin {
 	}
 
 	/**
-	 * Every host the provider match tables know — the set whose resource
-	 * hints must not survive (§9.14).
+	 * Every host the provider match tables know — plus each provider's
+	 * declared sibling CDN hosts (i.ytimg.com, pbs.twimg.com) — the set
+	 * whose resource hints must not survive (§9.14).
 	 *
 	 * @param array[] $providers Descriptors.
 	 * @return string[]
@@ -372,6 +402,9 @@ final class Plugin {
 				if ( isset( $match[ $key ] ) ) {
 					$hosts = array_merge( $hosts, (array) $match[ $key ] );
 				}
+			}
+			if ( isset( $descriptor['hint_hosts'] ) ) {
+				$hosts = array_merge( $hosts, (array) $descriptor['hint_hosts'] );
 			}
 		}
 		return array_values( array_unique( $hosts ) );

@@ -17,6 +17,19 @@ namespace ConsentGate\Integration;
  */
 final class WithdrawShortcode {
 
+	/** @var callable|null Enqueues the plugin's front-end assets. */
+	private $enqueue;
+
+	/**
+	 * @param callable|null $enqueue Called on render so gate.js is present
+	 *                               even on pages without a single embed —
+	 *                               the privacy-policy page this control is
+	 *                               made for.
+	 */
+	public function __construct( ?callable $enqueue = null ) {
+		$this->enqueue = $enqueue;
+	}
+
 	/**
 	 * @return void
 	 */
@@ -29,6 +42,10 @@ final class WithdrawShortcode {
 	 * @return string
 	 */
 	public function render( $atts = array() ): string {
+		if ( null !== $this->enqueue ) {
+			call_user_func( $this->enqueue );
+		}
+
 		$atts = shortcode_atts(
 			array(
 				'label' => __( 'Withdraw embed consents', 'consent-gate' ),

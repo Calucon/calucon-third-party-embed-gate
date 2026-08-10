@@ -27,6 +27,9 @@ final class ResourceHints {
 	 */
 	public function register(): void {
 		add_filter( 'wp_resource_hints', array( $this, 'filter' ), 10, 2 );
+		// A separate filter (WP 6.1+), and a full fetch rather than a mere
+		// connection — a preloaded provider SDK defeats the gate entirely.
+		add_filter( 'wp_preload_resources', array( $this, 'filter_preload' ) );
 	}
 
 	/**
@@ -36,5 +39,13 @@ final class ResourceHints {
 	 */
 	public function filter( $urls, $relation ): array {
 		return $this->scrubber->filter( (array) $urls, (string) $relation );
+	}
+
+	/**
+	 * @param array $resources Preload entries.
+	 * @return array
+	 */
+	public function filter_preload( $resources ): array {
+		return $this->scrubber->filter_preload( (array) $resources );
 	}
 }

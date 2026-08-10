@@ -46,6 +46,7 @@ final class Descriptors {
 				'load_host'    => 'www.youtube-nocookie.com',
 				'load_path'    => '/embed/{id}',
 				'fallback'     => 'https://www.youtube.com/watch?v={id}',
+				'hint_hosts'   => array( 'i.ytimg.com', 's.ytimg.com', 'img.youtube.com', 'yt3.ggpht.com' ),
 				'privacy_url'  => 'https://policies.google.com/privacy',
 				'controller'   => 'Google Ireland Limited, Dublin, Ireland',
 				'note'         => $t( 'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.' ),
@@ -65,6 +66,7 @@ final class Descriptors {
 				// and merge dnt=1, which suppresses Vimeo's analytics.
 				'load_query'  => array( 'dnt' => '1' ),
 				'fallback'    => 'https://vimeo.com/{id}',
+				'hint_hosts'  => array( 'i.vimeocdn.com', 'f.vimeocdn.com' ),
 				'privacy_url' => 'https://vimeo.com/privacy',
 				'controller'  => 'Vimeo.com, Inc., New York, USA',
 				'note'        => $t( 'Loading this video contacts Vimeo, which receives your IP address and which page you are on, and may set cookies.' ),
@@ -81,6 +83,7 @@ final class Descriptors {
 				),
 				// No privacy-preserving variant exists; gate only. The README
 				// suggests OpenStreetMap as the replacement.
+				'hint_hosts'  => array( 'maps.gstatic.com', 'maps.googleapis.com' ),
 				'privacy_url' => 'https://policies.google.com/privacy',
 				'controller'  => 'Google Ireland Limited, Dublin, Ireland',
 				'note'        => $t( 'Loading this map contacts Google Maps, which receives your IP address and which page you are on, and sets cookies.' ),
@@ -108,6 +111,7 @@ final class Descriptors {
 					'iframe_path' => '#^/embed/(?P<type>track|album|playlist|episode|show|artist)/(?P<id>[A-Za-z0-9]+)#',
 				),
 				'fallback'    => 'https://open.spotify.com/{type}/{id}',
+				'hint_hosts'  => array( 'i.scdn.co' ),
 				'privacy_url' => 'https://www.spotify.com/legal/privacy-policy/',
 				'controller'  => 'Spotify AB, Stockholm, Sweden',
 				'note'        => $t( 'Loading this player contacts Spotify, which receives your IP address and which page you are on, and sets cookies.' ),
@@ -228,6 +232,7 @@ final class Descriptors {
 				'note'               => $t( 'Loading this activity contacts Strava, which receives your IP address and which page you are on, and sets cookies.' ),
 				'action'             => $t( 'Load activity from Strava' ),
 				'strategy'           => 'script',
+				'companion_class'    => array( 'strava-embed-placeholder' ),
 				// The companion div carries data-embed-type/data-embed-id;
 				// the human page is derivable from them.
 				'companion_fallback' => static function ( array $attributes ) {
@@ -248,69 +253,85 @@ final class Descriptors {
 				},
 			),
 			array(
-				'id'          => 'twitter',
-				'label'       => 'X (Twitter)',
-				'match'       => array(
+				'id'              => 'twitter',
+				'label'           => 'X (Twitter)',
+				'match'           => array(
 					'iframe_host' => array( 'platform.twitter.com', 'platform.x.com' ),
 					'script_host' => array( 'platform.twitter.com', 'platform.x.com' ),
 				),
-				'privacy_url' => 'https://x.com/en/privacy',
-				'controller'  => 'Twitter International Unlimited Company, Dublin, Ireland',
-				'note'        => $t( 'Loading this post contacts X (Twitter), which receives your IP address and which page you are on, and sets cookies.' ),
-				'action'      => $t( 'Load post from X (Twitter)' ),
-				'strategy'    => 'script',
+				'privacy_url'     => 'https://x.com/en/privacy',
+				'controller'      => 'Twitter International Unlimited Company, Dublin, Ireland',
+				'note'            => $t( 'Loading this post contacts X (Twitter), which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'          => $t( 'Load post from X (Twitter)' ),
+				'strategy'        => 'script',
+				'companion_class' => array( 'twitter-tweet', 'twitter-timeline' ),
+				'hint_hosts'      => array( 'syndication.twitter.com', 'pbs.twimg.com', 'abs.twimg.com' ),
 			),
 			array(
-				'id'          => 'instagram',
-				'label'       => 'Instagram',
-				'match'       => array(
+				'id'              => 'instagram',
+				'label'           => 'Instagram',
+				'match'           => array(
 					'iframe_host' => array( 'www.instagram.com', 'instagram.com' ),
 					'script_host' => array( 'www.instagram.com', 'instagram.com', 'platform.instagram.com' ),
 				),
-				'privacy_url' => 'https://privacycenter.instagram.com/policy',
-				'controller'  => 'Meta Platforms Ireland Limited, Dublin, Ireland',
-				'note'        => $t( 'Loading this post contacts Instagram (Meta), which receives your IP address and which page you are on, and sets cookies.' ),
-				'action'      => $t( 'Load post from Instagram' ),
-				'strategy'    => 'script',
+				'privacy_url'     => 'https://privacycenter.instagram.com/policy',
+				'controller'      => 'Meta Platforms Ireland Limited, Dublin, Ireland',
+				'note'            => $t( 'Loading this post contacts Instagram (Meta), which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'          => $t( 'Load post from Instagram' ),
+				'strategy'        => 'script',
+				'companion_class' => array( 'instagram-media' ),
+				'hint_hosts'      => array( 'scontent.cdninstagram.com' ),
 			),
 			array(
-				'id'          => 'tiktok',
-				'label'       => 'TikTok',
-				'match'       => array(
+				'id'              => 'tiktok',
+				'label'           => 'TikTok',
+				'match'           => array(
 					'iframe_host' => array( 'www.tiktok.com' ),
 					'script_host' => array( 'www.tiktok.com' ),
 				),
-				'privacy_url' => 'https://www.tiktok.com/legal/privacy-policy',
-				'controller'  => 'TikTok Technology Limited, Dublin, Ireland',
-				'note'        => $t( 'Loading this video contacts TikTok, which receives your IP address and which page you are on, and sets cookies.' ),
-				'action'      => $t( 'Load video from TikTok' ),
-				'strategy'    => 'script',
+				'privacy_url'     => 'https://www.tiktok.com/legal/privacy-policy',
+				'controller'      => 'TikTok Technology Limited, Dublin, Ireland',
+				'note'            => $t( 'Loading this video contacts TikTok, which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'          => $t( 'Load video from TikTok' ),
+				'strategy'        => 'script',
+				'companion_class' => array( 'tiktok-embed' ),
 			),
 			array(
-				'id'          => 'facebook',
-				'label'       => 'Facebook',
-				'match'       => array(
+				'id'                 => 'facebook',
+				'label'              => 'Facebook',
+				'match'              => array(
 					'iframe_host' => array( 'www.facebook.com', 'web.facebook.com' ),
 					'script_host' => array( 'connect.facebook.net' ),
 				),
-				'privacy_url' => 'https://www.facebook.com/privacy/policy/',
-				'controller'  => 'Meta Platforms Ireland Limited, Dublin, Ireland',
-				'note'        => $t( 'Loading this content contacts Facebook (Meta), which receives your IP address and which page you are on, and sets cookies.' ),
-				'action'      => $t( 'Load content from Facebook' ),
-				'strategy'    => 'script',
+				'privacy_url'        => 'https://www.facebook.com/privacy/policy/',
+				'controller'         => 'Meta Platforms Ireland Limited, Dublin, Ireland',
+				'note'               => $t( 'Loading this content contacts Facebook (Meta), which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'             => $t( 'Load content from Facebook' ),
+				'strategy'           => 'script',
+				// The canonical shape is <div id="fb-root"></div><script>…
+				// with the .fb-post companion AFTER the script; its data-href
+				// is the human page.
+				'companion_class'    => array( 'fb-post', 'fb-video', 'fb-page' ),
+				'companion_fallback' => static function ( array $attributes ) {
+					$href = isset( $attributes['data-href'] ) && is_string( $attributes['data-href'] )
+						? trim( $attributes['data-href'] ) : '';
+					return preg_match( '#^https://(www|web)\.facebook\.com/#', $href ) ? $href : null;
+				},
+				'hint_hosts'         => array( 'staticxx.facebook.com' ),
 			),
 			array(
-				'id'          => 'reddit',
-				'label'       => 'Reddit',
-				'match'       => array(
+				'id'              => 'reddit',
+				'label'           => 'Reddit',
+				'match'           => array(
 					'iframe_host' => array( 'embed.reddit.com', 'www.redditmedia.com' ),
 					'script_host' => array( 'embed.reddit.com', 'embed.redditmedia.com' ),
 				),
-				'privacy_url' => 'https://www.reddit.com/policies/privacy-policy',
-				'controller'  => 'Reddit, Inc., San Francisco, USA',
-				'note'        => $t( 'Loading this post contacts Reddit, which receives your IP address and which page you are on, and sets cookies.' ),
-				'action'      => $t( 'Load post from Reddit' ),
-				'strategy'    => 'script',
+				'privacy_url'     => 'https://www.reddit.com/policies/privacy-policy',
+				'controller'      => 'Reddit, Inc., San Francisco, USA',
+				'note'            => $t( 'Loading this post contacts Reddit, which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'          => $t( 'Load post from Reddit' ),
+				'strategy'        => 'script',
+				'companion_class' => array( 'reddit-embed-bq' ),
 			),
 			array(
 				'id'          => 'giphy',

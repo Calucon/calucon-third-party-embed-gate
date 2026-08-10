@@ -30,7 +30,9 @@ final class Registry {
 	 *                                 language; the integration layer passes __().
 	 */
 	public function __construct( array $providers = array(), ?callable $translate = null ) {
-		$this->providers = $providers;
+		// Normalise once at construction (PLAN.md §9.16), not once per
+		// candidate per embed.
+		$this->providers = array_map( array( Provider::class, 'normalize' ), $providers );
 		$this->translate = $translate ?? static function ( string $text ): string {
 			return $text;
 		};
@@ -45,9 +47,8 @@ final class Registry {
 	 */
 	public function resolve_for_url( string $url, string $host ): array {
 		foreach ( $this->providers as $descriptor ) {
-			$descriptor = Provider::normalize( $descriptor );
-			$match      = $descriptor['match'];
-			$hosts      = isset( $match['iframe_host'] ) ? (array) $match['iframe_host'] : array();
+			$match = $descriptor['match'];
+			$hosts = isset( $match['iframe_host'] ) ? (array) $match['iframe_host'] : array();
 
 			if ( ! in_array( $host, $hosts, true ) ) {
 				continue;
@@ -81,8 +82,7 @@ final class Registry {
 	 */
 	public function resolve_for_script_url( string $url, string $host ): array {
 		foreach ( $this->providers as $descriptor ) {
-			$descriptor = Provider::normalize( $descriptor );
-			$hosts      = isset( $descriptor['match']['script_host'] )
+			$hosts = isset( $descriptor['match']['script_host'] )
 				? (array) $descriptor['match']['script_host'] : array();
 
 			if ( in_array( $host, $hosts, true ) ) {

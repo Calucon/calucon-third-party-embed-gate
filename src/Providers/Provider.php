@@ -49,6 +49,15 @@ final class Provider {
 				// tag (e.g. Strava's data-embed-type/data-embed-id).
 				// fn( array $companion_attributes ): ?string
 				'companion_fallback' => null,
+				// Script strategy only: class names identifying the provider's
+				// companion element (blockquote.twitter-tweet, div.fb-post).
+				// Fallback links are harvested ONLY from a matching companion —
+				// never from whatever element happens to precede the script.
+				'companion_class'    => array(),
+				// Sibling CDN hosts performance plugins preconnect/preload for
+				// this provider (i.ytimg.com, pbs.twimg.com). Not gated
+				// themselves — used to scrub resource hints (§9.14).
+				'hint_hosts'         => array(),
 			),
 			$descriptor
 		);
