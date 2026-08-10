@@ -362,16 +362,69 @@
 			if ( links.length && ! container.getAttribute( 'data-cg-fallback' ) ) {
 				container.setAttribute( 'data-cg-fallback', links[ links.length - 1 ].getAttribute( 'href' ) || '' );
 			}
-			container.removeChild( panel );
 		}
-		// The poster image goes with the panel — left in place it would sit
-		// behind (or, grid-stacked, on top of) the activated embed.
-		var imgs = container.getElementsByTagName( 'img' );
-		for ( var j = imgs.length - 1; j >= 0; j-- ) {
-			if ( hasClass( imgs[ j ], 'cg-embed__poster' ) && imgs[ j ].parentNode === container ) {
-				container.removeChild( imgs[ j ] );
+		// The panel goes, and the poster image goes with it — left in place
+		// it would sit behind (or, grid-stacked, on top of) the activated
+		// embed. Removed nodes are stashed IN DOCUMENT ORDER so a CMP-bridge
+		// revocation (§6.4) can restore the placeholder exactly as the
+		// server rendered it.
+		var stash    = [];
+		var children = container.childNodes;
+		for ( var j = 0; j < children.length; j++ ) {
+			var child = children[ j ];
+			if ( child === panel || ( child.nodeType === 1 && child.nodeName === 'IMG' && hasClass( child, 'cg-embed__poster' ) ) ) {
+				stash.push( child );
 			}
 		}
+		for ( var k = 0; k < stash.length; k++ ) {
+			container.removeChild( stash[ k ] );
+		}
+		container._cgStash = stash;
+	}
+
+	// Undo a bridge activation (§6.4): remove the built frame, restore the
+	// stashed panel and poster, and hand the container back to the gate.
+	// Only ever called for containers the BRIDGE activated — a visitor's own
+	// click is a separate, more specific consent that a category withdrawal
+	// in the CMP does not override.
+	function restorePanel( container ) {
+		var nodes = container._cgStash || [];
+		var frames = [];
+		var children = container.childNodes;
+		for ( var i = 0; i < children.length; i++ ) {
+			var child = children[ i ];
+			if ( child.nodeType !== 1 ) {
+				continue;
+			}
+			var name = child.nodeName;
+			if ( name === 'IFRAME' || name === 'EMBED' || name === 'OBJECT'
+				|| ( name === 'IMG' && ! hasClass( child, 'cg-embed__poster' ) ) ) {
+				frames.push( child );
+			}
+		}
+		for ( var j = 0; j < frames.length; j++ ) {
+			container.removeChild( frames[ j ] );
+		}
+		// Re-insert before the live-region status span (appended during
+		// activation), keeping the restored DOM in server order.
+		var status = null;
+		var spans  = container.getElementsByTagName( 'span' );
+		for ( var k = 0; k < spans.length; k++ ) {
+			if ( hasClass( spans[ k ], 'cg-embed__status' ) ) {
+				status = spans[ k ];
+				break;
+			}
+		}
+		for ( var l = 0; l < nodes.length; l++ ) {
+			container.insertBefore( nodes[ l ], status );
+		}
+		container._cgStash = null;
+		container.removeAttribute( 'data-cg-activated' );
+		container.removeAttribute( 'data-cg-bridged' );
+		container.className = ( ' ' + container.className + ' ' )
+			.replace( ' cg-embed--active ', ' ' )
+			.replace( /^\s+|\s+$/g, '' );
+		setStatus( container, '' );
 	}
 
 	function activateScript( container, payload, focus ) {
@@ -439,6 +492,13 @@
 		// a memory-restored activation only reads and re-stores nothing.
 		if ( options.remember ) {
 			rememberConsent( container, payload );
+		}
+
+		// A CMP-bridge activation (§6.4) is marked so a later withdrawal in
+		// the CMP can re-gate exactly what the bridge loaded — and nothing
+		// the visitor activated by their own click.
+		if ( options.bridged ) {
+			container.setAttribute( 'data-cg-bridged', '1' );
 		}
 
 		if ( payload.strategy === 'script' ) {
@@ -539,4 +599,79 @@
 	} else {
 		restoreFromMemory();
 	}
+
+	// ---- CMP bridge surface (§6.4) ------------------------------------
+	// Consumed by assets/js/cmp-bridge.js, which is only enqueued when the
+	// site enabled the bridge AND a tested consent platform is installed.
+	// Grants activate without moving focus (no user gesture on this page)
+	// and without writing consent memory — the CMP owns that state, and the
+	// plugin stores nothing (invariant 3). Everything here fails closed:
+	// no querySelectorAll, no payload, no stash — nothing happens.
+
+	function bridgeEach( callback ) {
+		if ( ! document.querySelectorAll ) {
+			return;
+		}
+		var containers = document.querySelectorAll( '.cg-embed[data-cg-payload]' );
+		for ( var i = 0; i < containers.length; i++ ) {
+			var container = containers[ i ];
+			if ( container.getAttribute( 'data-cg-activated' ) === '1' ) {
+				continue;
+			}
+			var payload;
+			try {
+				payload = JSON.parse( container.getAttribute( 'data-cg-payload' ) || '' );
+			} catch ( e ) {
+				continue;
+			}
+			callback( container, payload );
+		}
+	}
+
+	function bridgeGrant( container ) {
+		activate( container, { focus: false, remember: false, bridged: true } );
+	}
+
+	function bridgeRegate( predicate ) {
+		if ( ! document.querySelectorAll ) {
+			return;
+		}
+		var bridged = document.querySelectorAll( '.cg-embed[data-cg-bridged="1"]' );
+		var reload  = false;
+		for ( var i = 0; i < bridged.length; i++ ) {
+			var container = bridged[ i ];
+			if ( predicate && ! predicate( container ) ) {
+				continue;
+			}
+			var payload;
+			try {
+				payload = JSON.parse( container.getAttribute( 'data-cg-payload' ) || '' );
+			} catch ( e ) {
+				payload = {};
+			}
+			if ( payload.strategy === 'script' ) {
+				// A loaded SDK cannot be unloaded, and activating it removed
+				// the companion placeholders from the DOM. Reloading is the
+				// only honest revocation — the same conclusion the CMPs
+				// themselves reached (Complianz forces a reload on revoke).
+				reload = true;
+				continue;
+			}
+			restorePanel( container );
+		}
+		if ( reload ) {
+			window.location.reload();
+		}
+	}
+
+	window.consentGateBridge = {
+		each: bridgeEach,
+		grant: bridgeGrant,
+		grantAll: function () {
+			bridgeEach( function ( container ) {
+				bridgeGrant( container );
+			} );
+		},
+		regate: bridgeRegate
+	};
 }() );

@@ -14,6 +14,8 @@ namespace ConsentGate;
 use ConsentGate\Admin\BlockEditor;
 use ConsentGate\Admin\SettingsPage;
 use ConsentGate\Cli\Commands as CliCommands;
+use ConsentGate\Cmp\BridgeConfig;
+use ConsentGate\Cmp\Detector;
 use ConsentGate\Detection\EmbedObjectRule;
 use ConsentGate\Detection\EmbedStripper;
 use ConsentGate\Detection\HostMatcher;
@@ -557,6 +559,15 @@ final class Plugin {
 			array(),
 			CONSENT_GATE_VERSION
 		);
+		// The §6.4 bridge is a separate file so the default build (bridge
+		// off) ships not a byte of CMP code to visitors.
+		wp_register_script(
+			'consent-gate-cmp',
+			plugins_url( 'assets/js/cmp-bridge.js', CONSENT_GATE_FILE ),
+			array( 'consent-gate' ),
+			CONSENT_GATE_VERSION,
+			true
+		);
 
 		// Consent-memory config (§6.2): only shipped when the site enabled
 		// memory. The default build stores nothing and needs no config.
@@ -651,7 +662,29 @@ final class Plugin {
 			$config['scope']        = $consent['scope'];
 			$config['durationDays'] = $consent['duration_days'];
 		}
+		$cmp = $this->cmp_bridge_config();
+		if ( null !== $cmp ) {
+			$config['cmp'] = $cmp;
+		}
 		return (string) wp_json_encode( $config );
+	}
+
+	/**
+	 * The §6.4 bridge config, or null when the bridge stays off — because
+	 * the option is off, or because no platform from the tested list is
+	 * installed (fail closed; an untested CMP gets no adapter).
+	 *
+	 * The filter exists for the documented escape hatches: overriding the
+	 * category a site's CMP files embeds under, or adding TCF vendor ids
+	 * for custom providers. Returning null (or anything non-array) from it
+	 * disables the bridge entirely.
+	 *
+	 * @return array|null
+	 */
+	public function cmp_bridge_config(): ?array {
+		$config = BridgeConfig::build( Detector::detected(), $this->options['cmp'] );
+		$config = apply_filters( 'consent_gate_cmp_config', $config, $this->options['cmp'] );
+		return is_array( $config ) ? $config : null;
 	}
 
 	/**
@@ -660,6 +693,9 @@ final class Plugin {
 	private function enqueue_assets(): void {
 		wp_enqueue_script( 'consent-gate' );
 		wp_enqueue_style( 'consent-gate' );
+		if ( null !== $this->cmp_bridge_config() ) {
+			wp_enqueue_script( 'consent-gate-cmp' );
+		}
 	}
 
 	/**

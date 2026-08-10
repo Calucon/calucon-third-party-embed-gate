@@ -77,6 +77,8 @@ Shape (see `src/Support/Options.php` for the authoritative schema):
   = inherit theme)
 - `consent`: `memory` (`off|session|persistent`), `scope`
   (`embed|provider|all`), `duration_days` (1–730)
+- `cmp`: `bridge` (bool, off by default), `borlabs_group` (slug, default
+  `external-media`), `tcf` (bool, experimental)
 
 Cache plugins are flushed automatically when this option changes.
 
@@ -145,8 +147,54 @@ All hooks: `consent_gate_providers`, `consent_gate_provider_for_url`,
 `consent_gate_own_hosts`, `consent_gate_placeholder_html`,
 `consent_gate_payload`, `consent_gate_note_text`,
 `consent_gate_action_text`, `consent_gate_fallback_url`,
-`consent_gate_www_equivalence`; actions `consent_gate_before_render`,
-`consent_gate_embed_gated`.
+`consent_gate_www_equivalence`, `consent_gate_cmp_config`; actions
+`consent_gate_before_render`, `consent_gate_embed_gated`.
+
+## The consent platform bridge
+
+With `cmp.bridge` enabled and a **tested** platform installed (WP Consent
+API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie
+Banner), the front end loads `assets/js/cmp-bridge.js`, which reads the
+platform's documented public JS API: an affirmative grant for the embeds'
+category auto-activates gated embeds, a withdrawal re-gates what the
+bridge (not a visitor's own click) activated. Everything is client-side
+and read-only — the server always renders the gated placeholder (cache
+safety), the bridge writes nothing to the platform, and any missing or
+silent platform means gating stands.
+
+`consent_gate_cmp_config` filters the config handed to the script (or
+disables the bridge by returning `null`):
+
+```php
+// This site's CMP files embeds under a custom category.
+add_filter( 'consent_gate_cmp_config', function ( $config ) {
+	if ( is_array( $config ) ) {
+		$config['category'] = 'external-media';
+	}
+	return $config;
+} );
+
+// Add a TCF Global Vendor List id for a custom provider (tcf flag on).
+add_filter( 'consent_gate_cmp_config', function ( $config ) {
+	if ( is_array( $config ) && isset( $config['tcf'] ) ) {
+		$config['tcf']['vendors']['example-videos'] = 123;
+	}
+	return $config;
+} );
+```
+
+If you prefer the platform's own content blocker for a specific provider,
+disable that provider under **Providers** — Consent Gate then passes its
+embeds through and the platform's blocker is the only gate. Do not run
+both gates plus the bridge for the same provider expecting them to stack;
+one authority per embed is the design.
+
+Google Consent Mode v2 is deliberately not a bridge source: it has no
+public read API, it is written by consent platforms for Google tags, and
+no consent-mode signal governs iframes. Bridge the platform instead — it
+is where Consent Mode's state comes from. The plugin also never sends
+`gtag('consent', …)` updates; a click on one embed is not a site-wide
+marketing consent.
 
 ## Styling
 
