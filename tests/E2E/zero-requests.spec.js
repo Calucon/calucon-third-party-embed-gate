@@ -1,0 +1,102 @@
+// The headline test (PLAN.md §10.3): the entire product is that nothing
+// third-party loads before the click. This file is never skipped and never
+// marked flaky — if it is red, the product claim is false.
+// @ts-check
+const { test, expect } = require( '@playwright/test' );
+
+const OWN_HOSTS = [ '127.0.0.1', 'localhost' ];
+
+function trackThirdPartyRequests( page ) {
+	const offenders = [];
+	page.on( 'request', ( request ) => {
+		const host = new URL( request.url() ).hostname;
+		if ( ! OWN_HOSTS.includes( host ) ) {
+			offenders.push( request.url() );
+		}
+	} );
+	return offenders;
+}
+
+test( 'zero third-party requests before interaction', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+
+	await page.goto( '/page/gated' );
+	await page.waitForLoadState( 'networkidle' );
+
+	expect( offenders, 'INVARIANT 1 VIOLATED — third-party requests before any click' ).toEqual( [] );
+
+	// Four cross-origin embeds gated, the same-origin iframe untouched.
+	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 4 );
+	await expect( page.locator( 'iframe[src="/frame.html"]' ) ).toHaveCount( 1 );
+	expect( await page.locator( 'iframe' ).count() ).toBe( 1 );
+} );
+
+test( 'nothing is stored before consent', async ( { page } ) => {
+	// Invariant 3: the plugin itself must not write to terminal equipment.
+	await page.goto( '/page/gated' );
+	await page.waitForLoadState( 'networkidle' );
+
+	const storage = await page.evaluate( () => ( {
+		localStorage: window.localStorage.length,
+		sessionStorage: window.sessionStorage.length,
+		cookies: document.cookie,
+	} ) );
+
+	expect( storage ).toEqual( { localStorage: 0, sessionStorage: 0, cookies: '' } );
+} );
+
+test( 'click inserts the iframe, with safelisted attributes only, and moves focus to the container', async ( { page } ) => {
+	// After the click the request to the provider is legitimate — but this
+	// test only checks the built node, so abort those requests at the router.
+	await page.route( '**', ( route ) => {
+		const host = new URL( route.request().url() ).hostname;
+		return OWN_HOSTS.includes( host ) ? route.continue() : route.abort();
+	} );
+
+	await page.goto( '/page/gated' );
+
+	const first = page.locator( '.cg-embed' ).first();
+	const button = first.locator( '.cg-embed__button' );
+
+	// WCAG 2.5.8: hit area at least 24×24 CSS px.
+	const box = await button.boundingBox();
+	expect( box.width ).toBeGreaterThanOrEqual( 24 );
+	expect( box.height ).toBeGreaterThanOrEqual( 24 );
+
+	await button.click();
+
+	const frame = first.locator( 'iframe' );
+	await expect( frame ).toHaveCount( 1 );
+	await expect( frame ).toHaveAttribute( 'src', 'https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed' );
+	await expect( frame ).toHaveAttribute( 'title', 'Kolkja Cycling' );
+	await expect( frame ).toHaveAttribute( 'allowfullscreen', '' );
+	// Invariant 8: autoplay never survives the rebuild.
+	await expect( frame ).toHaveAttribute( 'allow', 'accelerometer; encrypted-media' );
+	// Invariant 7 / §5.2: style must not be carried over.
+	await expect( frame ).not.toHaveAttribute( 'style', /./ );
+
+	// §8: focus lands on the container, never falls back to <body>.
+	const focused = await page.evaluate( () => document.activeElement && document.activeElement.className );
+	expect( String( focused ) ).toContain( 'cg-embed' );
+
+	// The panel is gone; the other embeds stay gated.
+	await expect( first.locator( '.cg-embed__panel' ) ).toHaveCount( 0 );
+	await expect( page.locator( '.cg-embed__panel' ) ).toHaveCount( 3 );
+} );
+
+test( 'placeholder works with JavaScript disabled: real fallback link, still zero third-party requests', async ( { browser } ) => {
+	const context = await browser.newContext( { javaScriptEnabled: false } );
+	const page = await context.newPage();
+	const offenders = trackThirdPartyRequests( page );
+
+	await page.goto( '/page/gated' );
+
+	// Invariant 2: a visitor without JavaScript gets a real, working link.
+	const link = page.locator( '.cg-embed__fallback a' ).first();
+	await expect( link ).toBeVisible();
+	await expect( link ).toHaveAttribute( 'href', 'https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed' );
+	await expect( link ).toHaveAttribute( 'rel', 'noopener nofollow' );
+
+	expect( offenders ).toEqual( [] );
+	await context.close();
+} );
