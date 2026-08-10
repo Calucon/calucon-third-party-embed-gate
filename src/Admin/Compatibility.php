@@ -9,6 +9,8 @@
 
 namespace ConsentGate\Admin;
 
+use ConsentGate\Cmp\Detector;
+
 /**
  * Detection is by constants/classes the plugins themselves define — cheap,
  * and no dependency on is_plugin_active() or the plugins screen.
@@ -16,7 +18,9 @@ namespace ConsentGate\Admin;
 final class Compatibility {
 
 	/**
-	 * @return array[] Rows: name, kind ('cache'|'cmp'|'builder').
+	 * @return array[] Rows: name, kind ('cache'|'cmp'|'builder'); CMP rows
+	 *                 carry 'tested' — whether the platform is on the §6.4
+	 *                 bridge list.
 	 */
 	public static function detect(): array {
 		$found = array();
@@ -40,20 +44,21 @@ final class Compatibility {
 			}
 		}
 
-		$cmps = array(
-			'Cookiebot'          => class_exists( 'Cookiebot_WP' ) || defined( 'CYBOT_COOKIEBOT_PLUGIN_VERSION' ),
-			'Complianz'          => defined( 'cmplz_version' ) || function_exists( 'cmplz_has_consent' ),
-			'Borlabs Cookie'     => defined( 'BORLABS_COOKIE_VERSION' ) || class_exists( '\\BorlabsCookie\\Cookie\\Frontend\\Frontend' ),
-			'Real Cookie Banner' => defined( 'RCB_FILE' ) || class_exists( '\\DevOwl\\RealCookieBanner\\Core' ),
-			'CookieYes'          => defined( 'CLI_SETTINGS_FIELD' ) || defined( 'COOKIEYES_PLUGIN_FILENAME' ),
-		);
-		foreach ( $cmps as $name => $active ) {
-			if ( $active ) {
-				$found[] = array(
-					'name' => $name,
-					'kind' => 'cmp',
-				);
-			}
+		// CMP rows come from the §6.4 bridge detector — one source of truth
+		// for "which platform is installed and is it on the tested list".
+		foreach ( Detector::detected() as $cmp ) {
+			$found[] = array(
+				'name'   => $cmp['label'],
+				'kind'   => 'cmp',
+				'tested' => true,
+			);
+		}
+		foreach ( Detector::detected_untested() as $cmp ) {
+			$found[] = array(
+				'name'   => $cmp['label'],
+				'kind'   => 'cmp',
+				'tested' => false,
+			);
 		}
 
 		$builders = array(

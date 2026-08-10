@@ -70,6 +70,20 @@ final class Options {
 				'scope'         => 'provider', // embed | provider | all.
 				'duration_days' => 180,        // Persistent lifetime.
 			),
+			'cmp'        => array(
+				// Consent platform bridge (§6.4). Off by default: without it,
+				// an installed CMP is detected but ignored — gating stands
+				// regardless of its choices (fail closed). Enabled, a grant
+				// for the embeds' category in a TESTED platform auto-loads
+				// gated embeds client-side; withdrawal re-gates them.
+				'bridge'        => false,
+				// Borlabs Cookie service groups are site-defined; this names
+				// the group whose consent covers embedded content.
+				'borlabs_group' => 'external-media',
+				// IAB TCF v2.2 generic bridge, experimental — only providers
+				// with a Global Vendor List entry can ever be granted.
+				'tcf'           => false,
+			),
 		);
 	}
 
@@ -157,6 +171,23 @@ final class Options {
 			}
 			if ( isset( $c['duration_days'] ) && is_numeric( $c['duration_days'] ) ) {
 				$clean['consent']['duration_days'] = max( 1, min( 730, (int) $c['duration_days'] ) );
+			}
+		}
+
+		if ( isset( $raw['cmp'] ) && is_array( $raw['cmp'] ) ) {
+			$b = $raw['cmp'];
+			foreach ( array( 'bridge', 'tcf' ) as $flag ) {
+				if ( array_key_exists( $flag, $b ) ) {
+					$clean['cmp'][ $flag ] = self::truthy( $b[ $flag ] );
+				}
+			}
+			if ( isset( $b['borlabs_group'] ) && is_string( $b['borlabs_group'] ) ) {
+				$group = strtolower( trim( $b['borlabs_group'] ) );
+				// Borlabs group ids are slugs; anything else would end up
+				// quoted into the inline config JSON.
+				if ( preg_match( '/^[a-z0-9_-]{1,64}$/', $group ) ) {
+					$clean['cmp']['borlabs_group'] = $group;
+				}
 			}
 		}
 

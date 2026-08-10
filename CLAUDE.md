@@ -9,10 +9,18 @@ nothing third-party loads before a click.** It is a technical measure, not a
 consent management platform, and it never claims compliance.
 
 The full design rationale lives in `PLAN.md`; this file is the traps and the
-rules. Milestone status: M1–M7 are implemented, with two deliberate gaps —
-CMP bridges (§6.4, need real-CMP testing; gating stays the fail-closed
-default) and the WordPress.org submission itself (a human act). See PLAN.md
-§13. Thumbnails shipped as **owner-supplied posters** (media-library image
+rules. Milestone status: M1–M7 are implemented, including the §6.4 CMP
+bridge (opt-in, client-side, fail-closed; adapters for the tested list are
+exercised in CI against simulations of each platform's documented public
+API — `tests/E2E/cmp-bridge.spec.js`; validation against real CMP installs
+remains a manual follow-up). One deliberate gap: the WordPress.org
+submission itself (a human act). See PLAN.md §13. The bridge never touches
+Google Consent Mode v2 (no public read API; written by CMPs for Google
+tags; no consent-mode signal governs iframes) — bridging the CMP itself is
+the reliable read of the same choice. Never "fix" the WP Consent API
+adapter to trust `wp_has_consent()` without a consent type set: that
+function is fail-open by design and would ungate everything when the CMP
+deactivates. Thumbnails shipped as **owner-supplied posters** (media-library image
 per block, own-host-validated, `$ctx['poster']`); the §5.4 server-side
 auto-fetch was **rejected** — it is an outbound request, and a cached
 provider thumbnail goes stale with no invalidation signal. Never propose it
@@ -50,7 +58,8 @@ provider thumbnail goes stale with no invalidation signal. Never propose it
 | `src/Cli/Commands.php` | Read-only WP-CLI (`scan`, `providers`); scan renders via `Plugin::render_ungated()` — plain `the_content` would gate the markup before the scanner sees it |
 | `docs/customizing.md` | Site-level customization reference, ships in the zip; update it when hooks/descriptor keys change |
 | `assets/js/gate.js` | Dependency-free ES5; no build step |
-| `templates/`, `Admin/`, `Cmp/`, … | Later milestones (PLAN.md §13) |
+| `src/Cmp/{Detector,BridgeConfig}.php` + `assets/js/cmp-bridge.js` | §6.4 CMP bridge: tested-platform detection, pure config builder (fail-closed rules pinned in `BridgeConfigTest`), ES5 adapters; one adapter per page, native before generic |
+| `templates/`, `Admin/`, … | Later milestones (PLAN.md §13) |
 
 **Hard rule:** `Detection/`, `Providers/` and `Rendering/` are WordPress-free —
 plain strings and arrays in, plain strings and arrays out. WordPress filters

@@ -192,9 +192,15 @@ final class OutputBuffer {
 				$js .= '<script id="consent-gate-js-before">window.consentGateConfig = ' . $config . ';</script>';
 			}
 			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- this runs on shutdown, after wp_footer was rendered into the buffer; wp_enqueue_script() is a no-op here.
-			$js  .= '<script id="consent-gate-js" src="'
+			$js .= '<script id="consent-gate-js" src="'
 				. esc_url( plugins_url( 'assets/js/gate.js', CONSENT_GATE_FILE ) . '?ver=' . $version )
 				. '" defer></script>';
+			if ( null !== $this->plugin->cmp_bridge_config() ) {
+				// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- same shutdown constraint as gate.js above.
+				$js .= '<script id="consent-gate-cmp-js" src="'
+					. esc_url( plugins_url( 'assets/js/cmp-bridge.js', CONSENT_GATE_FILE ) . '?ver=' . $version )
+					. '" defer></script>';
+			}
 			$foot = strripos( $buffer, '</body>' );
 			if ( false !== $foot ) {
 				$buffer = substr( $buffer, 0, $foot ) . $js . substr( $buffer, $foot );

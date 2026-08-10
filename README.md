@@ -6,9 +6,9 @@ Hold third-party embeds until the visitor asks for them, so nothing is
 contacted and nothing is stored before a click. No cookie banner, no
 subscription, no consent platform.
 
-**Status: M1–M6 implemented** (M5 without the CMP bridges — see below). The
-core claim — zero third-party requests before interaction — is enforced by
-an end-to-end test that is never skipped.
+**Status: M1–M7 implemented**, including the §6.4 CMP bridge (see below).
+The core claim — zero third-party requests before interaction — is enforced
+by an end-to-end test that is never skipped.
 
 ## What it does
 
@@ -33,6 +33,13 @@ an end-to-end test that is never skipped.
 - Optional, **off by default**: consent memory in the visitor's browser
   (nothing is ever written before the first click), with a withdrawal
   control via `[consent_gate_withdraw]`.
+- Optional, **off by default**: a bridge to an installed consent platform —
+  when a **tested** platform (WP Consent API, Complianz, Cookiebot,
+  CookieYes, Borlabs Cookie 3, Real Cookie Banner) reports consent for the
+  embeds' category, gated embeds load without a second click, and a
+  withdrawal there re-gates them. Read-only, client-side, and fail-closed:
+  an untested platform, or no answer, means gating stands. An IAB TCF v2.2
+  signal can be honoured behind its own experimental flag.
 - **Never phones home.** No telemetry, no CDN assets, no outbound request on
   any path.
 
@@ -67,9 +74,15 @@ pass-through case is asserted byte-identical.
 
 ## Deliberately not (yet) included
 
-- **CMP bridges** (Complianz, Borlabs, …): shipping an untested bridge is
-  worse than none — without one the plugin simply keeps gating, which is the
-  fail-closed behaviour PLAN.md §6.4 requires.
+- **Bridges to untested consent platforms**: the bridge works only with the
+  platforms it was tested against (each adapter is exercised in CI against a
+  simulation of that platform's documented public API). Anything else keeps
+  the fail-closed behaviour PLAN.md §6.4 requires: the plugin simply keeps
+  gating. In the same spirit the bridge never reads or writes **Google
+  Consent Mode v2** directly — it has no public read API, it is written by
+  consent platforms for Google tags, and no consent-mode signal governs
+  iframes; bridging the platform that sets it is the reliable read of the
+  same visitor choice.
 - **Auto-fetched provider thumbnails**: rejected, not merely postponed.
   Downloading a poster from the provider is an outbound request — the thing
   this plugin exists to prevent — and a cached copy goes stale with no

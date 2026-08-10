@@ -11,6 +11,7 @@
 
 namespace ConsentGate\Admin;
 
+use ConsentGate\Cmp\Detector;
 use ConsentGate\Support\Csp;
 use ConsentGate\Support\Options;
 
@@ -375,6 +376,8 @@ final class SettingsPage {
 					</tr>
 				</table>
 
+				<?php $this->render_cmp_bridge( $options ); ?>
+
 				</div>
 
 				<?php submit_button(); ?>
@@ -429,6 +432,90 @@ final class SettingsPage {
 	}
 
 	/**
+	 * The §6.4 consent-platform bridge settings, inside the Consent tab.
+	 *
+	 * The bridge is offered only for platforms on the tested list; the list
+	 * itself is printed so the promise is explicit — an untested platform
+	 * is simply not bridged (fail closed), never half-bridged.
+	 *
+	 * @param array $options Sanitised option tree.
+	 * @return void
+	 */
+	private function render_cmp_bridge( array $options ): void {
+		$detected = Detector::detected();
+		$labels   = array();
+		foreach ( Detector::bridgeable() as $row ) {
+			$labels[] = $row['label'];
+		}
+		?>
+		<h2><?php esc_html_e( 'Consent platform bridge', 'consent-gate' ); ?></h2>
+		<p class="description">
+			<?php esc_html_e( 'If a consent platform (cookie banner) runs on this site, Consent Gate can honour its decision: once the platform reports consent for the embeds\' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform\'s state, stores nothing itself, and works only with platforms it was tested against; with any other platform, and whenever the platform gives no answer, gating stands unchanged (fail closed).', 'consent-gate' ); ?>
+		</p>
+		<p class="description">
+			<?php
+			echo esc_html(
+				sprintf(
+					/* translators: %s: comma-separated list of consent platforms. */
+					__( 'Tested and interoperable: %s.', 'consent-gate' ),
+					implode( ', ', $labels )
+				)
+			);
+			?>
+		</p>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Bridge', 'consent-gate' ); ?></th>
+				<td>
+					<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[cmp][bridge]" value="0">
+					<label for="cg-cmp-bridge">
+						<input type="checkbox" id="cg-cmp-bridge" name="<?php echo esc_attr( Options::OPTION ); ?>[cmp][bridge]" value="1" <?php checked( $options['cmp']['bridge'] ); ?>>
+						<?php esc_html_e( 'Load embeds automatically when the detected consent platform reports consent for them', 'consent-gate' ); ?>
+					</label>
+					<p class="description">
+						<?php
+						if ( array() === $detected ) {
+							esc_html_e( 'No tested consent platform is currently detected. The setting can stay enabled; it takes effect as soon as one is installed.', 'consent-gate' );
+						} else {
+							$names = array();
+							foreach ( $detected as $cmp ) {
+								$names[] = $cmp['label'];
+							}
+							echo esc_html(
+								sprintf(
+									/* translators: %s: comma-separated list of detected consent platforms. */
+									__( 'Detected now: %s.', 'consent-gate' ),
+									implode( ', ', $names )
+								)
+							);
+						}
+						?>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="cg-cmp-borlabs-group"><?php esc_html_e( 'Borlabs Cookie service group', 'consent-gate' ); ?></label></th>
+				<td>
+					<input type="text" id="cg-cmp-borlabs-group" name="<?php echo esc_attr( Options::OPTION ); ?>[cmp][borlabs_group]" value="<?php echo esc_attr( $options['cmp']['borlabs_group'] ); ?>" class="regular-text" pattern="[a-z0-9_-]{1,64}">
+					<p class="description"><?php esc_html_e( 'Only used with Borlabs Cookie, whose consent groups are defined per site: the ID of the group that covers embedded content. The default installation calls it "external-media".', 'consent-gate' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'IAB TCF (experimental)', 'consent-gate' ); ?></th>
+				<td>
+					<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[cmp][tcf]" value="0">
+					<label for="cg-cmp-tcf">
+						<input type="checkbox" id="cg-cmp-tcf" name="<?php echo esc_attr( Options::OPTION ); ?>[cmp][tcf]" value="1" <?php checked( $options['cmp']['tcf'] ); ?>>
+						<?php esc_html_e( 'Also honour an IAB TCF v2.2 signal (sites running an ad-industry consent framework)', 'consent-gate' ); ?>
+					</label>
+					<p class="description"><?php esc_html_e( 'Grants require both the storage purpose and the provider\'s registered vendor consent; providers without a Global Vendor List entry always keep the click. Leave this off unless your site serves programmatic advertising.', 'consent-gate' ); ?></p>
+				</td>
+			</tr>
+		</table>
+		<?php
+	}
+
+	/**
 	 * Compatibility (§7.1): the detected CMP, cache plugin and page builder,
 	 * and what the plugin decided to do about each.
 	 *
@@ -439,10 +526,16 @@ final class SettingsPage {
 		$options  = Options::sanitize( get_option( Options::OPTION, Options::defaults() ) );
 		$messages = array(
 			'cache'   => __( 'Detected. Its page cache is flushed automatically when Consent Gate settings change; after activating or deactivating Consent Gate itself, clear it once by hand if pages look stale.', 'consent-gate' ),
-			'cmp'     => __( 'Detected. Consent Gate has no bridge to this consent platform yet and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click.', 'consent-gate' ),
 			'builder' => $options['detection']['output_buffer']
 				? __( 'Detected. Whole-page gating is enabled, so this builder\'s embeds are covered.', 'consent-gate' )
 				: __( 'Detected. Page builders render outside the content filters — if its embeds are not being gated, enable "Gate the whole page output" under Detection.', 'consent-gate' ),
+		);
+		// CMP rows (§6.4) depend on the row itself: tested platforms can be
+		// bridged; anything else keeps the fail-closed default.
+		$cmp_messages = array(
+			'active'    => __( 'Detected, bridge active: when this platform reports consent for the embeds\' category, gated embeds load without a second click, and a withdrawal re-gates them. If the platform does not answer, gating stands (fail closed). Prefer its own blocker for a provider? Disable that provider under Providers and Consent Gate steps aside for it.', 'consent-gate' ),
+			'available' => __( 'Detected and tested for interoperation. Gating currently ignores its choices — the fail-closed default. Enable the consent platform bridge under Consent to load embeds automatically once this platform reports consent for them.', 'consent-gate' ),
+			'untested'  => __( 'Detected. Consent Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click.', 'consent-gate' ),
 		);
 		?>
 		<h2 id="cg-compatibility"><?php esc_html_e( 'Compatibility', 'consent-gate' ); ?></h2>
@@ -452,8 +545,19 @@ final class SettingsPage {
 			<table class="widefat striped" style="max-width: 60rem;">
 				<thead><tr><th scope="col"><?php esc_html_e( 'Detected', 'consent-gate' ); ?></th><th scope="col"><?php esc_html_e( 'What Consent Gate does', 'consent-gate' ); ?></th></tr></thead>
 				<tbody>
-				<?php foreach ( $found as $row ) : ?>
-					<tr><td><?php echo esc_html( $row['name'] ); ?></td><td><?php echo esc_html( $messages[ $row['kind'] ] ); ?></td></tr>
+				<?php
+				foreach ( $found as $row ) :
+					if ( 'cmp' === $row['kind'] ) {
+						if ( empty( $row['tested'] ) ) {
+							$message = $cmp_messages['untested'];
+						} else {
+							$message = $options['cmp']['bridge'] ? $cmp_messages['active'] : $cmp_messages['available'];
+						}
+					} else {
+						$message = $messages[ $row['kind'] ];
+					}
+					?>
+					<tr><td><?php echo esc_html( $row['name'] ); ?></td><td><?php echo esc_html( $message ); ?></td></tr>
 				<?php endforeach; ?>
 				</tbody>
 			</table>

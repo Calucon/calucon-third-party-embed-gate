@@ -163,4 +163,36 @@ final class OptionsTest extends TestCase {
 
 		self::assertSame( array( 'widgets.example.com', 'tracking.example.org' ), $clean['detection']['always_gate'] );
 	}
+
+	public function test_cmp_bridge_is_off_by_default(): void {
+		$defaults = Options::defaults();
+
+		self::assertFalse( $defaults['cmp']['bridge'] );
+		self::assertFalse( $defaults['cmp']['tcf'] );
+		self::assertSame( 'external-media', $defaults['cmp']['borlabs_group'] );
+	}
+
+	public function test_cmp_flags_become_booleans(): void {
+		$clean = Options::sanitize(
+			array(
+				'cmp' => array(
+					'bridge' => '1',
+					'tcf'    => '0',
+				),
+			)
+		);
+
+		self::assertTrue( $clean['cmp']['bridge'] );
+		self::assertFalse( $clean['cmp']['tcf'] );
+	}
+
+	public function test_cmp_borlabs_group_accepts_slugs_only(): void {
+		$clean = Options::sanitize( array( 'cmp' => array( 'borlabs_group' => 'Marketing-Group_2' ) ) );
+		self::assertSame( 'marketing-group_2', $clean['cmp']['borlabs_group'] );
+
+		// Anything that could break out of the inline config JSON falls
+		// back to the default rather than travelling to the page.
+		$bad = Options::sanitize( array( 'cmp' => array( 'borlabs_group' => 'x"};alert(1);//' ) ) );
+		self::assertSame( 'external-media', $bad['cmp']['borlabs_group'] );
+	}
 }

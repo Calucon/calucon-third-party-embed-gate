@@ -54,6 +54,12 @@ if ( '/assets/gate.css' === $uri ) {
 	return true;
 }
 
+if ( '/assets/cmp-bridge.js' === $uri ) {
+	header( 'Content-Type: application/javascript' );
+	readfile( $root . '/assets/js/cmp-bridge.js' );
+	return true;
+}
+
 if ( '/frame.html' === $uri ) {
 	header( 'Content-Type: text/html; charset=utf-8' );
 	echo '<!doctype html><meta charset="utf-8"><title>Same-origin frame</title><p>local frame</p>';
@@ -209,16 +215,120 @@ if ( '/page/collision' === $uri ) {
 	return true;
 }
 
+if ( 0 === strpos( $uri, '/page/cmp-' ) ) {
+	// §6.4 CMP-bridge pages: the real pipeline and the real bridge script
+	// against SIMULATED consent-platform APIs — each stub implements the
+	// documented public surface of its platform, with uniform test controls
+	// (__cmpGrant / __cmpRevoke) driven from the spec.
+	$cmp_case = substr( $uri, strlen( '/page/cmp-' ) );
+
+	$cmp_content = '<iframe title="Video" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>'
+		. "\n" . '<iframe src="//player.vimeo.com/video/76979871" title="Vimeo" width="640" height="360"></iframe>';
+
+	$cmp_stubs = array(
+		// Bridge configured for a platform that is NOT actually on the
+		// page — a cached config outliving a deactivated CMP. Fail closed.
+		'none'           => array(
+			'config' => array( 'adapter' => 'complianz', 'category' => 'marketing' ),
+			'stub'   => '',
+		),
+		// The WP Consent API's own fail-open shape: wp_has_consent()
+		// answers true while NO consent type was ever set by a CMP. The
+		// bridge must not trust it.
+		'trap'           => array(
+			'config' => array( 'adapter' => 'wp-consent-api', 'category' => 'marketing' ),
+			'stub'   => 'window.wp_has_consent = function () { return true; };',
+		),
+		'wp-consent-api' => array(
+			'config' => array( 'adapter' => 'wp-consent-api', 'category' => 'marketing' ),
+			'stub'   => 'window.wp_consent_type = "optin";'
+				. 'var cgGrants = {};'
+				. 'window.wp_has_consent = function (cat) { return cgGrants[cat] === true; };'
+				. 'function cgFire(cat, val) { cgGrants[cat] = (val === "allow");'
+				. ' var detail = []; detail[cat] = val;'
+				. ' document.dispatchEvent(new CustomEvent("wp_listen_for_consent_change", { detail: detail })); }'
+				. 'window.__cmpGrant = function () { cgFire("marketing", "allow"); };'
+				. 'window.__cmpRevoke = function () { cgFire("marketing", "deny"); };',
+		),
+		'complianz'      => array(
+			'config' => array( 'adapter' => 'complianz', 'category' => 'marketing' ),
+			'stub'   => 'var cgGranted = false;'
+				. 'window.cmplz_has_consent = function (cat) { return cat === "marketing" && cgGranted; };'
+				. 'window.__cmpGrant = function () { cgGranted = true;'
+				. ' document.dispatchEvent(new CustomEvent("cmplz_enable_category", { detail: { category: "marketing", categories: ["marketing"], region: "eu" } })); };'
+				. 'window.__cmpRevoke = function () { cgGranted = false;'
+				. ' document.dispatchEvent(new CustomEvent("cmplz_status_change", { detail: { category: "marketing", value: "deny", region: "eu" } })); };',
+		),
+		'cookiebot'      => array(
+			'config' => array( 'adapter' => 'cookiebot', 'category' => 'marketing' ),
+			'stub'   => 'window.Cookiebot = { consent: { marketing: false }, hasResponse: false };'
+				. 'window.__cmpGrant = function () { window.Cookiebot.consent.marketing = true; window.Cookiebot.hasResponse = true;'
+				. ' window.dispatchEvent(new CustomEvent("CookiebotOnConsentReady")); };'
+				. 'window.__cmpRevoke = function () { window.Cookiebot.consent.marketing = false;'
+				. ' window.dispatchEvent(new CustomEvent("CookiebotOnConsentReady")); };',
+		),
+		'cookieyes'      => array(
+			'config' => array( 'adapter' => 'cookieyes', 'category' => 'advertisement' ),
+			'stub'   => 'var cgCky = { activeLaw: "gdpr", categories: { necessary: true, advertisement: false }, isUserActionCompleted: false };'
+				. 'window.getCkyConsent = function () { return cgCky; };'
+				. 'window.__cmpGrant = function () { cgCky.categories.advertisement = true; cgCky.isUserActionCompleted = true;'
+				. ' document.dispatchEvent(new CustomEvent("cookieyes_consent_update", { detail: { accepted: ["advertisement"], rejected: [] } })); };'
+				. 'window.__cmpRevoke = function () { cgCky.categories.advertisement = false;'
+				. ' document.dispatchEvent(new CustomEvent("cookieyes_consent_update", { detail: { accepted: [], rejected: ["advertisement"] } })); };',
+		),
+		'borlabs'        => array(
+			'config' => array( 'adapter' => 'borlabs', 'category' => 'marketing', 'borlabsGroup' => 'external-media' ),
+			'stub'   => 'var cgGranted = false;'
+				. 'window.BorlabsCookie = { Consents: { hasConsentForServiceGroup: function (g) { return g === "external-media" && cgGranted; } } };'
+				. 'window.__cmpGrant = function () { cgGranted = true; window.dispatchEvent(new CustomEvent("borlabs-cookie-consent-saved")); };'
+				. 'window.__cmpRevoke = function () { cgGranted = false; window.dispatchEvent(new CustomEvent("borlabs-cookie-consent-saved")); };',
+		),
+		'rcb'            => array(
+			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
+			'stub'   => 'var cgResolvers = [];'
+				. 'window.consentApi = { unblock: function (url) { return new Promise(function (resolve) { cgResolvers.push(resolve); }); } };'
+				. 'window.__cmpGrant = function () { var r = cgResolvers; cgResolvers = []; for (var i = 0; i < r.length; i++) { r[i](); } };',
+		),
+		'tcf'            => array(
+			'config' => array(
+				'adapter'  => null,
+				'category' => 'marketing',
+				'tcf'      => array( 'vendors' => array( 'youtube' => 755, 'google-maps' => 755 ) ),
+			),
+			'stub'   => 'var cgListeners = []; var cgCurrent = null;'
+				. 'window.__tcfapi = function (command, version, callback) {'
+				. ' if (command === "addEventListener") { cgListeners.push(callback); if (cgCurrent) { callback(cgCurrent, true); } } };'
+				. 'function cgPush(data) { cgCurrent = data; for (var i = 0; i < cgListeners.length; i++) { cgListeners[i](data, true); } }'
+				. 'window.__cmpGrant = function () { cgPush({ eventStatus: "useractioncomplete", gdprApplies: true, purpose: { consents: { 1: true } }, vendor: { consents: { 755: true } } }); };'
+				. 'window.__cmpRevoke = function () { cgPush({ eventStatus: "useractioncomplete", gdprApplies: true, purpose: { consents: { 1: false } }, vendor: { consents: { 755: false } } }); };',
+		),
+	);
+
+	if ( isset( $cmp_stubs[ $cmp_case ] ) ) {
+		$cmp_page = $cmp_stubs[ $cmp_case ];
+		cg_e2e_page(
+			$cmp_content,
+			'',
+			'window.consentGateConfig = ' . json_encode( array( 'cmp' => $cmp_page['config'] ) ) . ';',
+			array(),
+			( '' !== $cmp_page['stub'] ? '<script>' . $cmp_page['stub'] . '</script>' : '' )
+				. '<script src="/assets/cmp-bridge.js"></script>'
+		);
+		return true;
+	}
+}
+
 /**
  * Gate raw content through the real pipeline and emit a full page.
  *
- * @param string $content   Pre-gating content HTML.
- * @param string $extra_css Page-specific CSS (theme/core simulation).
- * @param string $config_js Inline config (what wp_add_inline_script emits).
- * @param array  $extra_ctx Extra integration context (e.g. §5.4 poster).
+ * @param string $content       Pre-gating content HTML.
+ * @param string $extra_css     Page-specific CSS (theme/core simulation).
+ * @param string $config_js     Inline config (what wp_add_inline_script emits).
+ * @param array  $extra_ctx     Extra integration context (e.g. §5.4 poster).
+ * @param string $extra_scripts Raw script tags after gate.js (CMP stubs + bridge).
  * @return void
  */
-function cg_e2e_page( string $content, string $extra_css = '', string $config_js = '', array $extra_ctx = array() ) {
+function cg_e2e_page( string $content, string $extra_css = '', string $config_js = '', array $extra_ctx = array(), string $extra_scripts = '' ) {
 	$gated = PipelineFactory::gate(
 		$content,
 		array( '127.0.0.1', 'localhost' ),
@@ -239,6 +349,7 @@ function cg_e2e_page( string $content, string $extra_css = '', string $config_js
 		. '</main>'
 		. ( '' !== $config_js ? '<script>' . $config_js . '</script>' : '' )
 		. '<script src="/assets/gate.js"></script>'
+		. $extra_scripts
 		. '</body></html>';
 }
 
