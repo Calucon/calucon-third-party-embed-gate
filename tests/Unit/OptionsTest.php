@@ -141,6 +141,17 @@ final class OptionsTest extends TestCase {
 		self::assertSame( 'default', $bad['appearance']['preset'] );
 	}
 
+	public function test_appearance_corners_accepts_known_values_only(): void {
+		self::assertSame( '', Options::defaults()['appearance']['corners'] );
+
+		$clean = Options::sanitize( array( 'appearance' => array( 'corners' => 'pill' ) ) );
+		self::assertSame( 'pill', $clean['appearance']['corners'] );
+
+		// Unknown values fall back to the default — never into emitted CSS.
+		$bad = Options::sanitize( array( 'appearance' => array( 'corners' => '12px;}body{' ) ) );
+		self::assertSame( '', $bad['appearance']['corners'] );
+	}
+
 	public function test_always_gate_list_is_sanitised_like_the_other_host_lists(): void {
 		$clean = Options::sanitize(
 			array(

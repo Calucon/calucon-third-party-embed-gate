@@ -57,6 +57,9 @@ final class Options {
 				'fg'        => '',
 				'accent'    => '',
 				'accent_fg' => '',
+				// Corner style: '' inherits the stylesheet default (slightly
+				// rounded); the named values override panel and button.
+				'corners'   => '', // '' | square | rounded | pill.
 			),
 			'consent'    => array(
 				// Consent memory (§6.2). Off by default: out of the box,
@@ -128,6 +131,9 @@ final class Options {
 			$a = $raw['appearance'];
 			if ( isset( $a['preset'] ) && in_array( $a['preset'], array( 'default', 'minimal', 'card' ), true ) ) {
 				$clean['appearance']['preset'] = $a['preset'];
+			}
+			if ( isset( $a['corners'] ) && in_array( $a['corners'], array( '', 'square', 'rounded', 'pill' ), true ) ) {
+				$clean['appearance']['corners'] = $a['corners'];
 			}
 			foreach ( array( 'bg', 'fg', 'accent', 'accent_fg' ) as $color_key ) {
 				if ( isset( $a[ $color_key ] ) && is_string( $a[ $color_key ] ) ) {

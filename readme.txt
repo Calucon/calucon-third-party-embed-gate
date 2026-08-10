@@ -4,7 +4,7 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,7 +37,7 @@ Consent Gate is a technical measure. It is not a consent management platform, it
 
 **Customisation**
 
-* Settings screen: per-provider on/off, privacy-variant on/off, custom note and button text; own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets and colours; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a read-only Status scan of recent content.
+* Settings screen: per-provider on/off, privacy-variant on/off, custom note and button text; own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets, corner styles and colour pickers with a live preview and an automatic readability check — no CSS needed; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a read-only Status scan of recent content.
 * Theme override: copy `templates/placeholder.php` to `{your-theme}/consent-gate/placeholder.php`.
 * CSS custom properties on `.cg-embed` (`--cg-bg`, `--cg-fg`, `--cg-accent`, …) for restyling without specificity wars.
 * Documented filters: `consent_gate_providers`, `consent_gate_provider_for_url`, `consent_gate_should_gate`, `consent_gate_is_own_host`, `consent_gate_own_hosts`, `consent_gate_placeholder_html`, `consent_gate_payload`, `consent_gate_note_text`, `consent_gate_action_text`, `consent_gate_fallback_url`, plus the `consent_gate_before_render` and `consent_gate_embed_gated` actions. Adding a provider is a ten-line filter in `functions.php`.
@@ -69,6 +69,11 @@ No. Lazy loading defers the request to scroll time — it is still made without 
 Privately, please — through GitHub's private vulnerability reporting on the plugin repository (https://github.com/Calucon/WP-Embed/security/advisories/new), not in a public issue or support topic. The repository's SECURITY.md describes what counts: besides the usual classes, any way to make a page contact a third party before the click is a vulnerability.
 
 == Changelog ==
+
+= 0.3.0 =
+* Appearance made novice-friendly: the colour fields are now WordPress colour pickers (no hex typing), a corner-style choice (square, rounded, pill button) joins the panel-style presets, and the settings screen shows a live preview of the placeholder that updates as you change anything.
+* The preview includes an automatic readability check: every colour pair (panel text, button text, fallback link) is measured against the WCAG 4.5:1 contrast minimum, in plain language, as you pick colours.
+* The preview is rendered through the same pipeline as the front end — template overrides and text filters included — and is inert: the settings screen still makes no third-party request.
 
 = 0.2.0 =
 * Detection hardening: exclusion ranges are scanned sequentially, so a stray `<!--` inside a script (JSON-LD, legacy script-hiding) or an unclosed `<pre>` can no longer disable gating for the rest of the page.

@@ -40,6 +40,7 @@ WordPress.org submission itself (a human act). See PLAN.md §13.
 | `src/Providers/{Registry,Provider}.php` | Descriptors are data, not classes (§4.1) |
 | `src/Support/{Options,ContentScan,ResourceHints,Csp}.php` | Option schema; Status-screen scan; hint scrubbing; CSP snippet |
 | `src/Admin/BlockEditor.php` + `assets/js/editor.js` | §7.5 per-block override + withdrawal block (no build step) |
+| `src/Admin/SettingsPage.php` + `assets/js/admin-appearance.js` | §7.1 settings; Appearance colour pickers, live preview + contrast check (admin-only JS; may use jQuery/wp-color-picker) |
 | `src/Rendering/PlaceholderRenderer.php` | The §5.1 markup contract — public API, version it |
 | `src/Integration/{RenderBlock,TheContent}.php` | The only place WordPress hooks live |
 | `assets/js/gate.js` | Dependency-free ES5; no build step |

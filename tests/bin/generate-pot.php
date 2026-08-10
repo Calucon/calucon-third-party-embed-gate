@@ -63,12 +63,15 @@ foreach ( $files as $path ) {
 
 ksort( $strings );
 
+preg_match( '/^ \* Version:\s+(\S+)/m', (string) file_get_contents( $root . '/consent-gate.php' ), $version_match );
+$version = isset( $version_match[1] ) ? $version_match[1] : '0.0.0';
+
 $pot = <<<'HEADER'
 # Consent Gate.
 # This file is distributed under the same license as the Consent Gate plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Consent Gate 0.2.0\n"
+"Project-Id-Version: Consent Gate {{VERSION}}\n"
 "Report-Msgid-Bugs-To: https://github.com/Calucon/WP-Embed/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -77,6 +80,10 @@ msgstr ""
 
 
 HEADER;
+
+// The version comes from the plugin header, so releases cannot ship a stale
+// Project-Id-Version.
+$pot = str_replace( '{{VERSION}}', $version, $pot );
 
 foreach ( $strings as $text => $refs ) {
 	foreach ( array_unique( $refs ) as $ref ) {

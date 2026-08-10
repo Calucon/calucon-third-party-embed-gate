@@ -185,6 +185,44 @@ test( 'withdraw shortcode renders a real button with its live region', async ( {
 	await expect( page.locator( `#${ statusId }[aria-live="polite"]` ) ).toHaveCount( 1 );
 } );
 
+test( 'admin: appearance controls are novice-usable — pickers, live preview, contrast report', async ( { page } ) => {
+	await page.goto( '/wp-login.php' );
+	await page.fill( '#user_login', 'admin' );
+	await page.fill( '#user_pass', 'password' );
+	await page.click( '#wp-submit' );
+
+	const offenders = trackThirdPartyRequests( page );
+	await page.goto( '/wp-admin/options-general.php?page=consent-gate' );
+	await page.waitForLoadState( 'networkidle' );
+
+	// The preview sample carries a YouTube payload, but it is inert data:
+	// the plugin must add no request to the settings screen (invariant 9).
+	// Core's own admin toolbar fetches the user's Gravatar on every wp-admin
+	// page, plugin or no plugin — that is outside what the plugin controls.
+	const pluginOffenders = () => offenders.filter( ( url ) => ! url.includes( 'gravatar.com' ) );
+	expect( pluginOffenders(), 'settings screen made a third-party request' ).toEqual( [] );
+
+	// All four colours got a real WordPress colour picker — no hex typing.
+	await expect( page.locator( '.wp-picker-container' ) ).toHaveCount( 4 );
+
+	// The live preview is the real placeholder markup, and the contrast
+	// report measured every colour pair.
+	const sample = page.locator( '#cg-preview-stage .cg-embed' );
+	await expect( sample ).toBeVisible();
+	await expect( sample.locator( '.cg-embed__button' ) ).toBeVisible();
+	await expect( page.locator( '#cg-contrast-report' ) ).toContainText( ':1' );
+
+	// Switching the panel style restyles the preview immediately.
+	await page.selectOption( '#cg-preset', 'minimal' );
+	await expect( page.locator( '#cg-preview-stage.cg-preview--minimal' ) ).toHaveCount( 1 );
+
+	// The preview's fallback link is defused — clicking it must not
+	// navigate the owner away (nor toward the provider).
+	await sample.locator( '.cg-embed__fallback a' ).click();
+	expect( page.url() ).toContain( 'options-general.php?page=consent-gate' );
+	expect( pluginOffenders() ).toEqual( [] );
+} );
+
 test( 'admin: settings screen lists providers and detection options', async ( { page } ) => {
 	await page.goto( '/wp-login.php' );
 	await page.fill( '#user_login', 'admin' );
