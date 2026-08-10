@@ -41,8 +41,17 @@ final class TheContent {
 	public function filter( $content ): string {
 		$content = (string) $content;
 
-		if ( ( false === stripos( $content, '<iframe' ) && false === stripos( $content, '<script' ) )
-			|| $this->plugin->should_bail() ) {
+		if ( false === stripos( $content, '<iframe' ) && false === stripos( $content, '<script' ) ) {
+			return $content;
+		}
+
+		// A placeholder in RSS is nonsense (§9.3): strip the embed; the
+		// WordPress fallback blockquote (a plain link) stays in the feed.
+		if ( is_feed() ) {
+			return $this->plugin->strip( $content );
+		}
+
+		if ( $this->plugin->should_bail() ) {
 			return $content;
 		}
 
