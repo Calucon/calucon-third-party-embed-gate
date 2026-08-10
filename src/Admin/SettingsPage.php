@@ -89,11 +89,11 @@ final class SettingsPage {
 				<table class="widefat striped" style="max-width: 60rem;">
 					<thead>
 						<tr>
-							<th><?php esc_html_e( 'Provider', 'consent-gate' ); ?></th>
-							<th><?php esc_html_e( 'Gate', 'consent-gate' ); ?></th>
-							<th><?php esc_html_e( 'Privacy-preserving load', 'consent-gate' ); ?></th>
-							<th><?php esc_html_e( 'Custom note (optional)', 'consent-gate' ); ?></th>
-							<th><?php esc_html_e( 'Custom button text (optional)', 'consent-gate' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Provider', 'consent-gate' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Gate', 'consent-gate' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Privacy-preserving load', 'consent-gate' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Custom note (optional)', 'consent-gate' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Custom button text (optional)', 'consent-gate' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -108,23 +108,36 @@ final class SettingsPage {
 						$privacy     = ! isset( $row['privacy_variant'] ) || $row['privacy_variant'];
 						$has_variant = ! empty( $descriptor['load_host'] ) || ! empty( $descriptor['load_query'] );
 						$name_prefix = esc_attr( Options::OPTION . '[providers][' . $id . ']' );
+						$label       = isset( $descriptor['label'] ) ? $descriptor['label'] : $id;
+
+						// Accessible names for the row's bare table-cell inputs
+						// (WCAG 1.3.1, 4.1.2): the column header alone names
+						// nothing in a screen reader's forms mode.
+						/* translators: %s: provider label. */
+						$aria_gate = sprintf( __( 'Gate %s embeds', 'consent-gate' ), $label );
+						/* translators: %s: provider label. */
+						$aria_privacy = sprintf( __( 'Use the privacy-preserving load for %s', 'consent-gate' ), $label );
+						/* translators: %s: provider label. */
+						$aria_note = sprintf( __( 'Custom note for %s', 'consent-gate' ), $label );
+						/* translators: %s: provider label. */
+						$aria_action = sprintf( __( 'Custom button text for %s', 'consent-gate' ), $label );
 						?>
 						<tr>
-							<td><?php echo esc_html( isset( $descriptor['label'] ) ? $descriptor['label'] : $id ); ?></td>
+							<td><?php echo esc_html( $label ); ?></td>
 							<td>
 								<input type="hidden" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>[enabled]" value="0">
-								<input type="checkbox" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[enabled]" value="1" <?php checked( $enabled ); ?>>
+								<input type="checkbox" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[enabled]" value="1" aria-label="<?php echo esc_attr( $aria_gate ); ?>" <?php checked( $enabled ); ?>>
 							</td>
 							<td>
 								<?php if ( $has_variant ) : ?>
 									<input type="hidden" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[privacy_variant]" value="0">
-									<input type="checkbox" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[privacy_variant]" value="1" <?php checked( $privacy ); ?>>
+									<input type="checkbox" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[privacy_variant]" value="1" aria-label="<?php echo esc_attr( $aria_privacy ); ?>" <?php checked( $privacy ); ?>>
 								<?php else : ?>
 									&mdash;
 								<?php endif; ?>
 							</td>
-							<td><input type="text" class="regular-text" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[note]" value="<?php echo esc_attr( isset( $row['note'] ) ? $row['note'] : '' ); ?>"></td>
-							<td><input type="text" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[action]" value="<?php echo esc_attr( isset( $row['action'] ) ? $row['action'] : '' ); ?>"></td>
+							<td><input type="text" class="regular-text" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[note]" aria-label="<?php echo esc_attr( $aria_note ); ?>" value="<?php echo esc_attr( isset( $row['note'] ) ? $row['note'] : '' ); ?>"></td>
+							<td><input type="text" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[action]" aria-label="<?php echo esc_attr( $aria_action ); ?>" value="<?php echo esc_attr( isset( $row['action'] ) ? $row['action'] : '' ); ?>"></td>
 						</tr>
 					<?php endforeach; ?>
 					</tbody>
@@ -206,7 +219,7 @@ final class SettingsPage {
 
 			<h2><?php esc_html_e( 'Content-Security-Policy snippet', 'consent-gate' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'If your site sends a Content-Security-Policy, it needs to allow the enabled providers\' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic.', 'consent-gate' ); ?></p>
-			<textarea readonly rows="4" class="large-text code"><?php echo esc_textarea( Csp::snippet( $this->providers ) ); ?></textarea>
+			<textarea readonly rows="4" class="large-text code" aria-label="<?php echo esc_attr( __( 'Content-Security-Policy snippet', 'consent-gate' ) ); ?>"><?php echo esc_textarea( Csp::snippet( $this->providers ) ); ?></textarea>
 		</div>
 		<?php
 	}

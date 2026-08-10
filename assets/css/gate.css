@@ -9,6 +9,11 @@
 	--cg-bg: var( --wp--preset--color--base, #1b1b1b );
 	--cg-fg: var( --wp--preset--color--contrast, #f0f0f0 );
 	--cg-accent: var( --wp--preset--color--accent-8, #5c9e00 );
+	/* Pairs with --cg-accent, NOT with the panel background: a theme that
+	   defines base (light) but no accent-8 preset would otherwise paint
+	   near-white text on the green fallback — ~3.1:1, a WCAG 1.4.3 failure.
+	   #1b1b1b on #5c9e00 is 5.2:1; themes overriding --cg-accent set this too. */
+	--cg-accent-fg: #1b1b1b;
 	--cg-radius: 4px;
 	--cg-gap: 0.75rem;
 	--cg-font: inherit;
@@ -75,7 +80,7 @@
 	border: 1px solid var( --cg-accent );
 	border-radius: var( --cg-radius );
 	background: var( --cg-accent );
-	color: var( --cg-bg );
+	color: var( --cg-accent-fg );
 	cursor: pointer;
 }
 
