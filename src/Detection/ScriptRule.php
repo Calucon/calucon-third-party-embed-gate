@@ -100,7 +100,10 @@ final class ScriptRule {
 				continue;
 			}
 
-			$provider             = $this->providers->resolve_for_script_url( $src, $host );
+			$provider = $this->providers->resolve_for_script_url( $src, $host );
+			if ( false === $provider['enabled'] ) {
+				continue;
+			}
 			$provider['strategy'] = 'script';
 			$provider['fallback'] = $this->resolve_fallback( $provider, $html, $match['start'], $host );
 

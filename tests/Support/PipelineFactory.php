@@ -23,15 +23,16 @@ final class PipelineFactory {
 	 * Run content through both rules, as Plugin::gate() does. The fixture
 	 * corpus treats example.test as the site's own host.
 	 *
-	 * @param string   $html      Content.
-	 * @param string[] $own_hosts Own hosts.
-	 * @param array    $ctx       Context.
+	 * @param string       $html      Content.
+	 * @param string[]     $own_hosts Own hosts.
+	 * @param array        $ctx       Context.
+	 * @param array[]|null $providers Descriptor set; builtins by default.
 	 * @return string
 	 */
-	public static function gate( string $html, array $own_hosts = array( 'example.test' ), array $ctx = array() ): string {
+	public static function gate( string $html, array $own_hosts = array( 'example.test' ), array $ctx = array(), ?array $providers = null ): string {
 		$scanner  = new HtmlScanner();
 		$hosts    = new HostMatcher( $own_hosts );
-		$registry = new Registry( Descriptors::all() );
+		$registry = new Registry( null === $providers ? Descriptors::all() : $providers );
 		$renderer = new PlaceholderRenderer();
 
 		$iframe = new IframeRule( $scanner, $hosts, $registry, $renderer );

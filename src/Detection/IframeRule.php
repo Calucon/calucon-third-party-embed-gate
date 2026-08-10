@@ -101,6 +101,10 @@ final class IframeRule {
 			}
 
 			$provider = $this->providers->resolve_for_url( $src, $host );
+			if ( false === $provider['enabled'] ) {
+				// The owner explicitly exempted this provider; their call.
+				continue;
+			}
 			// The rule that matched decides the mechanics: this rule always
 			// rebuilds an iframe, even for providers that also ship a script
 			// variant (X/Twitter appears both ways in the field).
