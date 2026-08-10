@@ -218,6 +218,12 @@
 			refresh();
 		} );
 
+		// Recompute when admin-tabs.js reveals a panel: computed styles of a
+		// display:none subtree can be unreliable across engines.
+		document.addEventListener( 'cg-tab-shown', function () {
+			refresh();
+		} );
+
 		// Initial state: mirror whatever the form currently holds, saved or
 		// half-edited, so the preview and the controls can never disagree.
 		$( '.cg-color-field' ).each( function () {
