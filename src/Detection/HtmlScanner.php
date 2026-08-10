@@ -19,10 +19,20 @@ namespace ConsentGate\Detection;
 final class HtmlScanner {
 
 	/**
-	 * Regions the scanner must never match inside: script, style, textarea,
-	 * pre (may contain escaped markup examples) and HTML comments.
+	 * Raw-text and inert containers (§9.4): their content never renders as
+	 * markup. When one is left unterminated, browsers swallow the rest of the
+	 * document into it — nothing after it can make a request — so excluding
+	 * to end-of-input matches what actually happens in a browser.
 	 */
-	private const EXCLUDED_CONTAINERS = array( 'script', 'style', 'textarea', 'pre' );
+	private const RAW_CONTAINERS = array( 'script', 'style', 'textarea', 'title', 'template' );
+
+	/**
+	 * Parsed containers excluded only when properly closed (§9.4): browsers
+	 * keep parsing markup inside an unclosed <pre>/<code>, so an iframe there
+	 * still fires its request. Fail closed — an unterminated opener excludes
+	 * nothing and the embed stays gateable.
+	 */
+	private const PARSED_CONTAINERS = array( 'pre', 'code' );
 
 	/**
 	 * Find every occurrence of a tag, tolerant of minified markup.
@@ -175,29 +185,59 @@ final class HtmlScanner {
 	/**
 	 * Byte ranges the scanner must not match inside.
 	 *
+	 * A single sequential pass in document order, the way a browser tokenises.
+	 * Running comment and container matching as two independent global regexes
+	 * (the previous implementation) cross-contaminates: a literal '<!--'
+	 * inside a script body (JSON-LD, legacy script-hiding) opened a bogus
+	 * comment range to end-of-input and every embed after it went ungated —
+	 * silently, which is the §3.2 failure mode all over again.
+	 *
 	 * @param string $html HTML.
 	 * @return array<int,array{0:int,1:int}> List of [start, end) ranges.
 	 */
 	private function excluded_ranges( string $html ): array {
 		$ranges = array();
+		$len    = strlen( $html );
+		$pos    = 0;
 
-		// Comments; an unterminated comment swallows the rest of the document.
-		if ( preg_match_all( '/<!--.*?(?:-->|$)/s', $html, $m, PREG_OFFSET_CAPTURE ) ) {
-			foreach ( $m[0] as $hit ) {
-				$ranges[] = array( $hit[1], $hit[1] + strlen( $hit[0] ) );
-			}
-		}
+		$opener = '/<!--|<(' . implode( '|', array_merge( self::RAW_CONTAINERS, self::PARSED_CONTAINERS ) ) . ')(?=[\s\/>])/i';
 
-		$tags = implode( '|', self::EXCLUDED_CONTAINERS );
-		if ( preg_match_all(
-			'/<(' . $tags . ')\b.*?(?:<\/\1\s*>|$)/is',
-			$html,
-			$m,
-			PREG_OFFSET_CAPTURE
-		) ) {
-			foreach ( $m[0] as $hit ) {
-				$ranges[] = array( $hit[1], $hit[1] + strlen( $hit[0] ) );
+		while ( $pos < $len && preg_match( $opener, $html, $m, PREG_OFFSET_CAPTURE, $pos ) ) {
+			$start = $m[0][1];
+
+			if ( '<!--' === $m[0][0] ) {
+				$close = strpos( $html, '-->', $start + 4 );
+				if ( false === $close ) {
+					// Browsers comment out the rest of the document; nothing
+					// in it can load, so excluding it all matches reality.
+					$ranges[] = array( $start, $len );
+					break;
+				}
+				$end      = $close + 3;
+				$ranges[] = array( $start, $end );
+				$pos      = $end;
+				continue;
 			}
+
+			$tag = strtolower( $m[1][0] );
+			if ( preg_match( '/<\/' . $tag . '\s*>/i', $html, $close_tag, PREG_OFFSET_CAPTURE, $start + 1 ) ) {
+				$end      = $close_tag[0][1] + strlen( $close_tag[0][0] );
+				$ranges[] = array( $start, $end );
+				$pos      = $end;
+				continue;
+			}
+
+			if ( in_array( $tag, self::PARSED_CONTAINERS, true ) ) {
+				// Unterminated <pre>/<code>: browsers still render the markup
+				// inside, so an iframe there still fires. Exclude nothing.
+				$pos = $start + 1;
+				continue;
+			}
+
+			// Unterminated raw-text/inert container: the rest of the document
+			// is its content in browsers; no request can originate there.
+			$ranges[] = array( $start, $len );
+			break;
 		}
 
 		return $ranges;

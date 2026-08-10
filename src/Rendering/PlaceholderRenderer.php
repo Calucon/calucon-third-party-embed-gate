@@ -36,6 +36,17 @@ final class PlaceholderRenderer {
 		'referrerpolicy',
 	);
 
+	/**
+	 * Safelist for rebuilt <embed>/<object> tags — the frame-capability
+	 * attributes above don't exist on those elements, and 'type' does.
+	 */
+	private const ATTRIBUTE_SAFELIST_MEDIA = array(
+		'title',
+		'width',
+		'height',
+		'type',
+	);
+
 	/** @var callable Translation function; identity outside WordPress. */
 	private $translate;
 
@@ -72,14 +83,18 @@ final class PlaceholderRenderer {
 	 * Render the placeholder for one gated embed.
 	 *
 	 * @param array  $provider   Normalised provider descriptor.
-	 * @param string $src        URL the front end loads after the click.
+	 * @param string $src        URL the front end loads after the click. May
+	 *                           be '' for a srcdoc-only embed, whose payload
+	 *                           carries the original inline document instead.
 	 * @param array  $attributes Original tag attributes (lowercased, decoded).
 	 * @param array  $ctx        Integration context (post ID, block name, …).
+	 * @param array  $options    Optional: 'tag' => 'embed'|'object' when the
+	 *                           rebuilt element is not an iframe.
 	 * @return string HTML.
 	 */
-	public function render( array $provider, string $src, array $attributes, array $ctx = array() ): string {
+	public function render( array $provider, string $src, array $attributes, array $ctx = array(), array $options = array() ): string {
 		$t       = $this->translate;
-		$payload = $this->build_payload( $provider, $src, $attributes );
+		$payload = $this->build_payload( $provider, $src, $attributes, $options );
 
 		$label = '' !== $provider['label'] ? $provider['label'] : 'embed';
 		/* translators: %s: provider label (usually a host name). */
@@ -169,14 +184,20 @@ final class PlaceholderRenderer {
 	 * the real node, never the full original tag (PLAN.md §5.2).
 	 *
 	 * @param array  $provider   Provider descriptor.
-	 * @param string $src        Post-consent URL.
+	 * @param string $src        Post-consent URL ('' for srcdoc embeds).
 	 * @param array  $attributes Original attributes.
+	 * @param array  $options    Render options ('tag').
 	 * @return array
 	 */
-	private function build_payload( array $provider, string $src, array $attributes ): array {
+	private function build_payload( array $provider, string $src, array $attributes, array $options = array() ): array {
 		$attrs = array();
 
-		foreach ( self::ATTRIBUTE_SAFELIST as $name ) {
+		$tag      = isset( $options['tag'] ) && in_array( $options['tag'], array( 'embed', 'object' ), true )
+			? $options['tag']
+			: 'iframe';
+		$safelist = 'iframe' === $tag ? self::ATTRIBUTE_SAFELIST : self::ATTRIBUTE_SAFELIST_MEDIA;
+
+		foreach ( $safelist as $name ) {
 			if ( ! array_key_exists( $name, $attributes ) ) {
 				continue;
 			}
@@ -198,7 +219,7 @@ final class PlaceholderRenderer {
 			$attrs[ $name ] = (string) $value;
 		}
 
-		if ( null !== $provider['iframe_allow'] && ! isset( $attrs['allow'] ) ) {
+		if ( 'iframe' === $tag && null !== $provider['iframe_allow'] && ! isset( $attrs['allow'] ) ) {
 			$attrs['allow'] = $this->strip_autoplay( (string) $provider['iframe_allow'] );
 		}
 
@@ -206,6 +227,21 @@ final class PlaceholderRenderer {
 			'src'   => $src,
 			'attrs' => $attrs ? $attrs : new \stdClass(),
 		);
+
+		if ( '' === $src ) {
+			// A srcdoc embed has no URL to rebuild from: the payload carries
+			// the original inline document verbatim instead, restored only on
+			// click — equal privilege, never wider (invariant 7). JSON_HEX_TAG
+			// below keeps any markup inside it out of re-processing's way.
+			unset( $payload['src'] );
+			if ( isset( $attributes['srcdoc'] ) && is_string( $attributes['srcdoc'] ) && '' !== $attributes['srcdoc'] ) {
+				$payload['srcdoc'] = $attributes['srcdoc'];
+			}
+		}
+
+		if ( 'iframe' !== $tag ) {
+			$payload['tag'] = $tag;
+		}
 
 		if ( 'iframe' !== $provider['strategy'] ) {
 			$payload['strategy'] = $provider['strategy'];
