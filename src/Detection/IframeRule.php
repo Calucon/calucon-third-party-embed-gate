@@ -117,7 +117,7 @@ final class IframeRule {
 				continue;
 			}
 
-			if ( null !== $this->should_gate
+			if ( empty( $ctx['force_gate'] ) && null !== $this->should_gate
 				&& ! call_user_func( $this->should_gate, true, $src, $ctx ) ) {
 				continue;
 			}
@@ -128,8 +128,9 @@ final class IframeRule {
 			}
 
 			$provider = $this->providers->resolve_for_url( $src, $host );
-			if ( false === $provider['enabled'] ) {
-				// The owner explicitly exempted this provider; their call.
+			if ( empty( $ctx['force_gate'] ) && false === $provider['enabled'] ) {
+				// The owner explicitly exempted this provider; their call —
+				// unless this block carries an explicit 'always' override.
 				continue;
 			}
 
@@ -292,7 +293,7 @@ final class IframeRule {
 	 * @return string
 	 */
 	private function gate_srcdoc( string $html, array $tag_match, array $target, array $ctx ): string {
-		if ( null !== $this->should_gate
+		if ( empty( $ctx['force_gate'] ) && null !== $this->should_gate
 			&& ! call_user_func( $this->should_gate, true, $target['url'], $ctx ) ) {
 			return $html;
 		}
@@ -303,7 +304,7 @@ final class IframeRule {
 		}
 
 		$provider = $this->providers->resolve_for_url( $target['url'], $host );
-		if ( false === $provider['enabled'] ) {
+		if ( empty( $ctx['force_gate'] ) && false === $provider['enabled'] ) {
 			return $html;
 		}
 		$provider['strategy'] = 'iframe';

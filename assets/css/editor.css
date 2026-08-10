@@ -1,0 +1,27 @@
+/**
+ * Consent Gate editor-canvas badge (PLAN.md §7.5): show per-block gate
+ * overrides at a glance. Editor-only stylesheet; never enqueued on the
+ * front end.
+ */
+
+.block-editor-block-list__block[data-consent-gate] {
+	outline: 1px dashed currentColor;
+	outline-offset: 2px;
+	position: relative;
+}
+
+.block-editor-block-list__block[data-consent-gate]::before {
+	/* The value is machine-oriented ("always"/"never"); the prefix names
+	   the feature. Informational, editor-only. */
+	content: "Consent Gate: " attr( data-consent-gate );
+	position: absolute;
+	top: -1.5em;
+	right: 0;
+	font-size: 11px;
+	line-height: 1.2;
+	padding: 1px 6px;
+	border-radius: 2px;
+	background: #1e1e1e;
+	color: #fff;
+	z-index: 20;
+}

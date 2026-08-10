@@ -9,6 +9,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Domain: consent-gate\n"
 
+#: assets/js/editor.js:105
+msgid "A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled."
+msgstr ""
+
 #: src/Admin/SettingsPage.php:182
 msgid "Additional own hosts"
 msgstr ""
@@ -21,6 +25,10 @@ msgstr ""
 msgid "All embeds of the same provider"
 msgstr ""
 
+#: assets/js/editor.js:64
+msgid "Always gate"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:175
 msgid "Always gate these hosts"
 msgstr ""
@@ -31,6 +39,10 @@ msgstr ""
 
 #: src/Admin/SettingsPage.php:231
 msgid "Button background"
+msgstr ""
+
+#: assets/js/editor.js:125
+msgid "Button label"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:232
@@ -49,6 +61,8 @@ msgstr ""
 msgid "Compatibility"
 msgstr ""
 
+#: assets/js/editor.js:58
+#: assets/js/editor.js:123
 #: src/Admin/SettingsPage.php:60
 #: src/Admin/SettingsPage.php:61
 #: src/Admin/SettingsPage.php:96
@@ -156,6 +170,10 @@ msgstr ""
 msgid "Gate third-party scripts in content"
 msgstr ""
 
+#: assets/js/editor.js:60
+msgid "Gate this embed"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:370
 msgid "Gated"
 msgstr ""
@@ -261,7 +279,7 @@ msgstr ""
 msgid "Load video from YouTube"
 msgstr ""
 
-#: src/Plugin.php:513
+#: src/Plugin.php:516
 msgid "Loading embedded content…"
 msgstr ""
 
@@ -365,6 +383,10 @@ msgstr ""
 msgid "NOT gated — provider disabled in the table above"
 msgstr ""
 
+#: assets/js/editor.js:65
+msgid "Never gate"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:189
 msgid "Never gate these hosts"
 msgstr ""
@@ -401,13 +423,17 @@ msgstr ""
 msgid "Only enable this if embeds from a page builder are not being gated. It buffers the entire page, which can conflict with other buffering or streaming plugins. Any error inside the buffer returns the page unmodified."
 msgstr ""
 
-#: src/Plugin.php:515
+#: src/Plugin.php:518
 msgid "Open it on the provider’s site."
 msgstr ""
 
 #: src/Detection/EmbedStripper.php:142
 #: src/Rendering/PlaceholderRenderer.php:148
 msgid "Open on %s"
+msgstr ""
+
+#: assets/js/editor.js:72
+msgid "Overrides the site-wide setting for this block only."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:371
@@ -474,16 +500,20 @@ msgstr ""
 msgid "Scope"
 msgstr ""
 
+#: assets/js/editor.js:63
+msgid "Site default"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:346
 #: src/Admin/SettingsPage.php:408
 msgid "Status"
 msgstr ""
 
-#: src/Plugin.php:512
+#: src/Plugin.php:515
 msgid "Stored embed consents have been removed. Embeds will ask again."
 msgstr ""
 
-#: src/Plugin.php:514
+#: src/Plugin.php:517
 msgid "The embedded content could not be loaded."
 msgstr ""
 
@@ -493,6 +523,10 @@ msgstr ""
 
 #: src/Admin/SettingsPage.php:97
 msgid "Third-party embeds are replaced with a placeholder until the visitor clicks to load them. Nothing is contacted, and nothing is stored, before that click."
+msgstr ""
+
+#: assets/js/editor.js:71
+msgid "This block’s embeds will load immediately for every visitor, without a consent click."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:263
@@ -515,6 +549,8 @@ msgstr ""
 msgid "What Consent Gate does"
 msgstr ""
 
+#: assets/js/editor.js:102
+#: assets/js/editor.js:116
 #: src/Integration/WithdrawShortcode.php:51
 msgid "Withdraw embed consents"
 msgstr ""

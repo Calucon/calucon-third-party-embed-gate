@@ -81,7 +81,7 @@ final class EmbedObjectRule {
 		foreach ( array_reverse( $matches ) as $match ) {
 			$src = $match['url'];
 
-			if ( null !== $this->should_gate
+			if ( empty( $ctx['force_gate'] ) && null !== $this->should_gate
 				&& ! call_user_func( $this->should_gate, true, $src, $ctx ) ) {
 				continue;
 			}
@@ -92,7 +92,7 @@ final class EmbedObjectRule {
 			}
 
 			$provider = $this->providers->resolve_for_url( $src, $host );
-			if ( false === $provider['enabled'] ) {
+			if ( empty( $ctx['force_gate'] ) && false === $provider['enabled'] ) {
 				continue;
 			}
 			$provider['strategy'] = 'iframe';

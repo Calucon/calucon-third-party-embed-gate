@@ -28,7 +28,11 @@ module.exports = defineConfig( {
 		? undefined
 		: {
 			command: 'bash tests/wp/serve-playground.sh',
-			url: baseURL,
+			// Readiness = the SEEDED site, not just a listening socket: the
+			// Playground HTTP server answers before the blueprint finishes
+			// seeding, and a test that wins that race sees a 404. This URL
+			// only returns 200 once the seed's posts and permalinks exist.
+			url: baseURL + '/gated-classic/',
 			timeout: 300000,
 			reuseExistingServer: true,
 		},

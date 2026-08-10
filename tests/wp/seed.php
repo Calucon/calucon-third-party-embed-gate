@@ -72,10 +72,11 @@ foreach ( $cg_seed_posts as $cg_slug => $cg_post ) {
 	);
 }
 
-// Pretty permalinks so the tests can address posts by slug.
-if ( '/%postname%/' !== get_option( 'permalink_structure' ) ) {
-	$GLOBALS['wp_rewrite']->set_permalink_structure( '/%postname%/' );
-	flush_rewrite_rules();
-}
+// Pretty permalinks so the tests can address posts by slug. Flush
+// unconditionally: newer Playground images pre-set the structure WITHOUT
+// building the rules, so a structure-changed guard skips the flush and the
+// first request after boot 404s (the old cause of a flaky first test).
+$GLOBALS['wp_rewrite']->set_permalink_structure( '/%postname%/' );
+flush_rewrite_rules();
 
 echo "consent-gate: seed complete\n";

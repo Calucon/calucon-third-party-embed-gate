@@ -11,6 +11,7 @@
 
 namespace ConsentGate;
 
+use ConsentGate\Admin\BlockEditor;
 use ConsentGate\Admin\SettingsPage;
 use ConsentGate\Detection\EmbedObjectRule;
 use ConsentGate\Detection\EmbedStripper;
@@ -119,14 +120,16 @@ final class Plugin {
 		( new Comments( $this ) )->register();
 		( new Descriptions( $this ) )->register();
 		( new Excerpt( $this ) )->register();
-		( new WithdrawShortcode(
+		$withdraw = new WithdrawShortcode(
 			function (): void {
 				// The withdrawal control's intended home is a privacy-policy
 				// page with no embeds — without this enqueue the button is a
 				// dead element there (invariant 2's spirit).
 				$this->enqueue_assets();
 			}
-		) )->register();
+		);
+		$withdraw->register();
+		( new BlockEditor( $withdraw ) )->register();
 		( new SettingsPage(
 			function (): array {
 				return $this->providers();

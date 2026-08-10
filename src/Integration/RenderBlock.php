@@ -48,12 +48,23 @@ final class RenderBlock {
 			return $content;
 		}
 
+		// Per-block override (PLAN.md §7.5), stored as a block attribute by
+		// the editor integration: 'never' skips gating for this block (the
+		// editor made an explicit call); 'always' forces gating past the
+		// should_gate filter and disabled providers.
+		$attrs    = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : array();
+		$override = isset( $attrs['consentGate'] ) && is_string( $attrs['consentGate'] ) ? $attrs['consentGate'] : '';
+		if ( 'never' === $override ) {
+			return $content;
+		}
+
 		return $this->plugin->gate(
 			$content,
 			array(
 				'integration' => 'render_block',
 				'block'       => isset( $block['blockName'] ) ? $block['blockName'] : null,
 				'post_id'     => get_the_ID(),
+				'force_gate'  => 'always' === $override,
 			)
 		);
 	}

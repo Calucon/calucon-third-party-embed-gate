@@ -24,6 +24,10 @@ foreach ( $iterator as $file ) {
 	}
 }
 $files[] = $root . '/templates/placeholder.php';
+// The editor script's __( '…', 'consent-gate' ) calls are extracted with the
+// same pattern; wp_set_script_translations() serves them from the JSON files
+// translators build from this POT.
+$files[] = $root . '/assets/js/editor.js';
 sort( $files );
 
 $strings = array(); // msgid => list of "file:line" references.
