@@ -23,6 +23,7 @@ use ConsentGate\Integration\RenderBlock;
 use ConsentGate\Integration\ResourceHints as ResourceHintsIntegration;
 use ConsentGate\Integration\TheContent;
 use ConsentGate\Integration\Widgets;
+use ConsentGate\Integration\WithdrawShortcode;
 use ConsentGate\Providers\Builtin\Descriptors;
 use ConsentGate\Providers\Registry;
 use ConsentGate\Rendering\PlaceholderRenderer;
@@ -141,6 +142,7 @@ final class Plugin {
 		( new TheContent( $this ) )->register();
 		( new Widgets( $this ) )->register();
 		( new Excerpt( $this ) )->register();
+		( new WithdrawShortcode() )->register();
 		( new SettingsPage( $providers ) )->register();
 		( new ResourceHintsIntegration( new ResourceHints( $this->provider_hosts( $providers ), $hosts ) ) )->register();
 
@@ -232,6 +234,26 @@ final class Plugin {
 			array(),
 			CONSENT_GATE_VERSION
 		);
+
+		// Consent-memory config (§6.2): only shipped when the site enabled
+		// memory. The default build stores nothing and needs no config.
+		$consent = $this->options['consent'];
+		if ( 'off' !== $consent['memory'] ) {
+			wp_add_inline_script(
+				'consent-gate',
+				'window.consentGateConfig = ' . wp_json_encode(
+					array(
+						'memory'       => $consent['memory'],
+						'scope'        => $consent['scope'],
+						'durationDays' => $consent['duration_days'],
+						'i18n'         => array(
+							'withdrawn' => __( 'Stored embed consents have been removed. Embeds will ask again.', 'consent-gate' ),
+						),
+					)
+				) . ';',
+				'before'
+			);
+		}
 	}
 
 	/**
