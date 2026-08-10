@@ -92,6 +92,13 @@ final class SettingsPage {
 			CONSENT_GATE_VERSION,
 			true
 		);
+		wp_enqueue_script(
+			'consent-gate-admin-tabs',
+			plugins_url( 'assets/js/admin-tabs.js', CONSENT_GATE_FILE ),
+			array(),
+			CONSENT_GATE_VERSION,
+			true
+		);
 		wp_add_inline_script(
 			'consent-gate-admin',
 			'window.consentGateAdminI18n = ' . wp_json_encode(
@@ -153,9 +160,30 @@ final class SettingsPage {
 			<h1><?php esc_html_e( 'Consent Gate', 'consent-gate' ); ?></h1>
 			<p><?php esc_html_e( 'Third-party embeds are replaced with a placeholder until the visitor clicks to load them. Nothing is contacted, and nothing is stored, before that click.', 'consent-gate' ); ?></p>
 
+			<?php
+			// The tab bar starts hidden and is revealed by admin-tabs.js:
+			// without JavaScript the page renders as one long document, every
+			// panel visible — tabs are an enhancement, never a gate.
+			$tabs = array(
+				'providers'  => __( 'Providers', 'consent-gate' ),
+				'detection'  => __( 'Detection', 'consent-gate' ),
+				'appearance' => __( 'Appearance', 'consent-gate' ),
+				'consent'    => __( 'Consent memory', 'consent-gate' ),
+				'status'     => __( 'Status & tools', 'consent-gate' ),
+			);
+			?>
+			<div class="nav-tab-wrapper cg-tabs" role="tablist" aria-label="<?php echo esc_attr( __( 'Consent Gate settings sections', 'consent-gate' ) ); ?>" hidden>
+				<?php $first = true; ?>
+				<?php foreach ( $tabs as $tab_key => $tab_label ) : ?>
+					<button type="button" id="cg-tabbtn-<?php echo esc_attr( $tab_key ); ?>" class="nav-tab<?php echo $first ? ' nav-tab-active' : ''; ?>" role="tab" aria-selected="<?php echo $first ? 'true' : 'false'; ?>" aria-controls="cg-tab-<?php echo esc_attr( $tab_key ); ?>" tabindex="<?php echo $first ? '0' : '-1'; ?>"><?php echo esc_html( $tab_label ); ?></button>
+					<?php $first = false; ?>
+				<?php endforeach; ?>
+			</div>
+
 			<form action="options.php" method="post">
 				<?php settings_fields( 'consent_gate' ); ?>
 
+				<div id="cg-tab-providers" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-providers">
 				<h2><?php esc_html_e( 'Providers', 'consent-gate' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Disabling a provider stops gating its embeds — they load exactly as WordPress renders them. Unknown third-party iframes and scripts are always gated by the generic entries.', 'consent-gate' ); ?></p>
 				<table class="widefat striped" style="max-width: 60rem;">
@@ -214,7 +242,9 @@ final class SettingsPage {
 					<?php endforeach; ?>
 					</tbody>
 				</table>
+				</div>
 
+				<div id="cg-tab-detection" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-detection">
 				<h2><?php esc_html_e( 'Detection', 'consent-gate' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -265,7 +295,9 @@ final class SettingsPage {
 						</td>
 					</tr>
 				</table>
+				</div>
 
+				<div id="cg-tab-appearance" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-appearance">
 				<h2><?php esc_html_e( 'Appearance', 'consent-gate' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Style the placeholder panel without writing any CSS: pick a style, pick colours, and watch the preview below update as you go. The readability check tells you immediately if a colour combination would be hard to read.', 'consent-gate' ); ?></p>
 				<table class="form-table" role="presentation">
@@ -311,7 +343,9 @@ final class SettingsPage {
 				<p class="description"><?php esc_html_e( 'A cleared colour inherits your theme\'s palette — that is the default, and usually the best choice. The preview cannot use your theme\'s palette here in the admin, so with cleared colours it shows the plugin\'s built-in look; on your site the panel follows the theme.', 'consent-gate' ); ?></p>
 
 				<?php $this->render_preview(); ?>
+				</div>
 
+				<div id="cg-tab-consent" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-consent">
 				<h2><?php esc_html_e( 'Consent memory', 'consent-gate' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor\'s browser only — after their first click, never before — and a withdrawal control becomes available via the [consent_gate_withdraw] shortcode for your privacy policy page.', 'consent-gate' ); ?></p>
 				<table class="form-table" role="presentation">
@@ -341,15 +375,23 @@ final class SettingsPage {
 					</tr>
 				</table>
 
+				</div>
+
 				<?php submit_button(); ?>
 			</form>
 
+			<?php
+			// Read-only diagnostics and generated snippets: admin-tabs.js hides
+			// the form's Save button while this panel is active (data-cg-readonly).
+			?>
+			<div id="cg-tab-status" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-status" data-cg-readonly="1">
 			<h2><?php esc_html_e( 'Content-Security-Policy snippet', 'consent-gate' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'If your site sends a Content-Security-Policy, it needs to allow the enabled providers\' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic.', 'consent-gate' ); ?></p>
 			<textarea readonly rows="4" class="large-text code" aria-label="<?php echo esc_attr( __( 'Content-Security-Policy snippet', 'consent-gate' ) ); ?>"><?php echo esc_textarea( Csp::snippet( $this->providers() ) ); ?></textarea>
 
 			<?php $this->render_compatibility(); ?>
 			<?php $this->render_status(); ?>
+			</div>
 		</div>
 		<?php
 	}

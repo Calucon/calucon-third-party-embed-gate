@@ -205,6 +205,9 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	// All four colours got a real WordPress colour picker — no hex typing.
 	await expect( page.locator( '.wp-picker-container' ) ).toHaveCount( 4 );
 
+	// The Appearance panel lives behind its tab.
+	await page.click( '#cg-tabbtn-appearance' );
+
 	// The live preview is the real placeholder markup, and the contrast
 	// report measured every colour pair.
 	const sample = page.locator( '#cg-preview-stage .cg-embed' );
@@ -221,9 +224,17 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await sample.locator( '.cg-embed__fallback a' ).click();
 	expect( page.url() ).toContain( 'options-general.php?page=consent-gate' );
 	expect( pluginOffenders() ).toEqual( [] );
+
+	// Deep link: a panel id in the hash opens that tab directly. Leave the
+	// page first — a hash-only goto would be a same-document navigation and
+	// prove nothing.
+	await page.goto( '/wp-admin/index.php' );
+	await page.goto( '/wp-admin/options-general.php?page=consent-gate#cg-tab-appearance' );
+	await expect( page.locator( '#cg-preview-stage .cg-embed' ) ).toBeVisible();
+	await expect( page.locator( '#cg-tabbtn-appearance' ) ).toHaveAttribute( 'aria-selected', 'true' );
 } );
 
-test( 'admin: settings screen lists providers and detection options', async ( { page } ) => {
+test( 'admin: settings screen is tabbed — providers, detection, consent, status', async ( { page } ) => {
 	await page.goto( '/wp-login.php' );
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
@@ -232,9 +243,28 @@ test( 'admin: settings screen lists providers and detection options', async ( { 
 	await page.goto( '/wp-admin/options-general.php?page=consent-gate' );
 
 	await expect( page.locator( 'h1' ) ).toContainText( 'Consent Gate' );
+
+	// Providers is the default tab; the other panels are behind their tabs.
 	await expect( page.locator( 'td', { hasText: 'YouTube' } ).first() ).toBeVisible();
+	await expect( page.locator( '#cg-own-hosts' ) ).toBeHidden();
+
+	await page.click( '#cg-tabbtn-detection' );
 	await expect( page.locator( '#cg-own-hosts' ) ).toBeVisible();
+	await expect( page.locator( 'td', { hasText: 'YouTube' } ).first() ).toBeHidden();
+
+	await page.click( '#cg-tabbtn-consent' );
 	await expect( page.locator( '#cg-memory' ) ).toBeVisible();
-	// The CSP snippet is generated from the enabled provider set.
-	await expect( page.locator( 'textarea[readonly]' ) ).toContainText( 'frame-src' );
+
+	// Status & tools is read-only: the CSP snippet shows, the Save button
+	// does not.
+	await page.click( '#cg-tabbtn-status' );
+	await expect( page.locator( 'textarea[aria-label="Content-Security-Policy snippet"]' ) ).toContainText( 'frame-src' );
+	await expect( page.locator( 'form p.submit' ) ).toBeHidden();
+	await page.click( '#cg-tabbtn-providers' );
+	await expect( page.locator( 'form p.submit' ) ).toBeVisible();
+
+	// The Status scan's legacy anchor still lands on the right tab.
+	await page.goto( '/wp-admin/options-general.php?page=consent-gate&cg-scan=1#cg-status' );
+	await expect( page.locator( '#cg-tabbtn-status' ) ).toHaveAttribute( 'aria-selected', 'true' );
+	await expect( page.locator( '#cg-status' ) ).toBeVisible();
 } );
