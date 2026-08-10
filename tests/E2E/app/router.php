@@ -95,6 +95,21 @@ if ( '/page/scripts' === $uri ) {
 	return true;
 }
 
+if ( '/page/memory' === $uri ) {
+	// Consent memory enabled (provider scope, session lifetime) plus the
+	// withdrawal control a site would place in its privacy policy.
+	$content = '<iframe title="Video" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>'
+		. "\n" . '<button type="button" class="cg-withdraw" data-cg-withdraw aria-controls="cg-withdraw-status">Withdraw embed consents</button>'
+		. '<span id="cg-withdraw-status" class="cg-withdraw__status" role="status" aria-live="polite"></span>';
+
+	cg_e2e_page(
+		$content,
+		'',
+		'window.consentGateConfig = {"memory":"session","scope":"provider","durationDays":180};'
+	);
+	return true;
+}
+
 if ( '/page/aspect' === $uri ) {
 	// The §5.3 layout-preservation cases: a core reserved aspect box
 	// (wp-has-aspect-ratio + ::before spacer, iframe lifted out of flow),
@@ -124,9 +139,10 @@ if ( '/page/aspect' === $uri ) {
  *
  * @param string $content   Pre-gating content HTML.
  * @param string $extra_css Page-specific CSS (theme/core simulation).
+ * @param string $config_js Inline config (what wp_add_inline_script emits).
  * @return void
  */
-function cg_e2e_page( string $content, string $extra_css = '' ) {
+function cg_e2e_page( string $content, string $extra_css = '', string $config_js = '' ) {
 	$gated = PipelineFactory::gate(
 		$content,
 		array( '127.0.0.1', 'localhost' ),
@@ -145,6 +161,7 @@ function cg_e2e_page( string $content, string $extra_css = '' ) {
 		. '<main><h1>Consent Gate E2E</h1>'
 		. $gated
 		. '</main>'
+		. ( '' !== $config_js ? '<script>' . $config_js . '</script>' : '' )
 		. '<script src="/assets/gate.js"></script>'
 		. '</body></html>';
 }

@@ -42,6 +42,15 @@ final class Options {
 				// off by default, behind a warning in the UI.
 				'output_buffer'   => false,
 			),
+			'consent'   => array(
+				// Consent memory (§6.2). Off by default: out of the box,
+				// consent applies to the one embed clicked and is stored
+				// nowhere. Client-side only (§6.3) — a server-side state
+				// would make every page uncacheable.
+				'memory'        => 'off',      // off | session | persistent.
+				'scope'         => 'provider', // embed | provider | all.
+				'duration_days' => 180,        // Persistent lifetime.
+			),
 		);
 	}
 
@@ -96,6 +105,19 @@ final class Options {
 				if ( isset( $d[ $list ] ) ) {
 					$clean['detection'][ $list ] = self::sanitize_host_list( $d[ $list ] );
 				}
+			}
+		}
+
+		if ( isset( $raw['consent'] ) && is_array( $raw['consent'] ) ) {
+			$c = $raw['consent'];
+			if ( isset( $c['memory'] ) && in_array( $c['memory'], array( 'off', 'session', 'persistent' ), true ) ) {
+				$clean['consent']['memory'] = $c['memory'];
+			}
+			if ( isset( $c['scope'] ) && in_array( $c['scope'], array( 'embed', 'provider', 'all' ), true ) ) {
+				$clean['consent']['scope'] = $c['scope'];
+			}
+			if ( isset( $c['duration_days'] ) && is_numeric( $c['duration_days'] ) ) {
+				$clean['consent']['duration_days'] = max( 1, min( 730, (int) $c['duration_days'] ) );
 			}
 		}
 

@@ -11,6 +11,7 @@
 
 namespace ConsentGate\Admin;
 
+use ConsentGate\Support\Csp;
 use ConsentGate\Support\Options;
 
 /**
@@ -171,8 +172,41 @@ final class SettingsPage {
 					</tr>
 				</table>
 
+				<h2><?php esc_html_e( 'Consent memory', 'consent-gate' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor\'s browser only — after their first click, never before — and a withdrawal control becomes available via the [consent_gate_withdraw] shortcode for your privacy policy page.', 'consent-gate' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="cg-memory"><?php esc_html_e( 'Remember consent', 'consent-gate' ); ?></label></th>
+						<td>
+							<select id="cg-memory" name="<?php echo esc_attr( Options::OPTION ); ?>[consent][memory]">
+								<option value="off" <?php selected( $options['consent']['memory'], 'off' ); ?>><?php esc_html_e( 'No (default) — ask on every page view', 'consent-gate' ); ?></option>
+								<option value="session" <?php selected( $options['consent']['memory'], 'session' ); ?>><?php esc_html_e( 'For this browser session', 'consent-gate' ); ?></option>
+								<option value="persistent" <?php selected( $options['consent']['memory'], 'persistent' ); ?>><?php esc_html_e( 'Persistently, with an expiry', 'consent-gate' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="cg-scope"><?php esc_html_e( 'Scope', 'consent-gate' ); ?></label></th>
+						<td>
+							<select id="cg-scope" name="<?php echo esc_attr( Options::OPTION ); ?>[consent][scope]">
+								<option value="embed" <?php selected( $options['consent']['scope'], 'embed' ); ?>><?php esc_html_e( 'This embed only', 'consent-gate' ); ?></option>
+								<option value="provider" <?php selected( $options['consent']['scope'], 'provider' ); ?>><?php esc_html_e( 'All embeds of the same provider', 'consent-gate' ); ?></option>
+								<option value="all" <?php selected( $options['consent']['scope'], 'all' ); ?>><?php esc_html_e( 'All embeds', 'consent-gate' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="cg-duration"><?php esc_html_e( 'Persistent lifetime (days)', 'consent-gate' ); ?></label></th>
+						<td><input type="number" id="cg-duration" min="1" max="730" name="<?php echo esc_attr( Options::OPTION ); ?>[consent][duration_days]" value="<?php echo esc_attr( (string) $options['consent']['duration_days'] ); ?>"></td>
+					</tr>
+				</table>
+
 				<?php submit_button(); ?>
 			</form>
+
+			<h2><?php esc_html_e( 'Content-Security-Policy snippet', 'consent-gate' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'If your site sends a Content-Security-Policy, it needs to allow the enabled providers\' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic.', 'consent-gate' ); ?></p>
+			<textarea readonly rows="4" class="large-text code"><?php echo esc_textarea( Csp::snippet( $this->providers ) ); ?></textarea>
 		</div>
 		<?php
 	}

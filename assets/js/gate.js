@@ -73,6 +73,120 @@
 		return frame;
 	}
 
+	// Consent memory (PLAN.md §6.2): OFF unless the site enabled it. Nothing
+	// is ever written before the first click (invariant 3) — page-load code
+	// only READS storage. Client-side only (§6.3): server-side state would
+	// make every page uncacheable.
+	var STORAGE_KEY = 'consent-gate';
+
+	function memoryConfig() {
+		var config = window.consentGateConfig || {};
+		var memory = config.memory === 'session' || config.memory === 'persistent' ? config.memory : 'off';
+		return {
+			memory: memory,
+			scope: config.scope === 'embed' || config.scope === 'all' ? config.scope : 'provider',
+			durationDays: typeof config.durationDays === 'number' && config.durationDays > 0 ? config.durationDays : 180,
+			i18n: config.i18n || {}
+		};
+	}
+
+	function memoryStore( config ) {
+		try {
+			return config.memory === 'session' ? window.sessionStorage : window.localStorage;
+		} catch ( e ) {
+			return null; // Storage blocked: memory silently degrades to off.
+		}
+	}
+
+	function readGrants( config ) {
+		var store = memoryStore( config );
+		if ( ! store ) {
+			return {};
+		}
+		var grants;
+		try {
+			grants = JSON.parse( store.getItem( STORAGE_KEY ) || '{}' ).g || {};
+		} catch ( e ) {
+			return {};
+		}
+		// Lazily expire persistent grants past their lifetime.
+		var cutoff = config.memory === 'persistent' ? Date.now() - config.durationDays * 86400000 : 0;
+		var live = {};
+		for ( var key in grants ) {
+			if ( Object.prototype.hasOwnProperty.call( grants, key ) && grants[ key ] >= cutoff ) {
+				live[ key ] = grants[ key ];
+			}
+		}
+		return live;
+	}
+
+	function writeGrants( config, grants ) {
+		var store = memoryStore( config );
+		if ( ! store ) {
+			return;
+		}
+		try {
+			store.setItem( STORAGE_KEY, JSON.stringify( { v: 1, g: grants } ) );
+		} catch ( e ) {
+			// Full or blocked storage: the click still works, just unremembered.
+		}
+	}
+
+	// Grant keys carry no identifier — only what was consented to (§6.2):
+	// the embed URL, the provider id, or everything.
+	function grantKeys( config, container, payload ) {
+		if ( config.scope === 'all' ) {
+			return [ '*' ];
+		}
+		if ( config.scope === 'embed' ) {
+			return [ 'e:' + String( payload.src || '' ) ];
+		}
+		return [ 'p:' + String( container.getAttribute( 'data-cg-provider' ) || '' ) ];
+	}
+
+	function rememberConsent( container, payload ) {
+		var config = memoryConfig();
+		if ( config.memory === 'off' ) {
+			return;
+		}
+		var grants = readGrants( config );
+		var keys = grantKeys( config, container, payload );
+		for ( var i = 0; i < keys.length; i++ ) {
+			grants[ keys[ i ] ] = Date.now();
+		}
+		writeGrants( config, grants );
+	}
+
+	function hasStoredConsent( container, payload ) {
+		var config = memoryConfig();
+		if ( config.memory === 'off' ) {
+			return false;
+		}
+		var grants = readGrants( config );
+		if ( Object.prototype.hasOwnProperty.call( grants, '*' ) ) {
+			return true;
+		}
+		var keys = grantKeys( config, container, payload );
+		for ( var i = 0; i < keys.length; i++ ) {
+			if ( Object.prototype.hasOwnProperty.call( grants, keys[ i ] ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	function withdrawConsent() {
+		// Art. 7(3): withdrawal must be as easy as giving consent. Clear the
+		// plugin's key from both storages; embeds are gated again from the
+		// next page load.
+		try {
+			window.sessionStorage.removeItem( STORAGE_KEY );
+		} catch ( e ) { /* Storage blocked: nothing was stored. */ }
+		try {
+			window.localStorage.removeItem( STORAGE_KEY );
+		} catch ( e ) { /* Storage blocked: nothing was stored. */ }
+	}
+
 	// Script load state per URL, so a provider SDK is fetched exactly once no
 	// matter how many embeds it serves (PLAN.md §9.6).
 	var scriptStates = {};
@@ -150,7 +264,7 @@
 		}
 	}
 
-	function activateScript( container, payload ) {
+	function activateScript( container, payload, focus ) {
 		var src = typeof payload.src === 'string' ? payload.src : '';
 		if ( ! /^(https?:)?\/\//i.test( src ) ) {
 			return;
@@ -169,15 +283,18 @@
 			}
 		}
 		removePanel( container );
-		container.setAttribute( 'tabindex', '-1' );
-		container.focus();
+		if ( focus ) {
+			container.setAttribute( 'tabindex', '-1' );
+			container.focus();
+		}
 
 		loadScriptOnce( src, function () {
 			runReadyHook( providerId );
 		} );
 	}
 
-	function activate( container ) {
+	function activate( container, options ) {
+		options = options || {};
 		if ( container.getAttribute( 'data-cg-activated' ) === '1' ) {
 			return;
 		}
@@ -189,8 +306,14 @@
 			return; // Malformed payload: the fallback link still works.
 		}
 
+		// Storage is written AFTER the click, never before (invariant 3);
+		// a memory-restored activation only reads and re-stores nothing.
+		if ( options.remember ) {
+			rememberConsent( container, payload );
+		}
+
 		if ( payload.strategy === 'script' ) {
-			activateScript( container, payload );
+			activateScript( container, payload, !! options.focus );
 			return;
 		}
 
@@ -205,11 +328,43 @@
 		// Focus the container, not the inserted node: if a provider script
 		// later replaces the node, focus would silently fall back to <body>
 		// and throw the keyboard user to the top of the page (PLAN.md §8).
-		container.setAttribute( 'tabindex', '-1' );
-		container.focus();
+		if ( options.focus ) {
+			container.setAttribute( 'tabindex', '-1' );
+			container.focus();
+		}
+	}
+
+	// With memory enabled (§6.2), re-activate what the visitor already
+	// consented to. Read-only: no write happens on page load, and no focus
+	// moves — there was no user gesture.
+	function restoreFromMemory() {
+		if ( memoryConfig().memory === 'off' || ! document.querySelectorAll ) {
+			return;
+		}
+		var containers = document.querySelectorAll( '.cg-embed[data-cg-payload]' );
+		for ( var i = 0; i < containers.length; i++ ) {
+			var container = containers[ i ];
+			var payload;
+			try {
+				payload = JSON.parse( container.getAttribute( 'data-cg-payload' ) || '' );
+			} catch ( e ) {
+				continue;
+			}
+			if ( hasStoredConsent( container, payload ) ) {
+				activate( container, { focus: false, remember: false } );
+			}
+		}
 	}
 
 	document.addEventListener( 'click', function ( event ) {
+		var withdraw = closestByAttribute( event.target, 'data-cg-withdraw' );
+		if ( withdraw ) {
+			event.preventDefault();
+			withdrawConsent();
+			announceWithdrawal( withdraw );
+			return;
+		}
+
 		var button = closestByClass( event.target, 'cg-embed__button' );
 		if ( ! button ) {
 			return;
@@ -217,7 +372,31 @@
 		var container = closestByClass( button, 'cg-embed' );
 		if ( container ) {
 			event.preventDefault();
-			activate( container );
+			activate( container, { focus: true, remember: true } );
 		}
 	}, false );
+
+	function closestByAttribute( el, name ) {
+		while ( el && el !== document ) {
+			if ( el.nodeType === 1 && el.hasAttribute && el.hasAttribute( name ) ) {
+				return el;
+			}
+			el = el.parentNode;
+		}
+		return null;
+	}
+
+	function announceWithdrawal( trigger ) {
+		var status = document.getElementById( trigger.getAttribute( 'aria-controls' ) || '' );
+		if ( status ) {
+			status.textContent = memoryConfig().i18n.withdrawn
+				|| 'Stored embed consents have been removed. Embeds will ask again.';
+		}
+	}
+
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', restoreFromMemory, false );
+	} else {
+		restoreFromMemory();
+	}
 }() );
