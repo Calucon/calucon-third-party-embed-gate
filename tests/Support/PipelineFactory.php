@@ -9,6 +9,7 @@
 
 namespace ConsentGate\Tests\Support;
 
+use ConsentGate\Detection\EmbedObjectRule;
 use ConsentGate\Detection\HostMatcher;
 use ConsentGate\Detection\HtmlScanner;
 use ConsentGate\Detection\IframeRule;
@@ -36,8 +37,9 @@ final class PipelineFactory {
 		$renderer = new PlaceholderRenderer();
 
 		$iframe = new IframeRule( $scanner, $hosts, $registry, $renderer );
+		$embed  = new EmbedObjectRule( $scanner, $hosts, $registry, $renderer );
 		$script = new ScriptRule( $scanner, $hosts, $registry, $renderer );
 
-		return $script->apply( $iframe->apply( $html, $ctx ), $ctx );
+		return $script->apply( $embed->apply( $iframe->apply( $html, $ctx ), $ctx ), $ctx );
 	}
 }

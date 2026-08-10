@@ -709,14 +709,47 @@ stylesheet path.
 ### 9.4 Escaped and quoted markup
 
 A post that *documents* an embed contains `&lt;iframe …&gt;`. It must survive
-untouched. Similarly, markup inside `<code>`, `<pre>`, `<script type="text/template">`
-and HTML comments must not be rewritten.
+untouched. Similarly, markup inside `<code>`, `<pre>`, `<script type="text/template">`,
+`<template>` and HTML comments must not be rewritten.
+
+Exclusion ranges must be computed in one sequential pass, the way a browser
+tokenises — never as independent global regexes. Two independent passes
+cross-contaminate: a literal `<!--` inside a script body (JSON-LD, legacy
+script-hiding) opens a bogus comment range to end-of-input and every embed
+after it goes ungated, silently. Unterminated containers follow browser
+behaviour: an unterminated comment or raw-text element (`script`, `style`,
+`textarea`, `title`, `template`) swallows the rest of the document — nothing
+in it can fire, so excluding to end-of-input is accurate. An unterminated
+`<pre>`/`<code>` is different: browsers keep parsing markup inside it, an
+iframe there still fires, so it excludes nothing — fail closed and gate.
 
 ### 9.5 Iframes with no usable `src`
 
-`srcdoc` (no src), `about:blank`, `data:`, relative paths, and empty `src` all
-pass through unmodified. Never emit a placeholder whose fallback link points
-nowhere — that is a 2.4.4 failure and worse than the original.
+`about:blank`, `data:`, relative paths, and empty `src` pass through
+unmodified. Never emit a placeholder whose fallback link points nowhere —
+that is a 2.4.4 failure and worse than the original.
+
+Two refinements learned since the first draft:
+
+- **`srcdoc` is not automatically inert.** A srcdoc iframe executes its inline
+  document, including third-party `<script src>` and `<img src>` — the widely
+  copied "srcdoc lazy YouTube" snippet requests the thumbnail at page load.
+  When the srcdoc references a foreign host, gate it: the payload carries the
+  original srcdoc verbatim (equal privilege, invariant 7) and the fallback
+  link is harvested from the first foreign `<a href>` inside it. A srcdoc
+  that references nothing foreign still passes through.
+- **A lazy-load `data-src`/`data-lazy-src`/`data-original` attribute is a
+  usable src.** Lazy-load plugins park the real URL there and shim `src` with
+  `about:blank` or a `data:` GIF; the parked URL is the one that fires on
+  scroll. Treat it exactly like `src` (see §9.8).
+
+An invisible foreign iframe — zero-sized, `hidden`, or `display:none` (GTM's
+noscript pixel) — is a tracker, not content: it is removed outright rather
+than gated, because a visible "Load content from googletagmanager.com" panel
+for no-JS visitors is a regression, and there is no content to link to.
+`visibility:hidden` alone does NOT count as invisible: core's own
+WordPress-to-WordPress embed iframe ships that way until wp-embed.js reveals
+it.
 
 ### 9.6 Provider scripts that render many embeds
 
@@ -743,6 +776,12 @@ canonical page, which is a better destination than a derived `/embed/` URL.
 still without consent. Do not treat a lazy iframe as lower priority. Worth
 noting in the admin scan: on the source site, three of four YouTube embeds had
 **no** `loading` attribute at all and fired on page load.
+
+The same reasoning covers attribute-swapped lazy loading (WP Rocket,
+LiteSpeed, Perfmatters, lazysizes markup saved into content): the real URL
+sits in `data-src`/`data-lazy-src`/`data-original` while `src` is a shim.
+The scanner treats those attributes as the effective src — an iframe whose
+only foreign URL is parked in a data attribute is still gated.
 
 ### 9.9 oEmbed caching in postmeta
 

@@ -1,0 +1,6 @@
+<!-- The expected output keeps one orphan </iframe>: the outer span ends at
+     the first closer, and browsers silently drop the stray end tag. What
+     matters is that no attribute fragments leak and later content survives. -->
+<p>Hand-written widget markup with an iframe nested as its own fallback:</p>
+<iframe title="Outer map" width="560" height="315" src="https://www.google.com/maps/embed?pb=!1m14!1m8"><iframe title="Inner fallback" width="560" height="315" src="https://player.vimeo.com/video/76979871"></iframe></iframe>
+<p>Text after both closers must survive unharmed.</p>

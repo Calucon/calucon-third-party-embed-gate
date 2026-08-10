@@ -10,8 +10,10 @@
 	'use strict';
 
 	// Mirror of the server-side safelist (PLAN.md §5.2). Never style, never
-	// srcdoc, never on* — and autoplay never survives the rebuild (invariant 8).
-	var SAFELIST = [ 'title', 'width', 'height', 'sandbox', 'loading', 'allow', 'allowfullscreen', 'referrerpolicy' ];
+	// on* — and autoplay never survives the rebuild (invariant 8). 'type'
+	// only ever arrives in <embed>/<object> payloads, whose server safelist
+	// is narrower still.
+	var SAFELIST = [ 'title', 'width', 'height', 'sandbox', 'loading', 'allow', 'allowfullscreen', 'referrerpolicy', 'type' ];
 
 	function hasClass( el, name ) {
 		return el && el.nodeType === 1 && ( ' ' + el.className + ' ' ).indexOf( ' ' + name + ' ' ) !== -1;
@@ -41,13 +43,18 @@
 
 	function buildFrame( payload ) {
 		var src = typeof payload.src === 'string' ? payload.src : '';
+		var srcdoc = typeof payload.srcdoc === 'string' ? payload.srcdoc : '';
+		var tag = payload.tag === 'embed' || payload.tag === 'object' ? payload.tag : 'iframe';
+
 		// Only http(s) or protocol-relative URLs may be loaded. Anything else
-		// in the payload is treated as hostile and ignored.
-		if ( ! /^(https?:)?\/\//i.test( src ) ) {
+		// in the payload is treated as hostile and ignored. A srcdoc payload
+		// carries the embed's original inline document instead of a URL —
+		// restoring it verbatim is the same privilege the page already had.
+		if ( ! srcdoc && ! /^(https?:)?\/\//i.test( src ) ) {
 			return null;
 		}
 
-		var frame = document.createElement( 'iframe' );
+		var frame = document.createElement( tag );
 		var attrs = payload.attrs || {};
 		for ( var i = 0; i < SAFELIST.length; i++ ) {
 			var name = SAFELIST[ i ];
@@ -69,7 +76,12 @@
 			}
 			frame.setAttribute( name, String( value ) );
 		}
-		frame.setAttribute( 'src', src );
+		if ( srcdoc ) {
+			frame.setAttribute( 'srcdoc', srcdoc );
+		} else {
+			// An <object> spells its target 'data'; iframe and embed use 'src'.
+			frame.setAttribute( tag === 'object' ? 'data' : 'src', src );
+		}
 		return frame;
 	}
 

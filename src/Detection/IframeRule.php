@@ -10,6 +10,7 @@
 
 namespace ConsentGate\Detection;
 
+use ConsentGate\Providers\LoadUrl;
 use ConsentGate\Providers\Registry;
 use ConsentGate\Rendering\PlaceholderRenderer;
 
@@ -19,6 +20,13 @@ use ConsentGate\Rendering\PlaceholderRenderer;
  * the fixture corpus asserts byte-identity on every pass-through case.
  */
 final class IframeRule {
+
+	/**
+	 * Attributes lazy-load plugins park the real URL in while leaving src
+	 * empty, about:blank or a data: shim. Deferred is still without consent
+	 * (§9.8) — the parked URL is the one that fires on scroll.
+	 */
+	private const LAZY_SRC_ATTRIBUTES = array( 'data-src', 'data-lazy-src', 'data-original' );
 
 	/** @var HtmlScanner */
 	private HtmlScanner $scanner;
@@ -74,19 +82,38 @@ final class IframeRule {
 			return $html;
 		}
 
-		// Replace back-to-front so earlier offsets stay valid.
-		foreach ( array_reverse( $matches ) as $match ) {
-			$attributes = $match['attributes'];
-
-			// No usable src (missing, empty, srcdoc-only, about:blank, data:)
-			// means no third-party request and no honest fallback link —
-			// pass through unmodified (PLAN.md §9.5).
-			if ( ! isset( $attributes['src'] ) || ! is_string( $attributes['src'] ) ) {
+		// Drop matches nested inside an earlier match's span. With mis-nested
+		// or unclosed iframes the first-close heuristic makes spans overlap,
+		// and splicing both corrupts the page: the outer replacement cuts
+		// through the inner placeholder and leaks raw attribute fragments as
+		// visible text. The outer iframe is the one browsers render; anything
+		// inside its span is fallback content and is consumed with it.
+		$kept     = array();
+		$last_end = -1;
+		foreach ( $matches as $match ) {
+			if ( $match['start'] < $last_end ) {
 				continue;
 			}
-			$src = trim( $attributes['src'] );
+			$kept[]   = $match;
+			$last_end = $match['end'];
+		}
 
-			if ( HostMatcher::FOREIGN !== $this->hosts->classify( $src ) ) {
+		// Replace back-to-front so earlier offsets stay valid.
+		foreach ( array_reverse( $kept ) as $match ) {
+			$attributes = $match['attributes'];
+
+			$src = $this->effective_src( $attributes );
+
+			if ( null === $src ) {
+				$srcdoc = $this->srcdoc_target( $attributes );
+				if ( null === $srcdoc ) {
+					// No usable URL anywhere (missing, empty, about:blank,
+					// data:, relative, inert srcdoc) means no third-party
+					// request and no honest fallback link — pass through
+					// unmodified (PLAN.md §9.5).
+					continue;
+				}
+				$html = $this->gate_srcdoc( $html, $match, $srcdoc, $ctx );
 				continue;
 			}
 
@@ -105,12 +132,23 @@ final class IframeRule {
 				// The owner explicitly exempted this provider; their call.
 				continue;
 			}
+
+			// A foreign iframe the visitor cannot see is a tracking pixel,
+			// not content: there is nothing to offer a panel for and no page
+			// worth a fallback link. Remove it entirely — a GTM noscript
+			// pixel must not become a visible "Load content from
+			// googletagmanager.com" panel for no-JS visitors.
+			if ( $this->is_invisible( $attributes ) ) {
+				$html = substr( $html, 0, $match['start'] ) . substr( $html, $match['end'] );
+				continue;
+			}
+
 			// The rule that matched decides the mechanics: this rule always
 			// rebuilds an iframe, even for providers that also ship a script
 			// variant (X/Twitter appears both ways in the field).
 			$provider['strategy'] = 'iframe';
 
-			$load_src = $this->load_src( $provider, $src );
+			$load_src = LoadUrl::for_provider( $provider, $src );
 
 			$span_start = $match['start'];
 			$span_end   = $match['end'];
@@ -145,58 +183,141 @@ final class IframeRule {
 	}
 
 	/**
-	 * The URL the embed is loaded from AFTER consent (PLAN.md §4.1).
+	 * The URL this iframe will actually request: a foreign src, or the URL a
+	 * lazy-load plugin parked in a data attribute while src is a shim.
 	 *
-	 * Data minimisation, GDPR Art. 5(1)(c): prefer the provider's
-	 * privacy-preserving host where one exists — measured 0 cookies on
-	 * youtube-nocookie.com against 5 on the default host.
-	 *
-	 * @param array  $provider Normalised provider descriptor.
-	 * @param string $src      Original (entity-decoded) embed URL.
-	 * @return string
+	 * @param array $attributes Lowercased, decoded attributes.
+	 * @return string|null Null when nothing foreign would be requested.
 	 */
-	private function load_src( array $provider, string $src ): string {
-		if ( is_string( $provider['load_host'] ) && '' !== $provider['load_host'] ) {
-			$path = ( is_string( $provider['load_path'] ) && '' !== $provider['load_path'] )
-				? $provider['load_path']
-				: (string) parse_url( 0 === strpos( $src, '//' ) ? 'https:' . $src : $src, PHP_URL_PATH );
-			return 'https://' . $provider['load_host'] . $path;
+	private function effective_src( array $attributes ) {
+		if ( isset( $attributes['src'] ) && is_string( $attributes['src'] ) ) {
+			$src = trim( $attributes['src'] );
+			if ( HostMatcher::FOREIGN === $this->hosts->classify( $src ) ) {
+				return $src;
+			}
 		}
 
-		if ( array() !== $provider['load_query'] && is_array( $provider['load_query'] ) ) {
-			return $this->merge_query( $src, $provider['load_query'] );
+		foreach ( self::LAZY_SRC_ATTRIBUTES as $name ) {
+			if ( isset( $attributes[ $name ] ) && is_string( $attributes[ $name ] ) ) {
+				$src = trim( $attributes[ $name ] );
+				if ( HostMatcher::FOREIGN === $this->hosts->classify( $src ) ) {
+					return $src;
+				}
+			}
 		}
 
-		return $src;
+		return null;
 	}
 
 	/**
-	 * Merge query parameters into a URL, dropping autoplay flags — audio
-	 * starting unbidden is not what was asked for (invariant 8).
+	 * Whether the iframe is invisible to the visitor: zero-sized, hidden, or
+	 * display:none. Matches the shapes trackers actually use (GTM's noscript
+	 * pixel is height=0 width=0 style="display:none;visibility:hidden").
+	 * Deliberately NOT matched: visibility:hidden alone — core's own
+	 * WordPress-to-WordPress embed iframe ships hidden that way until
+	 * wp-embed.js reveals it, and it is real content.
 	 *
-	 * @param string $src   URL (may be protocol-relative).
-	 * @param array  $extra Parameters to merge.
+	 * @param array $attributes Lowercased, decoded attributes.
+	 * @return bool
+	 */
+	private function is_invisible( array $attributes ): bool {
+		if ( array_key_exists( 'hidden', $attributes ) ) {
+			return true;
+		}
+		$width  = isset( $attributes['width'] ) ? trim( (string) $attributes['width'] ) : null;
+		$height = isset( $attributes['height'] ) ? trim( (string) $attributes['height'] ) : null;
+		if ( in_array( $width, array( '0', '1' ), true ) && in_array( $height, array( '0', '1' ), true ) ) {
+			return true;
+		}
+		$style = isset( $attributes['style'] ) && is_string( $attributes['style'] ) ? $attributes['style'] : '';
+		return (bool) preg_match( '/display\s*:\s*none/i', $style );
+	}
+
+	/**
+	 * A srcdoc iframe with no usable src still executes its inline document —
+	 * including third-party <script src> and <img src> (the widely copied
+	 * "srcdoc lazy YouTube" snippet requests the thumbnail at page load). The
+	 * §9.5 pass-through only holds when the srcdoc references nothing foreign.
+	 *
+	 * @param array $attributes Lowercased, decoded attributes.
+	 * @return array{url:string,fallback:string}|null Null when nothing foreign
+	 *         is referenced.
+	 */
+	private function srcdoc_target( array $attributes ) {
+		if ( ! isset( $attributes['srcdoc'] ) || ! is_string( $attributes['srcdoc'] ) || '' === trim( $attributes['srcdoc'] ) ) {
+			return null;
+		}
+		$doc = $attributes['srcdoc'];
+
+		if ( ! preg_match_all( '~(?:https?:)?//[^\s"\'<>]+~i', $doc, $m ) ) {
+			return null;
+		}
+		$first = null;
+		foreach ( $m[0] as $url ) {
+			if ( HostMatcher::FOREIGN === $this->hosts->classify( $url ) ) {
+				$first = $url;
+				break;
+			}
+		}
+		if ( null === $first ) {
+			return null;
+		}
+
+		// Prefer a real link inside the srcdoc as the fallback destination —
+		// the lazy-YouTube snippet wraps its thumbnail in the watch URL.
+		$fallback = $first;
+		foreach ( $this->scanner->find_tags( $doc, 'a' ) as $link ) {
+			if ( isset( $link['attributes']['href'] ) && is_string( $link['attributes']['href'] )
+				&& HostMatcher::FOREIGN === $this->hosts->classify( trim( $link['attributes']['href'] ) ) ) {
+				$fallback = trim( $link['attributes']['href'] );
+				break;
+			}
+		}
+
+		return array(
+			'url'      => $first,
+			'fallback' => 0 === strpos( $fallback, '//' ) ? 'https:' . $fallback : $fallback,
+		);
+	}
+
+	/**
+	 * Gate a srcdoc iframe: the placeholder's payload carries the original
+	 * srcdoc verbatim, restored only on click — equal privilege, never wider
+	 * (invariant 7).
+	 *
+	 * @param string $html      Full fragment.
+	 * @param array  $tag_match Scanner match.
+	 * @param array  $target    From srcdoc_target().
+	 * @param array  $ctx       Integration context.
 	 * @return string
 	 */
-	private function merge_query( string $src, array $extra ): string {
-		$absolute = 0 === strpos( $src, '//' ) ? 'https:' . $src : $src;
-		$parts    = parse_url( $absolute );
-		if ( ! isset( $parts['scheme'], $parts['host'] ) ) {
-			return $src;
+	private function gate_srcdoc( string $html, array $tag_match, array $target, array $ctx ): string {
+		if ( null !== $this->should_gate
+			&& ! call_user_func( $this->should_gate, true, $target['url'], $ctx ) ) {
+			return $html;
 		}
 
-		$params = array();
-		if ( isset( $parts['query'] ) ) {
-			parse_str( $parts['query'], $params );
+		$host = $this->hosts->host_of( $target['url'] );
+		if ( null === $host ) {
+			return $html;
 		}
-		unset( $params['autoplay'], $params['auto_play'] );
-		$params = array_merge( $params, $extra );
 
-		return $parts['scheme'] . '://' . $parts['host']
-			. ( isset( $parts['port'] ) ? ':' . $parts['port'] : '' )
-			. ( isset( $parts['path'] ) ? $parts['path'] : '' )
-			. ( array() !== $params ? '?' . http_build_query( $params, '', '&', PHP_QUERY_RFC3986 ) : '' )
-			. ( isset( $parts['fragment'] ) ? '#' . $parts['fragment'] : '' );
+		$provider = $this->providers->resolve_for_url( $target['url'], $host );
+		if ( false === $provider['enabled'] ) {
+			return $html;
+		}
+		$provider['strategy'] = 'iframe';
+		$provider['fallback'] = $target['fallback'];
+
+		$placeholder = $this->renderer->render( $provider, '', $tag_match['attributes'], $ctx );
+
+		$html = substr( $html, 0, $tag_match['start'] ) . $placeholder . substr( $html, $tag_match['end'] );
+
+		if ( null !== $this->on_gated ) {
+			call_user_func( $this->on_gated, $provider, $ctx );
+		}
+
+		return $html;
 	}
 
 	/**

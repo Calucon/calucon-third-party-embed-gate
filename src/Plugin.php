@@ -12,6 +12,7 @@
 namespace ConsentGate;
 
 use ConsentGate\Admin\SettingsPage;
+use ConsentGate\Detection\EmbedObjectRule;
 use ConsentGate\Detection\EmbedStripper;
 use ConsentGate\Detection\HostMatcher;
 use ConsentGate\Detection\HtmlScanner;
@@ -42,6 +43,9 @@ final class Plugin {
 
 	/** @var IframeRule */
 	private IframeRule $iframe_rule;
+
+	/** @var EmbedObjectRule */
+	private EmbedObjectRule $embed_object_rule;
 
 	/** @var ScriptRule */
 	private ScriptRule $script_rule;
@@ -121,9 +125,10 @@ final class Plugin {
 			do_action( 'consent_gate_embed_gated', $provider, $ctx );
 		};
 
-		$this->iframe_rule = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
-		$this->script_rule = new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
-		$this->stripper    = new EmbedStripper( $scanner, $hosts );
+		$this->iframe_rule       = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
+		$this->embed_object_rule = new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
+		$this->script_rule       = new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
+		$this->stripper          = new EmbedStripper( $scanner, $hosts );
 
 		add_action(
 			'init',
@@ -170,6 +175,9 @@ final class Plugin {
 	public function gate( string $html, array $ctx ): string {
 		if ( $this->options['detection']['iframes'] ) {
 			$html = $this->iframe_rule->apply( $html, $ctx );
+			// <embed>/<object> are frame-shaped embeds under the same toggle:
+			// Flash-era markup requests third-party content on load too.
+			$html = $this->embed_object_rule->apply( $html, $ctx );
 		}
 		if ( $this->options['detection']['scripts'] ) {
 			$html = $this->script_rule->apply( $html, $ctx );
