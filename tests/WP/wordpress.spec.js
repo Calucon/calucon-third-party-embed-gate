@@ -107,6 +107,29 @@ test( 'script embeds: SDKs gated, companions kept, fallbacks harvested', async (
 		.toHaveAttribute( 'href', 'https://www.strava.com/activities/1234567890' );
 } );
 
+test( 'poster block attribute renders a site-origin poster, gone after activation', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+
+	await page.goto( '/poster-embed/' );
+	await page.waitForLoadState( 'networkidle' );
+
+	// The poster request goes to the site's own host — never the provider.
+	expect( offenders, 'a poster must never contact a third party' ).toEqual( [] );
+
+	const container = page.locator( '.cg-embed--poster' );
+	await expect( container ).toHaveCount( 1 );
+	const poster = container.locator( 'img.cg-embed__poster' );
+	await expect( poster ).toHaveAttribute( 'alt', '' );
+	await expect( poster ).toHaveAttribute( 'aria-hidden', 'true' );
+	const src = await poster.getAttribute( 'src' );
+	expect( OWN_HOSTS ).toContain( new URL( String( src ), page.url() ).hostname );
+
+	await abortThirdParty( page );
+	await container.locator( '.cg-embed__button' ).click();
+	await expect( container.locator( 'iframe' ) ).toHaveCount( 1 );
+	await expect( container.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
+} );
+
 test( 'assets ship only on pages where something was gated', async ( { page } ) => {
 	await page.goto( '/gated-classic/' );
 	await expect( page.locator( 'script[src*="consent-gate/assets/js/gate.js"]' ) ).toHaveCount( 1 );

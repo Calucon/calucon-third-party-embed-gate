@@ -58,14 +58,23 @@ final class RenderBlock {
 			return $content;
 		}
 
-		return $this->plugin->gate(
-			$content,
-			array(
-				'integration' => 'render_block',
-				'block'       => isset( $block['blockName'] ) ? $block['blockName'] : null,
-				'post_id'     => get_the_ID(),
-				'force_gate'  => 'always' === $override,
-			)
+		$ctx = array(
+			'integration' => 'render_block',
+			'block'       => isset( $block['blockName'] ) ? $block['blockName'] : null,
+			'post_id'     => get_the_ID(),
+			'force_gate'  => 'always' === $override,
 		);
+
+		// Owner-supplied poster (§5.4): stored as an attachment ID by the
+		// editor integration, resolved and own-host-validated here — the
+		// renderer only ever sees a vetted site-origin URL.
+		if ( isset( $attrs['consentGatePoster'] ) && is_numeric( $attrs['consentGatePoster'] ) ) {
+			$poster = $this->plugin->poster_url( (int) $attrs['consentGatePoster'] );
+			if ( '' !== $poster ) {
+				$ctx['poster'] = $poster;
+			}
+		}
+
+		return $this->plugin->gate( $content, $ctx );
 	}
 }

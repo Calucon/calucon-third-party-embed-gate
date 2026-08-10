@@ -31,7 +31,11 @@
 				return settings;
 			}
 			settings.attributes = Object.assign( {}, settings.attributes, {
-				consentGate: { type: 'string', default: '' }
+				consentGate: { type: 'string', default: '' },
+				// Owner-supplied poster (§5.4): the ID is what the server
+				// renders from; the URL exists only for the inspector preview.
+				consentGatePoster: { type: 'number', default: 0 },
+				consentGatePosterUrl: { type: 'string', default: '' }
 			} );
 			return settings;
 		}
@@ -46,6 +50,55 @@
 					return el( BlockEdit, props );
 				}
 				var value = props.attributes.consentGate || '';
+				var posterUrl = props.attributes.consentGatePosterUrl || '';
+
+				// Poster picker (§5.4, owner-supplied variant): images come
+				// from the media library so the placeholder stays site-origin.
+				var posterControls = el(
+					wp.blockEditor.MediaUploadCheck,
+					null,
+					el( wp.blockEditor.MediaUpload, {
+						allowedTypes: [ 'image' ],
+						value: props.attributes.consentGatePoster || 0,
+						onSelect: function ( media ) {
+							var large = media && media.sizes && media.sizes.large ? media.sizes.large.url : '';
+							props.setAttributes( {
+								consentGatePoster: media && media.id ? media.id : 0,
+								consentGatePosterUrl: large || ( media && media.url ? media.url : '' )
+							} );
+						},
+						render: function ( obj ) {
+							return el(
+								'div',
+								{ className: 'cg-poster-control' },
+								posterUrl ? el( 'img', {
+									className: 'cg-poster-control__preview',
+									src: posterUrl,
+									alt: ''
+								} ) : null,
+								el( wp.components.Button, {
+									variant: 'secondary',
+									onClick: obj.open
+								}, posterUrl
+									? __( 'Replace poster image', 'consent-gate' )
+									: __( 'Set poster image', 'consent-gate' ) ),
+								posterUrl ? el( wp.components.Button, {
+									variant: 'link',
+									isDestructive: true,
+									onClick: function () {
+										props.setAttributes( { consentGatePoster: 0, consentGatePosterUrl: '' } );
+									}
+								}, __( 'Remove poster image', 'consent-gate' ) ) : null,
+								el(
+									'p',
+									{ className: 'cg-poster-control__help' },
+									__( 'Shown behind the consent panel until the visitor loads the embed. The image is served from your own media library, never fetched from the provider.', 'consent-gate' )
+								)
+							);
+						}
+					} )
+				);
+
 				return el(
 					wp.element.Fragment,
 					null,
@@ -70,7 +123,8 @@
 								help: value === 'never'
 									? __( 'This block’s embeds will load immediately for every visitor, without a consent click.', 'consent-gate' )
 									: __( 'Overrides the site-wide setting for this block only.', 'consent-gate' )
-							} )
+							} ),
+							value === 'never' ? null : posterControls
 						)
 					)
 				);

@@ -42,4 +42,24 @@ final class PipelineFactory {
 
 		return $script->apply( $embed->apply( $iframe->apply( $html, $ctx ), $ctx ), $ctx );
 	}
+
+	/**
+	 * The integration context for a fixture case. A fixture may carry an
+	 * optional ctx.json with extra context — e.g. the §5.4 poster URL an
+	 * integration would resolve. Shared by FixtureTest and the generator so
+	 * both build fixtures identically.
+	 *
+	 * @param string $dir Fixture directory.
+	 * @return array
+	 */
+	public static function fixture_ctx( string $dir ): array {
+		$ctx = array( 'integration' => 'test' );
+		if ( is_file( $dir . '/ctx.json' ) ) {
+			$extra = json_decode( (string) file_get_contents( $dir . '/ctx.json' ), true );
+			if ( is_array( $extra ) ) {
+				$ctx = array_merge( $ctx, $extra );
+			}
+		}
+		return $ctx;
+	}
 }

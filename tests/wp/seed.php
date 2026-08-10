@@ -21,6 +21,25 @@ if ( function_exists( 'kses_remove_filters' ) ) {
 	kses_remove_filters(); // Seed raw markup exactly as authored.
 }
 
+// Poster attachment (§5.4): metadata is enough — wp_get_attachment_image_url()
+// resolves a site-origin URL from _wp_attached_file without touching disk, and
+// the poster test asserts markup, not pixels.
+$cg_poster = get_page_by_path( 'cg-poster-image', OBJECT, 'attachment' );
+if ( $cg_poster ) {
+	$cg_poster_id = (int) $cg_poster->ID;
+} else {
+	$cg_poster_id = (int) wp_insert_post(
+		array(
+			'post_name'      => 'cg-poster-image',
+			'post_title'     => 'Poster image',
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'post_mime_type' => 'image/jpeg',
+		)
+	);
+	update_post_meta( $cg_poster_id, '_wp_attached_file', '2026/08/cg-poster.jpg' );
+}
+
 $cg_seed_posts = array(
 	'gated-classic'  => array(
 		'title'   => 'Gated classic content',
@@ -41,6 +60,10 @@ $cg_seed_posts = array(
 		'title'   => 'Script embeds',
 		'content' => '<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Worth every kilometre.</p>&mdash; Calucon (@calucon) <a href="https://twitter.com/calucon/status/1234567890123456789">June 1, 2024</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>' . "\n\n"
 			. '<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="1234567890"></div><script src="https://strava-embeds.com/embed.js"></script>',
+	),
+	'poster-embed'   => array(
+		'title'   => 'Poster embed',
+		'content' => "<!-- wp:html {\"consentGatePoster\":" . $cg_poster_id . "} -->\n<figure class=\"wp-block-embed is-type-video wp-block-embed-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio\"><div class=\"wp-block-embed__wrapper\">\n<iframe title=\"Kolkja Cycling\" width=\"500\" height=\"281\" src=\"https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed\" frameborder=\"0\" allowfullscreen></iframe>\n</div></figure>\n<!-- /wp:html -->",
 	),
 	'no-embeds'      => array(
 		'title'   => 'No embeds here',

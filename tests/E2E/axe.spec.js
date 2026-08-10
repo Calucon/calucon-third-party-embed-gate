@@ -4,7 +4,7 @@
 const { test, expect } = require( '@playwright/test' );
 const AxeBuilder = require( '@axe-core/playwright' ).default;
 
-const PAGES = [ '/page/gated', '/page/scripts', '/page/aspect', '/page/light', '/page/shapes', '/page/collision' ];
+const PAGES = [ '/page/gated', '/page/scripts', '/page/aspect', '/page/light', '/page/shapes', '/page/collision', '/page/poster' ];
 const VIEWPORTS = [
 	{ width: 360, height: 740 },
 	{ width: 1280, height: 800 },

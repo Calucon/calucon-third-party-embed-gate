@@ -81,4 +81,53 @@ final class PlaceholderRendererTest extends TestCase {
 
 		self::assertTrue( $payload['attrs']['allowfullscreen'] );
 	}
+
+	private function render_with_ctx( array $ctx ): string {
+		$provider = Provider::normalize(
+			array(
+				'id'       => 'generic',
+				'label'    => 'www.youtube.com',
+				'note'     => 'Note text.',
+				'action'   => 'Load it',
+				'fallback' => 'https://www.youtube.com/embed/x',
+			)
+		);
+
+		return ( new PlaceholderRenderer() )->render( $provider, 'https://www.youtube.com/embed/x', array( 'title' => 'T' ), $ctx );
+	}
+
+	public function test_poster_renders_decorative_site_origin_image(): void {
+		$html = $this->render_with_ctx( array( 'poster' => 'https://example.test/wp-content/uploads/p.jpg' ) );
+
+		self::assertStringContainsString( '<div class="cg-embed cg-embed--poster"', $html );
+		self::assertStringContainsString(
+			'<img class="cg-embed__poster" src="https://example.test/wp-content/uploads/p.jpg" alt="" aria-hidden="true" loading="lazy">',
+			$html
+		);
+	}
+
+	public function test_no_poster_context_leaves_the_contract_untouched(): void {
+		$html = $this->render_with_ctx( array() );
+
+		self::assertStringContainsString( '<div class="cg-embed" role="group"', $html );
+		self::assertStringNotContainsString( 'cg-embed__poster', $html );
+	}
+
+	public function test_poster_rejects_non_url_schemes(): void {
+		// Fail closed (invariant 1): a script- or data-scheme "poster" from a
+		// misbehaving filter must vanish, not render.
+		foreach ( array( 'javascript:alert(1)', 'data:image/png;base64,x', 'blob:https://x', '   ' ) as $bad ) {
+			self::assertStringNotContainsString(
+				'cg-embed__poster',
+				$this->render_with_ctx( array( 'poster' => $bad ) ),
+				$bad
+			);
+		}
+	}
+
+	public function test_poster_url_is_attribute_escaped(): void {
+		$html = $this->render_with_ctx( array( 'poster' => 'https://example.test/p.jpg?a=1&b="x"' ) );
+
+		self::assertStringContainsString( 'src="https://example.test/p.jpg?a=1&amp;b=&quot;x&quot;"', $html );
+	}
 }

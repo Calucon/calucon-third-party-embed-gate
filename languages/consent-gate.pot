@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Consent Gate plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Consent Gate 0.5.0\n"
+"Project-Id-Version: Consent Gate 0.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/Calucon/WP-Embed/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -13,7 +13,7 @@ msgstr ""
 msgid "%1$s: %2$s — %3$s"
 msgstr ""
 
-#: assets/js/editor.js:105
+#: assets/js/editor.js:159
 msgid "A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled."
 msgstr ""
 
@@ -33,7 +33,7 @@ msgstr ""
 msgid "All embeds of the same provider"
 msgstr ""
 
-#: assets/js/editor.js:64
+#: assets/js/editor.js:117
 msgid "Always gate"
 msgstr ""
 
@@ -50,7 +50,7 @@ msgstr ""
 msgid "Button background"
 msgstr ""
 
-#: assets/js/editor.js:125
+#: assets/js/editor.js:179
 msgid "Button label"
 msgstr ""
 
@@ -70,8 +70,8 @@ msgstr ""
 msgid "Compatibility"
 msgstr ""
 
-#: assets/js/editor.js:58
-#: assets/js/editor.js:123
+#: assets/js/editor.js:111
+#: assets/js/editor.js:177
 #: src/Admin/SettingsPage.php:124
 #: src/Admin/SettingsPage.php:125
 #: src/Admin/SettingsPage.php:160
@@ -201,7 +201,7 @@ msgstr ""
 msgid "Gate third-party scripts in content"
 msgstr ""
 
-#: assets/js/editor.js:60
+#: assets/js/editor.js:113
 msgid "Gate this embed"
 msgstr ""
 
@@ -306,7 +306,7 @@ msgstr ""
 msgid "Load video from YouTube"
 msgstr ""
 
-#: src/Plugin.php:614
+#: src/Plugin.php:644
 msgid "Loading embedded content…"
 msgstr ""
 
@@ -410,7 +410,7 @@ msgstr ""
 msgid "NOT gated — provider disabled in the table above"
 msgstr ""
 
-#: assets/js/editor.js:65
+#: assets/js/editor.js:118
 msgid "Never gate"
 msgstr ""
 
@@ -450,7 +450,7 @@ msgstr ""
 msgid "Only enable this if embeds from a page builder are not being gated. It buffers the entire page, which can conflict with other buffering or streaming plugins. Any error inside the buffer returns the page unmodified."
 msgstr ""
 
-#: src/Plugin.php:616
+#: src/Plugin.php:646
 msgid "Open it on the provider’s site."
 msgstr ""
 
@@ -459,7 +459,7 @@ msgstr ""
 msgid "Open on %s"
 msgstr ""
 
-#: assets/js/editor.js:72
+#: assets/js/editor.js:125
 msgid "Overrides the site-wide setting for this block only."
 msgstr ""
 
@@ -520,8 +520,16 @@ msgstr ""
 msgid "Remember consent"
 msgstr ""
 
+#: assets/js/editor.js:91
+msgid "Remove poster image"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:496
 msgid "Renders your latest posts and pages in memory and reports every embed found and whether it is gated. Read-only; no outbound requests."
+msgstr ""
+
+#: assets/js/editor.js:83
+msgid "Replace poster image"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:320
@@ -548,7 +556,15 @@ msgstr ""
 msgid "Scope"
 msgstr ""
 
-#: assets/js/editor.js:63
+#: assets/js/editor.js:84
+msgid "Set poster image"
+msgstr ""
+
+#: assets/js/editor.js:95
+msgid "Shown behind the consent panel until the visitor loads the embed. The image is served from your own media library, never fetched from the provider."
+msgstr ""
+
+#: assets/js/editor.js:116
 msgid "Site default"
 msgstr ""
 
@@ -565,7 +581,7 @@ msgstr ""
 msgid "Status & tools"
 msgstr ""
 
-#: src/Plugin.php:613
+#: src/Plugin.php:643
 msgid "Stored embed consents have been removed. Embeds will ask again."
 msgstr ""
 
@@ -573,7 +589,7 @@ msgstr ""
 msgid "Style the placeholder panel without writing any CSS: pick a style, pick colours, and watch the preview below update as you go. The readability check tells you immediately if a colour combination would be hard to read."
 msgstr ""
 
-#: src/Plugin.php:615
+#: src/Plugin.php:645
 msgid "The embedded content could not be loaded."
 msgstr ""
 
@@ -585,7 +601,7 @@ msgstr ""
 msgid "Third-party embeds are replaced with a placeholder until the visitor clicks to load them. Nothing is contacted, and nothing is stored, before that click."
 msgstr ""
 
-#: assets/js/editor.js:71
+#: assets/js/editor.js:124
 msgid "This block’s embeds will load immediately for every visitor, without a consent click."
 msgstr ""
 
@@ -609,8 +625,8 @@ msgstr ""
 msgid "What Consent Gate does"
 msgstr ""
 
-#: assets/js/editor.js:102
-#: assets/js/editor.js:116
+#: assets/js/editor.js:156
+#: assets/js/editor.js:170
 #: src/Integration/WithdrawShortcode.php:51
 msgid "Withdraw embed consents"
 msgstr ""

@@ -10,6 +10,19 @@
 	position: relative;
 }
 
+.cg-poster-control__preview {
+	display: block;
+	max-width: 100%;
+	border-radius: 2px;
+	margin-bottom: 8px;
+}
+
+.cg-poster-control__help {
+	font-size: 12px;
+	color: #757575;
+	margin: 8px 0 0;
+}
+
 .block-editor-block-list__block[data-consent-gate]::before {
 	/* The value is machine-oriented ("always"/"never"); the prefix names
 	   the feature. Informational, editor-only. */
