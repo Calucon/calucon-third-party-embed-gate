@@ -1,0 +1,68 @@
+# Build and publish a release with the installable plugin zip on every push
+# to main (i.e. every merge).
+#
+# The tag comes from the Version header in consent-gate.php: v0.1.0 for the
+# first merge at that version. If that tag already exists (a merge without a
+# version bump), the release is still created, as v0.1.0-build.<run number>,
+# so every merge yields a downloadable zip. Bump the Version header to cut a
+# clean vX.Y.Z.
+#
+# The unit suite runs again here as a backstop: branch protection guards PR
+# merges, this guards direct pushes.
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Package and release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Unit + fixture suite (PHPUnit)
+        run: composer test
+
+      - name: Determine version and tag
+        id: version
+        run: |
+          VERSION=$(sed -nE 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*([0-9][0-9A-Za-z.\-]*)[[:space:]]*$/\1/p' consent-gate.php | head -n1)
+          if [ -z "$VERSION" ]; then
+            echo "Could not read the Version header from consent-gate.php" >&2
+            exit 1
+          fi
+          TAG="v${VERSION}"
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" > /dev/null 2>&1; then
+            TAG="v${VERSION}-build.${{ github.run_number }}"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Build plugin zip
+        run: bash bin/build-zip.sh
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Consent Gate ${{ steps.version.outputs.tag }}
+          files: build/consent-gate-${{ steps.version.outputs.version }}.zip
+          generate_release_notes: true

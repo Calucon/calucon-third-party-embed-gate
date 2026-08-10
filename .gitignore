@@ -3,3 +3,4 @@
 /test-results/
 /playwright-report/
 .phpunit.result.cache
+/build/
