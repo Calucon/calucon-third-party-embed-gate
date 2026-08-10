@@ -12,17 +12,24 @@
 namespace ConsentGate;
 
 use ConsentGate\Admin\SettingsPage;
+use ConsentGate\Detection\EmbedStripper;
 use ConsentGate\Detection\HostMatcher;
 use ConsentGate\Detection\HtmlScanner;
 use ConsentGate\Detection\IframeRule;
 use ConsentGate\Detection\ScriptRule;
+use ConsentGate\Integration\Excerpt;
+use ConsentGate\Integration\OutputBuffer;
 use ConsentGate\Integration\RenderBlock;
+use ConsentGate\Integration\ResourceHints as ResourceHintsIntegration;
 use ConsentGate\Integration\TheContent;
+use ConsentGate\Integration\Widgets;
 use ConsentGate\Providers\Builtin\Descriptors;
 use ConsentGate\Providers\Registry;
 use ConsentGate\Rendering\PlaceholderRenderer;
 use ConsentGate\Rendering\TemplateLoader;
+use ConsentGate\Support\CacheFlush;
 use ConsentGate\Support\Options;
+use ConsentGate\Support\ResourceHints;
 
 /**
  * Builds the pipeline and registers the integrations.
@@ -40,6 +47,9 @@ final class Plugin {
 
 	/** @var array Sanitised option tree. */
 	private array $options;
+
+	/** @var EmbedStripper */
+	private EmbedStripper $stripper;
 
 	/**
 	 * Bootstraps the plugin once, on plugins_loaded.
@@ -112,6 +122,7 @@ final class Plugin {
 
 		$this->iframe_rule = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
 		$this->script_rule = new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
+		$this->stripper    = new EmbedStripper( $scanner, $hosts );
 
 		add_action(
 			'init',
@@ -128,7 +139,23 @@ final class Plugin {
 
 		( new RenderBlock( $this ) )->register();
 		( new TheContent( $this ) )->register();
+		( new Widgets( $this ) )->register();
+		( new Excerpt( $this ) )->register();
 		( new SettingsPage( $providers ) )->register();
+		( new ResourceHintsIntegration( new ResourceHints( $this->provider_hosts( $providers ), $hosts ) ) )->register();
+
+		if ( $this->options['detection']['output_buffer'] ) {
+			( new OutputBuffer( $this ) )->register();
+		}
+
+		// Cached pages keep serving pre-change markup after a settings save
+		// (§9.12) — flush the caches we can reach.
+		add_action(
+			'update_option_' . Options::OPTION,
+			static function (): void {
+				CacheFlush::flush_all();
+			}
+		);
 	}
 
 	/**
@@ -146,6 +173,17 @@ final class Plugin {
 			$html = $this->script_rule->apply( $html, $ctx );
 		}
 		return $html;
+	}
+
+	/**
+	 * Remove third-party embeds entirely — for excerpts and feeds, where a
+	 * placeholder is nonsense (§3.3, §9.3).
+	 *
+	 * @param string $html Content.
+	 * @return string
+	 */
+	public function strip( string $html ): string {
+		return $this->stripper->strip( $html );
 	}
 
 	/**
@@ -220,6 +258,15 @@ final class Plugin {
 				$hosts[] = $host;
 			}
 		}
+		// Multisite (§9.11): a cross-site embed inside one network is not a
+		// third party. Mapped domains appear as each site's domain.
+		if ( is_multisite() && function_exists( 'get_sites' ) ) {
+			foreach ( get_sites( array( 'number' => 500 ) ) as $site ) {
+				if ( isset( $site->domain ) && '' !== $site->domain ) {
+					$hosts[] = $site->domain;
+				}
+			}
+		}
 		// The configured never-gate list has the same effect as an own host:
 		// the embed passes through. Kept as a separate setting because the
 		// meaning differs — the owner is accepting those requests.
@@ -228,5 +275,25 @@ final class Plugin {
 			array_merge( $this->options['detection']['own_hosts'], $this->options['detection']['never_gate'] )
 		);
 		return array_values( array_unique( array_merge( $hosts, $extra ) ) );
+	}
+
+	/**
+	 * Every host the provider match tables know — the set whose resource
+	 * hints must not survive (§9.14).
+	 *
+	 * @param array[] $providers Descriptors.
+	 * @return string[]
+	 */
+	private function provider_hosts( array $providers ): array {
+		$hosts = array();
+		foreach ( $providers as $descriptor ) {
+			$match = isset( $descriptor['match'] ) && is_array( $descriptor['match'] ) ? $descriptor['match'] : array();
+			foreach ( array( 'iframe_host', 'script_host' ) as $key ) {
+				if ( isset( $match[ $key ] ) ) {
+					$hosts = array_merge( $hosts, (array) $match[ $key ] );
+				}
+			}
+		}
+		return array_values( array_unique( $hosts ) );
 	}
 }

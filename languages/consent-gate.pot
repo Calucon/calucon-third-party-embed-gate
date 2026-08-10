@@ -47,6 +47,10 @@ msgstr ""
 msgid "Gate"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:161
+msgid "Gate the whole page output (for Elementor, Divi, WPBakery, Bricks)"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:138
 msgid "Gate third-party iframes"
 msgstr ""
@@ -55,7 +59,7 @@ msgstr ""
 msgid "Gate third-party scripts in content"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:158
+#: src/Admin/SettingsPage.php:166
 msgid "Host matching"
 msgstr ""
 
@@ -240,8 +244,16 @@ msgstr ""
 msgid "One host per line, e.g. cdn.example.com or *.example.com. These are treated as the site itself and never gated."
 msgstr ""
 
+#: src/Admin/SettingsPage.php:162
+msgid "Only enable this if embeds from a page builder are not being gated. It buffers the entire page, which can conflict with other buffering or streaming plugins. Any error inside the buffer returns the page unmodified."
+msgstr ""
+
 #: src/Rendering/PlaceholderRenderer.php:88
 msgid "Open on %s"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:158
+msgid "Page builders"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:93
@@ -264,7 +276,7 @@ msgstr ""
 msgid "Third-party embeds are replaced with a placeholder until the visitor clicks to load them. Nothing is contacted, and nothing is stored, before that click."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:161
+#: src/Admin/SettingsPage.php:169
 msgid "Treat www.example.com and example.com as the same site"
 msgstr ""
 

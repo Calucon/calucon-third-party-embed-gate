@@ -38,6 +38,9 @@ final class Options {
 				'own_hosts'       => array(), // Site's own CDN / media hosts.
 				'never_gate'      => array(), // Hosts the owner exempts (their responsibility).
 				'www_equivalence' => true,
+				// Whole-document buffer for page builders (§3.3). Invasive;
+				// off by default, behind a warning in the UI.
+				'output_buffer'   => false,
 			),
 		);
 	}
@@ -84,7 +87,7 @@ final class Options {
 
 		if ( isset( $raw['detection'] ) && is_array( $raw['detection'] ) ) {
 			$d = $raw['detection'];
-			foreach ( array( 'iframes', 'scripts', 'www_equivalence' ) as $flag ) {
+			foreach ( array( 'iframes', 'scripts', 'www_equivalence', 'output_buffer' ) as $flag ) {
 				if ( array_key_exists( $flag, $d ) ) {
 					$clean['detection'][ $flag ] = self::truthy( $d[ $flag ] );
 				}
