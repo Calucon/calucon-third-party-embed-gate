@@ -62,6 +62,10 @@ If your minification setup serves CSS from a long-cached URL that does not chang
 
 No. Lazy loading defers the request to scroll time — it is still made without consent. Consent Gate gates lazy iframes like any other.
 
+= How do I report a security issue? =
+
+Privately, please — through GitHub's private vulnerability reporting on the plugin repository (https://github.com/Calucon/WP-Embed/security/advisories/new), not in a public issue or support topic. The repository's SECURITY.md describes what counts: besides the usual classes, any way to make a page contact a third party before the click is a vulnerability.
+
 == Changelog ==
 
 = 0.1.0 =
