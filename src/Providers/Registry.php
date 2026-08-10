@@ -24,18 +24,41 @@ final class Registry {
 	/** @var callable Translation function; identity outside WordPress. */
 	private $translate;
 
+	/** @var callable|null Bridge for consent_gate_provider_for_url:
+	 *                     fn( array $provider, string $url, string $host ): array. */
+	private $filter_provider;
+
 	/**
-	 * @param array[]       $providers Provider descriptors (normalised on use).
-	 * @param callable|null $translate Maps an English string to the site
-	 *                                 language; the integration layer passes __().
+	 * @param array[]       $providers       Provider descriptors (normalised on use).
+	 * @param callable|null $translate       Maps an English string to the site
+	 *                                       language; the integration layer passes __().
+	 * @param callable|null $filter_provider Applied to every resolved descriptor,
+	 *                                       builtin and generic alike, after
+	 *                                       capture interpolation.
 	 */
-	public function __construct( array $providers = array(), ?callable $translate = null ) {
+	public function __construct( array $providers = array(), ?callable $translate = null, ?callable $filter_provider = null ) {
 		// Normalise once at construction (PLAN.md §9.16), not once per
 		// candidate per embed.
-		$this->providers = array_map( array( Provider::class, 'normalize' ), $providers );
-		$this->translate = $translate ?? static function ( string $text ): string {
+		$this->providers       = array_map( array( Provider::class, 'normalize' ), $providers );
+		$this->translate       = $translate ?? static function ( string $text ): string {
 			return $text;
 		};
+		$this->filter_provider = $filter_provider;
+	}
+
+	/**
+	 * @param array  $descriptor Resolved descriptor.
+	 * @param string $url        Embed/script URL.
+	 * @param string $host       Its host.
+	 * @return array
+	 */
+	private function filtered( array $descriptor, string $url, string $host ): array {
+		if ( null === $this->filter_provider ) {
+			return $descriptor;
+		}
+		return Provider::normalize(
+			(array) call_user_func( $this->filter_provider, $descriptor, $url, $host )
+		);
 	}
 
 	/**
@@ -67,10 +90,10 @@ final class Registry {
 				}
 			}
 
-			return $descriptor;
+			return $this->filtered( $descriptor, $url, $host );
 		}
 
-		return $this->generic_fallback( $url, $host );
+		return $this->filtered( $this->generic_fallback( $url, $host ), $url, $host );
 	}
 
 	/**
@@ -86,7 +109,7 @@ final class Registry {
 				? (array) $descriptor['match']['script_host'] : array();
 
 			if ( in_array( $host, $hosts, true ) ) {
-				return $descriptor;
+				return $this->filtered( $descriptor, $url, $host );
 			}
 		}
 
@@ -95,7 +118,7 @@ final class Registry {
 		// Unknown third-party script: gated by default (invariant 6). The
 		// fallback link cannot point at a .js file (PLAN.md §9.5), so it
 		// points at the provider's origin — weak, but a real page.
-		return Provider::normalize(
+		$generic = Provider::normalize(
 			array(
 				'id'       => 'generic-script',
 				'label'    => $host,
@@ -107,6 +130,8 @@ final class Registry {
 				'strategy' => 'script',
 			)
 		);
+
+		return $this->filtered( $generic, $url, $host );
 	}
 
 	/**

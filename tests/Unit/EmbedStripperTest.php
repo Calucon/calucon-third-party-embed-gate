@@ -8,6 +8,8 @@ namespace ConsentGate\Tests\Unit;
 use ConsentGate\Detection\EmbedStripper;
 use ConsentGate\Detection\HostMatcher;
 use ConsentGate\Detection\HtmlScanner;
+use ConsentGate\Providers\Builtin\Descriptors;
+use ConsentGate\Providers\Registry;
 use PHPUnit\Framework\TestCase;
 
 final class EmbedStripperTest extends TestCase {
@@ -15,13 +17,32 @@ final class EmbedStripperTest extends TestCase {
 	private EmbedStripper $stripper;
 
 	protected function setUp(): void {
-		$this->stripper = new EmbedStripper( new HtmlScanner(), new HostMatcher( array( 'example.test' ) ) );
+		$this->stripper = new EmbedStripper(
+			new HtmlScanner(),
+			new HostMatcher( array( 'example.test' ) ),
+			new Registry( Descriptors::all() )
+		);
 	}
 
-	public function test_foreign_iframe_is_removed_entirely(): void {
-		$html = '<p>Intro.</p><iframe src="https://www.youtube.com/embed/x" title="T"></iframe><p>Outro.</p>';
+	public function test_foreign_iframe_is_replaced_with_the_fallback_link(): void {
+		// §9.3: strip the embed and emit the fallback link instead — a feed
+		// reader still deserves a route to the content. The registry derives
+		// the canonical page (watch URL), not the embed endpoint.
+		$html = '<p>Intro.</p><iframe src="https://www.youtube.com/embed/y_pjE_p1HwE" title="T"></iframe><p>Outro.</p>';
 
-		self::assertSame( '<p>Intro.</p><p>Outro.</p>', $this->stripper->strip( $html ) );
+		self::assertSame(
+			'<p>Intro.</p><p><a href="https://www.youtube.com/watch?v=y_pjE_p1HwE">Open on YouTube</a></p><p>Outro.</p>',
+			$this->stripper->strip( $html )
+		);
+	}
+
+	public function test_legacy_object_and_embed_are_stripped_with_a_link(): void {
+		$html = '<object data="https://www.youtube.com/v/x" width="560" height="315"></object>';
+
+		self::assertSame(
+			'<p><a href="https://www.youtube.com/v/x">Open on www.youtube.com</a></p>',
+			$this->stripper->strip( $html )
+		);
 	}
 
 	public function test_wp_embed_pair_keeps_the_fallback_blockquote(): void {

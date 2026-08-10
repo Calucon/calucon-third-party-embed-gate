@@ -43,26 +43,29 @@ final class Plugin {
 	/** @var Plugin|null */
 	private static ?Plugin $instance = null;
 
-	/** @var IframeRule */
-	private IframeRule $iframe_rule;
+	/** @var IframeRule|null Built lazily; see build_pipeline(). */
+	private ?IframeRule $iframe_rule = null;
 
-	/** @var EmbedObjectRule */
-	private EmbedObjectRule $embed_object_rule;
+	/** @var EmbedObjectRule|null */
+	private ?EmbedObjectRule $embed_object_rule = null;
 
-	/** @var ScriptRule */
-	private ScriptRule $script_rule;
+	/** @var ScriptRule|null */
+	private ?ScriptRule $script_rule = null;
 
 	/** @var array Sanitised option tree. */
 	private array $options;
 
-	/** @var EmbedStripper */
-	private EmbedStripper $stripper;
+	/** @var EmbedStripper|null */
+	private ?EmbedStripper $stripper = null;
 
-	/** @var HtmlScanner */
-	private HtmlScanner $scanner;
+	/** @var HtmlScanner|null */
+	private ?HtmlScanner $scanner = null;
 
-	/** @var ResourceHints */
-	private ResourceHints $hint_scrubber;
+	/** @var ResourceHints|null */
+	private ?ResourceHints $hint_scrubber = null;
+
+	/** @var array[]|null Filtered provider descriptors; resolved lazily. */
+	private ?array $providers_cache = null;
 
 	/**
 	 * Bootstraps the plugin once, on plugins_loaded.
@@ -85,58 +88,6 @@ final class Plugin {
 
 	private function __construct() {
 		$this->options = Options::sanitize( get_option( Options::OPTION, Options::defaults() ) );
-
-		$translate = static function ( string $text ): string {
-			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText -- bridged strings are extracted where they are defined.
-			return __( $text, 'consent-gate' );
-		};
-
-		$hosts = new HostMatcher(
-			$this->own_hosts(),
-			(bool) apply_filters( 'consent_gate_www_equivalence', $this->options['detection']['www_equivalence'] ),
-			static function ( bool $own, string $host ): bool {
-				return (bool) apply_filters( 'consent_gate_is_own_host', $own, $host );
-			}
-		);
-
-		$providers = Options::apply_provider_overrides(
-			Descriptors::all( $translate ),
-			$this->options
-		);
-
-		$registry = new Registry(
-			(array) apply_filters( 'consent_gate_providers', $providers ),
-			$translate
-		);
-
-		$renderer = new PlaceholderRenderer(
-			$translate,
-			static function ( string $html, array $provider, array $ctx ): string {
-				return (string) apply_filters( 'consent_gate_placeholder_html', $html, $provider, $ctx );
-			},
-			static function ( array $payload, array $provider ): array {
-				return (array) apply_filters( 'consent_gate_payload', $payload, $provider );
-			},
-			new TemplateLoader(
-				static function ( string $relative ): string {
-					return function_exists( 'locate_template' ) ? (string) locate_template( $relative ) : '';
-				}
-			)
-		);
-
-		$scanner     = new HtmlScanner();
-		$should_gate = static function ( bool $gate, string $url, array $ctx ): bool {
-			return (bool) apply_filters( 'consent_gate_should_gate', $gate, $url, $ctx );
-		};
-		$on_gated    = function ( array $provider, array $ctx ): void {
-			$this->enqueue_assets();
-			do_action( 'consent_gate_embed_gated', $provider, $ctx );
-		};
-
-		$this->iframe_rule       = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
-		$this->embed_object_rule = new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
-		$this->script_rule       = new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
-		$this->stripper          = new EmbedStripper( $scanner, $hosts );
 
 		add_action(
 			'init',
@@ -165,10 +116,17 @@ final class Plugin {
 				$this->enqueue_assets();
 			}
 		) )->register();
-		( new SettingsPage( $providers ) )->register();
-		$this->scanner       = $scanner;
-		$this->hint_scrubber = new ResourceHints( $this->provider_hosts( $providers ), $hosts );
-		( new ResourceHintsIntegration( $this->hint_scrubber ) )->register();
+		( new SettingsPage(
+			function (): array {
+				return $this->providers();
+			}
+		) )->register();
+		( new ResourceHintsIntegration(
+			function (): ResourceHints {
+				$this->build_pipeline();
+				return $this->hint_scrubber;
+			}
+		) )->register();
 
 		if ( $this->options['detection']['output_buffer'] ) {
 			( new OutputBuffer( $this ) )->register();
@@ -182,6 +140,131 @@ final class Plugin {
 				CacheFlush::flush_all();
 			}
 		);
+
+		// Deactivation must restore original behaviour immediately (§9.10);
+		// a page cache still serving placeholders would reference assets
+		// that no longer load. Flush what we can reach.
+		register_deactivation_hook(
+			CONSENT_GATE_FILE,
+			static function (): void {
+				CacheFlush::flush_all();
+			}
+		);
+	}
+
+	/**
+	 * The filtered provider set — the ONE set every consumer shares.
+	 *
+	 * Resolved lazily, not at plugins_loaded: the documented way to add a
+	 * provider is "a ten-line filter in functions.php", and a theme's
+	 * functions.php loads AFTER plugins_loaded. Resolving here (first use is
+	 * during rendering or in the admin) means theme-registered providers
+	 * reach the registry, the settings table, the CSP snippet and the
+	 * resource-hint scrubber alike — previously the last three saw only the
+	 * unfiltered builtins.
+	 *
+	 * @return array[]
+	 */
+	private function providers(): array {
+		if ( null === $this->providers_cache ) {
+			$this->providers_cache = (array) apply_filters(
+				'consent_gate_providers',
+				Options::apply_provider_overrides(
+					Descriptors::all( $this->translator() ),
+					$this->options
+				)
+			);
+		}
+		return $this->providers_cache;
+	}
+
+	/**
+	 * @return callable Bridges English strings to the site language.
+	 */
+	private function translator(): callable {
+		return static function ( string $text ): string {
+			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText -- bridged strings are extracted where they are defined.
+			return __( $text, 'consent-gate' );
+		};
+	}
+
+	/**
+	 * Build the detection/render pipeline once, on first use. Lazy for the
+	 * same reason as providers(), and because own_hosts() reads home_url()
+	 * — at plugins_loaded, domain-mapping and multilingual plugins have not
+	 * registered their host filters yet (§9.11).
+	 *
+	 * @return void
+	 */
+	private function build_pipeline(): void {
+		if ( null !== $this->iframe_rule ) {
+			return;
+		}
+
+		$translate = $this->translator();
+
+		$hosts = new HostMatcher(
+			$this->own_hosts(),
+			(bool) apply_filters( 'consent_gate_www_equivalence', $this->options['detection']['www_equivalence'] ),
+			static function ( bool $own, string $host ): bool {
+				return (bool) apply_filters( 'consent_gate_is_own_host', $own, $host );
+			}
+		);
+
+		$providers = $this->providers();
+
+		$registry = new Registry(
+			$providers,
+			$translate,
+			static function ( array $provider, string $url, string $host ): array {
+				return (array) apply_filters( 'consent_gate_provider_for_url', $provider, $url, $host );
+			}
+		);
+
+		$renderer = new PlaceholderRenderer(
+			$translate,
+			static function ( string $html, array $provider, array $ctx ): string {
+				return (string) apply_filters( 'consent_gate_placeholder_html', $html, $provider, $ctx );
+			},
+			static function ( array $payload, array $provider ): array {
+				return (array) apply_filters( 'consent_gate_payload', $payload, $provider );
+			},
+			new TemplateLoader(
+				static function ( string $relative ): string {
+					return function_exists( 'locate_template' ) ? (string) locate_template( $relative ) : '';
+				}
+			),
+			array(
+				'before'   => static function ( array $provider, array $ctx ): void {
+					do_action( 'consent_gate_before_render', $provider, $ctx );
+				},
+				'note'     => static function ( string $note, array $provider, array $ctx ): string {
+					return (string) apply_filters( 'consent_gate_note_text', $note, $provider, $ctx );
+				},
+				'action'   => static function ( string $action, array $provider, array $ctx ): string {
+					return (string) apply_filters( 'consent_gate_action_text', $action, $provider, $ctx );
+				},
+				'fallback' => static function ( string $url, array $provider, array $ctx ): string {
+					return (string) apply_filters( 'consent_gate_fallback_url', $url, $provider, $ctx );
+				},
+			)
+		);
+
+		$scanner     = new HtmlScanner();
+		$should_gate = static function ( bool $gate, string $url, array $ctx ): bool {
+			return (bool) apply_filters( 'consent_gate_should_gate', $gate, $url, $ctx );
+		};
+		$on_gated    = function ( array $provider, array $ctx ): void {
+			$this->enqueue_assets();
+			do_action( 'consent_gate_embed_gated', $provider, $ctx );
+		};
+
+		$this->scanner           = $scanner;
+		$this->iframe_rule       = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
+		$this->embed_object_rule = new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
+		$this->script_rule       = new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
+		$this->stripper          = new EmbedStripper( $scanner, $hosts, $registry, $translate );
+		$this->hint_scrubber     = new ResourceHints( $this->provider_hosts( $providers ), $hosts );
 	}
 
 	/**
@@ -210,6 +293,7 @@ final class Plugin {
 	 * @return string
 	 */
 	public function gate( string $html, array $ctx ): string {
+		$this->build_pipeline();
 		if ( $this->options['detection']['iframes'] ) {
 			$html = $this->iframe_rule->apply( $html, $ctx );
 			// <embed>/<object> are frame-shaped embeds under the same toggle:
@@ -230,6 +314,7 @@ final class Plugin {
 	 * @return string
 	 */
 	public function strip( string $html ): string {
+		$this->build_pipeline();
 		return $this->stripper->strip( $html );
 	}
 
@@ -242,6 +327,7 @@ final class Plugin {
 	 * @return string
 	 */
 	public function scrub_hint_tags( string $html ): string {
+		$this->build_pipeline();
 		return $this->hint_scrubber->scrub_tags( $html, $this->scanner );
 	}
 

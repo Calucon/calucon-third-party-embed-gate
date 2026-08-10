@@ -19,14 +19,24 @@ use ConsentGate\Support\Options;
  */
 final class SettingsPage {
 
-	/** @var array[] Normalised provider descriptors for the table. */
-	private array $providers;
+	/** @var callable Returns the provider descriptors; resolved lazily so
+	 *                providers registered by the theme's functions.php (which
+	 *                loads after plugins_loaded) appear in the table and the
+	 *                CSP snippet. */
+	private $providers_source;
 
 	/**
-	 * @param array[] $providers Provider descriptors (builtins + filtered).
+	 * @param callable $providers_source fn(): array[] — builtins + filtered.
 	 */
-	public function __construct( array $providers ) {
-		$this->providers = $providers;
+	public function __construct( callable $providers_source ) {
+		$this->providers_source = $providers_source;
+	}
+
+	/**
+	 * @return array[]
+	 */
+	private function providers(): array {
+		return (array) call_user_func( $this->providers_source );
 	}
 
 	/**
@@ -97,7 +107,7 @@ final class SettingsPage {
 						</tr>
 					</thead>
 					<tbody>
-					<?php foreach ( $this->providers as $descriptor ) : ?>
+					<?php foreach ( $this->providers() as $descriptor ) : ?>
 						<?php
 						$id = isset( $descriptor['id'] ) ? (string) $descriptor['id'] : '';
 						if ( '' === $id ) {
@@ -219,7 +229,7 @@ final class SettingsPage {
 
 			<h2><?php esc_html_e( 'Content-Security-Policy snippet', 'consent-gate' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'If your site sends a Content-Security-Policy, it needs to allow the enabled providers\' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic.', 'consent-gate' ); ?></p>
-			<textarea readonly rows="4" class="large-text code" aria-label="<?php echo esc_attr( __( 'Content-Security-Policy snippet', 'consent-gate' ) ); ?>"><?php echo esc_textarea( Csp::snippet( $this->providers ) ); ?></textarea>
+			<textarea readonly rows="4" class="large-text code" aria-label="<?php echo esc_attr( __( 'Content-Security-Policy snippet', 'consent-gate' ) ); ?>"><?php echo esc_textarea( Csp::snippet( $this->providers() ) ); ?></textarea>
 		</div>
 		<?php
 	}

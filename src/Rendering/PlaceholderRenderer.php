@@ -69,16 +69,27 @@ final class PlaceholderRenderer {
 	private ?TemplateLoader $templates;
 
 	/**
+	 * @var array Optional bridges for the §7.2 text filters and action:
+	 *            'before'   fn( array $provider, array $ctx ): void
+	 *            'note'     fn( string $note, array $provider, array $ctx ): string
+	 *            'action'   fn( string $action, array $provider, array $ctx ): string
+	 *            'fallback' fn( string $url, array $provider, array $ctx ): string
+	 */
+	private array $bridges;
+
+	/**
 	 * @param callable|null       $translate      Maps English strings to the site language.
 	 * @param callable|null       $filter_html    fn( string $html, array $provider, array $ctx ): string.
 	 * @param callable|null       $filter_payload fn( array $payload, array $provider ): array.
 	 * @param TemplateLoader|null $templates      Theme template override lookup.
+	 * @param array               $bridges        See the property docblock.
 	 */
 	public function __construct(
 		?callable $translate = null,
 		?callable $filter_html = null,
 		?callable $filter_payload = null,
-		?TemplateLoader $templates = null
+		?TemplateLoader $templates = null,
+		array $bridges = array()
 	) {
 		$this->translate      = $translate ?? static function ( string $text ): string {
 			return $text;
@@ -86,6 +97,7 @@ final class PlaceholderRenderer {
 		$this->filter_html    = $filter_html;
 		$this->filter_payload = $filter_payload;
 		$this->templates      = $templates;
+		$this->bridges        = $bridges;
 	}
 
 	/**
@@ -102,7 +114,18 @@ final class PlaceholderRenderer {
 	 * @return string HTML.
 	 */
 	public function render( array $provider, string $src, array $attributes, array $ctx = array(), array $options = array() ): string {
-		$t       = $this->translate;
+		$t = $this->translate;
+
+		if ( isset( $this->bridges['before'] ) ) {
+			call_user_func( $this->bridges['before'], $provider, $ctx );
+		}
+		if ( isset( $this->bridges['note'] ) ) {
+			$provider['note'] = (string) call_user_func( $this->bridges['note'], $provider['note'], $provider, $ctx );
+		}
+		if ( isset( $this->bridges['action'] ) ) {
+			$provider['action'] = (string) call_user_func( $this->bridges['action'], $provider['action'], $provider, $ctx );
+		}
+
 		$payload = $this->build_payload( $provider, $src, $attributes, $options );
 
 		$label = '' !== $provider['label'] ? $provider['label'] : 'embed';
@@ -111,6 +134,9 @@ final class PlaceholderRenderer {
 		/* translators: %s: provider label (usually a host name). */
 		$fallback_label = sprintf( $t( 'Open on %s' ), $label );
 		$fallback_url   = '' !== $provider['fallback'] ? $provider['fallback'] : $src;
+		if ( isset( $this->bridges['fallback'] ) ) {
+			$fallback_url = (string) call_user_func( $this->bridges['fallback'], $fallback_url, $provider, $ctx );
+		}
 
 		// The host that will actually be contacted, carried on the container:
 		// activation and consent memory group generic embeds per host, so
