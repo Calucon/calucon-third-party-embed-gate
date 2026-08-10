@@ -77,7 +77,17 @@ php tests/bin/generate-pot.php                 # regenerate languages/consent-ga
 npm install                    # Playwright
 npm run test:e2e               # E2E; in the remote/CI image:
 PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run test:e2e
+
+# WordPress integration tests (tests/WP/) — real WordPress, two backends:
+npm run test:wp                # WordPress Playground (PHP-WASM + SQLite, no Docker)
+npm run test:wp:docker         # docker compose stack (tests/wp/), then the same tests
+npm run wp:down                # tear down the Docker stack + its volume
 ```
+
+Both WP backends serve identical content seeded by `tests/wp/seed.php`; the
+tests must stay backend-agnostic. The Docker images are overridable via
+`CG_WP_IMAGE`/`CG_WP_CLI_IMAGE`/`CG_DB_IMAGE` (registry mirrors, CI rate
+limits) and the port via `CG_WP_PORT`.
 
 Fixture layout: `tests/Fixtures/<case>/input.html` + `expected.html`.
 Pass-through cases copy input to expected by hand and are asserted
