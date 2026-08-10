@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Consent Gate icon">
+	<!-- Palette from calucon.de theme tokens: base #1B1B1B, contrast #F0F0F0,
+	     greens #BAED49 / #5C9E00 (the same defaults as assets/css/gate.css). -->
+	<rect width="512" height="512" rx="100" fill="#1B1B1B"/>
+	<!-- The embed frame, waiting. -->
+	<rect x="80" y="157" width="352" height="198" rx="26" fill="none" stroke="#5C9E00" stroke-width="26"/>
+	<!-- Hollow play triangle: content not loaded yet. -->
+	<path d="M 226 214 L 226 298 L 306 256 Z" fill="none" stroke="#BAED49" stroke-width="24" stroke-linejoin="round"/>
+	<!-- The click that opens the gate. -->
+	<path d="M 300 300 l 92 34 -38 14 -14 38 Z" fill="#F0F0F0" stroke="#1B1B1B" stroke-width="14" stroke-linejoin="round" paint-order="stroke"/>
+</svg>
