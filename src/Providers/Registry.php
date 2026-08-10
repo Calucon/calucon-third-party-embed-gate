@@ -31,7 +31,7 @@ final class Registry {
 	 */
 	public function __construct( array $providers = array(), ?callable $translate = null ) {
 		$this->providers = $providers;
-		$this->translate = $translate ?: static function ( string $text ): string {
+		$this->translate = $translate ?? static function ( string $text ): string {
 			return $text;
 		};
 	}

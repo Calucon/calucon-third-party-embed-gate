@@ -151,7 +151,7 @@ final class HostMatcher {
 			}
 			foreach ( $this->wildcards as $suffix ) {
 				// '*.example.com' matches sub.example.com and example.com itself.
-				if ( substr( $variant, -strlen( $suffix ) ) === $suffix || $variant === substr( $suffix, 1 ) ) {
+				if ( substr( $variant, -strlen( $suffix ) ) === $suffix || substr( $suffix, 1 ) === $variant ) {
 					return true;
 				}
 			}

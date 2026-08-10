@@ -23,11 +23,11 @@ define( 'CONSENT_GATE_FILE', __FILE__ );
 define( 'CONSENT_GATE_DIR', __DIR__ );
 
 spl_autoload_register(
-	static function ( $class ) {
-		if ( 0 !== strpos( $class, 'ConsentGate\\' ) ) {
+	static function ( $class_name ) {
+		if ( 0 !== strpos( $class_name, 'ConsentGate\\' ) ) {
 			return;
 		}
-		$relative = substr( $class, strlen( 'ConsentGate\\' ) );
+		$relative = substr( $class_name, strlen( 'ConsentGate\\' ) );
 		$path     = CONSENT_GATE_DIR . '/src/' . str_replace( '\\', '/', $relative ) . '.php';
 		if ( is_file( $path ) ) {
 			require $path;

@@ -82,7 +82,7 @@ final class Options {
 				}
 				foreach ( array( 'note', 'action' ) as $text_key ) {
 					if ( isset( $row[ $text_key ] ) && is_string( $row[ $text_key ] ) ) {
-						$text = trim( strip_tags( $row[ $text_key ] ) );
+						$text = trim( strip_tags( $row[ $text_key ] ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- sanitize() must run WordPress-free for the unit suite; output is escaped at render time regardless.
 						if ( '' !== $text ) {
 							$entry[ $text_key ] = $text;
 						}
