@@ -2,9 +2,9 @@
 Contributors: calucon
 Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
-Tested up to: 6.8
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,13 +18,15 @@ Consent Gate replaces third-party embeds with a server-rendered placeholder unti
 
 **What it does**
 
-* Gates third-party iframes and embed SDK scripts in post content, blocks and widgets — including HTML that has been minified by caching plugins, where most implementations silently fail.
+* Gates third-party iframes, embed SDK scripts and legacy `<embed>`/`<object>` markup in post content, blocks, widgets, comments and archive descriptions — including HTML that has been minified by caching plugins, where most implementations silently fail, and lazy-loaded markup that parks the real URL in a `data-src` attribute.
+* Gates content delivered over AJAX and the REST API to visitors ("load more", infinite scroll), while editors always see the original markup.
 * Gates by host, not by a provider allowlist: an unknown third-party iframe is gated by default.
 * Loads from privacy-preserving endpoints after the click where they exist: `youtube-nocookie.com` (measured: 0 cookies instead of 5), Vimeo with `dnt=1`.
 * Renders the placeholder server-side, so a visitor without JavaScript still gets a real, working link to the content.
 * Rebuilds embeds from an attribute safelist — `sandbox` is preserved, `autoplay` never survives, inline styles and event handlers are never copied.
-* Strips `preconnect`/`dns-prefetch` resource hints pointing at gated providers.
-* Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; the plain fallback link stays for feed readers.
+* Strips `preconnect`/`dns-prefetch`/`preload`/`prefetch` resource hints pointing at gated providers and their CDN hosts (`i.ytimg.com`, `pbs.twimg.com`, …).
+* Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; a plain fallback link to the content stays for feed readers.
+* Per-block override in the editor: gate a specific embed always, never, or per the site default.
 * Optional, off by default: remember consent in the visitor's browser (per embed, per provider, or for all embeds; session or with an expiry), with a withdrawal control via the `[consent_gate_withdraw]` shortcode.
 * Accessible placeholder: named group, a real button, visible focus, sufficient contrast, focus kept after activation. Zero axe-core violations in CI.
 * Never phones home. The plugin makes no outbound request from your server or your visitors' browsers, on any path, for any reason.
@@ -35,10 +37,10 @@ Consent Gate is a technical measure. It is not a consent management platform, it
 
 **Customisation**
 
-* Settings screen: per-provider on/off, privacy-variant on/off, custom note and button text; own-host and never-gate lists; rule toggles; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet.
+* Settings screen: per-provider on/off, privacy-variant on/off, custom note and button text; own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets and colours; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a read-only Status scan of recent content.
 * Theme override: copy `templates/placeholder.php` to `{your-theme}/consent-gate/placeholder.php`.
 * CSS custom properties on `.cg-embed` (`--cg-bg`, `--cg-fg`, `--cg-accent`, …) for restyling without specificity wars.
-* Documented filters: `consent_gate_providers`, `consent_gate_should_gate`, `consent_gate_is_own_host`, `consent_gate_own_hosts`, `consent_gate_placeholder_html`, `consent_gate_payload`, and more. Adding a provider is a ten-line filter in `functions.php`.
+* Documented filters: `consent_gate_providers`, `consent_gate_provider_for_url`, `consent_gate_should_gate`, `consent_gate_is_own_host`, `consent_gate_own_hosts`, `consent_gate_placeholder_html`, `consent_gate_payload`, `consent_gate_note_text`, `consent_gate_action_text`, `consent_gate_fallback_url`, plus the `consent_gate_before_render` and `consent_gate_embed_gated` actions. Adding a provider is a ten-line filter in `functions.php`.
 
 == Frequently Asked Questions ==
 
@@ -67,6 +69,19 @@ No. Lazy loading defers the request to scroll time — it is still made without 
 Privately, please — through GitHub's private vulnerability reporting on the plugin repository (https://github.com/Calucon/WP-Embed/security/advisories/new), not in a public issue or support topic. The repository's SECURITY.md describes what counts: besides the usual classes, any way to make a page contact a third party before the click is a vulnerability.
 
 == Changelog ==
+
+= 0.2.0 =
+* Detection hardening: exclusion ranges are scanned sequentially, so a stray `<!--` inside a script (JSON-LD, legacy script-hiding) or an unclosed `<pre>` can no longer disable gating for the rest of the page.
+* Gates attribute-swapped lazy loading (`data-src`, `data-lazy-src`, `data-original`), legacy `<embed>`/`<object>` markup, and `srcdoc` embeds that reference third parties; invisible tracking iframes (zero-sized, `display:none`) are removed instead of becoming a visible dead panel.
+* Gates content delivered to visitors over AJAX and REST ("load more", infinite scroll); editors keep seeing original markup. New surfaces: Text-widget visual mode, comments and term/archive/author descriptions on classic themes.
+* Whole-page gating repaired for page-builder sites: styles and scripts are injected into the buffered page (buttons work now), scanning is scoped to the body, and hint tags printed by performance plugins are scrubbed.
+* Activation fixes: unknown widgets no longer share one consent/removal group (scoped per host); `id`, `name`, `class` and `data-secret` survive the rebuild, so the YouTube JS API, `<form target>` and WordPress-to-WordPress embed resizing work after consent; loading and error states are announced to assistive technology, with a link to the provider as the error fallback.
+* Resource hints: `preload`/`prefetch`/`prerender` covered, the `wp_preload_resources` filter hooked, and providers' sibling CDN hosts scrubbed.
+* Feeds carry a plain fallback link where an embed was removed.
+* New: per-block "Gate this embed" override and a withdrawal block in the editor; Appearance presets and colours; Compatibility and Status screens; always-gate host list; opt-in third-party image gating.
+* Providers registered from a theme's `functions.php` now appear in the settings table, the CSP snippet and hint scrubbing; five new documented hooks.
+* Multisite-aware uninstall; page caches are flushed on deactivation.
+* The full E2E, accessibility (axe) and real-WordPress integration suites now run in CI on every change.
 
 = 0.1.0 =
 * Initial release: core gate (minification-tolerant scanner, host matcher, iframe and script rules), built-in provider set with privacy-preserving load targets, server-rendered accessible placeholder, settings screen, template override, feeds/excerpts/widgets/resource-hint handling, opt-in consent memory with withdrawal shortcode, CSP snippet generator.

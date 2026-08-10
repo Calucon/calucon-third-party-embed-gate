@@ -36,7 +36,10 @@ WordPress.org submission itself (a human act). See PLAN.md §13.
 | `src/Detection/HtmlScanner.php` | Attribute-tolerant tag reader (§3.2) |
 | `src/Detection/HostMatcher.php` | "is this ours?" (§3.4) |
 | `src/Detection/IframeRule.php` | Gates cross-origin iframes; consumes the WP blockquote pair (§9.7) |
+| `src/Detection/{ScriptRule,EmbedObjectRule,ImageRule}.php` | SDK scripts; legacy embed/object; opt-in third-party images |
 | `src/Providers/{Registry,Provider}.php` | Descriptors are data, not classes (§4.1) |
+| `src/Support/{Options,ContentScan,ResourceHints,Csp}.php` | Option schema; Status-screen scan; hint scrubbing; CSP snippet |
+| `src/Admin/BlockEditor.php` + `assets/js/editor.js` | §7.5 per-block override + withdrawal block (no build step) |
 | `src/Rendering/PlaceholderRenderer.php` | The §5.1 markup contract — public API, version it |
 | `src/Integration/{RenderBlock,TheContent}.php` | The only place WordPress hooks live |
 | `assets/js/gate.js` | Dependency-free ES5; no build step |
