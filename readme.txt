@@ -27,6 +27,7 @@ Consent Gate replaces third-party embeds with a server-rendered placeholder unti
 * Strips `preconnect`/`dns-prefetch`/`preload`/`prefetch` resource hints pointing at gated providers and their CDN hosts (`i.ytimg.com`, `pbs.twimg.com`, …).
 * Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; a plain fallback link to the content stays for feed readers.
 * Per-block override in the editor: gate a specific embed always, never, or per the site default.
+* Optional poster image behind the consent panel, chosen per embed from your media library — served from your own site, never fetched from the provider.
 * Optional, off by default: remember consent in the visitor's browser (per embed, per provider, or for all embeds; session or with an expiry), with a withdrawal control via the `[consent_gate_withdraw]` shortcode.
 * Accessible placeholder: named group, a real button, visible focus, sufficient contrast, focus kept after activation. Zero axe-core violations in CI.
 * Never phones home. The plugin makes no outbound request from your server or your visitors' browsers, on any path, for any reason.
