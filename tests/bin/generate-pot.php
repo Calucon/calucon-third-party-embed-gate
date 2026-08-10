@@ -68,7 +68,7 @@ $pot = <<<'HEADER'
 # This file is distributed under the same license as the Consent Gate plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Consent Gate 0.1.0\n"
+"Project-Id-Version: Consent Gate 0.2.0\n"
 "Report-Msgid-Bugs-To: https://github.com/Calucon/WP-Embed/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
