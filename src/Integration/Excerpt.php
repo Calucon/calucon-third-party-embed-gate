@@ -36,7 +36,15 @@ final class Excerpt {
 	public function filter( $excerpt ): string {
 		$excerpt = (string) $excerpt;
 
-		if ( false === stripos( $excerpt, '<iframe' ) && false === stripos( $excerpt, '<script' ) ) {
+		if ( ! Plugin::has_gateable_markup( $excerpt ) ) {
+			return $excerpt;
+		}
+
+		// Editing contexts must see the original markup (invariant 4): the
+		// excerpt column in list tables and excerpt.rendered for editors are
+		// not places to silently delete content. Feeds still strip — a
+		// placeholder in RSS is nonsense (§9.3) and the bail covers is_feed.
+		if ( ! is_feed() && $this->plugin->should_bail() ) {
 			return $excerpt;
 		}
 
