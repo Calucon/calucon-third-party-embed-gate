@@ -26,19 +26,25 @@
 	aspect-ratio: var( --cg-aspect, auto );
 }
 
-/* The core block-theme trap (PLAN.md §5.3): wp-has-aspect-ratio reserves
-   height with an empty ::before spacer and lifts the iframe out of flow on
-   top of it. A placeholder left in flow renders *underneath* a large empty
-   rectangle. Position the panel into the reserved box — scoped so it only
-   applies where a box was actually reserved. */
+/* The core block-theme trap (PLAN.md §5.3), which comes in two eras:
+
+   Legacy core reserves the wp-has-aspect-ratio box with an empty ::before
+   padding spacer and lifts the iframe out of flow on top of it — an in-flow
+   panel would render under a large empty rectangle. Modern core (measured
+   on 6.8) ships no spacer and reserves height on the *iframe itself*,
+   which is exactly the element the gate removes — a panel positioned
+   absolutely into "the reserved box" collapses to 0px and is invisible.
+
+   So: the panel stays in flow and reserves its own space via --cg-aspect,
+   and where a legacy spacer exists it is suppressed while gated so the box
+   does not double in height. After activation the selector stops matching,
+   the legacy spacer returns, and core's own iframe rules take over. */
 .wp-has-aspect-ratio .wp-block-embed__wrapper {
 	position: relative;
 }
 
-.wp-has-aspect-ratio .wp-block-embed__wrapper > .cg-embed {
-	position: absolute;
-	inset: 0;
-	aspect-ratio: auto; /* The spacer already fixes the size. */
+.wp-has-aspect-ratio .wp-block-embed__wrapper:has( > .cg-embed:not( .cg-embed--active ) )::before {
+	content: none;
 }
 
 .cg-embed__panel {
@@ -94,21 +100,7 @@
 .cg-embed--active {
 	background: transparent;
 	overflow: visible;
-	aspect-ratio: auto; /* Let the real content size itself after the click. */
-}
-
-/* Inside a reserved box the activated iframe fills it, exactly as the
-   original would have (core positions `iframe` absolutely in the wrapper;
-   our container is the positioned ancestor, so 100% resolves to the box). */
-.wp-has-aspect-ratio .wp-block-embed__wrapper > .cg-embed--active {
-	aspect-ratio: auto;
-}
-
-.wp-has-aspect-ratio .wp-block-embed__wrapper > .cg-embed--active iframe {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
+	aspect-ratio: auto; /* Core's own embed rules size the real iframe. */
 }
 
 .cg-embed--active:focus {

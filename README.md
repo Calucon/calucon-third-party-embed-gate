@@ -36,7 +36,18 @@ interaction — is enforced by an end-to-end test that is never skipped.
 ```sh
 composer install && composer test    # unit + fixture suite, no WordPress needed
 npm install && npm run test:e2e      # Playwright: the zero-request test, a11y, layout
+
+npm run test:wp                      # the same claims on a REAL WordPress —
+                                     # WordPress Playground (no Docker needed)
+npm run test:wp:docker               # or against a docker compose WordPress stack
 ```
+
+The WordPress integration suite (`tests/WP/`) runs against a real install —
+real hooks, real theme, real enqueue pipeline, feeds, REST and wp-admin —
+seeded identically on both backends by `tests/wp/seed.php`. It has already
+paid for itself: it caught that modern WordPress reserves embed height on
+the iframe itself (not the legacy `::before` spacer), which made gated
+panels collapse invisible on current block themes until the CSS was fixed.
 
 `CLAUDE.md` carries the working rules and traps; `PLAN.md` is the founding
 document with the full rationale, the invariants (§1), and seventeen edge

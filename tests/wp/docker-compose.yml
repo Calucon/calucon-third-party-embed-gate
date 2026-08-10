@@ -1,0 +1,60 @@
+# WordPress integration-test stack (PLAN.md §10.2, run for real).
+#
+# The plugin directory is bind-mounted into a disposable WordPress install;
+# tests/wp/setup.sh installs core, activates the plugin and seeds the test
+# content; the Playwright project in tests/WP/ then asserts the supported
+# features against the running site.
+#
+# Image names are overridable for registries/mirrors (CI rate limits):
+#   CG_WP_IMAGE, CG_WP_CLI_IMAGE, CG_DB_IMAGE
+
+name: consent-gate-wp
+
+services:
+  db:
+    image: ${CG_DB_IMAGE:-mariadb:11}
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress
+      MARIADB_ROOT_PASSWORD: root
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+  wordpress:
+    image: ${CG_WP_IMAGE:-wordpress:php8.3-apache}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${CG_WP_PORT:-8890}:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+      - ../..:/var/www/html/wp-content/plugins/consent-gate:ro
+
+  # One-shot wp-cli commands: docker compose run --rm cli wp <command>
+  cli:
+    image: ${CG_WP_CLI_IMAGE:-wordpress:cli-php8.3}
+    profiles: [ "cli" ]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+      - ../..:/var/www/html/wp-content/plugins/consent-gate:ro
+
+volumes:
+  wp_data:

@@ -1,0 +1,17 @@
+{
+    "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+    "preferredVersions": {
+        "php": "8.2",
+        "wp": "latest"
+    },
+    "steps": [
+        {
+            "step": "activatePlugin",
+            "pluginPath": "/wordpress/wp-content/plugins/consent-gate/consent-gate.php"
+        },
+        {
+            "step": "runPHP",
+            "code": "<?php require_once '/wordpress/wp-load.php'; require '/wordpress/wp-content/plugins/consent-gate/tests/wp/seed.php';"
+        }
+    ]
+}

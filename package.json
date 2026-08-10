@@ -6,6 +6,10 @@
         "@playwright/test": "^1.55.0"
     },
     "scripts": {
-        "test:e2e": "playwright test"
+        "test:e2e": "playwright test",
+        "test:wp": "playwright test -c playwright.wp.config.js",
+        "wp:up": "bash tests/wp/setup.sh",
+        "wp:down": "bash tests/wp/teardown.sh",
+        "test:wp:docker": "npm run wp:up && WP_BASE_URL=http://127.0.0.1:8890 npm run test:wp"
     }
 }
