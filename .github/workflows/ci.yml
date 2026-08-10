@@ -1,8 +1,11 @@
-# Unit tests + coding standards on every pull request and on main.
+# Unit tests + coding standards + E2E/axe + real-WordPress integration on
+# every pull request and on main (PLAN.md §11: lint → unit → E2E → axe,
+# block merge on any failure).
 #
 # To make merging impossible while tests fail, require these checks under
 # Settings > Branches (or Rulesets) for main:
-#   "PHP 7.4 lint + unit tests" and "PHP 8.4 lint + unit tests"
+#   "PHP 7.4 lint + unit tests", "PHP 8.4 lint + unit tests",
+#   "E2E + axe (Chromium)", "WordPress integration (Playground)"
 # GitHub only offers a check for selection after it has run at least once.
 name: CI
 
@@ -37,3 +40,59 @@ jobs:
 
       - name: Unit + fixture suite (PHPUnit)
         run: composer test
+
+  e2e:
+    # The zero-requests spec is the product claim in executable form
+    # (PLAN.md §10.3); the axe sweep is what lets readme.txt say "zero
+    # axe-core violations in CI" truthfully.
+    name: E2E + axe (Chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E + axe suite
+        run: npm run test:e2e
+
+  wp:
+    # Real WordPress (Playground, PHP-WASM + SQLite): the integration
+    # surface — hooks, editing-context bails, REST behaviour, admin screen.
+    name: WordPress integration (Playground)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: WordPress integration suite
+        run: npm run test:wp
