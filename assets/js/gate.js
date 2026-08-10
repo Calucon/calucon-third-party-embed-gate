@@ -12,8 +12,10 @@
 	// Mirror of the server-side safelist (PLAN.md §5.2). Never style, never
 	// on* — and autoplay never survives the rebuild (invariant 8). 'type'
 	// only ever arrives in <embed>/<object> payloads, whose server safelist
-	// is narrower still.
-	var SAFELIST = [ 'title', 'width', 'height', 'sandbox', 'loading', 'allow', 'allowfullscreen', 'referrerpolicy', 'type' ];
+	// is narrower still. The identity attributes (id, name, class,
+	// data-secret, security) carry no capability but real integrations key
+	// on them — the YouTube JS API, <form target>, wp-embed.js resizing.
+	var SAFELIST = [ 'title', 'width', 'height', 'sandbox', 'loading', 'allow', 'allowfullscreen', 'referrerpolicy', 'type', 'id', 'name', 'class', 'data-secret', 'security' ];
 
 	function hasClass( el, name ) {
 		return el && el.nodeType === 1 && ( ' ' + el.className + ' ' ).indexOf( ' ' + name + ' ' ) !== -1;
@@ -145,15 +147,22 @@
 	}
 
 	// Grant keys carry no identifier — only what was consented to (§6.2):
-	// the embed URL, the provider id, or everything.
+	// the embed URL, the provider id, or everything. The generic providers
+	// cover EVERY unknown third party, so their keys carry the host too —
+	// consenting to one unknown widget must never auto-load another.
 	function grantKeys( config, container, payload ) {
 		if ( config.scope === 'all' ) {
 			return [ '*' ];
 		}
 		if ( config.scope === 'embed' ) {
-			return [ 'e:' + String( payload.src || '' ) ];
+			return [ 'e:' + String( payload.src || payload.srcdoc || '' ) ];
 		}
-		return [ 'p:' + String( container.getAttribute( 'data-cg-provider' ) || '' ) ];
+		var providerId = String( container.getAttribute( 'data-cg-provider' ) || '' );
+		var key = 'p:' + providerId;
+		if ( providerId.indexOf( 'generic' ) === 0 ) {
+			key += '@' + String( container.getAttribute( 'data-cg-host' ) || '' );
+		}
+		return [ key ];
 	}
 
 	function rememberConsent( container, payload ) {
@@ -242,7 +251,7 @@
 		}
 	}
 
-	function loadScriptOnce( src, done ) {
+	function loadScriptOnce( src, done, fail ) {
 		var state = scriptStates[ src ];
 		if ( state && state.loaded ) {
 			done();
@@ -250,9 +259,12 @@
 		}
 		if ( state ) {
 			state.callbacks.push( done );
+			if ( fail ) {
+				state.failures.push( fail );
+			}
 			return;
 		}
-		state = scriptStates[ src ] = { loaded: false, callbacks: [ done ] };
+		state = scriptStates[ src ] = { loaded: false, callbacks: [ done ], failures: fail ? [ fail ] : [] };
 		var el = document.createElement( 'script' );
 		el.async = true;
 		el.src = src;
@@ -260,18 +272,96 @@
 			state.loaded = true;
 			var callbacks = state.callbacks;
 			state.callbacks = [];
+			state.failures = [];
 			for ( var i = 0; i < callbacks.length; i++ ) {
 				callbacks[ i ]();
+			}
+		};
+		el.onerror = function () {
+			// A blocked or unreachable SDK must be reportable (§8), and a
+			// retry must be possible: forget the state so the next click
+			// creates a fresh script element.
+			var failures = state.failures;
+			delete scriptStates[ src ];
+			for ( var i = 0; i < failures.length; i++ ) {
+				failures[ i ]();
 			}
 		};
 		document.head.appendChild( el );
 	}
 
+	function i18n( key, fallback ) {
+		var config = window.consentGateConfig || {};
+		return ( config.i18n && config.i18n[ key ] ) || fallback;
+	}
+
+	// Loading state announced politely (PLAN.md §8): find-or-create the
+	// container's live region. It must exist before its text changes or
+	// screen readers may not announce the change.
+	function setStatus( container, message ) {
+		var status = null;
+		var spans = container.getElementsByTagName( 'span' );
+		for ( var i = 0; i < spans.length; i++ ) {
+			if ( hasClass( spans[ i ], 'cg-embed__status' ) ) {
+				status = spans[ i ];
+				break;
+			}
+		}
+		if ( ! status ) {
+			status = document.createElement( 'span' );
+			status.className = 'cg-embed__status';
+			status.setAttribute( 'role', 'status' );
+			status.setAttribute( 'aria-live', 'polite' );
+			container.appendChild( status );
+		}
+		status.textContent = message;
+	}
+
+	// Error state announced via role="alert" with a route to the fallback
+	// (PLAN.md §8): silent failure leaves a keyboard user on a dead button.
+	function showError( container ) {
+		if ( container.getElementsByClassName
+			&& container.getElementsByClassName( 'cg-embed__error' ).length ) {
+			return;
+		}
+		setStatus( container, '' );
+		var error = document.createElement( 'p' );
+		error.className = 'cg-embed__error';
+		error.setAttribute( 'role', 'alert' );
+		error.appendChild( document.createTextNode(
+			i18n( 'error', 'The embedded content could not be loaded.' ) + ' '
+		) );
+		var href = container.getAttribute( 'data-cg-fallback' ) || '';
+		if ( /^(https?:)?\/\//i.test( href ) ) {
+			var link = document.createElement( 'a' );
+			link.setAttribute( 'href', href );
+			link.setAttribute( 'rel', 'noopener nofollow' );
+			link.appendChild( document.createTextNode(
+				i18n( 'errorLink', 'Open it on the provider’s site.' )
+			) );
+			error.appendChild( link );
+		}
+		container.appendChild( error );
+	}
+
 	function removePanel( container ) {
 		container.setAttribute( 'data-cg-activated', '1' );
 		container.className += ' cg-embed--active';
-		var panel = container.getElementsByTagName( 'div' )[ 0 ];
-		if ( panel && hasClass( panel, 'cg-embed__panel' ) ) {
+		var panel = null;
+		var divs = container.getElementsByTagName( 'div' );
+		for ( var i = 0; i < divs.length; i++ ) {
+			if ( hasClass( divs[ i ], 'cg-embed__panel' ) ) {
+				panel = divs[ i ];
+				break;
+			}
+		}
+		if ( panel && panel.parentNode === container ) {
+			// Keep the fallback destination reachable for the error state
+			// before the panel (and its link) is removed.
+			var links = panel.getElementsByTagName( 'a' );
+			if ( links.length && ! container.getAttribute( 'data-cg-fallback' ) ) {
+				container.setAttribute( 'data-cg-fallback', links[ links.length - 1 ].getAttribute( 'href' ) || '' );
+			}
 			container.removeChild( panel );
 		}
 	}
@@ -279,29 +369,43 @@
 	function activateScript( container, payload, focus ) {
 		var src = typeof payload.src === 'string' ? payload.src : '';
 		if ( ! /^(https?:)?\/\//i.test( src ) ) {
+			showError( container );
 			return;
 		}
-		var providerId = container.getAttribute( 'data-cg-provider' );
+		var providerId = container.getAttribute( 'data-cg-provider' ) || '';
+		var host = container.getAttribute( 'data-cg-host' ) || '';
 
 		// One SDK renders every companion element on the page, so the other
-		// panels for the same provider would go stale — clear them all. The
+		// panels for the SAME provider would go stale — clear them all. The
 		// clicked container stays in the DOM as the focus anchor (§8).
+		// Compared by attribute value, never by selector interpolation, and
+		// the host must match too: 'generic-script' spans every unknown
+		// third party, and clicking one widget must not delete another
+		// provider's placeholder (its content AND its fallback link).
 		var all = document.querySelectorAll
-			? document.querySelectorAll( '.cg-embed[data-cg-provider="' + providerId + '"]' )
+			? document.querySelectorAll( '.cg-embed[data-cg-provider]' )
 			: [];
 		for ( var i = 0; i < all.length; i++ ) {
-			if ( all[ i ] !== container && all[ i ].parentNode ) {
+			if ( all[ i ] !== container
+				&& all[ i ].getAttribute( 'data-cg-provider' ) === providerId
+				&& ( all[ i ].getAttribute( 'data-cg-host' ) || '' ) === host
+				&& all[ i ].parentNode ) {
 				all[ i ].parentNode.removeChild( all[ i ] );
 			}
 		}
 		removePanel( container );
+		setStatus( container, i18n( 'loading', 'Loading embedded content…' ) );
 		if ( focus ) {
 			container.setAttribute( 'tabindex', '-1' );
 			container.focus();
 		}
 
 		loadScriptOnce( src, function () {
+			setStatus( container, '' );
 			runReadyHook( providerId );
+		}, function () {
+			container.removeAttribute( 'data-cg-activated' );
+			showError( container );
 		} );
 	}
 
@@ -315,7 +419,12 @@
 		try {
 			payload = JSON.parse( container.getAttribute( 'data-cg-payload' ) || '' );
 		} catch ( e ) {
-			return; // Malformed payload: the fallback link still works.
+			// Malformed payload: announce it (§8); the panel and its
+			// fallback link are still in place.
+			if ( options.focus ) {
+				showError( container );
+			}
+			return;
 		}
 
 		// Storage is written AFTER the click, never before (invariant 3);
@@ -331,10 +440,21 @@
 
 		var frame = buildFrame( payload );
 		if ( ! frame ) {
+			// Unloadable src: announce it (§8); panel and fallback link stay.
+			if ( options.focus ) {
+				showError( container );
+			}
 			return;
 		}
 
 		removePanel( container );
+		setStatus( container, i18n( 'loading', 'Loading embedded content…' ) );
+		frame.onload = function () {
+			setStatus( container, '' );
+		};
+		frame.onerror = function () {
+			showError( container );
+		};
 		container.appendChild( frame );
 
 		// Focus the container, not the inserted node: if a provider script

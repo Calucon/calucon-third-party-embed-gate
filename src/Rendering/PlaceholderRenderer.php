@@ -34,6 +34,15 @@ final class PlaceholderRenderer {
 		'allow',
 		'allowfullscreen',
 		'referrerpolicy',
+		// Identity attributes carry no capability but real integrations key
+		// on them: the YouTube JS API needs the id, <form target> needs the
+		// name, and core's wp-embed.js resize handshake needs the
+		// wp-embedded-content class + data-secret (+ legacy security attr).
+		'id',
+		'name',
+		'class',
+		'data-secret',
+		'security',
 	);
 
 	/**
@@ -103,10 +112,15 @@ final class PlaceholderRenderer {
 		$fallback_label = sprintf( $t( 'Open on %s' ), $label );
 		$fallback_url   = '' !== $provider['fallback'] ? $provider['fallback'] : $src;
 
-		$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx );
+		// The host that will actually be contacted, carried on the container:
+		// activation and consent memory group generic embeds per host, so
+		// consenting to one unknown third party never activates another.
+		$host = $this->host_of( '' !== $src ? $src : $fallback_url );
+
+		$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host );
 
 		if ( '' === $html ) {
-			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label );
+			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $host );
 		}
 
 		if ( null !== $this->filter_html ) {
@@ -124,15 +138,17 @@ final class PlaceholderRenderer {
 	 * @param string $aria_label     Accessible name.
 	 * @param string $fallback_url   Fallback link target.
 	 * @param string $fallback_label Fallback link text.
+	 * @param string $host           Host the embed will contact.
 	 * @return string
 	 */
-	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label ): string {
+	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, string $host = '' ): string {
 		$aspect = $this->aspect_of( $provider, $payload );
 
 		return '<div class="cg-embed"'
 			. ' role="group"'
 			. ' aria-label="' . $this->esc( $aria_label ) . '"'
 			. ' data-cg-provider="' . $this->esc( $provider['id'] ) . '"'
+			. ( '' !== $host ? ' data-cg-host="' . $this->esc( $host ) . '"' : '' )
 			. ( '' !== $aspect ? ' style="--cg-aspect:' . $this->esc( $aspect ) . '"' : '' )
 			. ' data-cg-payload="' . $this->esc_json( $payload ) . '">'
 			. '<div class="cg-embed__panel">'
@@ -152,9 +168,10 @@ final class PlaceholderRenderer {
 	 * @param string $fallback_url   Fallback link target.
 	 * @param string $fallback_label Fallback link text.
 	 * @param array  $ctx            Integration context.
+	 * @param string $host           Host the embed will contact.
 	 * @return string '' when no template applies.
 	 */
-	private function render_via_template( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, array $ctx ): string {
+	private function render_via_template( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, array $ctx, string $host = '' ): string {
 		if ( null === $this->templates ) {
 			return '';
 		}
@@ -175,8 +192,21 @@ final class PlaceholderRenderer {
 				'fallback_label' => $fallback_label,
 				'payload_attr'   => $this->esc_json( $payload ),
 				'aspect'         => $this->aspect_of( $provider, $payload ),
+				'host'           => $host,
 			)
 		);
+	}
+
+	/**
+	 * @param string $url URL (may be protocol-relative).
+	 * @return string Lowercased host, '' when unparseable.
+	 */
+	private function host_of( string $url ): string {
+		if ( 0 === strpos( $url, '//' ) ) {
+			$url = 'https:' . $url;
+		}
+		$host = parse_url( $url, PHP_URL_HOST );
+		return is_string( $host ) ? strtolower( $host ) : '';
 	}
 
 	/**

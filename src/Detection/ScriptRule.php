@@ -105,7 +105,7 @@ final class ScriptRule {
 				continue;
 			}
 			$provider['strategy'] = 'script';
-			$provider['fallback'] = $this->resolve_fallback( $provider, $html, $match['start'], $host );
+			$provider['fallback'] = $this->resolve_fallback( $provider, $html, $match['start'], $match['end'], $host );
 
 			$placeholder = $this->renderer->render( $provider, $src, array(), $ctx );
 
@@ -121,19 +121,27 @@ final class ScriptRule {
 
 	/**
 	 * A script URL is not a human destination (§9.5). Best fallback first:
-	 * the provider's companion-derived URL (Strava data attributes), then the
-	 * last link inside a preceding companion blockquote (X/Twitter, Instagram
-	 * and TikTok put the canonical status link there), then the descriptor's
-	 * own fallback, then the script's origin.
+	 * the provider's companion-derived URL (Strava data attributes, Facebook
+	 * data-href), then the last link inside the provider's OWN companion
+	 * element (X/Twitter, Instagram and TikTok put the canonical status link
+	 * there), then the descriptor's own fallback, then the script's origin.
+	 *
+	 * Companion links are harvested only from an element matching the
+	 * provider's declared companion_class — never from whatever element
+	 * happens to sit next to the script, which turned a nav's last link into
+	 * an "Open on …" destination. The companion may precede the script
+	 * (Twitter/Instagram) or follow it (Facebook's fb-root/script/fb-post
+	 * shape), so both neighbours are checked.
 	 *
 	 * @param array  $provider     Normalised descriptor.
 	 * @param string $html         Full fragment.
 	 * @param int    $script_start Offset of the script tag's '<'.
+	 * @param int    $script_end   Offset just past the script tag's span.
 	 * @param string $host         Script host.
 	 * @return string
 	 */
-	private function resolve_fallback( array $provider, string $html, int $script_start, string $host ): string {
-		$companion = $this->preceding_companion( $html, $script_start );
+	private function resolve_fallback( array $provider, string $html, int $script_start, int $script_end, string $host ): string {
+		$companion = $this->companion_for( $provider, $html, $script_start, $script_end );
 
 		if ( null !== $companion ) {
 			if ( is_callable( $provider['companion_fallback'] ) ) {
@@ -152,6 +160,53 @@ final class ScriptRule {
 		}
 
 		return 'https://' . $host . '/';
+	}
+
+	/**
+	 * The provider's companion element next to the script, or null.
+	 *
+	 * @param array  $provider     Normalised descriptor.
+	 * @param string $html         Full fragment.
+	 * @param int    $script_start Offset of the script tag's '<'.
+	 * @param int    $script_end   Offset just past the script tag's span.
+	 * @return array{attributes:array,last_href:string}|null
+	 */
+	private function companion_for( array $provider, string $html, int $script_start, int $script_end ) {
+		$classes = is_array( $provider['companion_class'] ) ? $provider['companion_class'] : array();
+		if ( array() === $classes ) {
+			return null;
+		}
+
+		$before = $this->preceding_companion( $html, $script_start );
+		if ( null !== $before && $this->has_any_class( $before['attributes'], $classes ) ) {
+			return $before;
+		}
+
+		$after = $this->following_companion( $html, $script_end );
+		if ( null !== $after && $this->has_any_class( $after['attributes'], $classes ) ) {
+			return $after;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param array    $attributes Element attributes.
+	 * @param string[] $classes    Class names to look for.
+	 * @return bool
+	 */
+	private function has_any_class( array $attributes, array $classes ): bool {
+		$class = isset( $attributes['class'] ) && is_string( $attributes['class'] ) ? $attributes['class'] : '';
+		if ( '' === $class ) {
+			return false;
+		}
+		$present = preg_split( '/\s+/', trim( $class ), -1, PREG_SPLIT_NO_EMPTY );
+		foreach ( $classes as $wanted ) {
+			if ( in_array( $wanted, $present, true ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -181,6 +236,46 @@ final class ScriptRule {
 			return null;
 		}
 
+		return array(
+			'attributes' => $tags[0]['attributes'],
+			'last_href'  => $this->last_absolute_href( $companion_html ),
+		);
+	}
+
+	/**
+	 * The element (blockquote or div) directly after the script tag,
+	 * whitespace allowed. Left in place; only read.
+	 *
+	 * @param string $html       Full fragment.
+	 * @param int    $script_end Offset just past the script tag's span.
+	 * @return array{attributes:array,last_href:string}|null
+	 */
+	private function following_companion( string $html, int $script_end ) {
+		$rest = ltrim( substr( $html, $script_end ) );
+
+		if ( ! preg_match( '/^<(blockquote|div)(?=[\s\/>])/i', $rest, $m ) ) {
+			return null;
+		}
+		$tag = strtolower( $m[1] );
+
+		$tags = $this->scanner->find_tags( $rest, $tag );
+		if ( array() === $tags || 0 !== $tags[0]['start'] ) {
+			return null;
+		}
+
+		$companion_html = substr( $rest, 0, $tags[0]['end'] );
+
+		return array(
+			'attributes' => $tags[0]['attributes'],
+			'last_href'  => $this->last_absolute_href( $companion_html ),
+		);
+	}
+
+	/**
+	 * @param string $companion_html Companion element markup.
+	 * @return string Last absolute link inside it, '' when none.
+	 */
+	private function last_absolute_href( string $companion_html ): string {
 		$last_href = '';
 		foreach ( $this->scanner->find_tags( $companion_html, 'a' ) as $link ) {
 			if ( isset( $link['attributes']['href'] ) && is_string( $link['attributes']['href'] ) ) {
@@ -190,10 +285,6 @@ final class ScriptRule {
 				}
 			}
 		}
-
-		return array(
-			'attributes' => $tags[0]['attributes'],
-			'last_href'  => $last_href,
-		);
+		return $last_href;
 	}
 }

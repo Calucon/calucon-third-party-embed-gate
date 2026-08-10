@@ -102,10 +102,47 @@
 	text-decoration: underline;
 }
 
+/* Loading announcement (PLAN.md §8): polite, visible, quiet. Inherits
+   --cg-fg so contrast holds on the panel's own background. */
+.cg-embed__status {
+	display: block;
+	padding: 0 var( --cg-gap );
+	font-size: 0.875em;
+	color: var( --cg-fg );
+}
+
+.cg-embed__status:empty {
+	display: none;
+}
+
+/* Error announcement (PLAN.md §8): role="alert" with a route to the
+   fallback. Colours stay on the panel's own tokens — a red on an unknown
+   theme background is a contrast gamble; the alert role and the text do
+   the signalling, not colour alone (WCAG 1.4.1). */
+.cg-embed__error {
+	margin: 0;
+	padding: var( --cg-gap );
+	font-size: 0.9375em;
+	color: var( --cg-fg );
+}
+
+.cg-embed__error a {
+	color: var( --cg-fg );
+	text-decoration: underline;
+}
+
 .cg-embed--active {
 	background: transparent;
 	overflow: visible;
 	aspect-ratio: auto; /* Core's own embed rules size the real iframe. */
+}
+
+/* An active container may still announce loading/errors: keep those
+   readable while the background is transparent by falling back to the
+   page's own colours. */
+.cg-embed--active .cg-embed__status,
+.cg-embed--active .cg-embed__error {
+	color: inherit;
 }
 
 .cg-embed--active:focus {
