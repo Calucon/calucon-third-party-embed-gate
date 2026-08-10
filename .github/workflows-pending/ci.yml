@@ -1,0 +1,39 @@
+# Unit tests + coding standards on every pull request and on main.
+#
+# To make merging impossible while tests fail, require these checks under
+# Settings > Branches (or Rulesets) for main:
+#   "PHP 7.4 lint + unit tests" and "PHP 8.4 lint + unit tests"
+# GitHub only offers a check for selection after it has run at least once.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php }} lint + unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The plugin declares "Requires PHP: 7.4" — test the floor and current.
+        php: ['7.4', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Coding standards (PHPCS, WordPress-Extra + PHPCompatibilityWP)
+        run: composer lint
+
+      - name: Unit + fixture suite (PHPUnit)
+        run: composer test
