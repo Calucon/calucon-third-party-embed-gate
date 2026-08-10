@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Consent Gate plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Consent Gate 0.4.0\n"
+"Project-Id-Version: Consent Gate 0.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/Calucon/WP-Embed/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -96,7 +96,7 @@ msgstr ""
 msgid "Corners"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:550
+#: src/Admin/SettingsPage.php:546
 msgid "Count"
 msgstr ""
 
@@ -161,7 +161,7 @@ msgstr ""
 msgid "Embeds from these hosts load without a placeholder. Use only for third parties you have covered elsewhere — this plugin then no longer prevents their requests."
 msgstr ""
 
-#: src/Plugin.php:326
+#: src/Plugin.php:349
 msgid "Example embed"
 msgstr ""
 
@@ -169,7 +169,7 @@ msgstr ""
 msgid "Fallback link on the panel background"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:552
+#: src/Admin/SettingsPage.php:548
 msgid "First seen in"
 msgstr ""
 
@@ -209,7 +209,7 @@ msgstr ""
 msgid "Gated"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:548
+#: src/Admin/SettingsPage.php:544
 msgid "Host"
 msgstr ""
 
@@ -306,7 +306,7 @@ msgstr ""
 msgid "Load video from YouTube"
 msgstr ""
 
-#: src/Plugin.php:567
+#: src/Plugin.php:614
 msgid "Loading embedded content…"
 msgstr ""
 
@@ -426,7 +426,7 @@ msgstr ""
 msgid "No cache plugin, consent platform or page builder detected."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:544
+#: src/Admin/SettingsPage.php:540
 msgid "No third-party embeds found in the scanned content."
 msgstr ""
 
@@ -450,7 +450,7 @@ msgstr ""
 msgid "Only enable this if embeds from a page builder are not being gated. It buffers the entire page, which can conflict with other buffering or streaming plugins. Any error inside the buffer returns the page unmodified."
 msgstr ""
 
-#: src/Plugin.php:569
+#: src/Plugin.php:616
 msgid "Open it on the provider’s site."
 msgstr ""
 
@@ -540,7 +540,7 @@ msgstr ""
 msgid "Scan recent content"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:538
+#: src/Admin/SettingsPage.php:534
 msgid "Scanned the %d most recent published posts and pages. Widgets, template parts and builder-rendered layouts are not part of this scan."
 msgstr ""
 
@@ -557,7 +557,7 @@ msgid "Square"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:489
-#: src/Admin/SettingsPage.php:551
+#: src/Admin/SettingsPage.php:547
 msgid "Status"
 msgstr ""
 
@@ -565,7 +565,7 @@ msgstr ""
 msgid "Status & tools"
 msgstr ""
 
-#: src/Plugin.php:566
+#: src/Plugin.php:613
 msgid "Stored embed consents have been removed. Embeds will ask again."
 msgstr ""
 
@@ -573,7 +573,7 @@ msgstr ""
 msgid "Style the placeholder panel without writing any CSS: pick a style, pick colours, and watch the preview below update as you go. The readability check tells you immediately if a colour combination would be hard to read."
 msgstr ""
 
-#: src/Plugin.php:568
+#: src/Plugin.php:615
 msgid "The embedded content could not be loaded."
 msgstr ""
 
@@ -597,7 +597,7 @@ msgstr ""
 msgid "Treat www.example.com and example.com as the same site"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:549
+#: src/Admin/SettingsPage.php:545
 msgid "Type"
 msgstr ""
 

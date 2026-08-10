@@ -517,19 +517,15 @@ final class SettingsPage {
 			\ConsentGate\Support\ContentScan::PROVIDER_DISABLED => __( 'NOT gated — provider disabled in the table above', 'consent-gate' ),
 		);
 
-		$rows = array();
+		$scanned = array();
 		foreach ( $posts as $post ) {
-			$rendered = (string) apply_filters( 'the_content', $post->post_content ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- deliberately rendering through core's own content pipeline so embeds appear as they would on the front end.
-			foreach ( $scanner->scan( $rendered ) as $row ) {
-				$key = $row['tag'] . '|' . $row['host'] . '|' . $row['status'];
-				if ( ! isset( $rows[ $key ] ) ) {
-					$rows[ $key ]          = $row;
-					$rows[ $key ]['count'] = 0;
-					$rows[ $key ]['where'] = get_the_title( $post );
-				}
-				++$rows[ $key ]['count'];
-			}
+			$rendered  = (string) apply_filters( 'the_content', $post->post_content ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- deliberately rendering through core's own content pipeline so embeds appear as they would on the front end.
+			$scanned[] = array(
+				'source' => get_the_title( $post ),
+				'rows'   => $scanner->scan( $rendered ),
+			);
 		}
+		$rows = \ConsentGate\Support\ContentScan::aggregate( $scanned );
 		?>
 		<p class="description">
 			<?php
@@ -558,7 +554,7 @@ final class SettingsPage {
 						<td><code><?php echo esc_html( $row['tag'] ); ?></code><?php echo '' !== $row['label'] ? ' ' . esc_html( '(' . $row['label'] . ')' ) : ''; ?></td>
 						<td><?php echo esc_html( (string) $row['count'] ); ?></td>
 						<td><?php echo esc_html( isset( $status_labels[ $row['status'] ] ) ? $status_labels[ $row['status'] ] : $row['status'] ); ?></td>
-						<td><?php echo esc_html( $row['where'] ); ?></td>
+						<td><?php echo esc_html( $row['first_seen'] ); ?></td>
 					</tr>
 				<?php endforeach; ?>
 				</tbody>

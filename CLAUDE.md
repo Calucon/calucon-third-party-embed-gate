@@ -43,6 +43,8 @@ WordPress.org submission itself (a human act). See PLAN.md §13.
 | `src/Admin/SettingsPage.php` + `assets/js/{admin-appearance,admin-tabs}.js` | §7.1 tabbed settings; Appearance colour pickers, live preview + contrast check (admin-only JS; may use jQuery/wp-color-picker). Tabs are client-side only — one form, one save; per-tab forms would let `Options::sanitize()` wipe unsent sections |
 | `src/Rendering/PlaceholderRenderer.php` | The §5.1 markup contract — public API, version it |
 | `src/Integration/{RenderBlock,TheContent}.php` | The only place WordPress hooks live |
+| `src/Cli/Commands.php` | Read-only WP-CLI (`scan`, `providers`); scan renders via `Plugin::render_ungated()` — plain `the_content` would gate the markup before the scanner sees it |
+| `docs/customizing.md` | Site-level customization reference, ships in the zip; update it when hooks/descriptor keys change |
 | `assets/js/gate.js` | Dependency-free ES5; no build step |
 | `templates/`, `Admin/`, `Cmp/`, … | Later milestones (PLAN.md §13) |
 
