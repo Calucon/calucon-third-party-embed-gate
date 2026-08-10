@@ -15,7 +15,7 @@
 	// is narrower still. The identity attributes (id, name, class,
 	// data-secret, security) carry no capability but real integrations key
 	// on them — the YouTube JS API, <form target>, wp-embed.js resizing.
-	var SAFELIST = [ 'title', 'width', 'height', 'sandbox', 'loading', 'allow', 'allowfullscreen', 'referrerpolicy', 'type', 'id', 'name', 'class', 'data-secret', 'security' ];
+	var SAFELIST = [ 'title', 'width', 'height', 'sandbox', 'loading', 'allow', 'allowfullscreen', 'referrerpolicy', 'type', 'id', 'name', 'class', 'data-secret', 'security', 'alt' ];
 
 	function hasClass( el, name ) {
 		return el && el.nodeType === 1 && ( ' ' + el.className + ' ' ).indexOf( ' ' + name + ' ' ) !== -1;
@@ -46,7 +46,7 @@
 	function buildFrame( payload ) {
 		var src = typeof payload.src === 'string' ? payload.src : '';
 		var srcdoc = typeof payload.srcdoc === 'string' ? payload.srcdoc : '';
-		var tag = payload.tag === 'embed' || payload.tag === 'object' ? payload.tag : 'iframe';
+		var tag = payload.tag === 'embed' || payload.tag === 'object' || payload.tag === 'img' ? payload.tag : 'iframe';
 
 		// Only http(s) or protocol-relative URLs may be loaded. Anything else
 		// in the payload is treated as hostile and ignored. A srcdoc payload

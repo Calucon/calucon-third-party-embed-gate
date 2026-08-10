@@ -42,7 +42,7 @@ final class Comments {
 	public function filter( $content ): string {
 		$content = (string) $content;
 
-		if ( ! Plugin::has_gateable_markup( $content ) || $this->plugin->should_bail() ) {
+		if ( ! $this->plugin->has_gateable_markup( $content ) || $this->plugin->should_bail() ) {
 			return $content;
 		}
 

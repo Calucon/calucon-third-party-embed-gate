@@ -169,9 +169,13 @@ final class OutputBuffer {
 		if ( false === strpos( $buffer, 'id="consent-gate-css"' )
 			&& false === strpos( $buffer, "id='consent-gate-css'" ) ) {
 			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- this runs on shutdown, after wp_footer was rendered into the buffer; wp_enqueue_style() is a no-op here.
-			$css  = '<link rel="stylesheet" id="consent-gate-css" href="'
+			$css        = '<link rel="stylesheet" id="consent-gate-css" href="'
 				. esc_url( plugins_url( 'assets/css/gate.css', CONSENT_GATE_FILE ) . '?ver=' . $version )
 				. '" media="all">';
+			$appearance = $this->plugin->appearance_css();
+			if ( '' !== $appearance ) {
+				$css .= '<style id="consent-gate-inline-css">' . $appearance . '</style>';
+			}
 			$head = stripos( $buffer, '</head>' );
 			if ( false !== $head ) {
 				$buffer = substr( $buffer, 0, $head ) . $css . substr( $buffer, $head );

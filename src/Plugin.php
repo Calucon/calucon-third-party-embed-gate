@@ -17,6 +17,7 @@ use ConsentGate\Detection\EmbedStripper;
 use ConsentGate\Detection\HostMatcher;
 use ConsentGate\Detection\HtmlScanner;
 use ConsentGate\Detection\IframeRule;
+use ConsentGate\Detection\ImageRule;
 use ConsentGate\Detection\ScriptRule;
 use ConsentGate\Integration\Comments;
 use ConsentGate\Integration\Descriptions;
@@ -32,6 +33,7 @@ use ConsentGate\Providers\Registry;
 use ConsentGate\Rendering\PlaceholderRenderer;
 use ConsentGate\Rendering\TemplateLoader;
 use ConsentGate\Support\CacheFlush;
+use ConsentGate\Support\ContentScan;
 use ConsentGate\Support\Options;
 use ConsentGate\Support\ResourceHints;
 
@@ -51,6 +53,15 @@ final class Plugin {
 
 	/** @var ScriptRule|null */
 	private ?ScriptRule $script_rule = null;
+
+	/** @var ImageRule|null */
+	private ?ImageRule $image_rule = null;
+
+	/** @var Registry|null */
+	private ?Registry $registry = null;
+
+	/** @var HostMatcher|null */
+	private ?HostMatcher $host_matcher = null;
 
 	/** @var array Sanitised option tree. */
 	private array $options;
@@ -119,6 +130,9 @@ final class Plugin {
 		( new SettingsPage(
 			function (): array {
 				return $this->providers();
+			},
+			function (): ContentScan {
+				return $this->content_scanner();
 			}
 		) )->register();
 		( new ResourceHintsIntegration(
@@ -203,10 +217,18 @@ final class Plugin {
 
 		$translate = $this->translator();
 
+		$always_gate = $this->options['detection']['always_gate'];
+
 		$hosts = new HostMatcher(
 			$this->own_hosts(),
 			(bool) apply_filters( 'consent_gate_www_equivalence', $this->options['detection']['www_equivalence'] ),
-			static function ( bool $own, string $host ): bool {
+			static function ( bool $own, string $host ) use ( $always_gate ): bool {
+				// The always-gate list wins over every own-host rule: a
+				// subdomain of the site's own domain that serves trackers is
+				// exactly what it exists for (§7.1).
+				if ( HostMatcher::host_matches_list( $host, $always_gate ) ) {
+					return false;
+				}
 				return (bool) apply_filters( 'consent_gate_is_own_host', $own, $host );
 			}
 		);
@@ -260,24 +282,52 @@ final class Plugin {
 		};
 
 		$this->scanner           = $scanner;
+		$this->registry          = $registry;
+		$this->host_matcher      = $hosts;
 		$this->iframe_rule       = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
 		$this->embed_object_rule = new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
 		$this->script_rule       = new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
+		$this->image_rule        = new ImageRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
 		$this->stripper          = new EmbedStripper( $scanner, $hosts, $registry, $translate );
 		$this->hint_scrubber     = new ResourceHints( $this->provider_hosts( $providers ), $hosts );
+	}
+
+	/**
+	 * The read-only content scanner behind the Status screen (§7.1).
+	 *
+	 * @return ContentScan
+	 */
+	public function content_scanner(): ContentScan {
+		$this->build_pipeline();
+		return new ContentScan(
+			$this->scanner,
+			$this->host_matcher,
+			$this->registry,
+			array(
+				'iframes' => $this->options['detection']['iframes'],
+				'scripts' => $this->options['detection']['scripts'],
+				'images'  => $this->options['detection']['images'],
+			)
+		);
 	}
 
 	/**
 	 * Cheap pre-parse probe shared by every integration (PLAN.md §9.16):
 	 * whether a fragment can contain anything gateable at all. Must name
 	 * every tag a detection rule handles — a probe that misses a tag makes
-	 * the integration skip the rule silently.
+	 * the integration skip the rule silently. '<img' joins only when the
+	 * opt-in image rule is on: it is by far the most common tag, and probing
+	 * it unconditionally would defeat the fast path everywhere.
 	 *
 	 * @param string $html Content.
 	 * @return bool
 	 */
-	public static function has_gateable_markup( string $html ): bool {
-		foreach ( array( '<iframe', '<script', '<embed', '<object' ) as $probe ) {
+	public function has_gateable_markup( string $html ): bool {
+		$probes = array( '<iframe', '<script', '<embed', '<object' );
+		if ( $this->options['detection']['images'] ) {
+			$probes[] = '<img';
+		}
+		foreach ( $probes as $probe ) {
 			if ( false !== stripos( $html, $probe ) ) {
 				return true;
 			}
@@ -302,6 +352,9 @@ final class Plugin {
 		}
 		if ( $this->options['detection']['scripts'] ) {
 			$html = $this->script_rule->apply( $html, $ctx );
+		}
+		if ( $this->options['detection']['images'] ) {
+			$html = $this->image_rule->apply( $html, $ctx );
 		}
 		return $html;
 	}
@@ -401,6 +454,47 @@ final class Plugin {
 				'before'
 			);
 		}
+
+		$appearance = $this->appearance_css();
+		if ( '' !== $appearance ) {
+			wp_add_inline_style( 'consent-gate', $appearance );
+		}
+	}
+
+	/**
+	 * CSS for the Appearance settings (§7.1): preset + colour overrides of
+	 * the §7.3 custom properties. '' when everything is at defaults.
+	 *
+	 * @return string
+	 */
+	public function appearance_css(): string {
+		$a    = $this->options['appearance'];
+		$vars = '';
+		foreach ( array(
+			'bg'        => '--cg-bg',
+			'fg'        => '--cg-fg',
+			'accent'    => '--cg-accent',
+			'accent_fg' => '--cg-accent-fg',
+		) as $option_key => $property ) {
+			if ( '' !== $a[ $option_key ] ) {
+				$vars .= $property . ':' . $a[ $option_key ] . ';';
+			}
+		}
+
+		$css = '';
+		if ( '' !== $vars ) {
+			$css .= '.cg-embed{' . $vars . '}';
+		}
+		if ( 'minimal' === $a['preset'] ) {
+			// Transparent panel on the page's own background; --cg-fg
+			// defaults to the theme's contrast preset, so text keeps its
+			// ratio against the page.
+			$css .= '.cg-embed:not(.cg-embed--active){background:transparent;border:1px solid var(--cg-fg);}';
+		} elseif ( 'card' === $a['preset'] ) {
+			$css .= '.cg-embed:not(.cg-embed--active){border:1px solid rgba(0,0,0,0.12);border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.18);}';
+		}
+
+		return $css;
 	}
 
 	/**

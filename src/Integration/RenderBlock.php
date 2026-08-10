@@ -44,7 +44,7 @@ final class RenderBlock {
 	public function filter( $content, $block ): string {
 		$content = (string) $content;
 
-		if ( ! Plugin::has_gateable_markup( $content ) || $this->plugin->should_bail() ) {
+		if ( ! $this->plugin->has_gateable_markup( $content ) || $this->plugin->should_bail() ) {
 			return $content;
 		}
 
