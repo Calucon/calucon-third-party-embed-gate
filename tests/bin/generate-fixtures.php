@@ -31,7 +31,7 @@ foreach ( scandir( $root ) as $entry ) {
 	}
 
 	$input  = (string) file_get_contents( $dir . '/input.html' );
-	$output = PipelineFactory::gate( $input, array( 'example.test' ), array( 'integration' => 'test' ) );
+	$output = PipelineFactory::gate( $input, array( 'example.test' ), PipelineFactory::fixture_ctx( $dir ) );
 
 	file_put_contents( $expected_file, $output );
 	echo ( $output === $input ? 'PASS-THROUGH ' : 'GATED        ' ) . $entry . PHP_EOL;

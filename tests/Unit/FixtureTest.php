@@ -39,7 +39,7 @@ final class FixtureTest extends TestCase {
 		self::assertNotFalse( $input, 'missing input.html' );
 		self::assertNotFalse( $expected, "missing expected.html in $dir — generate it with tests/bin/generate-fixtures.php and review the output" );
 
-		$actual = PipelineFactory::gate( $input, array( 'example.test' ), array( 'integration' => 'test' ) );
+		$actual = PipelineFactory::gate( $input, array( 'example.test' ), PipelineFactory::fixture_ctx( $dir ) );
 
 		self::assertSame( $expected, $actual, basename( $dir ) );
 	}
@@ -51,8 +51,9 @@ final class FixtureTest extends TestCase {
 	 * @dataProvider fixture_provider
 	 */
 	public function test_fixture_is_idempotent( string $dir ): void {
-		$once = PipelineFactory::gate( (string) file_get_contents( $dir . '/input.html' ) );
+		$ctx  = PipelineFactory::fixture_ctx( $dir );
+		$once = PipelineFactory::gate( (string) file_get_contents( $dir . '/input.html' ), array( 'example.test' ), $ctx );
 
-		self::assertSame( $once, PipelineFactory::gate( $once ), basename( $dir ) . ' (second pass)' );
+		self::assertSame( $once, PipelineFactory::gate( $once, array( 'example.test' ), $ctx ), basename( $dir ) . ' (second pass)' );
 	}
 }

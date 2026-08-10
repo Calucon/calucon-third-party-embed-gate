@@ -156,10 +156,12 @@ final class PlaceholderRenderer {
 		// consenting to one unknown third party never activates another.
 		$host = $this->host_of( '' !== $src ? $src : $fallback_url );
 
-		$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host );
+		$poster = $this->poster_of( $ctx );
+
+		$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host, $poster );
 
 		if ( '' === $html ) {
-			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $host );
+			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $host, $poster );
 		}
 
 		if ( null !== $this->filter_html ) {
@@ -178,18 +180,22 @@ final class PlaceholderRenderer {
 	 * @param string $fallback_url   Fallback link target.
 	 * @param string $fallback_label Fallback link text.
 	 * @param string $host           Host the embed will contact.
+	 * @param string $poster         Site-origin poster image URL, '' for none.
 	 * @return string
 	 */
-	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, string $host = '' ): string {
+	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, string $host = '', string $poster = '' ): string {
 		$aspect = $this->aspect_of( $provider, $payload );
 
-		return '<div class="cg-embed"'
+		return '<div class="cg-embed' . ( '' !== $poster ? ' cg-embed--poster' : '' ) . '"'
 			. ' role="group"'
 			. ' aria-label="' . $this->esc( $aria_label ) . '"'
 			. ' data-cg-provider="' . $this->esc( $provider['id'] ) . '"'
 			. ( '' !== $host ? ' data-cg-host="' . $this->esc( $host ) . '"' : '' )
 			. ( '' !== $aspect ? ' style="--cg-aspect:' . $this->esc( $aspect ) . '"' : '' )
 			. ' data-cg-payload="' . $this->esc_json( $payload ) . '">'
+			// Decorative: the group's aria-label already names the embed, and
+			// the poster is gone after activation — alt text would be noise.
+			. ( '' !== $poster ? '<img class="cg-embed__poster" src="' . $this->esc( $poster ) . '" alt="" aria-hidden="true" loading="lazy">' : '' )
 			. '<div class="cg-embed__panel">'
 			. '<p class="cg-embed__note">' . $this->esc( $provider['note'] ) . '</p>'
 			. '<button type="button" class="cg-embed__button">' . $this->esc( $provider['action'] ) . '</button>'
@@ -208,9 +214,10 @@ final class PlaceholderRenderer {
 	 * @param string $fallback_label Fallback link text.
 	 * @param array  $ctx            Integration context.
 	 * @param string $host           Host the embed will contact.
+	 * @param string $poster         Site-origin poster image URL, '' for none.
 	 * @return string '' when no template applies.
 	 */
-	private function render_via_template( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, array $ctx, string $host = '' ): string {
+	private function render_via_template( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, array $ctx, string $host = '', string $poster = '' ): string {
 		if ( null === $this->templates ) {
 			return '';
 		}
@@ -232,8 +239,30 @@ final class PlaceholderRenderer {
 				'payload_attr'   => $this->esc_json( $payload ),
 				'aspect'         => $this->aspect_of( $provider, $payload ),
 				'host'           => $host,
+				'poster'         => $poster,
 			)
 		);
+	}
+
+	/**
+	 * The poster image the integration layer resolved for this embed
+	 * (PLAN.md §5.4, owner-supplied variant). The integration layer has
+	 * already validated it as site-origin; this guard only rejects shapes
+	 * that could not be a same-origin image URL at all, so a template or
+	 * filter passing junk fails closed to "no poster" (invariant 1).
+	 *
+	 * @param array $ctx Integration context.
+	 * @return string Poster URL, '' for none.
+	 */
+	private function poster_of( array $ctx ): string {
+		if ( ! isset( $ctx['poster'] ) || ! is_string( $ctx['poster'] ) ) {
+			return '';
+		}
+		$poster = trim( $ctx['poster'] );
+		if ( '' === $poster || preg_match( '/^(javascript|data|blob):/i', $poster ) ) {
+			return '';
+		}
+		return $poster;
 	}
 
 	/**

@@ -60,6 +60,14 @@ if ( '/frame.html' === $uri ) {
 	return true;
 }
 
+if ( '/assets/poster.svg' === $uri ) {
+	// The site-origin poster image for /page/poster — a real request the
+	// zero-requests test sees, from the page's own host.
+	header( 'Content-Type: image/svg+xml' );
+	echo '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#3a6ea5"/></svg>';
+	return true;
+}
+
 if ( '/page/gated' === $uri ) {
 	// Raw content as WordPress would render it, before gating: one embed per
 	// authoring style from the fixture corpus, plus a same-origin iframe that
@@ -167,6 +175,23 @@ if ( '/page/shapes' === $uri ) {
 	return true;
 }
 
+if ( '/page/poster' === $uri ) {
+	// Owner-supplied poster (§5.4): the integration layer resolved a
+	// media-library image to a site-origin URL and put it in the context —
+	// exactly what RenderBlock does for the consentGatePoster attribute.
+	$content = implode(
+		"\n",
+		array(
+			'<figure class="wp-block-embed is-type-video wp-block-embed-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">',
+			'<iframe title="Kolkja Cycling" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed" frameborder="0" allowfullscreen></iframe>',
+			'</div></figure>',
+		)
+	);
+
+	cg_e2e_page( $content, '', '', array( 'poster' => '/assets/poster.svg' ) );
+	return true;
+}
+
 if ( '/page/collision' === $uri ) {
 	// Two UNKNOWN third-party widgets (both resolve to the generic-script
 	// provider) plus one unknown iframe: activating one widget must not
@@ -190,13 +215,14 @@ if ( '/page/collision' === $uri ) {
  * @param string $content   Pre-gating content HTML.
  * @param string $extra_css Page-specific CSS (theme/core simulation).
  * @param string $config_js Inline config (what wp_add_inline_script emits).
+ * @param array  $extra_ctx Extra integration context (e.g. §5.4 poster).
  * @return void
  */
-function cg_e2e_page( string $content, string $extra_css = '', string $config_js = '' ) {
+function cg_e2e_page( string $content, string $extra_css = '', string $config_js = '', array $extra_ctx = array() ) {
 	$gated = PipelineFactory::gate(
 		$content,
 		array( '127.0.0.1', 'localhost' ),
-		array( 'integration' => 'e2e' )
+		array_merge( array( 'integration' => 'e2e' ), $extra_ctx )
 	);
 
 	header( 'Content-Type: text/html; charset=utf-8' );

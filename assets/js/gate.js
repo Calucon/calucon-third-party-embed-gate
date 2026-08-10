@@ -364,6 +364,14 @@
 			}
 			container.removeChild( panel );
 		}
+		// The poster image goes with the panel — left in place it would sit
+		// behind (or, grid-stacked, on top of) the activated embed.
+		var imgs = container.getElementsByTagName( 'img' );
+		for ( var j = imgs.length - 1; j >= 0; j-- ) {
+			if ( hasClass( imgs[ j ], 'cg-embed__poster' ) && imgs[ j ].parentNode === container ) {
+				container.removeChild( imgs[ j ] );
+			}
+		}
 	}
 
 	function activateScript( container, payload, focus ) {

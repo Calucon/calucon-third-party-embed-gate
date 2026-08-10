@@ -9,10 +9,14 @@ nothing third-party loads before a click.** It is a technical measure, not a
 consent management platform, and it never claims compliance.
 
 The full design rationale lives in `PLAN.md`; this file is the traps and the
-rules. Milestone status: M1–M7 are implemented, with three deliberate gaps —
+rules. Milestone status: M1–M7 are implemented, with two deliberate gaps —
 CMP bridges (§6.4, need real-CMP testing; gating stays the fail-closed
-default), local thumbnails (§5.4, needs real-filesystem testing), and the
-WordPress.org submission itself (a human act). See PLAN.md §13.
+default) and the WordPress.org submission itself (a human act). See PLAN.md
+§13. Thumbnails shipped as **owner-supplied posters** (media-library image
+per block, own-host-validated, `$ctx['poster']`); the §5.4 server-side
+auto-fetch was **rejected** — it is an outbound request, and a cached
+provider thumbnail goes stale with no invalidation signal. Never propose it
+(or a Google-Fonts downloader) again.
 
 ## Invariants (PLAN.md §1) — if a change would break one of these, stop and ask
 

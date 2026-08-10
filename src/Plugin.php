@@ -441,6 +441,36 @@ final class Plugin {
 	}
 
 	/**
+	 * Resolve a media-library attachment to a poster URL for the placeholder
+	 * (PLAN.md §5.4, owner-supplied variant — the auto-fetch variant was
+	 * rejected: no outbound requests, and a cached provider thumbnail goes
+	 * stale silently).
+	 *
+	 * Fail closed: only a URL that classifies as the site's own host is
+	 * returned. An offloading plugin that rewrites attachment URLs to a CDN
+	 * the site has not declared as an own host would otherwise put a
+	 * third-party request inside the placeholder — the exact request the
+	 * placeholder exists to prevent (invariant 1). No poster beats that.
+	 *
+	 * @param int $attachment_id Media library attachment ID.
+	 * @return string Poster URL, '' when unusable.
+	 */
+	public function poster_url( int $attachment_id ): string {
+		if ( $attachment_id <= 0 ) {
+			return '';
+		}
+		$url = wp_get_attachment_image_url( $attachment_id, 'large' );
+		if ( ! is_string( $url ) || '' === $url ) {
+			return '';
+		}
+		$this->build_pipeline();
+		if ( HostMatcher::OWN !== $this->host_matcher->classify( $url ) ) {
+			return '';
+		}
+		return $url;
+	}
+
+	/**
 	 * Remove third-party embeds entirely — for excerpts and feeds, where a
 	 * placeholder is nonsense (§3.3, §9.3).
 	 *

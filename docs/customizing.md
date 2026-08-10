@@ -12,7 +12,11 @@ visitor clicks**. Not a script, not an iframe, not a thumbnail, not a
 
 - **Don't** load a preview image, poster, or favicon from the provider in a
   custom template or placeholder filter. If you want thumbnails, they must
-  be served from this site.
+  be served from this site. The supported way: every embed block has a
+  **Set poster image** control (Consent Gate panel in the block inspector)
+  that takes a media-library image; the server refuses any poster URL that
+  does not resolve to this site's own host, so a CDN-offloaded media
+  library needs its CDN host declared under **Detection → Own hosts**.
 - **Don't** add `autoplay` (a WCAG failure, and not what the visitor asked
   for), and don't widen `allow`/`sandbox` beyond what the original embed had.
 - **Don't** write cookies/localStorage before the click "to remember
@@ -168,6 +172,13 @@ minimum contract it must keep (container classes/attributes, a real
 `<button type="button">`, the server-rendered fallback link). Keep the
 panel's name on `role="group"` + `aria-label` — do not substitute a
 heading; the correct heading level cannot be known from inside an embed.
+
+The template receives a `$poster` variable — the site-origin poster image
+chosen in the block editor ('' when none). If your template renders it,
+keep the `cg-embed--poster` container class and `cg-embed__poster` image
+class (gate.js removes the image on activation by that class), keep
+`alt="" aria-hidden="true"`, and never replace it with a provider-hosted
+image URL.
 
 ## What you cannot do from a customization
 

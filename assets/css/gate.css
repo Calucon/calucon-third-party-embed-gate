@@ -60,6 +60,45 @@
 	padding: var( --cg-gap );
 }
 
+/* Owner-supplied poster image (PLAN.md §5.4, media-library variant): the
+   image and the panel share one grid cell, panel painted on top. The image
+   is always site-origin — the integration layer refuses anything else. */
+.cg-embed--poster:not( .cg-embed--active ) {
+	display: grid;
+}
+
+.cg-embed--poster:not( .cg-embed--active ) > * {
+	grid-area: 1 / 1;
+}
+
+.cg-embed__poster {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: var( --cg-radius );
+}
+
+/* Over an image the panel must paint its own solid background — text
+   contrast is measured against the panel's background (WCAG 1.4.3), and
+   an image underneath makes "the page's background" unknowable. This also
+   deliberately overrides the minimal preset's transparent container. */
+.cg-embed--poster:not( .cg-embed--active ) .cg-embed__panel {
+	align-self: end;
+	justify-self: start;
+	margin: var( --cg-gap );
+	max-width: calc( 100% - 2 * var( --cg-gap ) );
+	background: var( --cg-bg );
+	border-radius: var( --cg-radius );
+}
+
+/* Safety net: gate.js removes the poster on activation; if a theme's own
+   script re-inserts children, the image must still never sit on top of the
+   playing embed. */
+.cg-embed--active .cg-embed__poster {
+	display: none;
+}
+
 .cg-embed__note {
 	margin: 0;
 	font-size: 0.9375em;
