@@ -30,6 +30,10 @@ final class Provider {
 				'match'        => array(),
 				'load_host'    => null,
 				'load_path'    => null,
+				// Query parameters merged into the original src at load time
+				// (e.g. Vimeo dnt=1). Used when rebuilding from load_path
+				// would lose parameters the embed needs (unlisted hashes).
+				'load_query'   => array(),
 				'fallback'     => '',
 				'privacy_url'  => null,
 				'controller'   => null,
@@ -39,6 +43,11 @@ final class Provider {
 				'aspect'       => null,
 				'iframe_allow' => null,
 				'strategy'     => 'iframe',
+				// Script strategy only: derives a human fallback URL from the
+				// attributes of the companion element preceding the script
+				// tag (e.g. Strava's data-embed-type/data-embed-id).
+				// fn( array $companion_attributes ): ?string
+				'companion_fallback' => null,
 			),
 			$descriptor
 		);

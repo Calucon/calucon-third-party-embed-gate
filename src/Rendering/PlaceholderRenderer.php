@@ -140,6 +140,10 @@ final class PlaceholderRenderer {
 			'attrs' => $attrs ? $attrs : new \stdClass(),
 		);
 
+		if ( 'iframe' !== $provider['strategy'] ) {
+			$payload['strategy'] = $provider['strategy'];
+		}
+
 		if ( null !== $this->filter_payload ) {
 			$payload = (array) call_user_func( $this->filter_payload, $payload, $provider );
 		}

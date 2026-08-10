@@ -210,7 +210,10 @@ final class HtmlScanner {
 	 */
 	private function in_excluded_range( int $offset, array $ranges ): bool {
 		foreach ( $ranges as $range ) {
-			if ( $offset >= $range[0] && $offset < $range[1] ) {
+			// Strictly inside: a candidate at the range start IS the container
+			// tag itself, which must stay scannable (ScriptRule reads script
+			// tags; their bodies stay off limits).
+			if ( $offset > $range[0] && $offset < $range[1] ) {
 				return true;
 			}
 		}

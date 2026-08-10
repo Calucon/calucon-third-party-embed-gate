@@ -14,8 +14,10 @@ namespace ConsentGate;
 use ConsentGate\Detection\HostMatcher;
 use ConsentGate\Detection\HtmlScanner;
 use ConsentGate\Detection\IframeRule;
+use ConsentGate\Detection\ScriptRule;
 use ConsentGate\Integration\RenderBlock;
 use ConsentGate\Integration\TheContent;
+use ConsentGate\Providers\Builtin\Descriptors;
 use ConsentGate\Providers\Registry;
 use ConsentGate\Rendering\PlaceholderRenderer;
 
@@ -28,7 +30,10 @@ final class Plugin {
 	private static ?Plugin $instance = null;
 
 	/** @var IframeRule */
-	private IframeRule $rule;
+	private IframeRule $iframe_rule;
+
+	/** @var ScriptRule */
+	private ScriptRule $script_rule;
 
 	/**
 	 * Bootstraps the plugin once, on plugins_loaded.
@@ -64,7 +69,7 @@ final class Plugin {
 		);
 
 		$registry = new Registry(
-			(array) apply_filters( 'consent_gate_providers', array() ),
+			(array) apply_filters( 'consent_gate_providers', Descriptors::all( $translate ) ),
 			$translate
 		);
 
@@ -78,19 +83,17 @@ final class Plugin {
 			}
 		);
 
-		$this->rule = new IframeRule(
-			new HtmlScanner(),
-			$hosts,
-			$registry,
-			$renderer,
-			static function ( bool $gate, string $url, array $ctx ): bool {
-				return (bool) apply_filters( 'consent_gate_should_gate', $gate, $url, $ctx );
-			},
-			function ( array $provider, array $ctx ): void {
-				$this->enqueue_assets();
-				do_action( 'consent_gate_embed_gated', $provider, $ctx );
-			}
-		);
+		$scanner     = new HtmlScanner();
+		$should_gate = static function ( bool $gate, string $url, array $ctx ): bool {
+			return (bool) apply_filters( 'consent_gate_should_gate', $gate, $url, $ctx );
+		};
+		$on_gated    = function ( array $provider, array $ctx ): void {
+			$this->enqueue_assets();
+			do_action( 'consent_gate_embed_gated', $provider, $ctx );
+		};
+
+		$this->iframe_rule = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
+		$this->script_rule = new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
 
@@ -106,7 +109,7 @@ final class Plugin {
 	 * @return string
 	 */
 	public function gate( string $html, array $ctx ): string {
-		return $this->rule->apply( $html, $ctx );
+		return $this->script_rule->apply( $this->iframe_rule->apply( $html, $ctx ), $ctx );
 	}
 
 	/**

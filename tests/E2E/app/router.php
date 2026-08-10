@@ -77,8 +77,36 @@ if ( '/page/gated' === $uri ) {
 		)
 	);
 
-	$gated = PipelineFactory::rule( array( '127.0.0.1', 'localhost' ) )
-		->apply( $content, array( 'integration' => 'e2e' ) );
+	cg_e2e_page( $content );
+	return true;
+}
+
+if ( '/page/scripts' === $uri ) {
+	// Script-strategy providers: companion element + SDK script tag.
+	$content = implode(
+		"\n",
+		array(
+			'<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Worth every kilometre.</p>&mdash; Calucon (@calucon) <a href="https://twitter.com/calucon/status/1234567890123456789">June 1, 2024</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>',
+			'<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="1234567890"></div><script src="https://strava-embeds.com/embed.js"></script>',
+		)
+	);
+
+	cg_e2e_page( $content );
+	return true;
+}
+
+/**
+ * Gate raw content through the real pipeline and emit a full page.
+ *
+ * @param string $content Pre-gating content HTML.
+ * @return void
+ */
+function cg_e2e_page( string $content ) {
+	$gated = PipelineFactory::gate(
+		$content,
+		array( '127.0.0.1', 'localhost' ),
+		array( 'integration' => 'e2e' )
+	);
 
 	header( 'Content-Type: text/html; charset=utf-8' );
 	echo '<!doctype html><html lang="en"><head><meta charset="utf-8">'
@@ -89,7 +117,6 @@ if ( '/page/gated' === $uri ) {
 		. $gated
 		. '<script src="/assets/gate.js"></script>'
 		. '</body></html>';
-	return true;
 }
 
 http_response_code( 404 );

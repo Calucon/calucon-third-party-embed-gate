@@ -67,7 +67,9 @@ test( 'click inserts the iframe, with safelisted attributes only, and moves focu
 
 	const frame = first.locator( 'iframe' );
 	await expect( frame ).toHaveCount( 1 );
-	await expect( frame ).toHaveAttribute( 'src', 'https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed' );
+	// Data minimisation: the post-consent load goes to the privacy-preserving
+	// host (measured 0 cookies vs 5 on the default host).
+	await expect( frame ).toHaveAttribute( 'src', 'https://www.youtube-nocookie.com/embed/y_pjE_p1HwE' );
 	await expect( frame ).toHaveAttribute( 'title', 'Kolkja Cycling' );
 	await expect( frame ).toHaveAttribute( 'allowfullscreen', '' );
 	// Invariant 8: autoplay never survives the rebuild.
@@ -91,10 +93,11 @@ test( 'placeholder works with JavaScript disabled: real fallback link, still zer
 
 	await page.goto( '/page/gated' );
 
-	// Invariant 2: a visitor without JavaScript gets a real, working link.
+	// Invariant 2: a visitor without JavaScript gets a real, working link —
+	// a human page (watch URL), not an embed endpoint.
 	const link = page.locator( '.cg-embed__fallback a' ).first();
 	await expect( link ).toBeVisible();
-	await expect( link ).toHaveAttribute( 'href', 'https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed' );
+	await expect( link ).toHaveAttribute( 'href', 'https://www.youtube.com/watch?v=y_pjE_p1HwE' );
 	await expect( link ).toHaveAttribute( 'rel', 'noopener nofollow' );
 
 	expect( offenders ).toEqual( [] );

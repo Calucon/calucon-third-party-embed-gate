@@ -73,6 +73,110 @@
 		return frame;
 	}
 
+	// Script load state per URL, so a provider SDK is fetched exactly once no
+	// matter how many embeds it serves (PLAN.md §9.6).
+	var scriptStates = {};
+
+	// Invoked after a provider script loads AND after each later activation:
+	// SDKs like Strava's embed.js only render the placeholders present when
+	// they run (PLAN.md §9.6). Sites can add hooks for custom providers via
+	// window.consentGateReadyHooks before or after this script loads.
+	var readyHooks = {
+		strava: function () {
+			if ( window.__STRAVA_EMBED_BOOTSTRAP__ ) {
+				window.__STRAVA_EMBED_BOOTSTRAP__();
+			}
+		},
+		twitter: function () {
+			if ( window.twttr && window.twttr.widgets && window.twttr.widgets.load ) {
+				window.twttr.widgets.load();
+			}
+		},
+		instagram: function () {
+			if ( window.instgrm && window.instgrm.Embeds ) {
+				window.instgrm.Embeds.process();
+			}
+		},
+		facebook: function () {
+			if ( window.FB && window.FB.XFBML ) {
+				window.FB.XFBML.parse();
+			}
+		}
+	};
+
+	function runReadyHook( providerId ) {
+		var custom = window.consentGateReadyHooks || {};
+		var hook = custom[ providerId ] || readyHooks[ providerId ];
+		if ( hook ) {
+			try {
+				hook();
+			} catch ( e ) {
+				// A broken provider hook must not break the page.
+			}
+		}
+	}
+
+	function loadScriptOnce( src, done ) {
+		var state = scriptStates[ src ];
+		if ( state && state.loaded ) {
+			done();
+			return;
+		}
+		if ( state ) {
+			state.callbacks.push( done );
+			return;
+		}
+		state = scriptStates[ src ] = { loaded: false, callbacks: [ done ] };
+		var el = document.createElement( 'script' );
+		el.async = true;
+		el.src = src;
+		el.onload = function () {
+			state.loaded = true;
+			var callbacks = state.callbacks;
+			state.callbacks = [];
+			for ( var i = 0; i < callbacks.length; i++ ) {
+				callbacks[ i ]();
+			}
+		};
+		document.head.appendChild( el );
+	}
+
+	function removePanel( container ) {
+		container.setAttribute( 'data-cg-activated', '1' );
+		container.className += ' cg-embed--active';
+		var panel = container.getElementsByTagName( 'div' )[ 0 ];
+		if ( panel && hasClass( panel, 'cg-embed__panel' ) ) {
+			container.removeChild( panel );
+		}
+	}
+
+	function activateScript( container, payload ) {
+		var src = typeof payload.src === 'string' ? payload.src : '';
+		if ( ! /^(https?:)?\/\//i.test( src ) ) {
+			return;
+		}
+		var providerId = container.getAttribute( 'data-cg-provider' );
+
+		// One SDK renders every companion element on the page, so the other
+		// panels for the same provider would go stale — clear them all. The
+		// clicked container stays in the DOM as the focus anchor (§8).
+		var all = document.querySelectorAll
+			? document.querySelectorAll( '.cg-embed[data-cg-provider="' + providerId + '"]' )
+			: [];
+		for ( var i = 0; i < all.length; i++ ) {
+			if ( all[ i ] !== container && all[ i ].parentNode ) {
+				all[ i ].parentNode.removeChild( all[ i ] );
+			}
+		}
+		removePanel( container );
+		container.setAttribute( 'tabindex', '-1' );
+		container.focus();
+
+		loadScriptOnce( src, function () {
+			runReadyHook( providerId );
+		} );
+	}
+
 	function activate( container ) {
 		if ( container.getAttribute( 'data-cg-activated' ) === '1' ) {
 			return;
@@ -85,18 +189,17 @@
 			return; // Malformed payload: the fallback link still works.
 		}
 
+		if ( payload.strategy === 'script' ) {
+			activateScript( container, payload );
+			return;
+		}
+
 		var frame = buildFrame( payload );
 		if ( ! frame ) {
 			return;
 		}
 
-		container.setAttribute( 'data-cg-activated', '1' );
-		container.className += ' cg-embed--active';
-
-		var panel = container.getElementsByTagName( 'div' )[ 0 ];
-		if ( panel && hasClass( panel, 'cg-embed__panel' ) ) {
-			container.removeChild( panel );
-		}
+		removePanel( container );
 		container.appendChild( frame );
 
 		// Focus the container, not the inserted node: if a provider script
