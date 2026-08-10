@@ -24,7 +24,7 @@ final class Options {
 	 */
 	public static function defaults(): array {
 		return array(
-			'providers' => array(
+			'providers'  => array(
 				// '<provider id>' => array(
 				//     'enabled'         => true,   gate embeds of this provider
 				//     'privacy_variant' => true,   load via nocookie/dnt target
@@ -32,17 +32,33 @@ final class Options {
 				//     'action'          => '',     override button text
 				// ),
 			),
-			'detection' => array(
+			'detection'  => array(
 				'iframes'         => true,
 				'scripts'         => true,
+				// Third-party <img> gating (§3.5): opt-in — replacing every
+				// remote image with a panel can break layouts, and images
+				// are content more often than embeds are.
+				'images'          => false,
 				'own_hosts'       => array(), // Site's own CDN / media hosts.
 				'never_gate'      => array(), // Hosts the owner exempts (their responsibility).
+				'always_gate'     => array(), // Hosts gated even when own-host logic would pass them.
 				'www_equivalence' => true,
 				// Whole-document buffer for page builders (§3.3). Invasive;
 				// off by default, behind a warning in the UI.
 				'output_buffer'   => false,
 			),
-			'consent'   => array(
+			'appearance' => array(
+				// Preset styles (§7.1). 'default' is the shipped look;
+				// 'minimal' drops the panel background; 'card' adds border
+				// and shadow. Colours override the CSS custom properties;
+				// '' means "inherit the theme's presets".
+				'preset'    => 'default', // default | minimal | card.
+				'bg'        => '',
+				'fg'        => '',
+				'accent'    => '',
+				'accent_fg' => '',
+			),
+			'consent'    => array(
 				// Consent memory (§6.2). Off by default: out of the box,
 				// consent applies to the one embed clicked and is stored
 				// nowhere. Client-side only (§6.3) — a server-side state
@@ -96,14 +112,31 @@ final class Options {
 
 		if ( isset( $raw['detection'] ) && is_array( $raw['detection'] ) ) {
 			$d = $raw['detection'];
-			foreach ( array( 'iframes', 'scripts', 'www_equivalence', 'output_buffer' ) as $flag ) {
+			foreach ( array( 'iframes', 'scripts', 'images', 'www_equivalence', 'output_buffer' ) as $flag ) {
 				if ( array_key_exists( $flag, $d ) ) {
 					$clean['detection'][ $flag ] = self::truthy( $d[ $flag ] );
 				}
 			}
-			foreach ( array( 'own_hosts', 'never_gate' ) as $list ) {
+			foreach ( array( 'own_hosts', 'never_gate', 'always_gate' ) as $list ) {
 				if ( isset( $d[ $list ] ) ) {
 					$clean['detection'][ $list ] = self::sanitize_host_list( $d[ $list ] );
+				}
+			}
+		}
+
+		if ( isset( $raw['appearance'] ) && is_array( $raw['appearance'] ) ) {
+			$a = $raw['appearance'];
+			if ( isset( $a['preset'] ) && in_array( $a['preset'], array( 'default', 'minimal', 'card' ), true ) ) {
+				$clean['appearance']['preset'] = $a['preset'];
+			}
+			foreach ( array( 'bg', 'fg', 'accent', 'accent_fg' ) as $color_key ) {
+				if ( isset( $a[ $color_key ] ) && is_string( $a[ $color_key ] ) ) {
+					$color = strtolower( trim( $a[ $color_key ] ) );
+					// Hex colours only: anything else could smuggle CSS out
+					// of the custom-property value.
+					if ( preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/', $color ) ) {
+						$clean['appearance'][ $color_key ] = $color;
+					}
 				}
 			}
 		}

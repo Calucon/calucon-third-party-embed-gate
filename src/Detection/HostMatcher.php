@@ -161,6 +161,34 @@ final class HostMatcher {
 	}
 
 	/**
+	 * Does a host match a configured host list ('*.' wildcards allowed)?
+	 * Shared by the always-gate setting, which must use the same matching
+	 * rules as the own-host lists it overrides.
+	 *
+	 * @param string   $host Host name (any case).
+	 * @param string[] $host_list Configured entries.
+	 * @return bool
+	 */
+	public static function host_matches_list( string $host, array $host_list ): bool {
+		$host = strtolower( rtrim( trim( $host ), '.' ) );
+		foreach ( $host_list as $entry ) {
+			if ( ! is_string( $entry ) || '' === $entry ) {
+				continue;
+			}
+			$entry = strtolower( trim( $entry ) );
+			if ( 0 === strpos( $entry, '*.' ) ) {
+				$suffix = substr( $entry, 1 ); // Keep the leading dot.
+				if ( substr( $host, -strlen( $suffix ) ) === $suffix || substr( $suffix, 1 ) === $host ) {
+					return true;
+				}
+			} elseif ( $host === $entry ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Lowercase, strip trailing dot, and punycode IDNs so 'münchen.de'
 	 * and 'xn--mnchen-3ya.de' compare equal (PLAN.md §3.4).
 	 *

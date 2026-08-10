@@ -56,6 +56,19 @@ final class PlaceholderRenderer {
 		'type',
 	);
 
+	/**
+	 * Safelist for rebuilt <img> tags (§3.5, opt-in image rule). alt is
+	 * kept — dropping it would be an accessibility regression on rebuild.
+	 */
+	private const ATTRIBUTE_SAFELIST_IMG = array(
+		'title',
+		'width',
+		'height',
+		'alt',
+		'class',
+		'loading',
+	);
+
 	/** @var callable Translation function; identity outside WordPress. */
 	private $translate;
 
@@ -248,10 +261,16 @@ final class PlaceholderRenderer {
 	private function build_payload( array $provider, string $src, array $attributes, array $options = array() ): array {
 		$attrs = array();
 
-		$tag      = isset( $options['tag'] ) && in_array( $options['tag'], array( 'embed', 'object' ), true )
+		$tag = isset( $options['tag'] ) && in_array( $options['tag'], array( 'embed', 'object', 'img' ), true )
 			? $options['tag']
 			: 'iframe';
-		$safelist = 'iframe' === $tag ? self::ATTRIBUTE_SAFELIST : self::ATTRIBUTE_SAFELIST_MEDIA;
+		if ( 'iframe' === $tag ) {
+			$safelist = self::ATTRIBUTE_SAFELIST;
+		} elseif ( 'img' === $tag ) {
+			$safelist = self::ATTRIBUTE_SAFELIST_IMG;
+		} else {
+			$safelist = self::ATTRIBUTE_SAFELIST_MEDIA;
+		}
 
 		foreach ( $safelist as $name ) {
 			if ( ! array_key_exists( $name, $attributes ) ) {

@@ -116,4 +116,40 @@ final class OptionsTest extends TestCase {
 
 		self::assertStringContainsString( '<p class="cg-embed__note">House rules apply.</p>', $html );
 	}
+
+	public function test_appearance_accepts_hex_colours_and_known_presets_only(): void {
+		$clean = Options::sanitize(
+			array(
+				'appearance' => array(
+					'preset'    => 'card',
+					'bg'        => '#FFFFFF',
+					'fg'        => 'red',
+					'accent'    => '#12ab34',
+					'accent_fg' => 'url(javascript:x)}body{',
+				),
+			)
+		);
+
+		self::assertSame( 'card', $clean['appearance']['preset'] );
+		self::assertSame( '#ffffff', $clean['appearance']['bg'] );
+		// Non-hex values could smuggle CSS out of the custom property.
+		self::assertSame( '', $clean['appearance']['fg'] );
+		self::assertSame( '#12ab34', $clean['appearance']['accent'] );
+		self::assertSame( '', $clean['appearance']['accent_fg'] );
+
+		$bad = Options::sanitize( array( 'appearance' => array( 'preset' => 'neon' ) ) );
+		self::assertSame( 'default', $bad['appearance']['preset'] );
+	}
+
+	public function test_always_gate_list_is_sanitised_like_the_other_host_lists(): void {
+		$clean = Options::sanitize(
+			array(
+				'detection' => array(
+					'always_gate' => "widgets.example.com\nhttps://Tracking.Example.org/path",
+				),
+			)
+		);
+
+		self::assertSame( array( 'widgets.example.com', 'tracking.example.org' ), $clean['detection']['always_gate'] );
+	}
 }

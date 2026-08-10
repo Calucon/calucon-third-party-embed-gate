@@ -25,11 +25,16 @@ final class SettingsPage {
 	 *                CSP snippet. */
 	private $providers_source;
 
+	/** @var callable|null Returns the ContentScan behind the Status screen. */
+	private $scanner_source;
+
 	/**
-	 * @param callable $providers_source fn(): array[] — builtins + filtered.
+	 * @param callable      $providers_source fn(): array[] — builtins + filtered.
+	 * @param callable|null $scanner_source   fn(): \ConsentGate\Support\ContentScan.
 	 */
-	public function __construct( callable $providers_source ) {
+	public function __construct( callable $providers_source, ?callable $scanner_source = null ) {
 		$this->providers_source = $providers_source;
+		$this->scanner_source   = $scanner_source;
 	}
 
 	/**
@@ -161,7 +166,16 @@ final class SettingsPage {
 							<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[detection][iframes]" value="0">
 							<label><input type="checkbox" name="<?php echo esc_attr( Options::OPTION ); ?>[detection][iframes]" value="1" <?php checked( $detection['iframes'] ); ?>> <?php esc_html_e( 'Gate third-party iframes', 'consent-gate' ); ?></label><br>
 							<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[detection][scripts]" value="0">
-							<label><input type="checkbox" name="<?php echo esc_attr( Options::OPTION ); ?>[detection][scripts]" value="1" <?php checked( $detection['scripts'] ); ?>> <?php esc_html_e( 'Gate third-party scripts in content', 'consent-gate' ); ?></label>
+							<label><input type="checkbox" name="<?php echo esc_attr( Options::OPTION ); ?>[detection][scripts]" value="1" <?php checked( $detection['scripts'] ); ?>> <?php esc_html_e( 'Gate third-party scripts in content', 'consent-gate' ); ?></label><br>
+							<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[detection][images]" value="0">
+							<label><input type="checkbox" name="<?php echo esc_attr( Options::OPTION ); ?>[detection][images]" value="1" <?php checked( $detection['images'] ); ?>> <?php esc_html_e( 'Gate third-party images (hotlinked images request the third party with the visitor\'s IP attached; can affect layouts)', 'consent-gate' ); ?></label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="cg-always-gate"><?php esc_html_e( 'Always gate these hosts', 'consent-gate' ); ?></label></th>
+						<td>
+							<textarea id="cg-always-gate" name="<?php echo esc_attr( Options::OPTION ); ?>[detection][always_gate]" rows="3" class="large-text code"><?php echo esc_textarea( implode( "\n", $detection['always_gate'] ) ); ?></textarea>
+							<p class="description"><?php esc_html_e( 'One host per line. These are gated even when they would otherwise count as the site itself — for example a subdomain of your own domain that serves third-party widgets.', 'consent-gate' ); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -191,6 +205,40 @@ final class SettingsPage {
 						<td>
 							<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[detection][www_equivalence]" value="0">
 							<label><input type="checkbox" name="<?php echo esc_attr( Options::OPTION ); ?>[detection][www_equivalence]" value="1" <?php checked( $detection['www_equivalence'] ); ?>> <?php esc_html_e( 'Treat www.example.com and example.com as the same site', 'consent-gate' ); ?></label>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Appearance', 'consent-gate' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="cg-preset"><?php esc_html_e( 'Preset', 'consent-gate' ); ?></label></th>
+						<td>
+							<select id="cg-preset" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][preset]">
+								<option value="default" <?php selected( $options['appearance']['preset'], 'default' ); ?>><?php esc_html_e( 'Default — filled panel', 'consent-gate' ); ?></option>
+								<option value="minimal" <?php selected( $options['appearance']['preset'], 'minimal' ); ?>><?php esc_html_e( 'Minimal — transparent with a border', 'consent-gate' ); ?></option>
+								<option value="card" <?php selected( $options['appearance']['preset'], 'card' ); ?>><?php esc_html_e( 'Card — border, rounded corners, shadow', 'consent-gate' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Colours', 'consent-gate' ); ?></th>
+						<td>
+							<?php
+							$color_fields = array(
+								'bg'        => __( 'Panel background', 'consent-gate' ),
+								'fg'        => __( 'Panel text', 'consent-gate' ),
+								'accent'    => __( 'Button background', 'consent-gate' ),
+								'accent_fg' => __( 'Button text', 'consent-gate' ),
+							);
+							foreach ( $color_fields as $color_key => $color_label ) :
+								?>
+								<label style="display:inline-block;margin:0 1.5em 0.5em 0;">
+									<?php echo esc_html( $color_label ); ?><br>
+									<input type="text" class="small-text code" placeholder="#rrggbb" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $color_key . ']' ); ?>" value="<?php echo esc_attr( $options['appearance'][ $color_key ] ); ?>">
+								</label>
+							<?php endforeach; ?>
+							<p class="description"><?php esc_html_e( 'Hex colours (#rrggbb); leave empty to inherit the theme\'s palette. If you set the button background, set the button text too and keep them at a 4.5:1 contrast ratio — the defaults are chosen to meet WCAG and custom colours are your responsibility.', 'consent-gate' ); ?></p>
 						</td>
 					</tr>
 				</table>
@@ -230,7 +278,149 @@ final class SettingsPage {
 			<h2><?php esc_html_e( 'Content-Security-Policy snippet', 'consent-gate' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'If your site sends a Content-Security-Policy, it needs to allow the enabled providers\' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic.', 'consent-gate' ); ?></p>
 			<textarea readonly rows="4" class="large-text code" aria-label="<?php echo esc_attr( __( 'Content-Security-Policy snippet', 'consent-gate' ) ); ?>"><?php echo esc_textarea( Csp::snippet( $this->providers() ) ); ?></textarea>
+
+			<?php $this->render_compatibility(); ?>
+			<?php $this->render_status(); ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Compatibility (§7.1): the detected CMP, cache plugin and page builder,
+	 * and what the plugin decided to do about each.
+	 *
+	 * @return void
+	 */
+	private function render_compatibility(): void {
+		$found    = Compatibility::detect();
+		$options  = Options::sanitize( get_option( Options::OPTION, Options::defaults() ) );
+		$messages = array(
+			'cache'   => __( 'Detected. Its page cache is flushed automatically when Consent Gate settings change; after activating or deactivating Consent Gate itself, clear it once by hand if pages look stale.', 'consent-gate' ),
+			'cmp'     => __( 'Detected. Consent Gate has no bridge to this consent platform yet and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click.', 'consent-gate' ),
+			'builder' => $options['detection']['output_buffer']
+				? __( 'Detected. Whole-page gating is enabled, so this builder\'s embeds are covered.', 'consent-gate' )
+				: __( 'Detected. Page builders render outside the content filters — if its embeds are not being gated, enable "Gate the whole page output" under Detection.', 'consent-gate' ),
+		);
+		?>
+		<h2 id="cg-compatibility"><?php esc_html_e( 'Compatibility', 'consent-gate' ); ?></h2>
+		<?php if ( array() === $found ) : ?>
+			<p><?php esc_html_e( 'No cache plugin, consent platform or page builder detected.', 'consent-gate' ); ?></p>
+		<?php else : ?>
+			<table class="widefat striped" style="max-width: 60rem;">
+				<thead><tr><th scope="col"><?php esc_html_e( 'Detected', 'consent-gate' ); ?></th><th scope="col"><?php esc_html_e( 'What Consent Gate does', 'consent-gate' ); ?></th></tr></thead>
+				<tbody>
+				<?php foreach ( $found as $row ) : ?>
+					<tr><td><?php echo esc_html( $row['name'] ); ?></td><td><?php echo esc_html( $messages[ $row['kind'] ] ); ?></td></tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
+
+		<?php
+		$theme_findings = Compatibility::theme_asset_findings();
+		if ( array() !== $theme_findings ) :
+			?>
+			<h3><?php esc_html_e( 'Third-party assets in your theme', 'consent-gate' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'Your theme references these third-party asset hosts (found by reading its files — nothing was fetched). Fonts and CDN assets load on every page view without consent, outside what an embed gate can cover. Consider serving them locally; your theme or a localisation plugin can usually do this.', 'consent-gate' ); ?></p>
+			<ul>
+				<?php foreach ( $theme_findings as $finding ) : ?>
+					<li><code><?php echo esc_html( $finding['file'] ); ?></code> — <?php echo esc_html( implode( ', ', $finding['hosts'] ) ); ?></li>
+				<?php endforeach; ?>
+			</ul>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * Status (§7.1): a read-only scan of recent content — which third-party
+	 * hosts appear and whether each is currently gated. Runs only on demand:
+	 * rendering 50 posts through the content filters is not free.
+	 *
+	 * @return void
+	 */
+	private function render_status(): void {
+		if ( null === $this->scanner_source ) {
+			return;
+		}
+		?>
+		<h2 id="cg-status"><?php esc_html_e( 'Status', 'consent-gate' ); ?></h2>
+		<?php
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only scan, no state changes; capability-gated by the page.
+		if ( ! isset( $_GET['cg-scan'] ) ) {
+			?>
+			<p>
+				<a class="button" href="<?php echo esc_url( add_query_arg( 'cg-scan', '1' ) . '#cg-status' ); ?>"><?php esc_html_e( 'Scan recent content', 'consent-gate' ); ?></a>
+				<span class="description"><?php esc_html_e( 'Renders your latest posts and pages in memory and reports every embed found and whether it is gated. Read-only; no outbound requests.', 'consent-gate' ); ?></span>
+			</p>
+			<?php
+			return;
+		}
+
+		$scanner = call_user_func( $this->scanner_source );
+		$posts   = get_posts(
+			array(
+				'post_type'        => array( 'post', 'page' ),
+				'post_status'      => 'publish',
+				'numberposts'      => 50,
+				'suppress_filters' => false,
+			)
+		);
+
+		$status_labels = array(
+			\ConsentGate\Support\ContentScan::GATED    => __( 'Gated', 'consent-gate' ),
+			\ConsentGate\Support\ContentScan::OWN_HOST => __( 'Own host — not gated', 'consent-gate' ),
+			\ConsentGate\Support\ContentScan::NO_USABLE_URL => __( 'No usable URL — passes through', 'consent-gate' ),
+			\ConsentGate\Support\ContentScan::RULE_DISABLED => __( 'NOT gated — its detection rule is disabled', 'consent-gate' ),
+			\ConsentGate\Support\ContentScan::PROVIDER_DISABLED => __( 'NOT gated — provider disabled in the table above', 'consent-gate' ),
+		);
+
+		$rows = array();
+		foreach ( $posts as $post ) {
+			$rendered = (string) apply_filters( 'the_content', $post->post_content ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- deliberately rendering through core's own content pipeline so embeds appear as they would on the front end.
+			foreach ( $scanner->scan( $rendered ) as $row ) {
+				$key = $row['tag'] . '|' . $row['host'] . '|' . $row['status'];
+				if ( ! isset( $rows[ $key ] ) ) {
+					$rows[ $key ]          = $row;
+					$rows[ $key ]['count'] = 0;
+					$rows[ $key ]['where'] = get_the_title( $post );
+				}
+				++$rows[ $key ]['count'];
+			}
+		}
+		?>
+		<p class="description">
+			<?php
+			printf(
+				/* translators: %d: number of posts scanned. */
+				esc_html__( 'Scanned the %d most recent published posts and pages. Widgets, template parts and builder-rendered layouts are not part of this scan.', 'consent-gate' ),
+				count( $posts )
+			);
+			?>
+		</p>
+		<?php if ( array() === $rows ) : ?>
+			<p><?php esc_html_e( 'No third-party embeds found in the scanned content.', 'consent-gate' ); ?></p>
+		<?php else : ?>
+			<table class="widefat striped" style="max-width: 60rem;">
+				<thead><tr>
+					<th scope="col"><?php esc_html_e( 'Host', 'consent-gate' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Type', 'consent-gate' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Count', 'consent-gate' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Status', 'consent-gate' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'First seen in', 'consent-gate' ); ?></th>
+				</tr></thead>
+				<tbody>
+				<?php foreach ( $rows as $row ) : ?>
+					<tr>
+						<td><?php echo esc_html( '' !== $row['host'] ? $row['host'] : '—' ); ?></td>
+						<td><code><?php echo esc_html( $row['tag'] ); ?></code><?php echo '' !== $row['label'] ? ' ' . esc_html( '(' . $row['label'] . ')' ) : ''; ?></td>
+						<td><?php echo esc_html( (string) $row['count'] ); ?></td>
+						<td><?php echo esc_html( isset( $status_labels[ $row['status'] ] ) ? $status_labels[ $row['status'] ] : $row['status'] ); ?></td>
+						<td><?php echo esc_html( $row['where'] ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+			<?php
+		endif;
 	}
 }

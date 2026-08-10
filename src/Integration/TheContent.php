@@ -41,7 +41,7 @@ final class TheContent {
 	public function filter( $content ): string {
 		$content = (string) $content;
 
-		if ( ! Plugin::has_gateable_markup( $content ) ) {
+		if ( ! $this->plugin->has_gateable_markup( $content ) ) {
 			return $content;
 		}
 

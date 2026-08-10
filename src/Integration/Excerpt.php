@@ -36,7 +36,7 @@ final class Excerpt {
 	public function filter( $excerpt ): string {
 		$excerpt = (string) $excerpt;
 
-		if ( ! Plugin::has_gateable_markup( $excerpt ) ) {
+		if ( ! $this->plugin->has_gateable_markup( $excerpt ) ) {
 			return $excerpt;
 		}
 
