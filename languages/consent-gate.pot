@@ -9,8 +9,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Domain: consent-gate\n"
 
+#: src/Support/Disclosure.php:48
+msgid "%1$s — provided by %2$s."
+msgstr ""
+
 #: assets/js/editor.js:105
 msgid "A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:310
+msgid "A starting point for the section of your privacy policy that names your embed providers, generated from the enabled providers above. Review it, adapt it to your site and your language, and remove providers you do not embed from — your privacy policy remains your responsibility, and this text is generated data, not legal advice."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:182
@@ -57,7 +65,7 @@ msgstr ""
 msgid "Colours"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:305
+#: src/Admin/SettingsPage.php:332
 msgid "Compatibility"
 msgstr ""
 
@@ -78,7 +86,7 @@ msgstr ""
 msgid "Content-Security-Policy snippet"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:407
+#: src/Admin/SettingsPage.php:434
 msgid "Count"
 msgstr ""
 
@@ -102,23 +110,23 @@ msgstr ""
 msgid "Default — filled panel"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:310
+#: src/Admin/SettingsPage.php:337
 msgid "Detected"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:299
+#: src/Admin/SettingsPage.php:326
 msgid "Detected. Consent Gate has no bridge to this consent platform yet and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:298
+#: src/Admin/SettingsPage.php:325
 msgid "Detected. Its page cache is flushed automatically when Consent Gate settings change; after activating or deactivating Consent Gate itself, clear it once by hand if pages look stale."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:302
+#: src/Admin/SettingsPage.php:329
 msgid "Detected. Page builders render outside the content filters — if its embeds are not being gated, enable \"Gate the whole page output\" under Detection."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:301
+#: src/Admin/SettingsPage.php:328
 msgid "Detected. Whole-page gating is enabled, so this builder's embeds are covered."
 msgstr ""
 
@@ -130,6 +138,10 @@ msgstr ""
 msgid "Disabling a provider stops gating its embeds — they load exactly as WordPress renders them. Unknown third-party iframes and scripts are always gated by the generic entries."
 msgstr ""
 
+#: src/Support/Disclosure.php:50
+msgid "Embedded %s content on this site is loaded only after you actively click its placeholder. Before that click, your browser does not contact this provider. When you do load it, the provider receives your IP address, the address of the page you are on and technical details of your browser, and may set cookies or similar identifiers on your device."
+msgstr ""
+
 #: src/Rendering/PlaceholderRenderer.php:146
 msgid "Embedded content from %s"
 msgstr ""
@@ -138,7 +150,7 @@ msgstr ""
 msgid "Embeds from these hosts load without a placeholder. Use only for third parties you have covered elsewhere — this plugin then no longer prevents their requests."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:409
+#: src/Admin/SettingsPage.php:436
 msgid "First seen in"
 msgstr ""
 
@@ -174,7 +186,7 @@ msgstr ""
 msgid "Gate this embed"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:370
+#: src/Admin/SettingsPage.php:397
 msgid "Gated"
 msgstr ""
 
@@ -182,7 +194,7 @@ msgstr ""
 msgid "Hex colours (#rrggbb); leave empty to inherit the theme's palette. If you set the button background, set the button text too and keep them at a 4.5:1 contrast ratio — the defaults are chosen to meet WCAG and custom colours are your responsibility."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:405
+#: src/Admin/SettingsPage.php:432
 msgid "Host"
 msgstr ""
 
@@ -375,11 +387,11 @@ msgstr ""
 msgid "Minimal — transparent with a border"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:373
+#: src/Admin/SettingsPage.php:400
 msgid "NOT gated — its detection rule is disabled"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:374
+#: src/Admin/SettingsPage.php:401
 msgid "NOT gated — provider disabled in the table above"
 msgstr ""
 
@@ -395,15 +407,15 @@ msgstr ""
 msgid "No (default) — ask on every page view"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:307
+#: src/Admin/SettingsPage.php:334
 msgid "No cache plugin, consent platform or page builder detected."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:401
+#: src/Admin/SettingsPage.php:428
 msgid "No third-party embeds found in the scanned content."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:372
+#: src/Admin/SettingsPage.php:399
 msgid "No usable URL — passes through"
 msgstr ""
 
@@ -436,7 +448,7 @@ msgstr ""
 msgid "Overrides the site-wide setting for this block only."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:371
+#: src/Admin/SettingsPage.php:398
 msgid "Own host — not gated"
 msgstr ""
 
@@ -464,6 +476,18 @@ msgstr ""
 msgid "Preset"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:309
+msgid "Privacy policy disclosure (draft)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:311
+msgid "Privacy policy disclosure draft"
+msgstr ""
+
+#: src/Support/Disclosure.php:53
+msgid "Privacy policy: %s"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:109
 msgid "Privacy-preserving load"
 msgstr ""
@@ -480,7 +504,7 @@ msgstr ""
 msgid "Remember consent"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:353
+#: src/Admin/SettingsPage.php:380
 msgid "Renders your latest posts and pages in memory and reports every embed found and whether it is gated. Read-only; no outbound requests."
 msgstr ""
 
@@ -488,11 +512,11 @@ msgstr ""
 msgid "Rules"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:352
+#: src/Admin/SettingsPage.php:379
 msgid "Scan recent content"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:395
+#: src/Admin/SettingsPage.php:422
 msgid "Scanned the %d most recent published posts and pages. Widgets, template parts and builder-rendered layouts are not part of this scan."
 msgstr ""
 
@@ -504,8 +528,8 @@ msgstr ""
 msgid "Site default"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:346
-#: src/Admin/SettingsPage.php:408
+#: src/Admin/SettingsPage.php:373
+#: src/Admin/SettingsPage.php:435
 msgid "Status"
 msgstr ""
 
@@ -517,7 +541,7 @@ msgstr ""
 msgid "The embedded content could not be loaded."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:323
+#: src/Admin/SettingsPage.php:350
 msgid "Third-party assets in your theme"
 msgstr ""
 
@@ -537,7 +561,7 @@ msgstr ""
 msgid "Treat www.example.com and example.com as the same site"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:406
+#: src/Admin/SettingsPage.php:433
 msgid "Type"
 msgstr ""
 
@@ -545,7 +569,7 @@ msgstr ""
 msgid "Use the privacy-preserving load for %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:310
+#: src/Admin/SettingsPage.php:337
 msgid "What Consent Gate does"
 msgstr ""
 
@@ -555,7 +579,7 @@ msgstr ""
 msgid "Withdraw embed consents"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:324
+#: src/Admin/SettingsPage.php:351
 msgid "Your theme references these third-party asset hosts (found by reading its files — nothing was fetched). Fonts and CDN assets load on every page view without consent, outside what an embed gate can cover. Consider serving them locally; your theme or a localisation plugin can usually do this."
 msgstr ""
 

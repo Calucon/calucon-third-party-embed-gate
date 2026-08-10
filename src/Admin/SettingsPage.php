@@ -279,9 +279,36 @@ final class SettingsPage {
 			<p class="description"><?php esc_html_e( 'If your site sends a Content-Security-Policy, it needs to allow the enabled providers\' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic.', 'consent-gate' ); ?></p>
 			<textarea readonly rows="4" class="large-text code" aria-label="<?php echo esc_attr( __( 'Content-Security-Policy snippet', 'consent-gate' ) ); ?>"><?php echo esc_textarea( Csp::snippet( $this->providers() ) ); ?></textarea>
 
+			<?php $this->render_disclosure(); ?>
 			<?php $this->render_compatibility(); ?>
 			<?php $this->render_status(); ?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Privacy-policy disclosure draft (PLAN.md §14): assembled from the
+	 * provider descriptors' controller/privacy_url data. A DRAFT the owner
+	 * must review — the plugin cannot know the site's processing purposes
+	 * and never claims compliance (invariant 10).
+	 *
+	 * @return void
+	 */
+	private function render_disclosure(): void {
+		$draft = \ConsentGate\Support\Disclosure::draft(
+			$this->providers(),
+			static function ( string $text ): string {
+				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText -- bridged strings are extracted where they are defined.
+				return __( $text, 'consent-gate' );
+			}
+		);
+		if ( '' === $draft ) {
+			return;
+		}
+		?>
+		<h2 id="cg-disclosure"><?php esc_html_e( 'Privacy policy disclosure (draft)', 'consent-gate' ); ?></h2>
+		<p class="description"><?php esc_html_e( 'A starting point for the section of your privacy policy that names your embed providers, generated from the enabled providers above. Review it, adapt it to your site and your language, and remove providers you do not embed from — your privacy policy remains your responsibility, and this text is generated data, not legal advice.', 'consent-gate' ); ?></p>
+		<textarea readonly rows="14" class="large-text" aria-label="<?php echo esc_attr( __( 'Privacy policy disclosure draft', 'consent-gate' ) ); ?>"><?php echo esc_textarea( $draft ); ?></textarea>
 		<?php
 	}
 
