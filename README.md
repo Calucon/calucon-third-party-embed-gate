@@ -6,6 +6,8 @@ Hold third-party embeds until the visitor asks for them, so nothing is
 contacted and nothing is stored before a click. No cookie banner, no
 subscription, no consent platform.
 
+**[Plugin page](https://calucon.de/consent-gate/) · [Live demo](https://calucon.de/consent-gate-showcase/)**
+
 **Status: M1–M7 implemented**, including the §6.4 CMP bridge (see below).
 The core claim — zero third-party requests before interaction — is enforced
 by an end-to-end test that is never skipped.
