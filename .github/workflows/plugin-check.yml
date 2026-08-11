@@ -1,0 +1,34 @@
+# Runs the official WordPress Plugin Check against the built production
+# plugin — the same tool the .org review team and the Plugin Check plugin
+# use. Informational (not a required status check): it fails on ERROR-level
+# findings (real blockers) and reports warnings without failing, since a few
+# warnings here (e.g. parse_url / json_encode in the deliberately
+# WordPress-free layer) are documented and defensible.
+name: Plugin Check
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  plugin-check:
+    name: WordPress Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Check the shipped surface only (src/, assets/, readme, …), not tests/
+      # or tooling — the same allowlist bin/build-zip.sh stages.
+      - name: Stage the production plugin
+        run: bash bin/build-zip.sh
+
+      - name: Run Plugin Check
+        # Pinned to v1.1.7: the v1 tag currently floats to v1.1.8, which has a
+        # regression that crashes result processing with "Cannot find module
+        # '@actions/core'" (WordPress/plugin-check-action#609). Bump when fixed.
+        uses: WordPress/plugin-check-action@v1.1.7
+        with:
+          build-dir: build/consent-gate
+          ignore-warnings: true

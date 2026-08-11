@@ -82,6 +82,7 @@ final class Registry {
 			}
 
 			if ( ! empty( $match['iframe_path'] ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2); wp_parse_url() is unavailable in the no-WordPress fixture suite.
 				$path = (string) parse_url( $url, PHP_URL_PATH );
 				if ( ! preg_match( $match['iframe_path'], $path, $m ) ) {
 					continue;
@@ -177,6 +178,7 @@ final class Registry {
 			$url = 'https:' . $url;
 		}
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2); wp_parse_url() is unavailable in the no-WordPress fixture suite.
 		$parts = parse_url( $url );
 		if ( ! isset( $parts['scheme'], $parts['host'] ) ) {
 			return $url;

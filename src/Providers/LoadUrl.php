@@ -33,6 +33,7 @@ final class LoadUrl {
 		if ( is_string( $provider['load_host'] ) && '' !== $provider['load_host'] ) {
 			$path = ( is_string( $provider['load_path'] ) && '' !== $provider['load_path'] )
 				? $provider['load_path']
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2); wp_parse_url() is unavailable in the no-WordPress fixture suite.
 				: (string) parse_url( 0 === strpos( $src, '//' ) ? 'https:' . $src : $src, PHP_URL_PATH );
 			return 'https://' . $provider['load_host'] . $path;
 		}
@@ -54,7 +55,8 @@ final class LoadUrl {
 	 */
 	private static function merge_query( string $src, array $extra ): string {
 		$absolute = 0 === strpos( $src, '//' ) ? 'https:' . $src : $src;
-		$parts    = parse_url( $absolute );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2); wp_parse_url() is unavailable in the no-WordPress fixture suite.
+		$parts = parse_url( $absolute );
 		if ( ! isset( $parts['scheme'], $parts['host'] ) ) {
 			return $src;
 		}

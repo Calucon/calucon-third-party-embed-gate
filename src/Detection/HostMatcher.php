@@ -251,6 +251,7 @@ final class HostMatcher {
 	 * @return string|null Host, or null when unparseable.
 	 */
 	private function extract_host( string $url ) {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2); wp_parse_url() is unavailable in the no-WordPress fixture suite, and preprocess() already normalised the authority.
 		$host = parse_url( $url, PHP_URL_HOST );
 		return is_string( $host ) ? $host : null;
 	}
