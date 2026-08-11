@@ -12,6 +12,10 @@
  * @package ConsentGate
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', __DIR__ . '/' ); // Sentinel for the plugin's direct-access guards.
+}
+
 require dirname( __DIR__, 2 ) . '/vendor/autoload.php';
 
 use ConsentGate\Tests\Support\PipelineFactory;

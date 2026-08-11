@@ -11,6 +11,10 @@
 
 namespace ConsentGate\Rendering;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Renders the §5.1 panel. The panel must work with JavaScript disabled:
  * the fallback link is a real link to a real page (invariant 2), and the
@@ -150,6 +154,7 @@ final class PlaceholderRenderer {
 		if ( isset( $this->bridges['fallback'] ) ) {
 			$fallback_url = (string) call_user_func( $this->bridges['fallback'], $fallback_url, $provider, $ctx );
 		}
+		$fallback_url = $this->safe_url( $fallback_url );
 
 		// The host that will actually be contacted, carried on the container:
 		// activation and consent memory group generic embeds per host, so
@@ -199,7 +204,9 @@ final class PlaceholderRenderer {
 			. '<div class="cg-embed__panel">'
 			. '<p class="cg-embed__note">' . $this->esc( $provider['note'] ) . '</p>'
 			. '<button type="button" class="cg-embed__button">' . $this->esc( $provider['action'] ) . '</button>'
-			. '<p class="cg-embed__fallback"><a href="' . $this->esc( $fallback_url ) . '" rel="noopener nofollow">' . $this->esc( $fallback_label ) . '</a></p>'
+			. ( '' !== $fallback_url
+				? '<p class="cg-embed__fallback"><a href="' . $this->esc( $fallback_url ) . '" rel="noopener nofollow">' . $this->esc( $fallback_label ) . '</a></p>'
+				: '' )
 			. '</div>'
 			. '</div>';
 	}
@@ -270,11 +277,44 @@ final class PlaceholderRenderer {
 	 * @return string Lowercased host, '' when unparseable.
 	 */
 	private function host_of( string $url ): string {
-		if ( 0 === strpos( $url, '//' ) ) {
-			$url = 'https:' . $url;
+		// Match the browser's authority parsing the same way HostMatcher does
+		// (strip tab/newline, backslash-as-slash, collapse authority slashes),
+		// so the host carried on the container — which groups consent memory
+		// and activation — is the one actually contacted, not what a naive
+		// parse_url() reads after an '@'.
+		$url = str_replace( array( "\t", "\n", "\r" ), '', $url );
+		$url = str_replace( '\\', '/', $url );
+		$url = trim( $url );
+		if ( preg_match( '#^https?:#i', $url ) ) {
+			$url = preg_replace( '#^(https?:)/*#i', '$1//', $url );
+		} elseif ( preg_match( '#^/{2,}#', $url ) ) {
+			$url = 'https:' . preg_replace( '#^/+#', '//', $url );
 		}
 		$host = parse_url( $url, PHP_URL_HOST );
 		return is_string( $host ) ? strtolower( $host ) : '';
+	}
+
+	/**
+	 * A fallback link must be navigable. Reject script-capable and opaque
+	 * schemes (javascript:, data:, vbscript:, blob:, …) that esc()'s
+	 * htmlspecialchars does not neutralise in an href context; http(s),
+	 * protocol-relative and same-origin relative URLs pass. Other URL sinks
+	 * (poster_of, the load src) guard their scheme the same way — this closes
+	 * the one path a filter, provider descriptor or harvested blockquote href
+	 * could otherwise put a `javascript:` URL behind the fallback link.
+	 *
+	 * @param string $url Candidate fallback URL.
+	 * @return string The URL, or '' when its scheme is not navigable.
+	 */
+	private function safe_url( string $url ): string {
+		$url = trim( $url );
+		if ( '' === $url ) {
+			return '';
+		}
+		if ( preg_match( '/^[a-z][a-z0-9+.-]*:/i', $url ) && ! preg_match( '#^https?://#i', $url ) ) {
+			return '';
+		}
+		return $url;
 	}
 
 	/**

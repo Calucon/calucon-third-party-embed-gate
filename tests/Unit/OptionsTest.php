@@ -46,6 +46,22 @@ final class OptionsTest extends TestCase {
 		self::assertSame( 'xCustom note', $clean['providers']['youtube']['note'] );
 	}
 
+	public function test_note_and_action_are_length_capped(): void {
+		$clean = Options::sanitize(
+			array(
+				'providers' => array(
+					'youtube' => array(
+						'note'   => str_repeat( 'a', 600 ),
+						'action' => str_repeat( 'b', 600 ),
+					),
+				),
+			)
+		);
+
+		self::assertSame( 500, strlen( $clean['providers']['youtube']['note'] ) );
+		self::assertSame( 500, strlen( $clean['providers']['youtube']['action'] ) );
+	}
+
 	public function test_host_lists_accept_newline_strings_and_pasted_urls(): void {
 		$clean = Options::sanitize(
 			array(

@@ -14,6 +14,10 @@
 
 namespace ConsentGate\Cmp;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Which CMP is present, by its own runtime markers.
  */

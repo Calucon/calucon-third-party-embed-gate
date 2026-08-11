@@ -9,6 +9,10 @@
 
 namespace ConsentGate\Support;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Best-effort purge of the known cache plugins. Every call is guarded; a
  * missing plugin is a no-op.

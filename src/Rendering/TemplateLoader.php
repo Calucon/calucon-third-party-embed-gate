@@ -9,6 +9,10 @@
 
 namespace ConsentGate\Rendering;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Resolves and renders {theme}/consent-gate/placeholder.php when a theme
  * ships one. The variables passed to the template are documented at the top

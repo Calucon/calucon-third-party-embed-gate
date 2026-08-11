@@ -11,6 +11,10 @@
 
 namespace ConsentGate;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use ConsentGate\Admin\BlockEditor;
 use ConsentGate\Admin\SettingsPage;
 use ConsentGate\Cli\Commands as CliCommands;
@@ -666,7 +670,16 @@ final class Plugin {
 		if ( null !== $cmp ) {
 			$config['cmp'] = $cmp;
 		}
-		return (string) wp_json_encode( $config );
+		// Emitted verbatim inside an inline <script> (enqueue path and the
+		// output-buffer shutdown path). Default json_encode already escapes
+		// '/', so '</script>' cannot break out; JSON_HEX_TAG|APOS|QUOT|AMP is
+		// belt-and-braces consistency with the data-cg-payload path (§9.1) so
+		// no config string — i18n, a filtered CMP category — can ever inject
+		// markup, matching esc_json()'s guarantees.
+		return (string) wp_json_encode(
+			$config,
+			JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+		);
 	}
 
 	/**

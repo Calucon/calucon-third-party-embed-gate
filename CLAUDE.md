@@ -85,6 +85,21 @@ production: the source site's first audit missed seven iframes on five pages
 exactly this way. Any change to `HtmlScanner` must keep the minified fixtures
 green, and any new fixture must include a minified variant.
 
+## The authority-confusion trap (`HostMatcher`, invariant 6)
+
+`parse_url()` and the browser disagree on where a URL's authority ends, and
+the gap is exploitable: `https://evil.example\@yoursite/` parses to host
+`yoursite` in PHP (own → **not gated**) but connects to `evil.example` in
+every browser. Same for irregular/backslash authority slashes
+(`https:/\/evil.example`, `https:evil.example`). `HostMatcher::preprocess()`
+applies the WHATWG special-scheme rules browsers use — strip tab/newline,
+treat `\` as `/`, collapse the authority-introducer slashes — **before**
+`parse_url()`, so the class and the browser agree. `PlaceholderRenderer::host_of()`
+mirrors it for `data-cg-host`. Never route a URL to `parse_url()` on the
+detection path without this preprocessing: the failure mode is a tracker
+through, invisibly. `HostMatcherTest::test_authority_confusion_is_gated_not_own`
+pins it; the `authority-backslash-*` fixtures prove it end-to-end.
+
 ## Commands
 
 ```sh

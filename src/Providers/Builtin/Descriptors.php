@@ -11,6 +11,10 @@
 
 namespace ConsentGate\Providers\Builtin;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Ships enough that a typical site needs no configuration. Every descriptor
  * prefers a privacy-preserving load target where one exists: measured on the

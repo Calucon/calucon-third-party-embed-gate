@@ -22,6 +22,10 @@
 
 namespace ConsentGate\Cmp;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Builds the consentGateConfig.cmp payload.
  */

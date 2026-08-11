@@ -10,6 +10,10 @@
 
 namespace ConsentGate\Admin;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use ConsentGate\Integration\WithdrawShortcode;
 
 /**

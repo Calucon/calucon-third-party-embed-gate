@@ -11,6 +11,10 @@
 
 namespace ConsentGate\Admin;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use ConsentGate\Cmp\Detector;
 use ConsentGate\Support\Csp;
 use ConsentGate\Support\Options;
