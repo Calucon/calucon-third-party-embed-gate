@@ -5,7 +5,7 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.7.3
+Stable tag: 0.7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,18 @@ Consent Gate is a technical measure. It is not a consent management platform, it
 * WP-CLI: `wp consent-gate scan` (is every embed gated? `--format=json` for CI and automation) and `wp consent-gate providers`; the shipped `docs/customizing.md` is a self-contained customization reference for developers and AI agents.
 * Documented filters: `consent_gate_providers`, `consent_gate_provider_for_url`, `consent_gate_should_gate`, `consent_gate_is_own_host`, `consent_gate_own_hosts`, `consent_gate_placeholder_html`, `consent_gate_payload`, `consent_gate_note_text`, `consent_gate_action_text`, `consent_gate_fallback_url`, plus the `consent_gate_before_render` and `consent_gate_embed_gated` actions. Adding a provider is a ten-line filter in `functions.php`.
 
+== Installation ==
+
+Consent Gate works the moment it is activated — it gates third-party embeds by default, with no configuration, no account and no external service.
+
+1. In your WordPress admin, go to **Plugins → Add New**, search for "Consent Gate", and click **Install Now**, then **Activate**. To install from a downloaded zip instead, go to **Plugins → Add New → Upload Plugin**, choose the file, install and activate.
+2. That is all that is required. Your existing embeds are now replaced with a click-to-load placeholder on the front end, and nothing third-party is contacted before the visitor clicks. Editors keep seeing the normal embed in the block editor, so nothing changes about how you write posts.
+3. Optional: open **Settings → Consent Gate** to adjust appearance, per-provider behaviour, detection rules, consent memory and the optional consent-platform bridge. None of it is needed to be protected — the defaults gate everything third-party.
+
+If you turn on consent memory and want to offer visitors a way to take it back, add the "Withdraw embed consents" block, or place the `[consent_gate_withdraw]` shortcode on your privacy-policy page.
+
+**Requirements:** WordPress 5.9 or newer and PHP 7.4 or newer. No build step, no runtime dependencies, and no outbound request from your site on any path.
+
 == Frequently Asked Questions ==
 
 = Does this make my site GDPR compliant? =
@@ -80,7 +92,18 @@ No. Lazy loading defers the request to scroll time — it is still made without 
 
 Privately, please — through GitHub's private vulnerability reporting on the plugin repository (https://github.com/Calucon/consent-gate/security/advisories/new), not in a public issue or support topic. The repository's SECURITY.md describes what counts: besides the usual classes, any way to make a page contact a third party before the click is a vulnerability.
 
+== Screenshots ==
+
+1. A gated YouTube embed as a visitor sees it: a server-rendered placeholder with a named panel, a real "Load" button and a working fallback link. Nothing is requested from the provider until the visitor clicks.
+2. The Appearance settings — presets, corner styles and colour pickers — with a live preview of the real panel and an automatic readability check that flags any colour pair below the 4.5:1 contrast minimum.
+3. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, and set an optional poster image from your own media library.
+4. The Compatibility overview: the cache plugin, consent platform and page builder Consent Gate detected, and what it does about each.
+5. The Providers tab: per-provider on/off, privacy-preserving load variants, and custom notice and button text — no code required.
+
 == Changelog ==
+
+= 0.7.4 =
+* Documentation: added Installation and Screenshots sections to the readme for the WordPress.org listing. No functional change.
 
 = 0.7.3 =
 * Repository renamed to match the plugin (github.com/Calucon/consent-gate). Updated the Plugin URI and the issue/security-report links. No functional change.
