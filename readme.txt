@@ -5,7 +5,7 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.7.2
+Stable tag: 0.7.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -78,9 +78,12 @@ No. Lazy loading defers the request to scroll time — it is still made without 
 
 = How do I report a security issue? =
 
-Privately, please — through GitHub's private vulnerability reporting on the plugin repository (https://github.com/Calucon/WP-Embed/security/advisories/new), not in a public issue or support topic. The repository's SECURITY.md describes what counts: besides the usual classes, any way to make a page contact a third party before the click is a vulnerability.
+Privately, please — through GitHub's private vulnerability reporting on the plugin repository (https://github.com/Calucon/consent-gate/security/advisories/new), not in a public issue or support topic. The repository's SECURITY.md describes what counts: besides the usual classes, any way to make a page contact a third party before the click is a vulnerability.
 
 == Changelog ==
+
+= 0.7.3 =
+* Repository renamed to match the plugin (github.com/Calucon/consent-gate). Updated the Plugin URI and the issue/security-report links. No functional change.
 
 = 0.7.2 =
 * Added an optional way to support development: a Donate link, a support link in the plugin's own settings footer, and a GitHub Sponsor button. Plain links only — no third-party widget or remote image loads, so the plugin still makes no outbound request from wp-admin.
