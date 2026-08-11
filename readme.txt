@@ -1,10 +1,11 @@
 === Consent Gate ===
 Contributors: calucon
+Donate link: https://ko-fi.com/calucon
 Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.7.1
+Stable tag: 0.7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +81,9 @@ No. Lazy loading defers the request to scroll time — it is still made without 
 Privately, please — through GitHub's private vulnerability reporting on the plugin repository (https://github.com/Calucon/WP-Embed/security/advisories/new), not in a public issue or support topic. The repository's SECURITY.md describes what counts: besides the usual classes, any way to make a page contact a third party before the click is a vulnerability.
 
 == Changelog ==
+
+= 0.7.2 =
+* Added an optional way to support development: a Donate link, a support link in the plugin's own settings footer, and a GitHub Sponsor button. Plain links only — no third-party widget or remote image loads, so the plugin still makes no outbound request from wp-admin.
 
 = 0.7.1 =
 * Security hardening (pre-submission audit). Closed a host-classification gap where a crafted embed URL using a backslash or irregular slashes in its authority (e.g. `https://evil.example\@yoursite/`) parsed to your own host in PHP but connects to the third party in every browser — such URLs are now gated, matching how browsers resolve them. The fallback link now rejects non-navigable schemes (`javascript:`, `data:`), the inline settings JSON is emitted with the same tag-escaping as the embed payload, and provider note/button overrides are length-capped.
