@@ -1,0 +1,34 @@
+# Files and directories that must NOT ship to the WordPress.org SVN trunk.
+#
+# The plugin has no runtime Composer/npm dependencies, so vendor/ and
+# node_modules/ never ship. Keep this in sync with bin/build-zip.sh, which
+# builds the same production surface as a whitelist: the plugin PHP, src/,
+# assets/, templates/, languages/, docs/, readme.txt, LICENSE, uninstall.php.
+#
+# Plugin-directory assets (icons/banners/screenshots) live in .wordpress-org/
+# and are deployed to the SVN /assets directory separately, never into trunk.
+
+/.git
+/.github
+/.gitignore
+/.gitattributes
+/.distignore
+/.wordpress-org
+/bin
+/build
+/node_modules
+/tests
+/vendor
+/.phpunit.result.cache
+/composer.json
+/composer.lock
+/package.json
+/package-lock.json
+/phpcs.xml.dist
+/phpunit.xml.dist
+/playwright.config.js
+/playwright.wp.config.js
+/CLAUDE.md
+/PLAN.md
+/README.md
+/SECURITY.md
