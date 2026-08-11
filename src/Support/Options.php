@@ -12,6 +12,10 @@
 
 namespace ConsentGate\Support;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Single source of truth for the option shape.
  */
@@ -116,6 +120,13 @@ final class Options {
 				foreach ( array( 'note', 'action' ) as $text_key ) {
 					if ( isset( $row[ $text_key ] ) && is_string( $row[ $text_key ] ) ) {
 						$text = trim( strip_tags( $row[ $text_key ] ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- sanitize() must run WordPress-free for the unit suite; output is escaped at render time regardless.
+						// A panel note is a sentence; cap it so a pathological
+						// value can't be stored. Output is escaped regardless.
+						if ( function_exists( 'mb_substr' ) ) {
+							$text = mb_substr( $text, 0, 500 );
+						} else {
+							$text = substr( $text, 0, 500 );
+						}
 						if ( '' !== $text ) {
 							$entry[ $text_key ] = $text;
 						}

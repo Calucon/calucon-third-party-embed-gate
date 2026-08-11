@@ -436,24 +436,6 @@
 		var providerId = container.getAttribute( 'data-cg-provider' ) || '';
 		var host = container.getAttribute( 'data-cg-host' ) || '';
 
-		// One SDK renders every companion element on the page, so the other
-		// panels for the SAME provider would go stale — clear them all. The
-		// clicked container stays in the DOM as the focus anchor (§8).
-		// Compared by attribute value, never by selector interpolation, and
-		// the host must match too: 'generic-script' spans every unknown
-		// third party, and clicking one widget must not delete another
-		// provider's placeholder (its content AND its fallback link).
-		var all = document.querySelectorAll
-			? document.querySelectorAll( '.cg-embed[data-cg-provider]' )
-			: [];
-		for ( var i = 0; i < all.length; i++ ) {
-			if ( all[ i ] !== container
-				&& all[ i ].getAttribute( 'data-cg-provider' ) === providerId
-				&& ( all[ i ].getAttribute( 'data-cg-host' ) || '' ) === host
-				&& all[ i ].parentNode ) {
-				all[ i ].parentNode.removeChild( all[ i ] );
-			}
-		}
 		removePanel( container );
 		setStatus( container, i18n( 'loading', 'Loading embedded content…' ) );
 		if ( focus ) {
@@ -462,6 +444,26 @@
 		}
 
 		loadScriptOnce( src, function () {
+			// One SDK renders every companion element on the page, so the
+			// other panels for the SAME provider are now redundant — clear
+			// them, but only AFTER the SDK actually loaded. Clearing them up
+			// front would delete their fallback links too if the script were
+			// blocked (ad/tracker blockers hit exactly these SDKs), stranding
+			// every sibling embed until a reload. Compared by attribute value,
+			// never by selector interpolation, and the host must match too:
+			// 'generic-script' spans every unknown third party, so clicking
+			// one widget must not delete another provider's placeholder.
+			var all = document.querySelectorAll
+				? document.querySelectorAll( '.cg-embed[data-cg-provider]' )
+				: [];
+			for ( var i = 0; i < all.length; i++ ) {
+				if ( all[ i ] !== container
+					&& all[ i ].getAttribute( 'data-cg-provider' ) === providerId
+					&& ( all[ i ].getAttribute( 'data-cg-host' ) || '' ) === host
+					&& all[ i ].parentNode ) {
+					all[ i ].parentNode.removeChild( all[ i ] );
+				}
+			}
 			setStatus( container, '' );
 			runReadyHook( providerId );
 		}, function () {

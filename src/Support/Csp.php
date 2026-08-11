@@ -7,6 +7,10 @@
 
 namespace ConsentGate\Support;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Sites with a Content-Security-Policy need frame-src / script-src entries
  * for each enabled provider's load host. The whole point of the plugin is

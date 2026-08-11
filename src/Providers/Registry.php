@@ -10,6 +10,10 @@
 
 namespace ConsentGate\Providers;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Resolves an embed URL to a provider descriptor. Always resolves: an
  * unknown cross-origin iframe gets the generic fallback provider, which is

@@ -12,6 +12,13 @@
 
 declare( strict_types=1 );
 
+// Sentinel for the plugin's direct-access guards, so the src/ classes load
+// under the php -S test server without booting WordPress (mirrors
+// tests/bootstrap.php and tests/wp/seed.php).
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', __DIR__ . '/' );
+}
+
 $root = dirname( __DIR__, 3 );
 
 spl_autoload_register(
@@ -102,6 +109,23 @@ if ( '/page/scripts' === $uri ) {
 		array(
 			'<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Worth every kilometre.</p>&mdash; Calucon (@calucon) <a href="https://twitter.com/calucon/status/1234567890123456789">June 1, 2024</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>',
 			'<div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="1234567890"></div><script src="https://strava-embeds.com/embed.js"></script>',
+		)
+	);
+
+	cg_e2e_page( $content );
+	return true;
+}
+
+if ( '/page/scripts-multi' === $uri ) {
+	// Two embeds of the SAME script-strategy provider: one SDK load renders
+	// both companions, so clicking one clears the other's panel — but only
+	// after the SDK actually loads. When the SDK is blocked, the sibling and
+	// its fallback link must survive (see gate.js activateScript).
+	$content = implode(
+		"\n",
+		array(
+			'<blockquote class="twitter-tweet"><p>First.</p>&mdash; A <a href="https://twitter.com/calucon/status/1111111111111111111">t1</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>',
+			'<blockquote class="twitter-tweet"><p>Second.</p>&mdash; A <a href="https://twitter.com/calucon/status/2222222222222222222">t2</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>',
 		)
 	);
 

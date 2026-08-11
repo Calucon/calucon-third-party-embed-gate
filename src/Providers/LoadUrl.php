@@ -11,6 +11,10 @@
 
 namespace ConsentGate\Providers;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Builds the URL an embed is loaded from AFTER consent (PLAN.md §4.1).
  */

@@ -17,6 +17,10 @@
 
 namespace ConsentGate\Integration;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use ConsentGate\Plugin;
 
 /**

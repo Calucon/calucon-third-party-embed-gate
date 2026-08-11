@@ -16,6 +16,10 @@
 
 namespace ConsentGate\Cli;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use ConsentGate\Support\ContentScan;
 
 /**
