@@ -96,9 +96,9 @@ Privately, please — through GitHub's private vulnerability reporting on the pl
 
 1. A gated YouTube embed as a visitor sees it: a server-rendered placeholder with a named panel, a real "Load" button and a working fallback link. Nothing is requested from the provider until the visitor clicks.
 2. The Appearance settings — presets, corner styles and colour pickers — with a live preview of the real panel and an automatic readability check that flags any colour pair below the 4.5:1 contrast minimum.
-3. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, and set an optional poster image from your own media library.
-4. The Compatibility overview: the cache plugin, consent platform and page builder Consent Gate detected, and what it does about each.
-5. The Providers tab: per-provider on/off, privacy-preserving load variants, and custom notice and button text — no code required.
+3. The Status &amp; tools tab: the Compatibility overview (which cache plugin, consent platform and page builder are detected), a ready-to-paste Content-Security-Policy snippet for the enabled providers, and a read-only scan that reports whether every embed on your site is gated.
+4. The Providers tab: per-provider on/off, privacy-preserving load variants, and custom notice and button text — no code required.
+5. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, and set an optional poster image from your own media library.
 
 == Changelog ==
 
