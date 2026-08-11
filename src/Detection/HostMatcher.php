@@ -10,6 +10,10 @@
 
 namespace ConsentGate\Detection;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Classifies embed URLs. The failure mode must always be "gated something
  * harmless", never "let a new tracker through" (PLAN.md §1, invariant 6) —
@@ -70,7 +74,7 @@ final class HostMatcher {
 	 * @return string One of the class constants.
 	 */
 	public function classify( string $url ): string {
-		$url = trim( $url );
+		$url = $this->preprocess( $url );
 		if ( '' === $url ) {
 			return self::SKIP;
 		}
@@ -81,11 +85,22 @@ final class HostMatcher {
 			return self::SKIP;
 		}
 
-		if ( 0 === strpos( $url, '//' ) ) {
-			// Protocol-relative: resolves against the page scheme, host decides.
-			$host = $this->extract_host( 'https:' . $url );
-		} elseif ( preg_match( '/^https?:\/\//i', $url ) ) {
+		if ( preg_match( '#^https?:#i', $url ) ) {
+			// Collapse the scheme and any run of (already slash-normalised)
+			// authority slashes into 'scheme://'. Browsers ignore extra,
+			// missing or backslash authority slashes for special schemes, so
+			// 'https:/\/evil.com' and 'https:evil.com' both name host evil.com
+			// — parse_url() alone would miss both and let them through (§3.4).
+			$url  = preg_replace( '#^(https?:)/*#i', '$1//', $url );
 			$host = $this->extract_host( $url );
+		} elseif ( preg_match( '#^/{2,}#', $url ) ) {
+			// Protocol-relative: resolves against the page scheme, host decides.
+			// Two-or-more leading slashes — including the '/\' open-redirect
+			// shape, now '//' after slash normalisation — reach here.
+			$host = $this->extract_host( 'https:' . preg_replace( '#^/+#', '//', $url ) );
+		} elseif ( 0 === strpos( $url, '/' ) ) {
+			// Single leading slash: a same-origin absolute path, never gated.
+			return self::OWN;
 		} elseif ( preg_match( '/^[a-z][a-z0-9+.-]*:/i', $url ) ) {
 			// Unknown scheme (mailto:, tel:, …): an iframe will not fetch it.
 			return self::SKIP;
@@ -110,12 +125,35 @@ final class HostMatcher {
 	 * @return string|null Null when the URL carries no host.
 	 */
 	public function host_of( string $url ) {
-		$url = trim( $url );
-		if ( 0 === strpos( $url, '//' ) ) {
-			$url = 'https:' . $url;
+		$url = $this->preprocess( $url );
+		if ( '' === $url ) {
+			return null;
+		}
+		if ( preg_match( '#^https?:#i', $url ) ) {
+			$url = preg_replace( '#^(https?:)/*#i', '$1//', $url );
+		} elseif ( preg_match( '#^/{2,}#', $url ) ) {
+			$url = 'https:' . preg_replace( '#^/+#', '//', $url );
 		}
 		$host = $this->extract_host( $url );
 		return null === $host ? null : $this->normalize_host( $host );
+	}
+
+	/**
+	 * Browser-style URL preprocessing applied before parse_url(), so this
+	 * class and the browser agree on the authority (invariant 6). Browsers
+	 * strip ASCII tab/newline characters anywhere in a URL, and for the
+	 * special schemes this plugin gates they treat a backslash as a forward
+	 * slash. Without this, 'https://evil.com\@own.example/' parses to host
+	 * 'own.example' in PHP but connects to 'evil.com' in every browser — a
+	 * third party slipping past the gate.
+	 *
+	 * @param string $url Raw URL from the markup.
+	 * @return string
+	 */
+	private function preprocess( string $url ): string {
+		$url = str_replace( array( "\t", "\n", "\r" ), '', $url );
+		$url = str_replace( '\\', '/', $url );
+		return trim( $url );
 	}
 
 	/**

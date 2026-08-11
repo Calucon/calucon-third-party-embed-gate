@@ -62,3 +62,24 @@ test( 'clicking a script embed injects the SDK once and clears its panels', asyn
 	const focused = await page.evaluate( () => document.activeElement && document.activeElement.className );
 	expect( String( focused ) ).toContain( 'cg-embed' );
 } );
+
+test( 'a blocked SDK does not strand the sibling embeds', async ( { page } ) => {
+	// The SDK is blocked (ad/tracker blockers hit exactly these scripts).
+	await page.route( '**/widgets.js', ( route ) => route.abort() );
+
+	await page.goto( '/page/scripts-multi' );
+	await expect( page.locator( '[data-cg-provider="twitter"]' ) ).toHaveCount( 2 );
+
+	// Click the first: its SDK request fails.
+	await page.locator( '[data-cg-provider="twitter"] .cg-embed__button' ).first().click();
+
+	// The sibling embed's panel AND its fallback link must survive the failed
+	// load — clearing siblings up front would have deleted both.
+	await expect( page.locator( '[data-cg-provider="twitter"] .cg-embed__panel' ) ).toHaveCount( 1 );
+	await expect( page.locator( '[data-cg-provider="twitter"] .cg-embed__fallback a' ) )
+		.toHaveAttribute( 'href', 'https://twitter.com/calucon/status/2222222222222222222' );
+
+	// The clicked one routes to its own error state (§8) with its link intact.
+	await expect( page.locator( '[data-cg-provider="twitter"]' ).first().locator( '.cg-embed__error a' ) )
+		.toHaveAttribute( 'href', 'https://twitter.com/calucon/status/1111111111111111111' );
+} );

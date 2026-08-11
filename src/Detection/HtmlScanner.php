@@ -11,6 +11,10 @@
 
 namespace ConsentGate\Detection;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Finds start tags of a given name and parses their attributes without
  * assuming pretty-printed HTML. Minifiers strip attribute quotes and insert

@@ -68,6 +68,46 @@ final class HostMatcherTest extends TestCase {
 		self::assertTrue( $matcher->is_own_host( 'MÜNCHEN.example.' ) );
 	}
 
+	/**
+	 * parse_url() and the browser must not disagree on the authority: a URL
+	 * whose real (browser) host is a third party must never be classified OWN
+	 * (invariant 6). Browsers treat a backslash as a slash for special schemes
+	 * and ignore extra/missing authority slashes, so these all connect to
+	 * evil.example even though naive parse_url() reads the own host after '@'.
+	 */
+	public function test_authority_confusion_is_gated_not_own(): void {
+		$matcher = new HostMatcher( array( 'example.test' ) );
+
+		self::assertSame( HostMatcher::FOREIGN, $matcher->classify( 'https://evil.example\\@example.test/track' ) );
+		self::assertSame( HostMatcher::FOREIGN, $matcher->classify( '//evil.example\\@example.test/track' ) );
+		self::assertSame( HostMatcher::FOREIGN, $matcher->classify( 'https:/\\/evil.example/track' ) );
+		self::assertSame( HostMatcher::FOREIGN, $matcher->classify( 'https:\\\\evil.example/track' ) );
+		self::assertSame( HostMatcher::FOREIGN, $matcher->classify( 'https:evil.example/track' ) );
+		self::assertSame( HostMatcher::FOREIGN, $matcher->classify( '/\\evil.example/track' ) );
+		self::assertSame( HostMatcher::FOREIGN, $matcher->classify( '///evil.example/track' ) );
+	}
+
+	/**
+	 * The mirror of the above: a backslash/irregular-slash URL whose real host
+	 * IS the own host must stay OWN, and a genuine same-origin absolute path
+	 * (single leading slash) must never be mistaken for protocol-relative.
+	 */
+	public function test_authority_normalisation_keeps_own_and_paths_own(): void {
+		$matcher = new HostMatcher( array( 'example.test' ) );
+
+		self::assertSame( HostMatcher::OWN, $matcher->classify( 'https:\\\\example.test/frame' ) );
+		self::assertSame( HostMatcher::OWN, $matcher->classify( 'https://evil.example%5C@example.test/frame' ) );
+		self::assertSame( HostMatcher::OWN, $matcher->classify( "https://example.test\t/frame" ) );
+		self::assertSame( HostMatcher::OWN, $matcher->classify( '/frame.html' ) );
+	}
+
+	public function test_host_of_matches_classify_normalisation(): void {
+		$matcher = new HostMatcher( array( 'example.test' ) );
+
+		self::assertSame( 'evil.example', $matcher->host_of( 'https://evil.example\\@example.test/track' ) );
+		self::assertSame( 'evil.example', $matcher->host_of( 'https:/\\/evil.example/track' ) );
+	}
+
 	public function test_is_own_filter_can_veto_and_approve(): void {
 		$matcher = new HostMatcher(
 			array( 'example.test' ),

@@ -12,6 +12,10 @@
 
 namespace ConsentGate\Support;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use ConsentGate\Detection\HostMatcher;
 use ConsentGate\Detection\HtmlScanner;
 use ConsentGate\Providers\Registry;

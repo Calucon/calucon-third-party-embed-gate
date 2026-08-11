@@ -44,9 +44,15 @@
  * @package ConsentGate
  */
 
-// Not loaded through the renderer (e.g. requested directly): render nothing.
-// Deliberately not an ABSPATH check — the fixture suite runs this template
-// outside WordPress.
+// Direct web access: render nothing. The test harness defines ABSPATH as a
+// sentinel (tests/bootstrap.php) so the fixture suite still runs the template
+// without booting WordPress.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+// Included through the renderer but without its variables (belt-and-braces):
+// render nothing rather than emit a broken panel.
 if ( ! isset( $provider, $aria_label, $note, $action, $fallback_url, $fallback_label, $payload_attr, $aspect ) ) {
 	return;
 }

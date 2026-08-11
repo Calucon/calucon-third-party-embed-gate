@@ -81,14 +81,23 @@
 					return;
 				}
 				if ( changed[ category ] === 'allow' ) {
-					bridge.grantAll();
+					// Same fail-open guard as the load-time check: only grant
+					// once a CMP has affirmatively set a consent type, so a
+					// synthetic change event cannot ungate on the default.
+					if ( typeKnown() ) {
+						bridge.grantAll();
+					}
 				} else {
+					// Re-gating is always safe; never guarded.
 					bridge.regate();
 				}
 			}, false );
-			if ( ! window.waitfor_consent_hook ) {
-				onSettled( check );
-			}
+			// Run the initial check unconditionally — granted() already
+			// requires a known consent type, so an early call is a safe no-op.
+			// Gating it behind waitfor_consent_hook missed returning visitors
+			// whose CMP had defined the type and fired its event before this
+			// script ran (load order between the two plugins is not fixed).
+			onSettled( check );
 		},
 
 		// Complianz: cmplz_has_consent() + the documented category events.

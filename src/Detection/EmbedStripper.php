@@ -10,6 +10,10 @@
 
 namespace ConsentGate\Detection;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use ConsentGate\Providers\Registry;
 
 /**

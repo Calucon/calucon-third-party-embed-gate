@@ -10,6 +10,10 @@
 
 namespace ConsentGate\Detection;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use ConsentGate\Providers\LoadUrl;
 use ConsentGate\Providers\Registry;
 use ConsentGate\Rendering\PlaceholderRenderer;
@@ -160,7 +164,11 @@ final class IframeRule {
 			$pair = $this->preceding_embed_blockquote( $html, $span_start );
 			if ( null !== $pair ) {
 				$span_start = $pair['start'];
-				if ( '' !== $pair['href'] ) {
+				// Adopt the harvested link only when it is navigable: classify()
+				// returns SKIP for javascript:/data:/about: and unknown schemes,
+				// which must never become the fallback href. Leaving it unset
+				// keeps the fallback pointed at the real embed URL below.
+				if ( '' !== $pair['href'] && HostMatcher::SKIP !== $this->hosts->classify( $pair['href'] ) ) {
 					$provider['fallback'] = $pair['href'];
 				}
 			}

@@ -11,6 +11,10 @@
 
 namespace ConsentGate\Providers;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Fills a provider descriptor with defaults and interpolates {placeholders}.
  */

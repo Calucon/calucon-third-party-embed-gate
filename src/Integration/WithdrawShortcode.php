@@ -10,6 +10,10 @@
 
 namespace ConsentGate\Integration;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * [consent_gate_withdraw] — renders a real button; gate.js clears the
  * plugin's storage key when it is pressed and announces the result via the
