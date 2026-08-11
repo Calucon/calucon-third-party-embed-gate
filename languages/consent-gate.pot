@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Consent Gate plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Consent Gate 0.7.1\n"
+"Project-Id-Version: Consent Gate 0.7.2\n"
 "Report-Msgid-Bugs-To: https://github.com/Calucon/WP-Embed/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Domain: consent-gate\n"
 
-#: src/Admin/SettingsPage.php:112
+#: src/Admin/SettingsPage.php:139
 msgid "%1$s: %2$s — %3$s"
 msgstr ""
 
@@ -17,23 +17,23 @@ msgstr ""
 msgid "A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:348
+#: src/Admin/SettingsPage.php:375
 msgid "A cleared colour inherits your theme's palette — that is the default, and usually the best choice. The preview cannot use your theme's palette here in the admin, so with cleared colours it shows the plugin's built-in look; on your site the panel follows the theme."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:274
+#: src/Admin/SettingsPage.php:301
 msgid "Additional own hosts"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:373
+#: src/Admin/SettingsPage.php:400
 msgid "All embeds"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:372
+#: src/Admin/SettingsPage.php:399
 msgid "All embeds of the same provider"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:513
+#: src/Admin/SettingsPage.php:540
 msgid "Also honour an IAB TCF v2.2 signal (sites running an ad-industry consent framework)"
 msgstr ""
 
@@ -41,24 +41,24 @@ msgstr ""
 msgid "Always gate"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:267
+#: src/Admin/SettingsPage.php:294
 msgid "Always gate these hosts"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:175
-#: src/Admin/SettingsPage.php:306
+#: src/Admin/SettingsPage.php:202
+#: src/Admin/SettingsPage.php:333
 msgid "Appearance"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:501
+#: src/Admin/SettingsPage.php:528
 msgid "Borlabs Cookie service group"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:472
+#: src/Admin/SettingsPage.php:499
 msgid "Bridge"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:334
+#: src/Admin/SettingsPage.php:361
 msgid "Button background"
 msgstr ""
 
@@ -66,118 +66,122 @@ msgstr ""
 msgid "Button label"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:335
+#: src/Admin/SettingsPage.php:362
 msgid "Button text"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:114
+#: src/Admin/SettingsPage.php:141
 msgid "Button text on the button background"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:315
+#: src/Admin/SettingsPage.php:342
 msgid "Card — border, rounded corners, shadow"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:545
+#: src/Admin/SettingsPage.php:572
 msgid "Compatibility"
 msgstr ""
 
 #: assets/js/editor.js:111
 #: assets/js/editor.js:177
-#: src/Admin/SettingsPage.php:129
-#: src/Admin/SettingsPage.php:130
-#: src/Admin/SettingsPage.php:165
+#: src/Admin/SettingsPage.php:156
+#: src/Admin/SettingsPage.php:157
+#: src/Admin/SettingsPage.php:192
 msgid "Consent Gate"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:180
+#: src/Admin/SettingsPage.php:90
+msgid "Consent Gate is free and open source — you can %s."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:207
 msgid "Consent Gate settings sections"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:176
-#: src/Admin/SettingsPage.php:354
+#: src/Admin/SettingsPage.php:203
+#: src/Admin/SettingsPage.php:381
 msgid "Consent memory"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:455
+#: src/Admin/SettingsPage.php:482
 msgid "Consent platform bridge"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:395
-#: src/Admin/SettingsPage.php:397
+#: src/Admin/SettingsPage.php:422
+#: src/Admin/SettingsPage.php:424
 msgid "Content-Security-Policy snippet"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:320
+#: src/Admin/SettingsPage.php:347
 msgid "Corners"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:654
+#: src/Admin/SettingsPage.php:681
 msgid "Count"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:201
+#: src/Admin/SettingsPage.php:228
 msgid "Custom button text (optional)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:228
+#: src/Admin/SettingsPage.php:255
 msgid "Custom button text for %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:200
+#: src/Admin/SettingsPage.php:227
 msgid "Custom note (optional)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:226
+#: src/Admin/SettingsPage.php:253
 msgid "Custom note for %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:313
+#: src/Admin/SettingsPage.php:340
 msgid "Default — filled panel"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:323
+#: src/Admin/SettingsPage.php:350
 msgid "Default — slightly rounded"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:550
+#: src/Admin/SettingsPage.php:577
 msgid "Detected"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:541
+#: src/Admin/SettingsPage.php:568
 msgid "Detected and tested for interoperation. Gating currently ignores its choices — the fail-closed default. Enable the consent platform bridge under Consent to load embeds automatically once this platform reports consent for them."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:491
+#: src/Admin/SettingsPage.php:518
 msgid "Detected now: %s."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:540
+#: src/Admin/SettingsPage.php:567
 msgid "Detected, bridge active: when this platform reports consent for the embeds' category, gated embeds load without a second click, and a withdrawal re-gates them. If the platform does not answer, gating stands (fail closed). Prefer its own blocker for a provider? Disable that provider under Providers and Consent Gate steps aside for it."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:542
+#: src/Admin/SettingsPage.php:569
 msgid "Detected. Consent Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:532
+#: src/Admin/SettingsPage.php:559
 msgid "Detected. Its page cache is flushed automatically when Consent Gate settings change; after activating or deactivating Consent Gate itself, clear it once by hand if pages look stale."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:535
+#: src/Admin/SettingsPage.php:562
 msgid "Detected. Page builders render outside the content filters — if its embeds are not being gated, enable \"Gate the whole page output\" under Detection."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:534
+#: src/Admin/SettingsPage.php:561
 msgid "Detected. Whole-page gating is enabled, so this builder's embeds are covered."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:174
-#: src/Admin/SettingsPage.php:253
+#: src/Admin/SettingsPage.php:201
+#: src/Admin/SettingsPage.php:280
 msgid "Detection"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:193
+#: src/Admin/SettingsPage.php:220
 msgid "Disabling a provider stops gating its embeds — they load exactly as WordPress renders them. Unknown third-party iframes and scripts are always gated by the generic entries."
 msgstr ""
 
@@ -185,7 +189,7 @@ msgstr ""
 msgid "Embedded content from %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:284
+#: src/Admin/SettingsPage.php:311
 msgid "Embeds from these hosts load without a placeholder. Use only for third parties you have covered elsewhere — this plugin then no longer prevents their requests."
 msgstr ""
 
@@ -193,39 +197,39 @@ msgstr ""
 msgid "Example embed"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:115
+#: src/Admin/SettingsPage.php:142
 msgid "Fallback link on the panel background"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:656
+#: src/Admin/SettingsPage.php:683
 msgid "First seen in"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:362
+#: src/Admin/SettingsPage.php:389
 msgid "For this browser session"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:198
+#: src/Admin/SettingsPage.php:225
 msgid "Gate"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:222
+#: src/Admin/SettingsPage.php:249
 msgid "Gate %s embeds"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:291
+#: src/Admin/SettingsPage.php:318
 msgid "Gate the whole page output (for Elementor, Divi, WPBakery, Bricks)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:259
+#: src/Admin/SettingsPage.php:286
 msgid "Gate third-party iframes"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:263
+#: src/Admin/SettingsPage.php:290
 msgid "Gate third-party images (hotlinked images request the third party with the visitor's IP attached; can affect layouts)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:261
+#: src/Admin/SettingsPage.php:288
 msgid "Gate third-party scripts in content"
 msgstr ""
 
@@ -233,31 +237,31 @@ msgstr ""
 msgid "Gate this embed"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:621
+#: src/Admin/SettingsPage.php:648
 msgid "Gated"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:515
+#: src/Admin/SettingsPage.php:542
 msgid "Grants require both the storage purpose and the provider's registered vendor consent; providers without a Global Vendor List entry always keep the click. Leave this off unless your site serves programmatic advertising."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:652
+#: src/Admin/SettingsPage.php:679
 msgid "Host"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:296
+#: src/Admin/SettingsPage.php:323
 msgid "Host matching"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:508
+#: src/Admin/SettingsPage.php:535
 msgid "IAB TCF (experimental)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:457
+#: src/Admin/SettingsPage.php:484
 msgid "If a consent platform (cookie banner) runs on this site, Consent Gate can honour its decision: once the platform reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state, stores nothing itself, and works only with platforms it was tested against; with any other platform, and whenever the platform gives no answer, gating stands unchanged (fail closed)."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:396
+#: src/Admin/SettingsPage.php:423
 msgid "If your site sends a Content-Security-Policy, it needs to allow the enabled providers' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic."
 msgstr ""
 
@@ -278,7 +282,7 @@ msgstr ""
 msgid "Load content from Facebook"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:477
+#: src/Admin/SettingsPage.php:504
 msgid "Load embeds automatically when the detected consent platform reports consent for them"
 msgstr ""
 
@@ -442,15 +446,15 @@ msgstr ""
 msgid "Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:314
+#: src/Admin/SettingsPage.php:341
 msgid "Minimal — transparent with a border"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:624
+#: src/Admin/SettingsPage.php:651
 msgid "NOT gated — its detection rule is disabled"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:625
+#: src/Admin/SettingsPage.php:652
 msgid "NOT gated — provider disabled in the table above"
 msgstr ""
 
@@ -458,47 +462,47 @@ msgstr ""
 msgid "Never gate"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:281
+#: src/Admin/SettingsPage.php:308
 msgid "Never gate these hosts"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:361
+#: src/Admin/SettingsPage.php:388
 msgid "No (default) — ask on every page view"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:547
+#: src/Admin/SettingsPage.php:574
 msgid "No cache plugin, consent platform or page builder detected."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:482
+#: src/Admin/SettingsPage.php:509
 msgid "No tested consent platform is currently detected. The setting can stay enabled; it takes effect as soon as one is installed."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:648
+#: src/Admin/SettingsPage.php:675
 msgid "No third-party embeds found in the scanned content."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:623
+#: src/Admin/SettingsPage.php:650
 msgid "No usable URL — passes through"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:355
+#: src/Admin/SettingsPage.php:382
 msgid "Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor's browser only — after their first click, never before — and a withdrawal control becomes available via the [consent_gate_withdraw] shortcode for your privacy policy page."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:277
+#: src/Admin/SettingsPage.php:304
 msgid "One host per line, e.g. cdn.example.com or *.example.com. These are treated as the site itself and never gated."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:270
+#: src/Admin/SettingsPage.php:297
 msgid "One host per line. These are gated even when they would otherwise count as the site itself — for example a subdomain of your own domain that serves third-party widgets."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:292
+#: src/Admin/SettingsPage.php:319
 msgid "Only enable this if embeds from a page builder are not being gated. It buffers the entire page, which can conflict with other buffering or streaming plugins. Any error inside the buffer returns the page unmodified."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:504
+#: src/Admin/SettingsPage.php:531
 msgid "Only used with Borlabs Cookie, whose consent groups are defined per site: the ID of the group that covers embedded content. The default installation calls it \"external-media\"."
 msgstr ""
 
@@ -515,60 +519,60 @@ msgstr ""
 msgid "Overrides the site-wide setting for this block only."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:622
+#: src/Admin/SettingsPage.php:649
 msgid "Own host — not gated"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:288
+#: src/Admin/SettingsPage.php:315
 msgid "Page builders"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:332
+#: src/Admin/SettingsPage.php:359
 msgid "Panel background"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:310
+#: src/Admin/SettingsPage.php:337
 msgid "Panel style"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:333
+#: src/Admin/SettingsPage.php:360
 msgid "Panel text"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:113
+#: src/Admin/SettingsPage.php:140
 msgid "Panel text on the panel background"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:378
+#: src/Admin/SettingsPage.php:405
 msgid "Persistent lifetime (days)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:363
+#: src/Admin/SettingsPage.php:390
 msgid "Persistently, with an expiry"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:424
+#: src/Admin/SettingsPage.php:451
 msgid "Preview"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:431
+#: src/Admin/SettingsPage.php:458
 msgid "Preview on a dark page background"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:199
+#: src/Admin/SettingsPage.php:226
 msgid "Privacy-preserving load"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:197
+#: src/Admin/SettingsPage.php:224
 msgid "Provider"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:173
-#: src/Admin/SettingsPage.php:192
+#: src/Admin/SettingsPage.php:200
+#: src/Admin/SettingsPage.php:219
 msgid "Providers"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:358
+#: src/Admin/SettingsPage.php:385
 msgid "Remember consent"
 msgstr ""
 
@@ -576,7 +580,7 @@ msgstr ""
 msgid "Remove poster image"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:604
+#: src/Admin/SettingsPage.php:631
 msgid "Renders your latest posts and pages in memory and reports every embed found and whether it is gated. Read-only; no outbound requests."
 msgstr ""
 
@@ -584,27 +588,27 @@ msgstr ""
 msgid "Replace poster image"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:325
+#: src/Admin/SettingsPage.php:352
 msgid "Rounded"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:326
+#: src/Admin/SettingsPage.php:353
 msgid "Rounded, with a pill-shaped button"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:256
+#: src/Admin/SettingsPage.php:283
 msgid "Rules"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:603
+#: src/Admin/SettingsPage.php:630
 msgid "Scan recent content"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:642
+#: src/Admin/SettingsPage.php:669
 msgid "Scanned the %d most recent published posts and pages. Widgets, template parts and builder-rendered layouts are not part of this scan."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:368
+#: src/Admin/SettingsPage.php:395
 msgid "Scope"
 msgstr ""
 
@@ -620,16 +624,16 @@ msgstr ""
 msgid "Site default"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:324
+#: src/Admin/SettingsPage.php:351
 msgid "Square"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:597
-#: src/Admin/SettingsPage.php:655
+#: src/Admin/SettingsPage.php:624
+#: src/Admin/SettingsPage.php:682
 msgid "Status"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:177
+#: src/Admin/SettingsPage.php:204
 msgid "Status & tools"
 msgstr ""
 
@@ -637,11 +641,11 @@ msgstr ""
 msgid "Stored embed consents have been removed. Embeds will ask again."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:307
+#: src/Admin/SettingsPage.php:334
 msgid "Style the placeholder panel without writing any CSS: pick a style, pick colours, and watch the preview below update as you go. The readability check tells you immediately if a colour combination would be hard to read."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:464
+#: src/Admin/SettingsPage.php:491
 msgid "Tested and interoperable: %s."
 msgstr ""
 
@@ -649,11 +653,11 @@ msgstr ""
 msgid "The embedded content could not be loaded."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:574
+#: src/Admin/SettingsPage.php:601
 msgid "Third-party assets in your theme"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:166
+#: src/Admin/SettingsPage.php:193
 msgid "Third-party embeds are replaced with a placeholder until the visitor clicks to load them. Nothing is contacted, and nothing is stored, before that click."
 msgstr ""
 
@@ -661,23 +665,23 @@ msgstr ""
 msgid "This block’s embeds will load immediately for every visitor, without a consent click."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:371
+#: src/Admin/SettingsPage.php:398
 msgid "This embed only"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:299
+#: src/Admin/SettingsPage.php:326
 msgid "Treat www.example.com and example.com as the same site"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:653
+#: src/Admin/SettingsPage.php:680
 msgid "Type"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:224
+#: src/Admin/SettingsPage.php:251
 msgid "Use the privacy-preserving load for %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:550
+#: src/Admin/SettingsPage.php:577
 msgid "What Consent Gate does"
 msgstr ""
 
@@ -687,15 +691,19 @@ msgstr ""
 msgid "Withdraw embed consents"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:575
+#: src/Admin/SettingsPage.php:602
 msgid "Your theme references these third-party asset hosts (found by reading its files — nothing was fetched). Fonts and CDN assets load on every page view without consent, outside what an embed gate can cover. Consider serving them locally; your theme or a localisation plugin can usually do this."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:117
+#: src/Admin/SettingsPage.php:144
 msgid "hard to read — below the 4.5:1 minimum. Pick a lighter or darker colour for this pair."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:116
+#: src/Admin/SettingsPage.php:143
 msgid "readable (meets the 4.5:1 minimum)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:87
+msgid "support its development"
 msgstr ""
 

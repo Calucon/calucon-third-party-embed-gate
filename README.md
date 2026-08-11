@@ -105,6 +105,13 @@ that site:
 - A plain WordPress-to-WordPress oEmbed preview set a cookie with a
   **one-year** lifetime.
 
+## Support
+
+Consent Gate is free and GPL, and it stays that way. If it saves you time or
+helps your visitors, you can support its development on
+[Ko-fi](https://ko-fi.com/calucon) — it goes toward the tooling and time
+behind the plugin. Entirely optional; the plugin is fully functional without it.
+
 ## Licence
 
 GPLv2 or later, to match WordPress and to keep the WordPress.org route open.

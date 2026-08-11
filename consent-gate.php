@@ -3,7 +3,7 @@
  * Plugin Name:       Consent Gate
  * Plugin URI:        https://github.com/Calucon/WP-Embed
  * Description:       Two-click embeds: third-party iframes load only after the visitor asks for them. No banner, no consent platform, no third-party request before the click.
- * Version:           0.7.1
+ * Version:           0.7.2
  * Requires at least: 5.9
  * Requires PHP:      7.4
  * Author:            Calucon
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'CONSENT_GATE_VERSION', '0.7.1' );
+define( 'CONSENT_GATE_VERSION', '0.7.2' );
 define( 'CONSENT_GATE_FILE', __FILE__ );
 define( 'CONSENT_GATE_DIR', __DIR__ );
 

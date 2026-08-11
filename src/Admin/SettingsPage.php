@@ -61,6 +61,33 @@ final class SettingsPage {
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_setting' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		add_filter( 'admin_footer_text', array( $this, 'footer_support_link' ) );
+	}
+
+	/**
+	 * A single, unobtrusive support link in the admin footer — shown only on
+	 * this plugin's own settings screen, never elsewhere in wp-admin. A plain
+	 * link, not a Ko-fi widget or remote badge: nothing off-site loads (the
+	 * plugin's no-outbound-request principle applies to its own admin UI too),
+	 * the browser only contacts Ko-fi if the owner clicks.
+	 *
+	 * @param string $text The default footer text.
+	 * @return string
+	 */
+	public function footer_support_link( $text ): string {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( null === $screen || 'settings_page_consent-gate' !== $screen->id ) {
+			return (string) $text;
+		}
+
+		// No emoji here: WordPress's emoji script would replace it with an
+		// <img> fetched from s.w.org — an outbound request, which this plugin
+		// does not make, not even from its own admin screen.
+		$link = '<a href="https://ko-fi.com/calucon" target="_blank" rel="noopener noreferrer">'
+			. esc_html__( 'support its development', 'consent-gate' ) . '</a>';
+
+		/* translators: %s: link reading "support its development", to the developer's Ko-fi page. */
+		return sprintf( esc_html__( 'Consent Gate is free and open source — you can %s.', 'consent-gate' ), $link );
 	}
 
 	/**
