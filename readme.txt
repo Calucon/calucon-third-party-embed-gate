@@ -17,6 +17,8 @@ When an editor pastes a YouTube URL, WordPress turns it into an iframe — and o
 
 Consent Gate replaces third-party embeds with a server-rendered placeholder until the visitor clicks to load them — the two-click pattern (Zwei-Klick-Lösung). Nothing third-party is contacted before that click: no script, no iframe, no thumbnail, no preconnect. Nothing is stored on the visitor's device before that click either — including by this plugin.
 
+See it in action on the [live demo](https://calucon.de/consent-gate-showcase/), or read the details on the [plugin page](https://calucon.de/consent-gate/).
+
 **What it does**
 
 * Gates third-party iframes, embed SDK scripts and legacy `<embed>`/`<object>` markup in post content, blocks, widgets, comments and archive descriptions — including HTML that has been minified by caching plugins, where most implementations silently fail, and lazy-loaded markup that parks the real URL in a `data-src` attribute.
@@ -103,7 +105,7 @@ Privately, please — through GitHub's private vulnerability reporting on the pl
 == Changelog ==
 
 = 0.7.4 =
-* Documentation: added Installation and Screenshots sections to the readme for the WordPress.org listing. No functional change.
+* Documentation: added Installation and Screenshots sections to the readme for the WordPress.org listing, and linked the plugin page and live demo. Plugin URI now points to the plugin's home page. No functional change.
 
 = 0.7.3 =
 * Repository renamed to match the plugin (github.com/Calucon/consent-gate). Updated the Plugin URI and the issue/security-report links. No functional change.
