@@ -25,10 +25,11 @@ jobs:
         run: bash bin/build-zip.sh
 
       - name: Run Plugin Check
-        # Pinned to v1.1.7: the v1 tag currently floats to v1.1.8, which has a
-        # regression that crashes result processing with "Cannot find module
-        # '@actions/core'" (WordPress/plugin-check-action#609). Bump when fixed.
-        uses: WordPress/plugin-check-action@v1.1.7
+        # Floating v1: v1.1.9 fixed the v1.1.8 bundle regression
+        # (WordPress/plugin-check-action#609), so the temporary pin to v1.1.7
+        # is no longer needed. This check is informational (not required), so
+        # tracking v1 keeps the ruleset current at low risk.
+        uses: WordPress/plugin-check-action@v1
         with:
           build-dir: build/consent-gate
           ignore-warnings: true
