@@ -55,14 +55,20 @@ The SVN repository only exists once approved. Then:
 1. Add two repository **secrets** (Settings → Secrets and variables →
    Actions): `SVN_USERNAME` and `SVN_PASSWORD` — your WordPress.org login.
 2. Add a repository **variable**: `WPORG_DEPLOY` = `true`.
-3. From then on, every published GitHub release runs
-   `.github/workflows/wporg-deploy.yml`, which pushes trunk + a version tag
-   to SVN and syncs `.wordpress-org/` to the SVN `/assets` directory
-   (icons + screenshots). The shipped set is the inverse of `.distignore`.
+3. From then on, the `deploy` job in `.github/workflows/release.yml` runs on
+   every merge to `main` (right after the release is built), pushing trunk +
+   a version tag to SVN and syncing `.wordpress-org/` to the SVN `/assets`
+   directory (icons + screenshots). The shipped set is the inverse of
+   `.distignore`. Until the `WPORG_DEPLOY` variable is `true`, that job is
+   skipped, so nothing deploys before you are ready.
+
+The deploy lives in the release workflow on purpose: GitHub does not fire
+`release`/tag events for releases created with the default `GITHUB_TOKEN`, so
+a separate release-triggered workflow would silently never run.
 
 To cut a release: bump the `Version` header (and `Stable tag`), merge to
-`main`; `.github/workflows/release.yml` tags and publishes the GitHub release,
-which then triggers the SVN deploy.
+`main`. The release job tags and publishes the GitHub release and, when
+`WPORG_DEPLOY` is on, the deploy job pushes it to SVN.
 
 Manual alternative (no CI): `svn co https://plugins.svn.wordpress.org/consent-gate`,
 copy the built files into `trunk/`, copy `.wordpress-org/*` into `assets/`,

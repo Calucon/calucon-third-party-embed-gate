@@ -26,6 +26,8 @@ jobs:
   release:
     name: Package and release
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -66,3 +68,27 @@ jobs:
           name: Consent Gate ${{ steps.version.outputs.tag }}
           files: build/consent-gate-${{ steps.version.outputs.version }}.zip
           generate_release_notes: true
+
+  # WordPress.org SVN deploy. Kept in THIS workflow rather than a separate one
+  # triggered by `release: published`, because GitHub does not fire release/tag
+  # events created with the default GITHUB_TOKEN (as the release job above does)
+  # — a standalone deploy workflow would silently never run. Inert until the
+  # plugin is approved and the maintainer opts in: sets vars.WPORG_DEPLOY=true
+  # and adds the SVN_USERNAME/SVN_PASSWORD secrets. Deploys trunk + a version
+  # tag and syncs .wordpress-org/ to the SVN /assets directory; the shipped set
+  # is the inverse of .distignore. See .github/WORDPRESS-ORG-SUBMISSION.md.
+  deploy:
+    name: Deploy to WordPress.org
+    needs: release
+    if: ${{ vars.WPORG_DEPLOY == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to WordPress.org SVN
+        uses: 10up/action-wordpress-plugin-deploy@2.3.0
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: consent-gate
+          VERSION: ${{ needs.release.outputs.version }}
