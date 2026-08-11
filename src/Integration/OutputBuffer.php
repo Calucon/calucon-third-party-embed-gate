@@ -53,7 +53,10 @@ final class OutputBuffer {
 		if ( $this->plugin->should_bail() || is_feed() ) {
 			return;
 		}
-		if ( function_exists( 'wp_is_serving_rest_request' ) && wp_is_serving_rest_request() ) {
+		// REST responses are not HTML pages to gate. Use the core REST_REQUEST
+		// constant, defined on every supported version, rather than the
+		// dedicated REST-request helper added only in WordPress 6.5.
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return;
 		}
 		if ( headers_sent() ) {

@@ -290,6 +290,7 @@ final class PlaceholderRenderer {
 		} elseif ( preg_match( '#^/{2,}#', $url ) ) {
 			$url = 'https:' . preg_replace( '#^/+#', '//', $url );
 		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2); wp_parse_url() is unavailable in the no-WordPress fixture suite.
 		$host = parse_url( $url, PHP_URL_HOST );
 		return is_string( $host ) ? strtolower( $host ) : '';
 	}
