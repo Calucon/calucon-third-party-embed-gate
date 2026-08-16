@@ -107,28 +107,28 @@ final class SettingsPage {
 		wp_enqueue_style( 'wp-color-picker' );
 		wp_enqueue_style(
 			'consent-gate',
-			plugins_url( 'assets/css/gate.css', CONSENT_GATE_FILE ),
+			plugins_url( 'assets/css/gate.css', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CONSENT_GATE_VERSION
+			CALUCON_EMBED_GATE_VERSION
 		);
 		wp_enqueue_style(
 			'consent-gate-admin',
-			plugins_url( 'assets/css/admin-appearance.css', CONSENT_GATE_FILE ),
+			plugins_url( 'assets/css/admin-appearance.css', CALUCON_EMBED_GATE_FILE ),
 			array( 'consent-gate' ),
-			CONSENT_GATE_VERSION
+			CALUCON_EMBED_GATE_VERSION
 		);
 		wp_enqueue_script(
 			'consent-gate-admin',
-			plugins_url( 'assets/js/admin-appearance.js', CONSENT_GATE_FILE ),
+			plugins_url( 'assets/js/admin-appearance.js', CALUCON_EMBED_GATE_FILE ),
 			array( 'jquery', 'wp-color-picker' ),
-			CONSENT_GATE_VERSION,
+			CALUCON_EMBED_GATE_VERSION,
 			true
 		);
 		wp_enqueue_script(
 			'consent-gate-admin-tabs',
-			plugins_url( 'assets/js/admin-tabs.js', CONSENT_GATE_FILE ),
+			plugins_url( 'assets/js/admin-tabs.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CONSENT_GATE_VERSION,
+			CALUCON_EMBED_GATE_VERSION,
 			true
 		);
 		wp_add_inline_script(

@@ -5,7 +5,7 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.8.0
+Stable tag: 0.8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,7 +17,7 @@ When an editor pastes a YouTube URL, WordPress turns it into an iframe — and o
 
 Calucon Third-Party Embed Gate replaces third-party embeds with a server-rendered placeholder until the visitor clicks to load them — the two-click pattern (Zwei-Klick-Lösung). Nothing third-party is contacted before that click: no script, no iframe, no thumbnail, no preconnect. Nothing is stored on the visitor's device before that click either — including by this plugin.
 
-See it in action on the [live demo](https://calucon.de/consent-gate-showcase/), or read the details on the [plugin page](https://calucon.de/consent-gate/).
+See it in action on the [live demo](https://calucon.de/third-party-embed-gate-showcase/), or read the details on the [plugin page](https://calucon.de/third-party-embed-gate/).
 
 **What it does**
 
@@ -109,6 +109,11 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 5. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, and set an optional poster image from your own media library.
 
 == Changelog ==
+
+= 0.8.1 =
+* Renamed the plugin's constants to match the plugin: CALUCON_EMBED_GATE_VERSION, _FILE and _DIR. The previous CONSENT_GATE_* names remain defined as aliases and will be removed no earlier than 0.9.0, in a release of their own.
+* Updated the plugin page and demo links to their new addresses.
+* Everything a site can depend on is unchanged: the consent_gate_* filters, the [consent_gate_withdraw] shortcode, the wp consent-gate CLI commands, the .cg-embed CSS classes and the theme template override path all keep their existing names. Nothing you have already set up needs changing.
 
 = 0.8.0 =
 * Renamed from "Consent Gate" to "Calucon Third-Party Embed Gate" (new slug `calucon-third-party-embed-gate`) during WordPress.org review, to make clear the plugin gates third-party embeds and is not a consent management platform. No functional change.

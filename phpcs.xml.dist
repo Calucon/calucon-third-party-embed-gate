@@ -35,6 +35,7 @@
 				<element value="ConsentGate"/>
 				<element value="consent_gate"/>
 				<element value="CONSENT_GATE"/>
+				<element value="CALUCON_EMBED_GATE"/>
 			</property>
 		</properties>
 	</rule>
