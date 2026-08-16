@@ -115,7 +115,7 @@ All keys and defaults: `src/Providers/Provider.php` (`normalize()`); the 21
 built-in descriptors in `src/Providers/Builtin/Descriptors.php` are working
 examples of every pattern, including script-strategy embeds
 (`match.script_host`, `companion_class`, `companion_fallback`) and sibling
-CDN hosts for resource-hint scrubbing (`hint_hosts`).
+CDN hosts for resource-hint scrubbing (`scrub_hint_hosts`).
 
 Notes:
 

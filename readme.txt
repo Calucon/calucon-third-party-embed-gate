@@ -5,7 +5,7 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.9.0
+Stable tag: 0.9.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -109,6 +109,12 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 5. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, and set an optional poster image from your own media library.
 
 == Changelog ==
+
+= 0.9.1 =
+* When "Gate the whole page output" is enabled, the plugin's stylesheet and script are now delivered through the standard enqueue API on every front-end page instead of being written into the buffered document at shutdown. Direct tag injection is gone entirely.
+* The translation bridge for the WordPress-free layers now resolves through a generated map of literal gettext calls (`languages/strings.php`), so no translation function in the plugin ever receives a variable argument.
+* The provider descriptor key `hint_hosts` is now `scrub_hint_hosts` — a clearer name for what it always was: hostnames whose `preconnect`/`dns-prefetch` resource hints the plugin removes. Nothing is ever requested from them.
+* The Cloudflare and LiteSpeed cache-purge hooks (their plugins' own hooks) now fire only when the respective plugin is installed.
 
 = 0.9.0 =
 * Before the WordPress.org listing goes live — while no installed sites exist to break — the plugin's internal identifiers were aligned with its new name, with no legacy aliases: filters and actions are `calucon_embed_gate_*`, the shortcode is `[calucon_embed_gate_withdraw]`, the block is `calucon-embed-gate/withdraw`, the WP-CLI namespace is `wp calucon-embed-gate`, the theme template override directory is `{theme}/calucon-embed-gate/`, and the settings option was renamed. If you somehow installed a pre-release build, update those references and re-save the settings.

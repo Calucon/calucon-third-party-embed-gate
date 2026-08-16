@@ -110,21 +110,23 @@ if ( ! is_dir( $root . '/languages' ) ) {
 }
 file_put_contents( $root . '/languages/calucon-third-party-embed-gate.pot', $pot );
 
-// The strings.php mirror: one literal __() call per string that only exists
-// behind $t(). translate.wordpress.org runs its own extractor (wp i18n
-// make-pot) over the shipped plugin and cannot see through the injected
-// translator, so without this file the WordPress-free layers' strings never
-// reach the translators. The file ships in the zip but is never included at
-// runtime.
+// The strings.php map: one literal __() call per $t() string, keyed by its
+// msgid. It serves two masters at once: translate.wordpress.org runs its own
+// extractor (wp i18n make-pot) over the shipped plugin and only sees literal
+// gettext calls — this file makes the WordPress-free layers' strings visible
+// to translators — and at runtime the $t() bridge in src/Plugin.php includes
+// this file and resolves through the returned map, so the plugin contains no
+// gettext call with a variable argument anywhere.
 $mirror = "<?php\n"
 	. "/**\n"
 	. " * Generated file — do not edit; regenerate with `php tests/bin/generate-pot.php`.\n"
 	. " *\n"
-	. " * Literal gettext mirrors of the \$t() strings defined in the\n"
-	. " * WordPress-free layers (src/Providers/, src/Detection/, …), so the\n"
-	. " * translate.wordpress.org parser can extract them. Never loaded at\n"
-	. " * runtime; translations resolve through the \$t() bridge in\n"
-	. " * src/Plugin.php, which uses the same msgids.\n"
+	. " * Literal gettext calls for the \$t() strings defined in the\n"
+	. " * WordPress-free layers (src/Providers/, src/Detection/, …), keyed by\n"
+	. " * msgid. The translate.wordpress.org parser extracts the literal calls;\n"
+	. " * at runtime the \$t() bridge in src/Plugin.php resolves translations by\n"
+	. " * looking its msgid up in the returned map — so no gettext call in the\n"
+	. " * plugin ever takes a variable argument.\n"
 	. " *\n"
 	. " * @package CaluconEmbedGate\n"
 	. " */\n"
@@ -135,19 +137,17 @@ $mirror = "<?php\n"
 	. "\texit;\n"
 	. "}\n"
 	. "\n"
-	. "return; // Everything below exists only for the translation parser.\n"
-	. "\n";
+	. "return array(\n";
 
 foreach ( $injected as $text => $refs ) {
-	if ( isset( $gettext[ $text ] ) ) {
-		continue; // Already visible to the parser via a literal gettext call.
-	}
 	foreach ( array_unique( $refs ) as $ref ) {
-		$mirror .= '// Defined at ' . $ref . ".\n";
+		$mirror .= "\t// Defined at " . $ref . ".\n";
 	}
 	$escaped = str_replace( array( '\\', "'" ), array( '\\\\', "\\'" ), $text );
-	$mirror .= "__( '" . $escaped . "', 'calucon-third-party-embed-gate' );\n";
+	$mirror .= "\t'" . $escaped . "' => __( '" . $escaped . "', 'calucon-third-party-embed-gate' ),\n";
 }
+
+$mirror .= ");\n";
 
 file_put_contents( $root . '/languages/strings.php', $mirror );
 

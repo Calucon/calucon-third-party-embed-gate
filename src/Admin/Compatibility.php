@@ -97,9 +97,9 @@ final class Compatibility {
 		$dirs = array_unique( array( get_stylesheet_directory(), get_template_directory() ) );
 
 		// phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- detection pattern only: local theme files are scanned for these CDN hosts so the Compatibility screen can WARN the owner; the plugin never requests them.
-		$pattern  = '#(?:fonts\.googleapis\.com|fonts\.gstatic\.com|use\.typekit\.net|kit\.fontawesome\.com|fonts\.bunny\.net|cdnjs\.cloudflare\.com|ajax\.googleapis\.com|maxcdn\.bootstrapcdn\.com|cdn\.jsdelivr\.net|unpkg\.com)#i';
-		$findings = array();
-		$budget   = 40; // Files, not bytes: bounded work on huge themes.
+		$cdn_hosts_to_warn_about = '#(?:fonts\.googleapis\.com|fonts\.gstatic\.com|use\.typekit\.net|kit\.fontawesome\.com|fonts\.bunny\.net|cdnjs\.cloudflare\.com|ajax\.googleapis\.com|maxcdn\.bootstrapcdn\.com|cdn\.jsdelivr\.net|unpkg\.com)#i'; // Searched for INSIDE local theme files; never requested.
+		$findings                = array();
+		$budget                  = 40; // Files, not bytes: bounded work on huge themes.
 
 		foreach ( $dirs as $dir ) {
 			if ( ! is_string( $dir ) || '' === $dir || ! is_dir( $dir ) ) {
@@ -120,7 +120,7 @@ final class Compatibility {
 				}
 				--$budget;
 				$contents = (string) file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local theme file, read-only scan.
-				if ( preg_match_all( $pattern, $contents, $m ) ) {
+				if ( preg_match_all( $cdn_hosts_to_warn_about, $contents, $m ) ) {
 					$findings[] = array(
 						'file'  => ltrim( str_replace( dirname( $dir ), '', $file ), '/' ),
 						'hosts' => array_values( array_unique( array_map( 'strtolower', $m[0] ) ) ),
