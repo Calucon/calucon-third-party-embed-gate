@@ -3,16 +3,16 @@
  * Resource hints (PLAN.md §9.14): a preconnect to a gated provider contacts
  * them on page load and undermines the entire gate.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Integration;
+namespace CaluconEmbedGate\Integration;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Support\ResourceHints as Scrubber;
+use CaluconEmbedGate\Support\ResourceHints as Scrubber;
 
 /**
  * Hooks wp_resource_hints.

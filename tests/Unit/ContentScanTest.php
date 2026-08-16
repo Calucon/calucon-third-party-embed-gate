@@ -1,15 +1,15 @@
 <?php
 /**
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Unit;
+namespace CaluconEmbedGate\Tests\Unit;
 
-use ConsentGate\Detection\HostMatcher;
-use ConsentGate\Detection\HtmlScanner;
-use ConsentGate\Providers\Builtin\Descriptors;
-use ConsentGate\Providers\Registry;
-use ConsentGate\Support\ContentScan;
+use CaluconEmbedGate\Detection\HostMatcher;
+use CaluconEmbedGate\Detection\HtmlScanner;
+use CaluconEmbedGate\Providers\Builtin\Descriptors;
+use CaluconEmbedGate\Providers\Registry;
+use CaluconEmbedGate\Support\ContentScan;
 use PHPUnit\Framework\TestCase;
 
 final class ContentScanTest extends TestCase {

@@ -2,16 +2,16 @@
 /**
  * the_content integration: classic themes and older content.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Integration;
+namespace CaluconEmbedGate\Integration;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Plugin;
+use CaluconEmbedGate\Plugin;
 
 /**
  * Hooks the_content at priority 20: after wpautop (10), before typical
@@ -34,7 +34,7 @@ final class TheContent {
 		add_filter(
 			'the_content',
 			array( $this, 'filter' ),
-			(int) apply_filters( 'consent_gate_the_content_priority', 20 )
+			(int) apply_filters( 'calucon_embed_gate_the_content_priority', 20 )
 		);
 	}
 

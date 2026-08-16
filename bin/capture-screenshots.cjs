@@ -26,7 +26,7 @@ async function login( page ) {
 }
 
 async function settings( page ) {
-	await page.goto( BASE + '/wp-admin/options-general.php?page=consent-gate', { waitUntil: 'networkidle' } );
+	await page.goto( BASE + '/wp-admin/options-general.php?page=calucon-embed-gate', { waitUntil: 'networkidle' } );
 	await page.waitForSelector( '.cg-tabs' );
 }
 

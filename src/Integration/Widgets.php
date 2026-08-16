@@ -3,16 +3,16 @@
  * Widget integrations (PLAN.md §3.3): legacy widget areas still exist
  * everywhere.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Integration;
+namespace CaluconEmbedGate\Integration;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Plugin;
+use CaluconEmbedGate\Plugin;
 
 /**
  * Hooks widget_block_content (block widgets), widget_text (legacy text

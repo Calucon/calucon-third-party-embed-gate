@@ -1,12 +1,12 @@
 <?php
 /**
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Unit;
+namespace CaluconEmbedGate\Tests\Unit;
 
-use ConsentGate\Detection\HostMatcher;
-use ConsentGate\Support\ResourceHints;
+use CaluconEmbedGate\Detection\HostMatcher;
+use CaluconEmbedGate\Support\ResourceHints;
 use PHPUnit\Framework\TestCase;
 
 final class ResourceHintsTest extends TestCase {

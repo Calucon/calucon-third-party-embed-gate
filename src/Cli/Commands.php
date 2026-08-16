@@ -11,16 +11,16 @@
  * shell users, and AI agents that need to verify their own customisations
  * ("is this embed actually gated?") after editing functions.php.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Cli;
+namespace CaluconEmbedGate\Cli;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Support\ContentScan;
+use CaluconEmbedGate\Support\ContentScan;
 
 /**
  * Inspect Calucon Third-Party Embed Gate: which embeds appear in content and whether each is
@@ -87,10 +87,10 @@ final class Commands {
 	 * ## EXAMPLES
 	 *
 	 *     # Human-readable overview.
-	 *     wp consent-gate scan
+	 *     wp calucon-embed-gate scan
 	 *
 	 *     # Machine-readable, for CI or an agent verifying its changes.
-	 *     wp consent-gate scan --format=json
+	 *     wp calucon-embed-gate scan --format=json
 	 *
 	 * @subcommand scan
 	 *
@@ -130,7 +130,7 @@ final class Commands {
 
 	/**
 	 * Lists the configured providers: builtins, theme/plugin registrations
-	 * via the consent_gate_providers filter, and the owner's per-provider
+	 * via the calucon_embed_gate_providers filter, and the owner's per-provider
 	 * overrides, exactly as the gate resolves them.
 	 *
 	 * ## OPTIONS
@@ -149,7 +149,7 @@ final class Commands {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp consent-gate providers --format=json
+	 *     wp calucon-embed-gate providers --format=json
 	 *
 	 * @subcommand providers
 	 *

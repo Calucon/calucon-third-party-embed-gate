@@ -57,10 +57,10 @@ test( 'classic content: gated on the_content, zero third-party requests', async 
 	const storage = await page.evaluate( () => ( {
 		local: window.localStorage.length,
 		sessionKeys: Object.keys( window.sessionStorage ).filter( ( k ) => k !== 'wpEmojiSettingsSupports' ),
-		consentGate: window.sessionStorage.getItem( 'consent-gate' ) || window.localStorage.getItem( 'consent-gate' ),
+		caluconEmbedGate: window.sessionStorage.getItem( 'calucon-embed-gate' ) || window.localStorage.getItem( 'calucon-embed-gate' ),
 		cookie: document.cookie,
 	} ) );
-	expect( storage ).toEqual( { local: 0, sessionKeys: [], consentGate: null, cookie: '' } );
+	expect( storage ).toEqual( { local: 0, sessionKeys: [], caluconEmbedGate: null, cookie: '' } );
 } );
 
 test( 'block content: gated via render_block', async ( { page } ) => {
@@ -185,6 +185,7 @@ test( 'editor REST content is NOT gated — invariant 4', async ( { page, reques
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
+	await page.waitForURL( /wp-admin/ ); // Login sets the auth cookie via redirect; navigating before it lands races back to wp-login.
 	await page.goto( `/wp-admin/post.php?post=${ id }&action=edit` );
 	await page.waitForFunction( () => window.wp && window.wp.apiFetch );
 
@@ -213,9 +214,10 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
+	await page.waitForURL( /wp-admin/ ); // Login sets the auth cookie via redirect; navigating before it lands races back to wp-login.
 
 	const offenders = trackThirdPartyRequests( page );
-	await page.goto( '/wp-admin/options-general.php?page=consent-gate' );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
 	await page.waitForLoadState( 'networkidle' );
 
 	// The preview sample carries a YouTube payload, but it is inert data:
@@ -245,14 +247,14 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	// The preview's fallback link is defused — clicking it must not
 	// navigate the owner away (nor toward the provider).
 	await sample.locator( '.cg-embed__fallback a' ).click();
-	expect( page.url() ).toContain( 'options-general.php?page=consent-gate' );
+	expect( page.url() ).toContain( 'options-general.php?page=calucon-embed-gate' );
 	expect( pluginOffenders() ).toEqual( [] );
 
 	// Deep link: a panel id in the hash opens that tab directly. Leave the
 	// page first — a hash-only goto would be a same-document navigation and
 	// prove nothing.
 	await page.goto( '/wp-admin/index.php' );
-	await page.goto( '/wp-admin/options-general.php?page=consent-gate#cg-tab-appearance' );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-appearance' );
 	await expect( page.locator( '#cg-preview-stage .cg-embed' ) ).toBeVisible();
 	await expect( page.locator( '#cg-tabbtn-appearance' ) ).toHaveAttribute( 'aria-selected', 'true' );
 } );
@@ -262,8 +264,9 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
+	await page.waitForURL( /wp-admin/ ); // Login sets the auth cookie via redirect; navigating before it lands races back to wp-login.
 
-	await page.goto( '/wp-admin/options-general.php?page=consent-gate' );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
 
 	await expect( page.locator( 'h1' ) ).toContainText( 'Calucon Third-Party Embed Gate' );
 
@@ -287,7 +290,7 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	await expect( page.locator( 'form p.submit' ) ).toBeVisible();
 
 	// The Status scan's legacy anchor still lands on the right tab.
-	await page.goto( '/wp-admin/options-general.php?page=consent-gate&cg-scan=1#cg-status' );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg-scan=1#cg-status' );
 	await expect( page.locator( '#cg-tabbtn-status' ) ).toHaveAttribute( 'aria-selected', 'true' );
 	await expect( page.locator( '#cg-status' ) ).toBeVisible();
 } );

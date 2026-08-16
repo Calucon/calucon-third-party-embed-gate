@@ -1,11 +1,11 @@
 <?php
 /**
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Unit;
+namespace CaluconEmbedGate\Tests\Unit;
 
-use ConsentGate\Detection\HtmlScanner;
+use CaluconEmbedGate\Detection\HtmlScanner;
 use PHPUnit\Framework\TestCase;
 
 final class HtmlScannerTest extends TestCase {

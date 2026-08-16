@@ -38,9 +38,9 @@ After any customization, verify from the shell (both commands are
 read-only and make no outbound request):
 
 ```sh
-wp consent-gate scan --format=json     # every embed found in recent
+wp calucon-embed-gate scan --format=json     # every embed found in recent
                                        # content + whether it is gated
-wp consent-gate providers --format=json # providers as the gate resolves
+wp calucon-embed-gate providers --format=json # providers as the gate resolves
                                         # them (builtins + your filter)
 ```
 
@@ -55,14 +55,14 @@ your own domain — before any click the list must be empty.
 
 ## Settings
 
-One option, `consent_gate_options`, sanitized against a schema on every
+One option, `calucon_embed_gate_options`, sanitized against a schema on every
 read (malformed input falls back to safe defaults — you cannot corrupt it):
 
 ```sh
-wp option get consent_gate_options --format=json
-wp option patch update consent_gate_options detection images 1
-wp option patch update consent_gate_options appearance preset card
-wp option patch update consent_gate_options consent memory session
+wp option get calucon_embed_gate_options --format=json
+wp option patch update calucon_embed_gate_options detection images 1
+wp option patch update calucon_embed_gate_options appearance preset card
+wp option patch update calucon_embed_gate_options consent memory session
 ```
 
 Shape (see `src/Support/Options.php` for the authoritative schema):
@@ -85,10 +85,10 @@ Cache plugins are flushed automatically when this option changes.
 ## Adding a provider
 
 Providers are **descriptor arrays**, not classes. Register via the
-`consent_gate_providers` filter:
+`calucon_embed_gate_providers` filter:
 
 ```php
-add_filter( 'consent_gate_providers', function ( array $providers ): array {
+add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array {
 	$providers[] = array(
 		'id'          => 'example-videos',
 		'label'       => 'ExampleVideos',
@@ -126,29 +126,29 @@ Notes:
   (e.g. Vimeo's `dnt=1`); `autoplay` never survives, by design.
 - Match hosts explicitly, including subdomains (`youtube.com` does not
   imply `www.youtube.com` in `match`).
-- Then verify: `wp consent-gate providers` must list it;
-  `wp consent-gate scan` must show its embeds `gated` with your label.
+- Then verify: `wp calucon-embed-gate providers` must list it;
+  `wp calucon-embed-gate scan` must show its embeds `gated` with your label.
 
 ## Adjusting behaviour with filters
 
 ```php
 // Change the note/button text in context (return plain text; it is escaped).
-add_filter( 'consent_gate_note_text', fn( $note, $provider, $ctx ) =>
+add_filter( 'calucon_embed_gate_note_text', fn( $note, $provider, $ctx ) =>
 	'youtube' === $provider['id'] ? 'Video hosted by YouTube. Loads on click.' : $note, 10, 3 );
 
 // Exempt a host entirely. WARNING: its requests then happen without
 // consent on every page view — this is the owner's decision to defend.
-add_filter( 'consent_gate_should_gate', fn( $gate, $url, $ctx ) =>
+add_filter( 'calucon_embed_gate_should_gate', fn( $gate, $url, $ctx ) =>
 	false !== strpos( $url, 'widgets.already-covered.example' ) ? false : $gate, 10, 3 );
 ```
 
-All hooks: `consent_gate_providers`, `consent_gate_provider_for_url`,
-`consent_gate_should_gate`, `consent_gate_is_own_host`,
-`consent_gate_own_hosts`, `consent_gate_placeholder_html`,
-`consent_gate_payload`, `consent_gate_note_text`,
-`consent_gate_action_text`, `consent_gate_fallback_url`,
-`consent_gate_www_equivalence`, `consent_gate_cmp_config`; actions
-`consent_gate_before_render`, `consent_gate_embed_gated`.
+All hooks: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`,
+`calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`,
+`calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`,
+`calucon_embed_gate_payload`, `calucon_embed_gate_note_text`,
+`calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`,
+`calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`; actions
+`calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated`.
 
 ## The consent platform bridge
 
@@ -162,12 +162,12 @@ and read-only — the server always renders the gated placeholder (cache
 safety), the bridge writes nothing to the platform, and any missing or
 silent platform means gating stands.
 
-`consent_gate_cmp_config` filters the config handed to the script (or
+`calucon_embed_gate_cmp_config` filters the config handed to the script (or
 disables the bridge by returning `null`):
 
 ```php
 // This site's CMP files embeds under a custom category.
-add_filter( 'consent_gate_cmp_config', function ( $config ) {
+add_filter( 'calucon_embed_gate_cmp_config', function ( $config ) {
 	if ( is_array( $config ) ) {
 		$config['category'] = 'external-media';
 	}
@@ -175,7 +175,7 @@ add_filter( 'consent_gate_cmp_config', function ( $config ) {
 } );
 
 // Add a TCF Global Vendor List id for a custom provider (tcf flag on).
-add_filter( 'consent_gate_cmp_config', function ( $config ) {
+add_filter( 'calucon_embed_gate_cmp_config', function ( $config ) {
 	if ( is_array( $config ) && isset( $config['tcf'] ) ) {
 		$config['tcf']['vendors']['example-videos'] = 123;
 	}
@@ -215,7 +215,7 @@ no `!important`, no specificity war:
 ## Replacing the placeholder markup
 
 Copy `templates/placeholder.php` to
-`{your-theme}/consent-gate/placeholder.php`. The template documents the
+`{your-theme}/calucon-embed-gate/placeholder.php`. The template documents the
 minimum contract it must keep (container classes/attributes, a real
 `<button type="button">`, the server-rendered fallback link). Keep the
 panel's name on `role="group"` + `aria-label` — do not substitute a

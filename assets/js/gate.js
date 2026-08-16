@@ -91,10 +91,29 @@
 	// is ever written before the first click (invariant 3) — page-load code
 	// only READS storage. Client-side only (§6.3): server-side state would
 	// make every page uncacheable.
-	var STORAGE_KEY = 'consent-gate';
+	var STORAGE_KEY = 'calucon-embed-gate';
+	var LEGACY_STORAGE_KEY = 'consent-gate';
+
+	// One-time migration of consents stored under the pre-rename key, so a
+	// returning visitor's remembered choices survive the plugin rename. Only
+	// moves data that already exists — nothing is written for visitors who
+	// never consented (invariant 3). Remove no earlier than 1.0.0.
+	function migrateLegacyStorage( store ) {
+		try {
+			var legacy = store.getItem( LEGACY_STORAGE_KEY );
+			if ( legacy !== null ) {
+				if ( store.getItem( STORAGE_KEY ) === null ) {
+					store.setItem( STORAGE_KEY, legacy );
+				}
+				store.removeItem( LEGACY_STORAGE_KEY );
+			}
+		} catch ( e ) {
+			// Storage blocked: nothing to migrate.
+		}
+	}
 
 	function memoryConfig() {
-		var config = window.consentGateConfig || {};
+		var config = window.caluconEmbedGateConfig || {};
 		var memory = config.memory === 'session' || config.memory === 'persistent' ? config.memory : 'off';
 		return {
 			memory: memory,
@@ -106,7 +125,9 @@
 
 	function memoryStore( config ) {
 		try {
-			return config.memory === 'session' ? window.sessionStorage : window.localStorage;
+			var store = config.memory === 'session' ? window.sessionStorage : window.localStorage;
+			migrateLegacyStorage( store );
+			return store;
 		} catch ( e ) {
 			return null; // Storage blocked: memory silently degrades to off.
 		}
@@ -202,9 +223,11 @@
 		// next page load.
 		try {
 			window.sessionStorage.removeItem( STORAGE_KEY );
+			window.sessionStorage.removeItem( LEGACY_STORAGE_KEY );
 		} catch ( e ) { /* Storage blocked: nothing was stored. */ }
 		try {
 			window.localStorage.removeItem( STORAGE_KEY );
+			window.localStorage.removeItem( LEGACY_STORAGE_KEY );
 		} catch ( e ) { /* Storage blocked: nothing was stored. */ }
 	}
 
@@ -215,7 +238,7 @@
 	// Invoked after a provider script loads AND after each later activation:
 	// SDKs like Strava's embed.js only render the placeholders present when
 	// they run (PLAN.md §9.6). Sites can add hooks for custom providers via
-	// window.consentGateReadyHooks before or after this script loads.
+	// window.caluconEmbedGateReadyHooks before or after this script loads.
 	var readyHooks = {
 		strava: function () {
 			if ( window.__STRAVA_EMBED_BOOTSTRAP__ ) {
@@ -240,7 +263,7 @@
 	};
 
 	function runReadyHook( providerId ) {
-		var custom = window.consentGateReadyHooks || {};
+		var custom = window.caluconEmbedGateReadyHooks || {};
 		var hook = custom[ providerId ] || readyHooks[ providerId ];
 		if ( hook ) {
 			try {
@@ -291,7 +314,7 @@
 	}
 
 	function i18n( key, fallback ) {
-		var config = window.consentGateConfig || {};
+		var config = window.caluconEmbedGateConfig || {};
 		return ( config.i18n && config.i18n[ key ] ) || fallback;
 	}
 
@@ -666,7 +689,7 @@
 		}
 	}
 
-	window.consentGateBridge = {
+	window.caluconEmbedGateBridge = {
 		each: bridgeEach,
 		grant: bridgeGrant,
 		grantAll: function () {

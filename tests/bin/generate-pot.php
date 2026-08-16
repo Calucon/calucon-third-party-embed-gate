@@ -13,7 +13,7 @@
  * own parser, which only sees literal gettext calls — without the mirror,
  * every provider note and button label would be invisible to translators.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
 $root  = dirname( __DIR__, 2 );
@@ -126,7 +126,7 @@ $mirror = "<?php\n"
 	. " * runtime; translations resolve through the \$t() bridge in\n"
 	. " * src/Plugin.php, which uses the same msgids.\n"
 	. " *\n"
-	. " * @package ConsentGate\n"
+	. " * @package CaluconEmbedGate\n"
 	. " */\n"
 	. "\n"
 	. "// phpcs:ignoreFile\n"

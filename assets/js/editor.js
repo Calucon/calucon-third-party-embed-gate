@@ -25,11 +25,15 @@
 
 	wp.hooks.addFilter(
 		'blocks.registerBlockType',
-		'consent-gate/attribute',
+		'calucon-embed-gate/attribute',
 		function ( settings, name ) {
 			if ( ! isGatedBlock( name ) ) {
 				return settings;
 			}
+			// The attribute keys keep their original names on purpose: they are
+			// stored in published post content (block comment JSON), so
+			// renaming them would silently drop existing per-block overrides
+			// and posters. Do not "finish" the plugin rename here.
 			settings.attributes = Object.assign( {}, settings.attributes, {
 				consentGate: { type: 'string', default: '' },
 				// Owner-supplied poster (§5.4): the ID is what the server
@@ -43,7 +47,7 @@
 
 	wp.hooks.addFilter(
 		'editor.BlockEdit',
-		'consent-gate/inspector',
+		'calucon-embed-gate/inspector',
 		wp.compose.createHigherOrderComponent( function ( BlockEdit ) {
 			return function ( props ) {
 				if ( ! isGatedBlock( props.name ) ) {
@@ -129,14 +133,14 @@
 					)
 				);
 			};
-		}, 'withConsentGateInspector' )
+		}, 'withCaluconEmbedGateInspector' )
 	);
 
 	// Editor-canvas badge (§7.5): the override is otherwise invisible, and
 	// an editor who set "never" months ago deserves to see it at a glance.
 	wp.hooks.addFilter(
 		'editor.BlockListBlock',
-		'consent-gate/badge',
+		'calucon-embed-gate/badge',
 		wp.compose.createHigherOrderComponent( function ( BlockListBlock ) {
 			return function ( props ) {
 				if ( ! isGatedBlock( props.name ) || ! props.attributes.consentGate ) {
@@ -147,12 +151,12 @@
 				} );
 				return el( BlockListBlock, Object.assign( {}, props, { wrapperProps: wrapperProps } ) );
 			};
-		}, 'withConsentGateBadge' )
+		}, 'withCaluconEmbedGateBadge' )
 	);
 
 	// The withdrawal control as a block (§6.2): same server-side renderer as
-	// the [consent_gate_withdraw] shortcode.
-	wp.blocks.registerBlockType( 'consent-gate/withdraw', {
+	// the [calucon_embed_gate_withdraw] shortcode.
+	var withdrawBlock = {
 		title: __( 'Withdraw embed consents', 'calucon-third-party-embed-gate' ),
 		icon: 'unlock',
 		category: 'widgets',
@@ -189,5 +193,14 @@
 		save: function () {
 			return null; // Dynamic block: rendered server-side (invariant 2).
 		}
-	} );
+	};
+
+	wp.blocks.registerBlockType( 'calucon-embed-gate/withdraw', withdrawBlock );
+	// Back-compat: the pre-rename block name exists in stored post content;
+	// registering it keeps those blocks editable instead of "unsupported".
+	// Hidden from the inserter; remove no earlier than 1.0.0.
+	wp.blocks.registerBlockType(
+		'consent-gate/withdraw',
+		Object.assign( {}, withdrawBlock, { supports: { inserter: false } } )
+	);
 }( window.wp ) );

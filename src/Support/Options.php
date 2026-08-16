@@ -7,10 +7,10 @@
  * only the option NAME constant is WordPress-facing. Reading and writing
  * the option happens in Plugin.php and Admin/.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Support;
+namespace CaluconEmbedGate\Support;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Options {
 
-	public const OPTION = 'consent_gate_options';
+	public const OPTION = 'calucon_embed_gate_options';
 
 	/**
 	 * @return array Complete default option tree.

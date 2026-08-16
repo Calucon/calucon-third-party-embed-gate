@@ -1,12 +1,12 @@
 <?php
 /**
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Unit;
+namespace CaluconEmbedGate\Tests\Unit;
 
-use ConsentGate\Providers\Builtin\Descriptors;
-use ConsentGate\Support\Csp;
+use CaluconEmbedGate\Providers\Builtin\Descriptors;
+use CaluconEmbedGate\Support\Csp;
 use PHPUnit\Framework\TestCase;
 
 final class CspTest extends TestCase {

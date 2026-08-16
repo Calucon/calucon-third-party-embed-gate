@@ -4,10 +4,10 @@
  * every cached page still serves the old markup. Flush the caches we can
  * reach when settings are saved.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Support;
+namespace CaluconEmbedGate\Support;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

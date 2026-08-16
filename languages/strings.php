@@ -8,7 +8,7 @@
  * runtime; translations resolve through the $t() bridge in
  * src/Plugin.php, which uses the same msgids.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
 // phpcs:ignoreFile

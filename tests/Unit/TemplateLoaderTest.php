@@ -1,13 +1,13 @@
 <?php
 /**
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Unit;
+namespace CaluconEmbedGate\Tests\Unit;
 
-use ConsentGate\Providers\Provider;
-use ConsentGate\Rendering\PlaceholderRenderer;
-use ConsentGate\Rendering\TemplateLoader;
+use CaluconEmbedGate\Providers\Provider;
+use CaluconEmbedGate\Rendering\PlaceholderRenderer;
+use CaluconEmbedGate\Rendering\TemplateLoader;
 use PHPUnit\Framework\TestCase;
 
 final class TemplateLoaderTest extends TestCase {

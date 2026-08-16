@@ -2,16 +2,16 @@
 /**
  * render_block integration: block themes and Gutenberg content.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Integration;
+namespace CaluconEmbedGate\Integration;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Plugin;
+use CaluconEmbedGate\Plugin;
 
 /**
  * Hooks render_block. Fires for nested blocks and again for their parent,
@@ -35,7 +35,7 @@ final class RenderBlock {
 		add_filter(
 			'render_block',
 			array( $this, 'filter' ),
-			(int) apply_filters( 'consent_gate_render_block_priority', 10 ),
+			(int) apply_filters( 'calucon_embed_gate_render_block_priority', 10 ),
 			2
 		);
 	}

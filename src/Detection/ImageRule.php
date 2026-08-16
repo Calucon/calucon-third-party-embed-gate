@@ -10,17 +10,17 @@
  *
  * WordPress-free by design (PLAN.md §2.2).
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Detection;
+namespace CaluconEmbedGate\Detection;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Providers\Registry;
-use ConsentGate\Rendering\PlaceholderRenderer;
+use CaluconEmbedGate\Providers\Registry;
+use CaluconEmbedGate\Rendering\PlaceholderRenderer;
 
 /**
  * Replaces cross-origin <img> elements with the placeholder. The rebuilt
@@ -40,7 +40,7 @@ final class ImageRule {
 	/** @var PlaceholderRenderer */
 	private PlaceholderRenderer $renderer;
 
-	/** @var callable|null Bridge for consent_gate_should_gate. */
+	/** @var callable|null Bridge for calucon_embed_gate_should_gate. */
 	private $should_gate;
 
 	/** @var callable|null Called once per gated embed. */

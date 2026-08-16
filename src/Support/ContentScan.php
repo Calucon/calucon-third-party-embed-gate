@@ -7,18 +7,18 @@
  * WordPress-free by design (PLAN.md §2.2); the admin screen feeds it
  * rendered post content.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Support;
+namespace CaluconEmbedGate\Support;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Detection\HostMatcher;
-use ConsentGate\Detection\HtmlScanner;
-use ConsentGate\Providers\Registry;
+use CaluconEmbedGate\Detection\HostMatcher;
+use CaluconEmbedGate\Detection\HtmlScanner;
+use CaluconEmbedGate\Providers\Registry;
 
 /**
  * Reports what the gate WOULD do, row by row — including what it would

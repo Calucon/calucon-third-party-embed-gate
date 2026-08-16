@@ -3,17 +3,17 @@
  * Resource-hint scrubbing (PLAN.md §9.14). WordPress-free pure logic; the
  * wp_resource_hints filter lives in Integration/.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Support;
+namespace CaluconEmbedGate\Support;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Detection\HostMatcher;
-use ConsentGate\Detection\HtmlScanner;
+use CaluconEmbedGate\Detection\HostMatcher;
+use CaluconEmbedGate\Detection\HtmlScanner;
 
 /**
  * preconnect opens a TCP+TLS connection to the provider on page load — that

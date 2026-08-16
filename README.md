@@ -34,7 +34,7 @@ by an end-to-end test that is never skipped.
   against the own-host list, never fetched from the provider.
 - Optional, **off by default**: consent memory in the visitor's browser
   (nothing is ever written before the first click), with a withdrawal
-  control via `[consent_gate_withdraw]`.
+  control via `[calucon_embed_gate_withdraw]`.
 - Optional, **off by default**: a bridge to an installed consent platform —
   when a **tested** platform (WP Consent API, Complianz, Cookiebot,
   CookieYes, Borlabs Cookie 3, Real Cookie Banner) reports consent for the

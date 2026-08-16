@@ -3,16 +3,16 @@
  * Excerpts (PLAN.md §3.3): strip embeds entirely rather than gating — a
  * placeholder in an excerpt is noise.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Integration;
+namespace CaluconEmbedGate\Integration;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Plugin;
+use CaluconEmbedGate\Plugin;
 
 /**
  * Hooks get_the_excerpt.

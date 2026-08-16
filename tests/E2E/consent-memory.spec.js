@@ -17,8 +17,8 @@ async function abortThirdParty( page ) {
 
 async function storageState( page ) {
 	return page.evaluate( () => ( {
-		session: window.sessionStorage.getItem( 'consent-gate' ),
-		local: window.localStorage.getItem( 'consent-gate' ),
+		session: window.sessionStorage.getItem( 'calucon-embed-gate' ),
+		local: window.localStorage.getItem( 'calucon-embed-gate' ),
 	} ) );
 }
 

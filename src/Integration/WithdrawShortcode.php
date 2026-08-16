@@ -5,17 +5,17 @@
  * shortcode gives the site a visible, keyboard-reachable control to place
  * in the privacy policy.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Integration;
+namespace CaluconEmbedGate\Integration;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * [consent_gate_withdraw] — renders a real button; gate.js clears the
+ * [calucon_embed_gate_withdraw] — renders a real button; gate.js clears the
  * plugin's storage key when it is pressed and announces the result via the
  * companion live region.
  */
@@ -38,6 +38,10 @@ final class WithdrawShortcode {
 	 * @return void
 	 */
 	public function register(): void {
+		add_shortcode( 'calucon_embed_gate_withdraw', array( $this, 'render' ) );
+		// Back-compat: the pre-rename shortcode lives in published page
+		// content (an unknown shortcode would render as literal text on a
+		// privacy page). Remove no earlier than 1.0.0, in a release of its own.
 		add_shortcode( 'consent_gate_withdraw', array( $this, 'render' ) );
 	}
 
@@ -55,7 +59,7 @@ final class WithdrawShortcode {
 				'label' => __( 'Withdraw embed consents', 'calucon-third-party-embed-gate' ),
 			),
 			is_array( $atts ) ? $atts : array(),
-			'consent_gate_withdraw'
+			'calucon_embed_gate_withdraw'
 		);
 
 		$status_id = 'cg-withdraw-status-' . wp_unique_id();

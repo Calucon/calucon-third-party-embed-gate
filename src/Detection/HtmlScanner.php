@@ -6,10 +6,10 @@
  * Never use DOMDocument here — this scanner touches only the spans it matches
  * and leaves every other byte of the input alone (PLAN.md §3.1).
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Detection;
+namespace CaluconEmbedGate\Detection;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

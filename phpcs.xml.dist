@@ -12,7 +12,7 @@
 	<arg value="sp"/>
 
 	<rule ref="WordPress-Extra">
-		<!-- PSR-4 autoloading (ConsentGate\ => src/) fixes the file names;
+		<!-- PSR-4 autoloading (CaluconEmbedGate\ => src/) fixes the file names;
 		     WPCS's class-*.php convention cannot coexist with it. -->
 		<exclude name="WordPress.Files.FileName"/>
 	</rule>
@@ -32,8 +32,8 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
 			<property name="prefixes" type="array">
-				<element value="ConsentGate"/>
-				<element value="consent_gate"/>
+				<element value="CaluconEmbedGate"/>
+				<element value="calucon_embed_gate"/>
 				<element value="CONSENT_GATE"/>
 				<element value="CALUCON_EMBED_GATE"/>
 			</property>

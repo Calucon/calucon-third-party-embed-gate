@@ -6,10 +6,10 @@
  * embed/object rule shares one implementation of the privacy-preserving
  * rewrite instead of drifting its own copy.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Providers;
+namespace CaluconEmbedGate\Providers;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

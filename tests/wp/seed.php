@@ -10,7 +10,7 @@
  * including the minified variant. No emoji anywhere: WordPress would fetch
  * twemoji images from s.w.org and taint the zero-third-party-request test.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -76,7 +76,7 @@ $cg_seed_posts = array(
 	),
 	'withdraw-page'  => array(
 		'title'   => 'Privacy tools',
-		'content' => '<p>Manage stored embed consents:</p>' . "\n" . '[consent_gate_withdraw]',
+		'content' => '<p>Manage stored embed consents:</p>' . "\n" . '[calucon_embed_gate_withdraw]',
 	),
 );
 

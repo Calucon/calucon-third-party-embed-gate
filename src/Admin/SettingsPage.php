@@ -6,18 +6,18 @@
  * user-submitted goes through Options::sanitize(); everything printed goes
  * through esc_*(); the form is nonce-protected by the Settings API.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Admin;
+namespace CaluconEmbedGate\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Cmp\Detector;
-use ConsentGate\Support\Csp;
-use ConsentGate\Support\Options;
+use CaluconEmbedGate\Cmp\Detector;
+use CaluconEmbedGate\Support\Csp;
+use CaluconEmbedGate\Support\Options;
 
 /**
  * Settings > Calucon Third-Party Embed Gate.
@@ -38,7 +38,7 @@ final class SettingsPage {
 
 	/**
 	 * @param callable      $providers_source fn(): array[] — builtins + filtered.
-	 * @param callable|null $scanner_source   fn(): \ConsentGate\Support\ContentScan.
+	 * @param callable|null $scanner_source   fn(): \CaluconEmbedGate\Support\ContentScan.
 	 * @param callable|null $preview_source   fn(): string — rendered sample placeholder.
 	 */
 	public function __construct( callable $providers_source, ?callable $scanner_source = null, ?callable $preview_source = null ) {
@@ -76,7 +76,7 @@ final class SettingsPage {
 	 */
 	public function footer_support_link( $text ): string {
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( null === $screen || 'settings_page_consent-gate' !== $screen->id ) {
+		if ( null === $screen || 'settings_page_calucon-embed-gate' !== $screen->id ) {
 			return (string) $text;
 		}
 
@@ -100,40 +100,40 @@ final class SettingsPage {
 	 * @return void
 	 */
 	public function enqueue_assets( string $hook ): void {
-		if ( 'settings_page_consent-gate' !== $hook ) {
+		if ( 'settings_page_calucon-embed-gate' !== $hook ) {
 			return;
 		}
 
 		wp_enqueue_style( 'wp-color-picker' );
 		wp_enqueue_style(
-			'consent-gate',
+			'calucon-embed-gate',
 			plugins_url( 'assets/css/gate.css', CALUCON_EMBED_GATE_FILE ),
 			array(),
 			CALUCON_EMBED_GATE_VERSION
 		);
 		wp_enqueue_style(
-			'consent-gate-admin',
+			'calucon-embed-gate-admin',
 			plugins_url( 'assets/css/admin-appearance.css', CALUCON_EMBED_GATE_FILE ),
-			array( 'consent-gate' ),
+			array( 'calucon-embed-gate' ),
 			CALUCON_EMBED_GATE_VERSION
 		);
 		wp_enqueue_script(
-			'consent-gate-admin',
+			'calucon-embed-gate-admin',
 			plugins_url( 'assets/js/admin-appearance.js', CALUCON_EMBED_GATE_FILE ),
 			array( 'jquery', 'wp-color-picker' ),
 			CALUCON_EMBED_GATE_VERSION,
 			true
 		);
 		wp_enqueue_script(
-			'consent-gate-admin-tabs',
+			'calucon-embed-gate-admin-tabs',
 			plugins_url( 'assets/js/admin-tabs.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
 			CALUCON_EMBED_GATE_VERSION,
 			true
 		);
 		wp_add_inline_script(
-			'consent-gate-admin',
-			'window.consentGateAdminI18n = ' . wp_json_encode(
+			'calucon-embed-gate-admin',
+			'window.caluconEmbedGateAdminI18n = ' . wp_json_encode(
 				array(
 					/* translators: contrast-report line. 1: which colour pair, 2: measured ratio like "4.9:1", 3: verdict. */
 					'line'       => __( '%1$s: %2$s — %3$s', 'calucon-third-party-embed-gate' ),
@@ -156,7 +156,7 @@ final class SettingsPage {
 			__( 'Calucon Third-Party Embed Gate', 'calucon-third-party-embed-gate' ),
 			__( 'Calucon Third-Party Embed Gate', 'calucon-third-party-embed-gate' ),
 			'manage_options',
-			'consent-gate',
+			'calucon-embed-gate',
 			array( $this, 'render' )
 		);
 	}
@@ -166,7 +166,7 @@ final class SettingsPage {
 	 */
 	public function register_setting(): void {
 		register_setting(
-			'consent_gate',
+			'calucon_embed_gate',
 			Options::OPTION,
 			array(
 				'type'              => 'array',
@@ -213,7 +213,7 @@ final class SettingsPage {
 			</div>
 
 			<form action="options.php" method="post">
-				<?php settings_fields( 'consent_gate' ); ?>
+				<?php settings_fields( 'calucon_embed_gate' ); ?>
 
 				<div id="cg-tab-providers" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-providers">
 				<h2><?php esc_html_e( 'Providers', 'calucon-third-party-embed-gate' ); ?></h2>
@@ -379,7 +379,7 @@ final class SettingsPage {
 
 				<div id="cg-tab-consent" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-consent">
 				<h2><?php esc_html_e( 'Consent memory', 'calucon-third-party-embed-gate' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor\'s browser only — after their first click, never before — and a withdrawal control becomes available via the [consent_gate_withdraw] shortcode for your privacy policy page.', 'calucon-third-party-embed-gate' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor\'s browser only — after their first click, never before — and a withdrawal control becomes available via the [calucon_embed_gate_withdraw] shortcode for your privacy policy page.', 'calucon-third-party-embed-gate' ); ?></p>
 				<table class="form-table" role="presentation">
 					<tr>
 						<th scope="row"><label for="cg-memory"><?php esc_html_e( 'Remember consent', 'calucon-third-party-embed-gate' ); ?></label></th>
@@ -645,11 +645,11 @@ final class SettingsPage {
 		);
 
 		$status_labels = array(
-			\ConsentGate\Support\ContentScan::GATED    => __( 'Gated', 'calucon-third-party-embed-gate' ),
-			\ConsentGate\Support\ContentScan::OWN_HOST => __( 'Own host — not gated', 'calucon-third-party-embed-gate' ),
-			\ConsentGate\Support\ContentScan::NO_USABLE_URL => __( 'No usable URL — passes through', 'calucon-third-party-embed-gate' ),
-			\ConsentGate\Support\ContentScan::RULE_DISABLED => __( 'NOT gated — its detection rule is disabled', 'calucon-third-party-embed-gate' ),
-			\ConsentGate\Support\ContentScan::PROVIDER_DISABLED => __( 'NOT gated — provider disabled in the table above', 'calucon-third-party-embed-gate' ),
+			\CaluconEmbedGate\Support\ContentScan::GATED => __( 'Gated', 'calucon-third-party-embed-gate' ),
+			\CaluconEmbedGate\Support\ContentScan::OWN_HOST => __( 'Own host — not gated', 'calucon-third-party-embed-gate' ),
+			\CaluconEmbedGate\Support\ContentScan::NO_USABLE_URL => __( 'No usable URL — passes through', 'calucon-third-party-embed-gate' ),
+			\CaluconEmbedGate\Support\ContentScan::RULE_DISABLED => __( 'NOT gated — its detection rule is disabled', 'calucon-third-party-embed-gate' ),
+			\CaluconEmbedGate\Support\ContentScan::PROVIDER_DISABLED => __( 'NOT gated — provider disabled in the table above', 'calucon-third-party-embed-gate' ),
 		);
 
 		$scanned = array();
@@ -660,7 +660,7 @@ final class SettingsPage {
 				'rows'   => $scanner->scan( $rendered ),
 			);
 		}
-		$rows = \ConsentGate\Support\ContentScan::aggregate( $scanned );
+		$rows = \CaluconEmbedGate\Support\ContentScan::aggregate( $scanned );
 		?>
 		<p class="description">
 			<?php
