@@ -6,10 +6,10 @@
  * normalises descriptor arrays so the rest of the code can rely on the keys
  * existing. WordPress-free by design.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Providers;
+namespace CaluconEmbedGate\Providers;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

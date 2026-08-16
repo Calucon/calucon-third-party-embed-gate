@@ -3,12 +3,12 @@
  * Provider registry.
  *
  * WordPress-free by design (PLAN.md §2.2). Translation and the
- * consent_gate_providers filter are injected by the integration layer.
+ * calucon_embed_gate_providers filter are injected by the integration layer.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Providers;
+namespace CaluconEmbedGate\Providers;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -28,7 +28,7 @@ final class Registry {
 	/** @var callable Translation function; identity outside WordPress. */
 	private $translate;
 
-	/** @var callable|null Bridge for consent_gate_provider_for_url:
+	/** @var callable|null Bridge for calucon_embed_gate_provider_for_url:
 	 *                     fn( array $provider, string $url, string $host ): array. */
 	private $filter_provider;
 

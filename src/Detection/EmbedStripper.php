@@ -5,16 +5,16 @@
  *
  * WordPress-free by design (PLAN.md §2.2).
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Detection;
+namespace CaluconEmbedGate\Detection;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Providers\Registry;
+use CaluconEmbedGate\Providers\Registry;
 
 /**
  * Strips foreign iframes, embeds, objects and script tags. §9.3: "strip the

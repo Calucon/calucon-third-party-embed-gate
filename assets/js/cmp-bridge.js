@@ -3,7 +3,7 @@
  *
  * Dependency-free, ES5-compatible like gate.js. Only enqueued when the site
  * enabled the bridge AND a consent platform from the tested list is
- * installed; the adapter to use arrives in consentGateConfig.cmp, decided
+ * installed; the adapter to use arrives in caluconEmbedGateConfig.cmp, decided
  * server-side and double-checked here by feature detection (belt and
  * braces — a deactivated CMP whose config survived in a cached page must
  * not ungate anything).
@@ -22,8 +22,8 @@
 ( function () {
 	'use strict';
 
-	var config = ( window.consentGateConfig || {} ).cmp || null;
-	var bridge = window.consentGateBridge;
+	var config = ( window.caluconEmbedGateConfig || {} ).cmp || null;
+	var bridge = window.caluconEmbedGateBridge;
 	if ( ! config || ! bridge ) {
 		return;
 	}

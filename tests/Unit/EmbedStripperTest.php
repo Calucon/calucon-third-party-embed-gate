@@ -1,15 +1,15 @@
 <?php
 /**
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Unit;
+namespace CaluconEmbedGate\Tests\Unit;
 
-use ConsentGate\Detection\EmbedStripper;
-use ConsentGate\Detection\HostMatcher;
-use ConsentGate\Detection\HtmlScanner;
-use ConsentGate\Providers\Builtin\Descriptors;
-use ConsentGate\Providers\Registry;
+use CaluconEmbedGate\Detection\EmbedStripper;
+use CaluconEmbedGate\Detection\HostMatcher;
+use CaluconEmbedGate\Detection\HtmlScanner;
+use CaluconEmbedGate\Providers\Builtin\Descriptors;
+use CaluconEmbedGate\Providers\Registry;
 use PHPUnit\Framework\TestCase;
 
 final class EmbedStripperTest extends TestCase {

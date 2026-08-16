@@ -17,17 +17,17 @@
  *   provider declares a TCF vendor id — a vendor-less TCF bridge could
  *   never grant anything and would only add dead code to the page.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Cmp;
+namespace CaluconEmbedGate\Cmp;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Builds the consentGateConfig.cmp payload.
+ * Builds the caluconEmbedGateConfig.cmp payload.
  */
 final class BridgeConfig {
 

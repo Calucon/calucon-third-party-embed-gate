@@ -2,7 +2,7 @@
 /**
  * Calucon Third-Party Embed Gate placeholder template.
  *
- * Copy this file to {your-theme}/consent-gate/placeholder.php to override
+ * Copy this file to {your-theme}/calucon-embed-gate/placeholder.php to override
  * the panel markup. The structure below (PLAN.md §5.1) is the documented
  * minimum a custom template must keep for gate.js, themes and tests to
  * keep working:
@@ -41,7 +41,7 @@
  * htmlspecialchars() rather than esc_attr()/esc_html(); both are correct
  * here and themes may use the WordPress functions instead.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
 // Direct web access: render nothing. The test harness defines ABSPATH as a

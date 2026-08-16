@@ -91,10 +91,10 @@
 	// is ever written before the first click (invariant 3) — page-load code
 	// only READS storage. Client-side only (§6.3): server-side state would
 	// make every page uncacheable.
-	var STORAGE_KEY = 'consent-gate';
+	var STORAGE_KEY = 'calucon-embed-gate';
 
 	function memoryConfig() {
-		var config = window.consentGateConfig || {};
+		var config = window.caluconEmbedGateConfig || {};
 		var memory = config.memory === 'session' || config.memory === 'persistent' ? config.memory : 'off';
 		return {
 			memory: memory,
@@ -215,7 +215,7 @@
 	// Invoked after a provider script loads AND after each later activation:
 	// SDKs like Strava's embed.js only render the placeholders present when
 	// they run (PLAN.md §9.6). Sites can add hooks for custom providers via
-	// window.consentGateReadyHooks before or after this script loads.
+	// window.caluconEmbedGateReadyHooks before or after this script loads.
 	var readyHooks = {
 		strava: function () {
 			if ( window.__STRAVA_EMBED_BOOTSTRAP__ ) {
@@ -240,7 +240,7 @@
 	};
 
 	function runReadyHook( providerId ) {
-		var custom = window.consentGateReadyHooks || {};
+		var custom = window.caluconEmbedGateReadyHooks || {};
 		var hook = custom[ providerId ] || readyHooks[ providerId ];
 		if ( hook ) {
 			try {
@@ -291,7 +291,7 @@
 	}
 
 	function i18n( key, fallback ) {
-		var config = window.consentGateConfig || {};
+		var config = window.caluconEmbedGateConfig || {};
 		return ( config.i18n && config.i18n[ key ] ) || fallback;
 	}
 
@@ -666,7 +666,7 @@
 		}
 	}
 
-	window.consentGateBridge = {
+	window.caluconEmbedGateBridge = {
 		each: bridgeEach,
 		grant: bridgeGrant,
 		grantAll: function () {

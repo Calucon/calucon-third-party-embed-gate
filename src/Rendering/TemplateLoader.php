@@ -4,17 +4,17 @@
  *
  * WordPress-free: the locator (locate_template in production) is injected.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Rendering;
+namespace CaluconEmbedGate\Rendering;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Resolves and renders {theme}/consent-gate/placeholder.php when a theme
+ * Resolves and renders {theme}/calucon-embed-gate/placeholder.php when a theme
  * ships one. The variables passed to the template are documented at the top
  * of the plugin's own templates/placeholder.php, and the §5.1 markup
  * contract is the documented minimum a custom template must satisfy.
@@ -26,7 +26,7 @@ final class TemplateLoader {
 
 	/**
 	 * @param callable|null $locator fn( string $relative ): string — maps
-	 *                               'consent-gate/placeholder.php' to a theme
+	 *                               'calucon-embed-gate/placeholder.php' to a theme
 	 *                               file, '' when the theme has none.
 	 */
 	public function __construct( ?callable $locator = null ) {
@@ -39,7 +39,7 @@ final class TemplateLoader {
 	 * @return string Absolute path of the theme override, '' when none.
 	 */
 	public function placeholder_template(): string {
-		$path = (string) call_user_func( $this->locator, 'consent-gate/placeholder.php' );
+		$path = (string) call_user_func( $this->locator, 'calucon-embed-gate/placeholder.php' );
 		return ( '' !== $path && is_file( $path ) ) ? $path : '';
 	}
 

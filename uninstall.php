@@ -8,7 +8,7 @@
  * uninstall (§9.11). The plugin writes no postmeta, no transients and no
  * user meta, so there is nothing else to clean up.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
@@ -21,10 +21,10 @@ if ( is_multisite() ) {
 			'fields' => 'ids',
 			'number' => 0,
 		)
-	) as $consent_gate_site_id ) {
-		delete_blog_option( $consent_gate_site_id, 'consent_gate_options' );
+	) as $calucon_embed_gate_site_id ) {
+		delete_blog_option( $calucon_embed_gate_site_id, 'calucon_embed_gate_options' );
 	}
-	unset( $consent_gate_site_id );
+	unset( $calucon_embed_gate_site_id );
 } else {
-	delete_option( 'consent_gate_options' );
+	delete_option( 'calucon_embed_gate_options' );
 }

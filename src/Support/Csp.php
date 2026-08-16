@@ -2,10 +2,10 @@
 /**
  * CSP snippet generator (PLAN.md §9.13). WordPress-free pure logic.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Support;
+namespace CaluconEmbedGate\Support;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

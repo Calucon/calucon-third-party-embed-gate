@@ -4,7 +4,7 @@
  * front end.
  */
 
-.block-editor-block-list__block[data-consent-gate] {
+.block-editor-block-list__block[data-calucon-embed-gate] {
 	outline: 1px dashed currentColor;
 	outline-offset: 2px;
 	position: relative;
@@ -23,10 +23,10 @@
 	margin: 8px 0 0;
 }
 
-.block-editor-block-list__block[data-consent-gate]::before {
+.block-editor-block-list__block[data-calucon-embed-gate]::before {
 	/* The value is machine-oriented ("always"/"never"); the prefix names
 	   the feature. Informational, editor-only. */
-	content: "Calucon Third-Party Embed Gate: " attr( data-consent-gate );
+	content: "Calucon Third-Party Embed Gate: " attr( data-calucon-embed-gate );
 	position: absolute;
 	top: -1.5em;
 	right: 0;

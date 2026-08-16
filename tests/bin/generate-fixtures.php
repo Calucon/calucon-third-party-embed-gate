@@ -9,7 +9,7 @@
  * file that merely records a bug makes the bug permanent. Pass-through
  * fixtures are hand-copied from input.html, never generated.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require dirname( __DIR__, 2 ) . '/vendor/autoload.php';
 
-use ConsentGate\Tests\Support\PipelineFactory;
+use CaluconEmbedGate\Tests\Support\PipelineFactory;
 
 $force = in_array( '--force', $argv, true );
 $root  = dirname( __DIR__ ) . '/Fixtures';

@@ -4,19 +4,19 @@
  * minus the WordPress bridges. Shared by unit tests, fixture generation
  * and the E2E test server.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Support;
+namespace CaluconEmbedGate\Tests\Support;
 
-use ConsentGate\Detection\EmbedObjectRule;
-use ConsentGate\Detection\HostMatcher;
-use ConsentGate\Detection\HtmlScanner;
-use ConsentGate\Detection\IframeRule;
-use ConsentGate\Detection\ScriptRule;
-use ConsentGate\Providers\Builtin\Descriptors;
-use ConsentGate\Providers\Registry;
-use ConsentGate\Rendering\PlaceholderRenderer;
+use CaluconEmbedGate\Detection\EmbedObjectRule;
+use CaluconEmbedGate\Detection\HostMatcher;
+use CaluconEmbedGate\Detection\HtmlScanner;
+use CaluconEmbedGate\Detection\IframeRule;
+use CaluconEmbedGate\Detection\ScriptRule;
+use CaluconEmbedGate\Providers\Builtin\Descriptors;
+use CaluconEmbedGate\Providers\Registry;
+use CaluconEmbedGate\Rendering\PlaceholderRenderer;
 
 final class PipelineFactory {
 

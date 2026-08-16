@@ -7,7 +7,7 @@
  * IframeRule) plus the plugin's actual front-end assets — no WordPress, but
  * nothing mocked on the path the product claim depends on.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
 declare( strict_types=1 );
@@ -24,8 +24,8 @@ $root = dirname( __DIR__, 3 );
 spl_autoload_register(
 	static function ( $class ) use ( $root ) {
 		$prefixes = array(
-			'ConsentGate\\Tests\\' => $root . '/tests/',
-			'ConsentGate\\'        => $root . '/src/',
+			'CaluconEmbedGate\\Tests\\' => $root . '/tests/',
+			'CaluconEmbedGate\\'        => $root . '/src/',
 		);
 		foreach ( $prefixes as $prefix => $dir ) {
 			if ( 0 === strpos( $class, $prefix ) ) {
@@ -39,7 +39,7 @@ spl_autoload_register(
 	}
 );
 
-use ConsentGate\Tests\Support\PipelineFactory;
+use CaluconEmbedGate\Tests\Support\PipelineFactory;
 
 $uri = (string) parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
 
@@ -143,7 +143,7 @@ if ( '/page/memory' === $uri ) {
 	cg_e2e_page(
 		$content,
 		'',
-		'window.consentGateConfig = {"memory":"session","scope":"provider","durationDays":180};'
+		'window.caluconEmbedGateConfig = {"memory":"session","scope":"provider","durationDays":180};'
 	);
 	return true;
 }
@@ -208,7 +208,7 @@ if ( '/page/shapes' === $uri ) {
 if ( '/page/poster' === $uri ) {
 	// Owner-supplied poster (§5.4): the integration layer resolved a
 	// media-library image to a site-origin URL and put it in the context —
-	// exactly what RenderBlock does for the consentGatePoster attribute.
+	// exactly what RenderBlock does for the caluconEmbedGatePoster attribute.
 	$content = implode(
 		"\n",
 		array(
@@ -333,7 +333,7 @@ if ( 0 === strpos( $uri, '/page/cmp-' ) ) {
 		cg_e2e_page(
 			$cmp_content,
 			'',
-			'window.consentGateConfig = ' . json_encode( array( 'cmp' => $cmp_page['config'] ) ) . ';',
+			'window.caluconEmbedGateConfig = ' . json_encode( array( 'cmp' => $cmp_page['config'] ) ) . ';',
 			array(),
 			( '' !== $cmp_page['stub'] ? '<script>' . $cmp_page['stub'] . '</script>' : '' )
 				. '<script src="/assets/cmp-bridge.js"></script>'

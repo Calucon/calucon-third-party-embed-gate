@@ -6,10 +6,10 @@
  * public contract from PLAN.md §5.1 — themes, tests and CMP bridges depend
  * on it. Change it only with a version bump.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Rendering;
+namespace CaluconEmbedGate\Rendering;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -76,10 +76,10 @@ final class PlaceholderRenderer {
 	/** @var callable Translation function; identity outside WordPress. */
 	private $translate;
 
-	/** @var callable|null Bridge for consent_gate_placeholder_html. */
+	/** @var callable|null Bridge for calucon_embed_gate_placeholder_html. */
 	private $filter_html;
 
-	/** @var callable|null Bridge for consent_gate_payload. */
+	/** @var callable|null Bridge for calucon_embed_gate_payload. */
 	private $filter_payload;
 
 	/** @var TemplateLoader|null Theme override lookup (PLAN.md §7.4). */

@@ -1,11 +1,11 @@
 <?php
 /**
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Unit;
+namespace CaluconEmbedGate\Tests\Unit;
 
-use ConsentGate\Detection\HostMatcher;
+use CaluconEmbedGate\Detection\HostMatcher;
 use PHPUnit\Framework\TestCase;
 
 final class HostMatcherTest extends TestCase {

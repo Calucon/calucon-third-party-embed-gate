@@ -6,10 +6,10 @@
  * callable is injected, identity outside WordPress. Provider names are
  * proper nouns and are never translated (§9.15).
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Providers\Builtin;
+namespace CaluconEmbedGate\Providers\Builtin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

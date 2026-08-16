@@ -5,10 +5,10 @@
  * WordPress-free by design (PLAN.md §2.2): the own-host list is injected by
  * the integration layer, which is where home_url()/site_url() live.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Detection;
+namespace CaluconEmbedGate\Detection;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -48,7 +48,7 @@ final class HostMatcher {
 	 * @param string[]      $own_hosts       Hosts that count as "ours". Entries
 	 *                                       starting with '*.' match any subdomain.
 	 * @param bool          $www_equivalence On by default (PLAN.md §3.4).
-	 * @param callable|null $is_own_filter   Bridge for the consent_gate_is_own_host filter.
+	 * @param callable|null $is_own_filter   Bridge for the calucon_embed_gate_is_own_host filter.
 	 */
 	public function __construct( array $own_hosts, bool $www_equivalence = true, ?callable $is_own_filter = null ) {
 		$this->www_equivalence = $www_equivalence;

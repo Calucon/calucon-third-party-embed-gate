@@ -25,17 +25,17 @@
 
 	wp.hooks.addFilter(
 		'blocks.registerBlockType',
-		'consent-gate/attribute',
+		'calucon-embed-gate/attribute',
 		function ( settings, name ) {
 			if ( ! isGatedBlock( name ) ) {
 				return settings;
 			}
 			settings.attributes = Object.assign( {}, settings.attributes, {
-				consentGate: { type: 'string', default: '' },
+				caluconEmbedGate: { type: 'string', default: '' },
 				// Owner-supplied poster (§5.4): the ID is what the server
 				// renders from; the URL exists only for the inspector preview.
-				consentGatePoster: { type: 'number', default: 0 },
-				consentGatePosterUrl: { type: 'string', default: '' }
+				caluconEmbedGatePoster: { type: 'number', default: 0 },
+				caluconEmbedGatePosterUrl: { type: 'string', default: '' }
 			} );
 			return settings;
 		}
@@ -43,14 +43,14 @@
 
 	wp.hooks.addFilter(
 		'editor.BlockEdit',
-		'consent-gate/inspector',
+		'calucon-embed-gate/inspector',
 		wp.compose.createHigherOrderComponent( function ( BlockEdit ) {
 			return function ( props ) {
 				if ( ! isGatedBlock( props.name ) ) {
 					return el( BlockEdit, props );
 				}
-				var value = props.attributes.consentGate || '';
-				var posterUrl = props.attributes.consentGatePosterUrl || '';
+				var value = props.attributes.caluconEmbedGate || '';
+				var posterUrl = props.attributes.caluconEmbedGatePosterUrl || '';
 
 				// Poster picker (§5.4, owner-supplied variant): images come
 				// from the media library so the placeholder stays site-origin.
@@ -59,12 +59,12 @@
 					null,
 					el( wp.blockEditor.MediaUpload, {
 						allowedTypes: [ 'image' ],
-						value: props.attributes.consentGatePoster || 0,
+						value: props.attributes.caluconEmbedGatePoster || 0,
 						onSelect: function ( media ) {
 							var large = media && media.sizes && media.sizes.large ? media.sizes.large.url : '';
 							props.setAttributes( {
-								consentGatePoster: media && media.id ? media.id : 0,
-								consentGatePosterUrl: large || ( media && media.url ? media.url : '' )
+								caluconEmbedGatePoster: media && media.id ? media.id : 0,
+								caluconEmbedGatePosterUrl: large || ( media && media.url ? media.url : '' )
 							} );
 						},
 						render: function ( obj ) {
@@ -86,7 +86,7 @@
 									variant: 'link',
 									isDestructive: true,
 									onClick: function () {
-										props.setAttributes( { consentGatePoster: 0, consentGatePosterUrl: '' } );
+										props.setAttributes( { caluconEmbedGatePoster: 0, caluconEmbedGatePosterUrl: '' } );
 									}
 								}, __( 'Remove poster image', 'calucon-third-party-embed-gate' ) ) : null,
 								el(
@@ -118,7 +118,7 @@
 									{ value: 'never', label: __( 'Never gate', 'calucon-third-party-embed-gate' ) }
 								],
 								onChange: function ( next ) {
-									props.setAttributes( { consentGate: next } );
+									props.setAttributes( { caluconEmbedGate: next } );
 								},
 								help: value === 'never'
 									? __( 'This block’s embeds will load immediately for every visitor, without a consent click.', 'calucon-third-party-embed-gate' )
@@ -129,30 +129,30 @@
 					)
 				);
 			};
-		}, 'withConsentGateInspector' )
+		}, 'withCaluconEmbedGateInspector' )
 	);
 
 	// Editor-canvas badge (§7.5): the override is otherwise invisible, and
 	// an editor who set "never" months ago deserves to see it at a glance.
 	wp.hooks.addFilter(
 		'editor.BlockListBlock',
-		'consent-gate/badge',
+		'calucon-embed-gate/badge',
 		wp.compose.createHigherOrderComponent( function ( BlockListBlock ) {
 			return function ( props ) {
-				if ( ! isGatedBlock( props.name ) || ! props.attributes.consentGate ) {
+				if ( ! isGatedBlock( props.name ) || ! props.attributes.caluconEmbedGate ) {
 					return el( BlockListBlock, props );
 				}
 				var wrapperProps = Object.assign( {}, props.wrapperProps, {
-					'data-consent-gate': props.attributes.consentGate
+					'data-calucon-embed-gate': props.attributes.caluconEmbedGate
 				} );
 				return el( BlockListBlock, Object.assign( {}, props, { wrapperProps: wrapperProps } ) );
 			};
-		}, 'withConsentGateBadge' )
+		}, 'withCaluconEmbedGateBadge' )
 	);
 
 	// The withdrawal control as a block (§6.2): same server-side renderer as
-	// the [consent_gate_withdraw] shortcode.
-	wp.blocks.registerBlockType( 'consent-gate/withdraw', {
+	// the [calucon_embed_gate_withdraw] shortcode.
+	var withdrawBlock = {
 		title: __( 'Withdraw embed consents', 'calucon-third-party-embed-gate' ),
 		icon: 'unlock',
 		category: 'widgets',
@@ -189,5 +189,7 @@
 		save: function () {
 			return null; // Dynamic block: rendered server-side (invariant 2).
 		}
-	} );
+	};
+
+	wp.blocks.registerBlockType( 'calucon-embed-gate/withdraw', withdrawBlock );
 }( window.wp ) );

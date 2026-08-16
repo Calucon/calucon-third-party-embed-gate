@@ -9,10 +9,10 @@
  * tested list; an unknown or untested platform keeps the fail-closed
  * default (gating stands regardless of its choices).
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Cmp;
+namespace CaluconEmbedGate\Cmp;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

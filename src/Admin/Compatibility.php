@@ -4,16 +4,16 @@
  * detected CMP, cache plugin and page builder, and what Calucon Third-Party Embed Gate
  * decided to do about each. Read-only.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Admin;
+namespace CaluconEmbedGate\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Cmp\Detector;
+use CaluconEmbedGate\Cmp\Detector;
 
 /**
  * Detection is by constants/classes the plugins themselves define — cheap,

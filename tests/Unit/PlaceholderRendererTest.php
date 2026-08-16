@@ -1,12 +1,12 @@
 <?php
 /**
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Unit;
+namespace CaluconEmbedGate\Tests\Unit;
 
-use ConsentGate\Providers\Provider;
-use ConsentGate\Rendering\PlaceholderRenderer;
+use CaluconEmbedGate\Providers\Provider;
+use CaluconEmbedGate\Rendering\PlaceholderRenderer;
 use PHPUnit\Framework\TestCase;
 
 final class PlaceholderRendererTest extends TestCase {

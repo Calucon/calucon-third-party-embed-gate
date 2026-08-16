@@ -8,16 +8,16 @@
  * blocks pass through render_block; on classic themes these filters are
  * the only route.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Integration;
+namespace CaluconEmbedGate\Integration;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Plugin;
+use CaluconEmbedGate\Plugin;
 
 /**
  * Hooks term_description, get_the_archive_description and

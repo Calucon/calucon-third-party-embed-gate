@@ -30,7 +30,7 @@
 		var stage = document.getElementById( 'cg-preview-stage' );
 		var sample = stage ? stage.querySelector( '.cg-embed' ) : null;
 		var report = document.getElementById( 'cg-contrast-report' );
-		var i18n = window.consentGateAdminI18n || {};
+		var i18n = window.caluconEmbedGateAdminI18n || {};
 		var button = sample ? sample.querySelector( '.cg-embed__button' ) : null;
 		var note = sample ? sample.querySelector( '.cg-embed__note' ) : null;
 		var link = sample ? sample.querySelector( '.cg-embed__fallback a' ) : null;

@@ -6,12 +6,12 @@
  * that "works" but reformats. Every case additionally asserts idempotency —
  * gated output re-fed through the rule must come back unchanged.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Unit;
+namespace CaluconEmbedGate\Tests\Unit;
 
-use ConsentGate\Tests\Support\PipelineFactory;
+use CaluconEmbedGate\Tests\Support\PipelineFactory;
 use PHPUnit\Framework\TestCase;
 
 final class FixtureTest extends TestCase {

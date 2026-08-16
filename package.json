@@ -1,5 +1,5 @@
 {
-    "name": "consent-gate-e2e",
+    "name": "calucon-embed-gate-e2e",
     "private": true,
     "devDependencies": {
         "@axe-core/playwright": "^4.12.1",

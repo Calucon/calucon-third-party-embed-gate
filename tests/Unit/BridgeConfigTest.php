@@ -4,13 +4,13 @@
  * not a byte of CMP code reaches the page — unless the owner enabled the
  * bridge AND a platform from the tested list is actually installed.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Unit;
+namespace CaluconEmbedGate\Tests\Unit;
 
-use ConsentGate\Cmp\BridgeConfig;
-use ConsentGate\Support\Options;
+use CaluconEmbedGate\Cmp\BridgeConfig;
+use CaluconEmbedGate\Support\Options;
 use PHPUnit\Framework\TestCase;
 
 final class BridgeConfigTest extends TestCase {

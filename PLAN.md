@@ -147,8 +147,8 @@ flowchart TD
 ### 2.2 Module map
 
 ```
-consent-gate/
-├── consent-gate.php                 Plugin header + bootstrap only
+calucon-embed-gate/
+├── calucon-embed-gate.php                 Plugin header + bootstrap only
 ├── uninstall.php
 ├── src/
 │   ├── Plugin.php                   Wiring; no logic
@@ -339,7 +339,7 @@ returning an array, so a site can add one from `functions.php` in ten lines.
 ```php
 [
     'id'            => 'youtube',
-    'label'         => __( 'YouTube', 'consent-gate' ),
+    'label'         => __( 'YouTube', 'calucon-embed-gate' ),
     'match'         => [
         'iframe_host' => [ 'youtube.com', 'www.youtube.com',
                            'youtube-nocookie.com', 'www.youtube-nocookie.com',
@@ -354,8 +354,8 @@ returning an array, so a site can add one from `functions.php` in ten lines.
     'fallback'      => 'https://www.youtube.com/watch?v={id}',
     'privacy_url'   => 'https://policies.google.com/privacy',
     'controller'    => 'Google Ireland Limited, Dublin, Ireland',
-    'note'          => __( 'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.', 'consent-gate' ),
-    'action'        => __( 'Load video from YouTube', 'consent-gate' ),
+    'note'          => __( 'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.', 'calucon-embed-gate' ),
+    'action'        => __( 'Load video from YouTube', 'calucon-embed-gate' ),
     'thumbnail'     => 'https://i.ytimg.com/vi/{id}/maxresdefault.jpg',
     'aspect'        => '16:9',
     'iframe_allow'  => 'accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share',
@@ -477,7 +477,7 @@ origin.** Design notes:
 
 - Fetch at save time (`save_post`, or a scheduled backfill), never during a
   visitor's request.
-- Store as a real attachment or in `uploads/consent-gate/` with a content hash
+- Store as a real attachment or in `uploads/calucon-embed-gate/` with a content hash
   filename; regenerate on demand via WP-Cron.
 - Honour `WP_Filesystem`; handle read-only filesystems by degrading to no
   thumbnail rather than fataling.
@@ -575,23 +575,23 @@ Publish these as documented API from 1.0 and treat them as semver-bound.
 
 ```php
 // Providers
-apply_filters( 'consent_gate_providers', array $providers );
-apply_filters( 'consent_gate_provider_for_url', ?array $provider, string $url );
+apply_filters( 'calucon_embed_gate_providers', array $providers );
+apply_filters( 'calucon_embed_gate_provider_for_url', ?array $provider, string $url );
 
 // Decisions
-apply_filters( 'consent_gate_should_gate', bool $gate, string $url, array $ctx );
-apply_filters( 'consent_gate_is_own_host', bool $own, string $host );
+apply_filters( 'calucon_embed_gate_should_gate', bool $gate, string $url, array $ctx );
+apply_filters( 'calucon_embed_gate_is_own_host', bool $own, string $host );
 
 // Rendering
-apply_filters( 'consent_gate_placeholder_html', string $html, array $provider, array $ctx );
-apply_filters( 'consent_gate_note_text',   string $note,   array $provider, array $ctx );
-apply_filters( 'consent_gate_action_text', string $action, array $provider, array $ctx );
-apply_filters( 'consent_gate_fallback_url', string $url,   array $provider, array $ctx );
-apply_filters( 'consent_gate_payload',      array  $payload, array $provider );
+apply_filters( 'calucon_embed_gate_placeholder_html', string $html, array $provider, array $ctx );
+apply_filters( 'calucon_embed_gate_note_text',   string $note,   array $provider, array $ctx );
+apply_filters( 'calucon_embed_gate_action_text', string $action, array $provider, array $ctx );
+apply_filters( 'calucon_embed_gate_fallback_url', string $url,   array $provider, array $ctx );
+apply_filters( 'calucon_embed_gate_payload',      array  $payload, array $provider );
 
 // Lifecycle
-do_action( 'consent_gate_embed_gated',   array $provider, array $ctx );
-do_action( 'consent_gate_before_render', array $provider );
+do_action( 'calucon_embed_gate_embed_gated',   array $provider, array $ctx );
+do_action( 'calucon_embed_gate_before_render', array $provider );
 ```
 
 `$ctx` carries post ID, block name, and the integration that matched — enough
@@ -629,7 +629,7 @@ renders `#0000EE` on a dark panel — measured 1.3:1, a WCAG 1.4.3 failure.
 ### 7.4 Template overriding
 
 Standard WordPress convention: the plugin looks for
-`{theme}/consent-gate/placeholder.php` before its own
+`{theme}/calucon-embed-gate/placeholder.php` before its own
 `templates/placeholder.php`, via `locate_template()`. Pass the provider
 descriptor and context as explicit variables, document them at the top of the
 shipped template, and keep the markup contract in §5.1 as the documented
@@ -1078,13 +1078,13 @@ WordPress.org requirements that bear on design decisions:
 - `readme.txt` with tested-up-to kept current.
 - Sanitise, escape, and nonce everything in the admin — the review team checks.
 - Unique prefix on every global function, class, option and hook. Pick it early
-  and never change it: `consent_gate_` / `ConsentGate\` / `cg-` for CSS.
+  and never change it: `calucon_embed_gate_` / `CaluconEmbedGate\` / `cg-` for CSS.
 
-**Naming.** `consent-gate` is used throughout this document as a working name.
+**Naming.** `calucon-embed-gate` is used throughout this document as a working name.
 Final name (chosen during the WordPress.org review, which flagged the working
 name as generic and CMP-adjacent): **Calucon Third-Party Embed Gate**, slug
-`calucon-third-party-embed-gate`. Internal identifiers (`consent_gate_` /
-`ConsentGate\` / `cg-`) deliberately keep the working name — see the prefix
+`calucon-third-party-embed-gate`. Internal identifiers (`calucon_embed_gate_` /
+`CaluconEmbedGate\` / `cg-`) deliberately keep the working name — see the prefix
 rule above: pick it early and never change it.
 Check slug availability before writing it into a hundred symbols. Something
 descriptive helps discovery — the plugin's job is best summarised as

@@ -8,16 +8,16 @@
  * unfiltered_html — or injected by an oEmbed-in-comments plugin hooking
  * WP_Embed::autoembed onto comment_text — loads ungated without this hook.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Integration;
+namespace CaluconEmbedGate\Integration;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Plugin;
+use CaluconEmbedGate\Plugin;
 
 /**
  * Hooks comment_text late, after core formatting and autoembed-style

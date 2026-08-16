@@ -7,7 +7,7 @@
  * under the unit/fixture suite without booting WordPress (PLAN.md §2.2). The
  * value is never read — only its presence marks "loaded from within the app".
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

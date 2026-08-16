@@ -2,16 +2,16 @@
 /**
  * render_block integration: block themes and Gutenberg content.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Integration;
+namespace CaluconEmbedGate\Integration;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Plugin;
+use CaluconEmbedGate\Plugin;
 
 /**
  * Hooks render_block. Fires for nested blocks and again for their parent,
@@ -35,7 +35,7 @@ final class RenderBlock {
 		add_filter(
 			'render_block',
 			array( $this, 'filter' ),
-			(int) apply_filters( 'consent_gate_render_block_priority', 10 ),
+			(int) apply_filters( 'calucon_embed_gate_render_block_priority', 10 ),
 			2
 		);
 	}
@@ -57,7 +57,7 @@ final class RenderBlock {
 		// editor made an explicit call); 'always' forces gating past the
 		// should_gate filter and disabled providers.
 		$attrs    = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : array();
-		$override = isset( $attrs['consentGate'] ) && is_string( $attrs['consentGate'] ) ? $attrs['consentGate'] : '';
+		$override = isset( $attrs['caluconEmbedGate'] ) && is_string( $attrs['caluconEmbedGate'] ) ? $attrs['caluconEmbedGate'] : '';
 		if ( 'never' === $override ) {
 			return $content;
 		}
@@ -72,8 +72,8 @@ final class RenderBlock {
 		// Owner-supplied poster (§5.4): stored as an attachment ID by the
 		// editor integration, resolved and own-host-validated here — the
 		// renderer only ever sees a vetted site-origin URL.
-		if ( isset( $attrs['consentGatePoster'] ) && is_numeric( $attrs['consentGatePoster'] ) ) {
-			$poster = $this->plugin->poster_url( (int) $attrs['consentGatePoster'] );
+		if ( isset( $attrs['caluconEmbedGatePoster'] ) && is_numeric( $attrs['caluconEmbedGatePoster'] ) ) {
+			$poster = $this->plugin->poster_url( (int) $attrs['caluconEmbedGatePoster'] );
 			if ( '' !== $poster ) {
 				$ctx['poster'] = $poster;
 			}

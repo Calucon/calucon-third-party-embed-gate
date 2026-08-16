@@ -5,7 +5,7 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.8.1
+Stable tag: 0.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,7 +31,7 @@ See it in action on the [live demo](https://calucon.de/third-party-embed-gate-sh
 * Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; a plain fallback link to the content stays for feed readers.
 * Per-block override in the editor: gate a specific embed always, never, or per the site default.
 * Optional poster image behind the consent panel, chosen per embed from your media library — served from your own site, never fetched from the provider.
-* Optional, off by default: remember consent in the visitor's browser (per embed, per provider, or for all embeds; session or with an expiry), with a withdrawal control via the `[consent_gate_withdraw]` shortcode.
+* Optional, off by default: remember consent in the visitor's browser (per embed, per provider, or for all embeds; session or with an expiry), with a withdrawal control via the `[calucon_embed_gate_withdraw]` shortcode.
 * Optional, off by default: a bridge to your consent platform. When a tested platform (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner) reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state; with an untested platform, or when the platform gives no answer, gating stands unchanged.
 * Accessible placeholder: named group, a real button, visible focus, sufficient contrast, focus kept after activation. Zero axe-core violations in CI.
 * Never phones home. The plugin makes no outbound request from your server or your visitors' browsers, on any path, for any reason.
@@ -43,10 +43,10 @@ Calucon Third-Party Embed Gate is a technical measure. It is not a consent manag
 **Customisation**
 
 * Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): per-provider on/off, privacy-variant on/off, custom note and button text; own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets, corner styles and colour pickers with a live preview and an automatic readability check — no CSS needed; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a read-only Status scan of recent content.
-* Theme override: copy `templates/placeholder.php` to `{your-theme}/consent-gate/placeholder.php`.
+* Theme override: copy `templates/placeholder.php` to `{your-theme}/calucon-embed-gate/placeholder.php`.
 * CSS custom properties on `.cg-embed` (`--cg-bg`, `--cg-fg`, `--cg-accent`, …) for restyling without specificity wars.
-* WP-CLI: `wp consent-gate scan` (is every embed gated? `--format=json` for CI and automation) and `wp consent-gate providers`; the shipped `docs/customizing.md` is a self-contained customization reference for developers and AI agents.
-* Documented filters: `consent_gate_providers`, `consent_gate_provider_for_url`, `consent_gate_should_gate`, `consent_gate_is_own_host`, `consent_gate_own_hosts`, `consent_gate_placeholder_html`, `consent_gate_payload`, `consent_gate_note_text`, `consent_gate_action_text`, `consent_gate_fallback_url`, plus the `consent_gate_before_render` and `consent_gate_embed_gated` actions. Adding a provider is a ten-line filter in `functions.php`.
+* WP-CLI: `wp calucon-embed-gate scan` (is every embed gated? `--format=json` for CI and automation) and `wp calucon-embed-gate providers`; the shipped `docs/customizing.md` is a self-contained customization reference for developers and AI agents.
+* Documented filters: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, plus the `calucon_embed_gate_before_render` and `calucon_embed_gate_embed_gated` actions. Adding a provider is a ten-line filter in `functions.php`.
 
 == Installation ==
 
@@ -56,7 +56,7 @@ Calucon Third-Party Embed Gate works the moment it is activated — it gates thi
 2. That is all that is required. Your existing embeds are now replaced with a click-to-load placeholder on the front end, and nothing third-party is contacted before the visitor clicks. Editors keep seeing the normal embed in the block editor, so nothing changes about how you write posts.
 3. Optional: open **Settings → Calucon Third-Party Embed Gate** to adjust appearance, per-provider behaviour, detection rules, consent memory and the optional consent-platform bridge. None of it is needed to be protected — the defaults gate everything third-party.
 
-If you turn on consent memory and want to offer visitors a way to take it back, add the "Withdraw embed consents" block, or place the `[consent_gate_withdraw]` shortcode on your privacy-policy page.
+If you turn on consent memory and want to offer visitors a way to take it back, add the "Withdraw embed consents" block, or place the `[calucon_embed_gate_withdraw]` shortcode on your privacy-policy page.
 
 **Requirements:** WordPress 5.9 or newer and PHP 7.4 or newer. No build step, no runtime dependencies, and no outbound request from your site on any path.
 
@@ -110,10 +110,14 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 
 == Changelog ==
 
+= 0.9.0 =
+* Before the WordPress.org listing goes live — while no installed sites exist to break — the plugin's internal identifiers were aligned with its new name, with no legacy aliases: filters and actions are `calucon_embed_gate_*`, the shortcode is `[calucon_embed_gate_withdraw]`, the block is `calucon-embed-gate/withdraw`, the WP-CLI namespace is `wp calucon-embed-gate`, the theme template override directory is `{theme}/calucon-embed-gate/`, and the settings option was renamed. If you somehow installed a pre-release build, update those references and re-save the settings.
+* The `.cg-embed` CSS classes, `--cg-*` custom properties and `data-cg-*` attributes are unchanged.
+
 = 0.8.1 =
 * Renamed the plugin's constants to match the plugin: CALUCON_EMBED_GATE_VERSION, _FILE and _DIR. The previous CONSENT_GATE_* names remain defined as aliases and will be removed no earlier than 0.9.0, in a release of their own.
 * Updated the plugin page and demo links to their new addresses.
-* Everything a site can depend on is unchanged: the consent_gate_* filters, the [consent_gate_withdraw] shortcode, the wp consent-gate CLI commands, the .cg-embed CSS classes and the theme template override path all keep their existing names. Nothing you have already set up needs changing.
+* Everything a site can depend on is unchanged: the calucon_embed_gate_* filters, the [calucon_embed_gate_withdraw] shortcode, the wp calucon-embed-gate CLI commands, the .cg-embed CSS classes and the theme template override path all keep their existing names. Nothing you have already set up needs changing.
 
 = 0.8.0 =
 * Renamed from "Consent Gate" to "Calucon Third-Party Embed Gate" (new slug `calucon-third-party-embed-gate`) during WordPress.org review, to make clear the plugin gates third-party embeds and is not a consent management platform. No functional change.
@@ -150,7 +154,7 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 * Theme placeholder templates receive the poster as a `$poster` variable; see docs/customizing.md.
 
 = 0.5.0 =
-* WP-CLI: `wp consent-gate scan` reports every embed in recent content and whether it is gated (`--format=json` for CI and automation); `wp consent-gate providers` lists providers as the gate resolves them. Both read-only, no outbound requests.
+* WP-CLI: `wp calucon-embed-gate scan` reports every embed in recent content and whether it is gated (`--format=json` for CI and automation); `wp calucon-embed-gate providers` lists providers as the gate resolves them. Both read-only, no outbound requests.
 * Ships `docs/customizing.md`: a self-contained reference for customizing the plugin from functions.php or WP-CLI — descriptor keys, filter examples, the template contract, and the invariants a customization must keep. Written to serve developers and AI coding agents alike.
 
 = 0.4.0 =

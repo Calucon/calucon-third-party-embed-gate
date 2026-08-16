@@ -12,16 +12,16 @@
  * - Skipped for non-HTML responses, feeds, REST, AJAX, embeds, sitemaps.
  * - Checks ob_get_level() and never assumes it owns the stack.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Integration;
+namespace CaluconEmbedGate\Integration;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Plugin;
+use CaluconEmbedGate\Plugin;
 
 /**
  * Whole-document gating for sites where content filters never fire.
@@ -173,15 +173,15 @@ final class OutputBuffer {
 	private function inject_assets( string $buffer ): string {
 		$version = rawurlencode( CALUCON_EMBED_GATE_VERSION );
 
-		if ( false === strpos( $buffer, 'id="consent-gate-css"' )
-			&& false === strpos( $buffer, "id='consent-gate-css'" ) ) {
+		if ( false === strpos( $buffer, 'id="calucon-embed-gate-css"' )
+			&& false === strpos( $buffer, "id='calucon-embed-gate-css'" ) ) {
 			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- this runs on shutdown, after wp_footer was rendered into the buffer; wp_enqueue_style() is a no-op here.
-			$css        = '<link rel="stylesheet" id="consent-gate-css" href="'
+			$css        = '<link rel="stylesheet" id="calucon-embed-gate-css" href="'
 				. esc_url( plugins_url( 'assets/css/gate.css', CALUCON_EMBED_GATE_FILE ) . '?ver=' . $version )
 				. '" media="all">';
 			$appearance = $this->plugin->appearance_css();
 			if ( '' !== $appearance ) {
-				$css .= '<style id="consent-gate-inline-css">' . $appearance . '</style>';
+				$css .= '<style id="calucon-embed-gate-inline-css">' . $appearance . '</style>';
 			}
 			$head = stripos( $buffer, '</head>' );
 			if ( false !== $head ) {
@@ -191,20 +191,20 @@ final class OutputBuffer {
 			}
 		}
 
-		if ( false === strpos( $buffer, 'id="consent-gate-js"' )
-			&& false === strpos( $buffer, "id='consent-gate-js'" ) ) {
+		if ( false === strpos( $buffer, 'id="calucon-embed-gate-js"' )
+			&& false === strpos( $buffer, "id='calucon-embed-gate-js'" ) ) {
 			$config = $this->plugin->inline_config_json();
 			$js     = '';
 			if ( null !== $config ) {
-				$js .= '<script id="consent-gate-js-before">window.consentGateConfig = ' . $config . ';</script>';
+				$js .= '<script id="calucon-embed-gate-js-before">window.caluconEmbedGateConfig = ' . $config . ';</script>';
 			}
 			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- this runs on shutdown, after wp_footer was rendered into the buffer; wp_enqueue_script() is a no-op here.
-			$js .= '<script id="consent-gate-js" src="'
+			$js .= '<script id="calucon-embed-gate-js" src="'
 				. esc_url( plugins_url( 'assets/js/gate.js', CALUCON_EMBED_GATE_FILE ) . '?ver=' . $version )
 				. '" defer></script>';
 			if ( null !== $this->plugin->cmp_bridge_config() ) {
 				// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- same shutdown constraint as gate.js above.
-				$js .= '<script id="consent-gate-cmp-js" src="'
+				$js .= '<script id="calucon-embed-gate-cmp-js" src="'
 					. esc_url( plugins_url( 'assets/js/cmp-bridge.js', CALUCON_EMBED_GATE_FILE ) . '?ver=' . $version )
 					. '" defer></script>';
 			}

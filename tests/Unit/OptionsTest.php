@@ -1,13 +1,13 @@
 <?php
 /**
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate\Tests\Unit;
+namespace CaluconEmbedGate\Tests\Unit;
 
-use ConsentGate\Providers\Builtin\Descriptors;
-use ConsentGate\Support\Options;
-use ConsentGate\Tests\Support\PipelineFactory;
+use CaluconEmbedGate\Providers\Builtin\Descriptors;
+use CaluconEmbedGate\Support\Options;
+use CaluconEmbedGate\Tests\Support\PipelineFactory;
 use PHPUnit\Framework\TestCase;
 
 final class OptionsTest extends TestCase {

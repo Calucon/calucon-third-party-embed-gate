@@ -6,44 +6,44 @@
  * globals may appear. Detection/, Providers/ and Rendering/ receive plain
  * callables bridging to WordPress filters and i18n.
  *
- * @package ConsentGate
+ * @package CaluconEmbedGate
  */
 
-namespace ConsentGate;
+namespace CaluconEmbedGate;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use ConsentGate\Admin\BlockEditor;
-use ConsentGate\Admin\SettingsPage;
-use ConsentGate\Cli\Commands as CliCommands;
-use ConsentGate\Cmp\BridgeConfig;
-use ConsentGate\Cmp\Detector;
-use ConsentGate\Detection\EmbedObjectRule;
-use ConsentGate\Detection\EmbedStripper;
-use ConsentGate\Detection\HostMatcher;
-use ConsentGate\Detection\HtmlScanner;
-use ConsentGate\Detection\IframeRule;
-use ConsentGate\Detection\ImageRule;
-use ConsentGate\Detection\ScriptRule;
-use ConsentGate\Integration\Comments;
-use ConsentGate\Integration\Descriptions;
-use ConsentGate\Integration\Excerpt;
-use ConsentGate\Integration\OutputBuffer;
-use ConsentGate\Integration\RenderBlock;
-use ConsentGate\Integration\ResourceHints as ResourceHintsIntegration;
-use ConsentGate\Integration\TheContent;
-use ConsentGate\Integration\Widgets;
-use ConsentGate\Integration\WithdrawShortcode;
-use ConsentGate\Providers\Builtin\Descriptors;
-use ConsentGate\Providers\Registry;
-use ConsentGate\Rendering\PlaceholderRenderer;
-use ConsentGate\Rendering\TemplateLoader;
-use ConsentGate\Support\CacheFlush;
-use ConsentGate\Support\ContentScan;
-use ConsentGate\Support\Options;
-use ConsentGate\Support\ResourceHints;
+use CaluconEmbedGate\Admin\BlockEditor;
+use CaluconEmbedGate\Admin\SettingsPage;
+use CaluconEmbedGate\Cli\Commands as CliCommands;
+use CaluconEmbedGate\Cmp\BridgeConfig;
+use CaluconEmbedGate\Cmp\Detector;
+use CaluconEmbedGate\Detection\EmbedObjectRule;
+use CaluconEmbedGate\Detection\EmbedStripper;
+use CaluconEmbedGate\Detection\HostMatcher;
+use CaluconEmbedGate\Detection\HtmlScanner;
+use CaluconEmbedGate\Detection\IframeRule;
+use CaluconEmbedGate\Detection\ImageRule;
+use CaluconEmbedGate\Detection\ScriptRule;
+use CaluconEmbedGate\Integration\Comments;
+use CaluconEmbedGate\Integration\Descriptions;
+use CaluconEmbedGate\Integration\Excerpt;
+use CaluconEmbedGate\Integration\OutputBuffer;
+use CaluconEmbedGate\Integration\RenderBlock;
+use CaluconEmbedGate\Integration\ResourceHints as ResourceHintsIntegration;
+use CaluconEmbedGate\Integration\TheContent;
+use CaluconEmbedGate\Integration\Widgets;
+use CaluconEmbedGate\Integration\WithdrawShortcode;
+use CaluconEmbedGate\Providers\Builtin\Descriptors;
+use CaluconEmbedGate\Providers\Registry;
+use CaluconEmbedGate\Rendering\PlaceholderRenderer;
+use CaluconEmbedGate\Rendering\TemplateLoader;
+use CaluconEmbedGate\Support\CacheFlush;
+use CaluconEmbedGate\Support\ContentScan;
+use CaluconEmbedGate\Support\Options;
+use CaluconEmbedGate\Support\ResourceHints;
 
 /**
  * Builds the pipeline and registers the integrations.
@@ -157,20 +157,18 @@ final class Plugin {
 		// Read-only inspection for shells, CI and AI agents (docs/customizing.md):
 		// the Status screen's answers without wp-admin.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			\WP_CLI::add_command(
-				'consent-gate',
-				new CliCommands(
-					function (): array {
-						return $this->providers();
-					},
-					function (): ContentScan {
-						return $this->content_scanner();
-					},
-					function ( string $content ): string {
-						return $this->render_ungated( $content );
-					}
-				)
+			$cli = new CliCommands(
+				function (): array {
+					return $this->providers();
+				},
+				function (): ContentScan {
+					return $this->content_scanner();
+				},
+				function ( string $content ): string {
+					return $this->render_ungated( $content );
+				}
 			);
+			\WP_CLI::add_command( 'calucon-embed-gate', $cli );
 		}
 
 		if ( $this->options['detection']['output_buffer'] ) {
@@ -213,7 +211,7 @@ final class Plugin {
 	private function providers(): array {
 		if ( null === $this->providers_cache ) {
 			$this->providers_cache = (array) apply_filters(
-				'consent_gate_providers',
+				'calucon_embed_gate_providers',
 				Options::apply_provider_overrides(
 					Descriptors::all( $this->translator() ),
 					$this->options
@@ -252,7 +250,7 @@ final class Plugin {
 
 		$hosts = new HostMatcher(
 			$this->own_hosts(),
-			(bool) apply_filters( 'consent_gate_www_equivalence', $this->options['detection']['www_equivalence'] ),
+			(bool) apply_filters( 'calucon_embed_gate_www_equivalence', $this->options['detection']['www_equivalence'] ),
 			static function ( bool $own, string $host ) use ( $always_gate ): bool {
 				// The always-gate list wins over every own-host rule: a
 				// subdomain of the site's own domain that serves trackers is
@@ -260,7 +258,7 @@ final class Plugin {
 				if ( HostMatcher::host_matches_list( $host, $always_gate ) ) {
 					return false;
 				}
-				return (bool) apply_filters( 'consent_gate_is_own_host', $own, $host );
+				return (bool) apply_filters( 'calucon_embed_gate_is_own_host', $own, $host );
 			}
 		);
 
@@ -270,17 +268,17 @@ final class Plugin {
 			$providers,
 			$translate,
 			static function ( array $provider, string $url, string $host ): array {
-				return (array) apply_filters( 'consent_gate_provider_for_url', $provider, $url, $host );
+				return (array) apply_filters( 'calucon_embed_gate_provider_for_url', $provider, $url, $host );
 			}
 		);
 
 		$renderer = new PlaceholderRenderer(
 			$translate,
 			static function ( string $html, array $provider, array $ctx ): string {
-				return (string) apply_filters( 'consent_gate_placeholder_html', $html, $provider, $ctx );
+				return (string) apply_filters( 'calucon_embed_gate_placeholder_html', $html, $provider, $ctx );
 			},
 			static function ( array $payload, array $provider ): array {
-				return (array) apply_filters( 'consent_gate_payload', $payload, $provider );
+				return (array) apply_filters( 'calucon_embed_gate_payload', $payload, $provider );
 			},
 			new TemplateLoader(
 				static function ( string $relative ): string {
@@ -289,27 +287,27 @@ final class Plugin {
 			),
 			array(
 				'before'   => static function ( array $provider, array $ctx ): void {
-					do_action( 'consent_gate_before_render', $provider, $ctx );
+					do_action( 'calucon_embed_gate_before_render', $provider, $ctx );
 				},
 				'note'     => static function ( string $note, array $provider, array $ctx ): string {
-					return (string) apply_filters( 'consent_gate_note_text', $note, $provider, $ctx );
+					return (string) apply_filters( 'calucon_embed_gate_note_text', $note, $provider, $ctx );
 				},
 				'action'   => static function ( string $action, array $provider, array $ctx ): string {
-					return (string) apply_filters( 'consent_gate_action_text', $action, $provider, $ctx );
+					return (string) apply_filters( 'calucon_embed_gate_action_text', $action, $provider, $ctx );
 				},
 				'fallback' => static function ( string $url, array $provider, array $ctx ): string {
-					return (string) apply_filters( 'consent_gate_fallback_url', $url, $provider, $ctx );
+					return (string) apply_filters( 'calucon_embed_gate_fallback_url', $url, $provider, $ctx );
 				},
 			)
 		);
 
 		$scanner     = new HtmlScanner();
 		$should_gate = static function ( bool $gate, string $url, array $ctx ): bool {
-			return (bool) apply_filters( 'consent_gate_should_gate', $gate, $url, $ctx );
+			return (bool) apply_filters( 'calucon_embed_gate_should_gate', $gate, $url, $ctx );
 		};
 		$on_gated    = function ( array $provider, array $ctx ): void {
 			$this->enqueue_assets();
-			do_action( 'consent_gate_embed_gated', $provider, $ctx );
+			do_action( 'calucon_embed_gate_embed_gated', $provider, $ctx );
 		};
 
 		$this->scanner           = $scanner;
@@ -544,14 +542,14 @@ final class Plugin {
 	 */
 	public function register_assets(): void {
 		wp_register_script(
-			'consent-gate',
+			'calucon-embed-gate',
 			plugins_url( 'assets/js/gate.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
 			CALUCON_EMBED_GATE_VERSION,
 			true
 		);
 		wp_register_style(
-			'consent-gate',
+			'calucon-embed-gate',
 			plugins_url( 'assets/css/gate.css', CALUCON_EMBED_GATE_FILE ),
 			array(),
 			CALUCON_EMBED_GATE_VERSION
@@ -559,9 +557,9 @@ final class Plugin {
 		// The §6.4 bridge is a separate file so the default build (bridge
 		// off) ships not a byte of CMP code to visitors.
 		wp_register_script(
-			'consent-gate-cmp',
+			'calucon-embed-gate-cmp',
 			plugins_url( 'assets/js/cmp-bridge.js', CALUCON_EMBED_GATE_FILE ),
-			array( 'consent-gate' ),
+			array( 'calucon-embed-gate' ),
 			CALUCON_EMBED_GATE_VERSION,
 			true
 		);
@@ -571,15 +569,15 @@ final class Plugin {
 		$config = $this->inline_config_json();
 		if ( null !== $config ) {
 			wp_add_inline_script(
-				'consent-gate',
-				'window.consentGateConfig = ' . $config . ';',
+				'calucon-embed-gate',
+				'window.caluconEmbedGateConfig = ' . $config . ';',
 				'before'
 			);
 		}
 
 		$appearance = $this->appearance_css();
 		if ( '' !== $appearance ) {
-			wp_add_inline_style( 'consent-gate', $appearance );
+			wp_add_inline_style( 'calucon-embed-gate', $appearance );
 		}
 	}
 
@@ -637,7 +635,7 @@ final class Plugin {
 	}
 
 	/**
-	 * The consentGateConfig JSON. Shared by the enqueue path and the
+	 * The caluconEmbedGateConfig JSON. Shared by the enqueue path and the
 	 * output-buffer path, which injects tags directly because it runs after
 	 * wp_footer. Always present: the loading/error announcements (§8) must
 	 * be translatable even when consent memory is off.
@@ -689,7 +687,7 @@ final class Plugin {
 	 */
 	public function cmp_bridge_config(): ?array {
 		$config = BridgeConfig::build( Detector::detected(), $this->options['cmp'] );
-		$config = apply_filters( 'consent_gate_cmp_config', $config, $this->options['cmp'] );
+		$config = apply_filters( 'calucon_embed_gate_cmp_config', $config, $this->options['cmp'] );
 		return is_array( $config ) ? $config : null;
 	}
 
@@ -697,10 +695,10 @@ final class Plugin {
 	 * @return void
 	 */
 	private function enqueue_assets(): void {
-		wp_enqueue_script( 'consent-gate' );
-		wp_enqueue_style( 'consent-gate' );
+		wp_enqueue_script( 'calucon-embed-gate' );
+		wp_enqueue_style( 'calucon-embed-gate' );
 		if ( null !== $this->cmp_bridge_config() ) {
-			wp_enqueue_script( 'consent-gate-cmp' );
+			wp_enqueue_script( 'calucon-embed-gate-cmp' );
 		}
 	}
 
@@ -708,7 +706,7 @@ final class Plugin {
 	 * Hosts that count as the site itself. Naive home_url() comparison is
 	 * wrong on real sites (PLAN.md §3.4): include site_url() for
 	 * WordPress-in-a-subdirectory, and let sites declare their CDN via the
-	 * consent_gate_own_hosts filter.
+	 * calucon_embed_gate_own_hosts filter.
 	 *
 	 * @return string[]
 	 */
@@ -733,7 +731,7 @@ final class Plugin {
 		// the embed passes through. Kept as a separate setting because the
 		// meaning differs — the owner is accepting those requests.
 		$extra = (array) apply_filters(
-			'consent_gate_own_hosts',
+			'calucon_embed_gate_own_hosts',
 			array_merge( $this->options['detection']['own_hosts'], $this->options['detection']['never_gate'] )
 		);
 		return array_values( array_unique( array_merge( $hosts, $extra ) ) );
