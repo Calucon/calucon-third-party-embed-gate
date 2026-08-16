@@ -114,16 +114,9 @@ final class Plugin {
 	private function __construct() {
 		$this->options = Options::sanitize( get_option( Options::OPTION, Options::defaults() ) );
 
-		add_action(
-			'init',
-			static function (): void {
-				load_plugin_textdomain(
-					'consent-gate',
-					false,
-					dirname( plugin_basename( CONSENT_GATE_FILE ) ) . '/languages'
-				);
-			}
-		);
+		// No load_plugin_textdomain() call: WordPress ≥ 4.6 loads the
+		// wordpress.org language packs for the plugin's text domain
+		// automatically, and the plugin ships no .mo files of its own.
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
 
@@ -235,8 +228,8 @@ final class Plugin {
 	 */
 	private function translator(): callable {
 		return static function ( string $text ): string {
-			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText -- bridged strings are extracted where they are defined.
-			return __( $text, 'consent-gate' );
+			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText -- bridged strings are defined literally at their $t() call sites and mirrored as literal __() calls in languages/strings.php for the translation parser.
+			return __( $text, 'calucon-third-party-embed-gate' );
 		};
 	}
 
@@ -352,7 +345,7 @@ final class Plugin {
 			array(
 				'width'  => '480',
 				'height' => '270',
-				'title'  => __( 'Example embed', 'consent-gate' ),
+				'title'  => __( 'Example embed', 'calucon-third-party-embed-gate' ),
 			),
 			array( 'integration' => 'admin-preview' )
 		);
@@ -360,7 +353,7 @@ final class Plugin {
 
 	/**
 	 * Render content through the_content with this plugin's gating
-	 * suspended: what the front end WOULD serve without Consent Gate.
+	 * suspended: what the front end WOULD serve without Calucon Third-Party Embed Gate.
 	 *
 	 * The scanner must see original markup to classify it — in wp-admin
 	 * should_bail() already guarantees that, but WP-CLI is neither admin
@@ -655,10 +648,10 @@ final class Plugin {
 		$consent = $this->options['consent'];
 		$config  = array(
 			'i18n' => array(
-				'withdrawn' => __( 'Stored embed consents have been removed. Embeds will ask again.', 'consent-gate' ),
-				'loading'   => __( 'Loading embedded content…', 'consent-gate' ),
-				'error'     => __( 'The embedded content could not be loaded.', 'consent-gate' ),
-				'errorLink' => __( 'Open it on the provider’s site.', 'consent-gate' ),
+				'withdrawn' => __( 'Stored embed consents have been removed. Embeds will ask again.', 'calucon-third-party-embed-gate' ),
+				'loading'   => __( 'Loading embedded content…', 'calucon-third-party-embed-gate' ),
+				'error'     => __( 'The embedded content could not be loaded.', 'calucon-third-party-embed-gate' ),
+				'errorLink' => __( 'Open it on the provider’s site.', 'calucon-third-party-embed-gate' ),
 			),
 		);
 		if ( 'off' !== $consent['memory'] ) {

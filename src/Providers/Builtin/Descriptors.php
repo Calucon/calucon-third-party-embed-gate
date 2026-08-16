@@ -90,6 +90,7 @@ final class Descriptors {
 				),
 				// No privacy-preserving variant exists; gate only. The README
 				// suggests OpenStreetMap as the replacement.
+				// phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- nothing is loaded from these hosts; they are listed so the plugin can REMOVE preconnect/dns-prefetch hints pointing at them (resource-hint scrubbing).
 				'hint_hosts'  => array( 'maps.gstatic.com', 'maps.googleapis.com' ),
 				'privacy_url' => 'https://policies.google.com/privacy',
 				'controller'  => 'Google Ireland Limited, Dublin, Ireland',

@@ -1,7 +1,7 @@
 <?php
 /**
  * Environment detection for the Compatibility screen (PLAN.md §7.1): the
- * detected CMP, cache plugin and page builder, and what Consent Gate
+ * detected CMP, cache plugin and page builder, and what Calucon Third-Party Embed Gate
  * decided to do about each. Read-only.
  *
  * @package ConsentGate
@@ -96,6 +96,7 @@ final class Compatibility {
 	public static function theme_asset_findings(): array {
 		$dirs = array_unique( array( get_stylesheet_directory(), get_template_directory() ) );
 
+		// phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- detection pattern only: local theme files are scanned for these CDN hosts so the Compatibility screen can WARN the owner; the plugin never requests them.
 		$pattern  = '#(?:fonts\.googleapis\.com|fonts\.gstatic\.com|use\.typekit\.net|kit\.fontawesome\.com|fonts\.bunny\.net|cdnjs\.cloudflare\.com|ajax\.googleapis\.com|maxcdn\.bootstrapcdn\.com|cdn\.jsdelivr\.net|unpkg\.com)#i';
 		$findings = array();
 		$budget   = 40; // Files, not bytes: bounded work on huge themes.

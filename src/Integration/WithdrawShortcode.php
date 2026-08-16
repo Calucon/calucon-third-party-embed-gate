@@ -52,7 +52,7 @@ final class WithdrawShortcode {
 
 		$atts = shortcode_atts(
 			array(
-				'label' => __( 'Withdraw embed consents', 'consent-gate' ),
+				'label' => __( 'Withdraw embed consents', 'calucon-third-party-embed-gate' ),
 			),
 			is_array( $atts ) ? $atts : array(),
 			'consent_gate_withdraw'

@@ -1081,6 +1081,11 @@ WordPress.org requirements that bear on design decisions:
   and never change it: `consent_gate_` / `ConsentGate\` / `cg-` for CSS.
 
 **Naming.** `consent-gate` is used throughout this document as a working name.
+Final name (chosen during the WordPress.org review, which flagged the working
+name as generic and CMP-adjacent): **Calucon Third-Party Embed Gate**, slug
+`calucon-third-party-embed-gate`. Internal identifiers (`consent_gate_` /
+`ConsentGate\` / `cg-`) deliberately keep the working name — see the prefix
+rule above: pick it early and never change it.
 Check slug availability before writing it into a hundred symbols. Something
 descriptive helps discovery — the plugin's job is best summarised as
 *click to load*, and the German market will search for *Zwei-Klick*.

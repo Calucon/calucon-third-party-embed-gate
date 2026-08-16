@@ -16,4 +16,4 @@ fi
 exec npx @wp-playground/cli@latest server \
   --port="${CG_WP_PORT:-8890}" \
   --blueprint=tests/wp/blueprint.json \
-  --mount=.:/wordpress/wp-content/plugins/consent-gate
+  --mount=.:/wordpress/wp-content/plugins/calucon-third-party-embed-gate

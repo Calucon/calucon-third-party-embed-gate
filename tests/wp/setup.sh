@@ -28,15 +28,15 @@ if ! wpcli core is-installed >/dev/null 2>&1; then
   echo "Installing WordPress at ${URL}..."
   wpcli core install \
     --url="${URL}" \
-    --title="Consent Gate Test Site" \
+    --title="Calucon Third-Party Embed Gate Test Site" \
     --admin_user=admin \
     --admin_password=password \
     --admin_email=admin@example.test \
     --skip-email
 fi
 
-wpcli plugin activate consent-gate
-wpcli eval-file /var/www/html/wp-content/plugins/consent-gate/tests/wp/seed.php
+wpcli plugin activate calucon-third-party-embed-gate
+wpcli eval-file /var/www/html/wp-content/plugins/calucon-third-party-embed-gate/tests/wp/seed.php
 
 echo
 echo "Ready: ${URL}  (admin / password)"

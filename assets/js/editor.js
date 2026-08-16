@@ -1,5 +1,5 @@
 /**
- * Consent Gate block editor integration (PLAN.md §7.5).
+ * Calucon Third-Party Embed Gate block editor integration (PLAN.md §7.5).
  *
  * Dependency-free of any build step: plain JS against the wp.* globals.
  * Two jobs: the per-block "Gate this embed" override on blocks that carry
@@ -80,19 +80,19 @@
 									variant: 'secondary',
 									onClick: obj.open
 								}, posterUrl
-									? __( 'Replace poster image', 'consent-gate' )
-									: __( 'Set poster image', 'consent-gate' ) ),
+									? __( 'Replace poster image', 'calucon-third-party-embed-gate' )
+									: __( 'Set poster image', 'calucon-third-party-embed-gate' ) ),
 								posterUrl ? el( wp.components.Button, {
 									variant: 'link',
 									isDestructive: true,
 									onClick: function () {
 										props.setAttributes( { consentGatePoster: 0, consentGatePosterUrl: '' } );
 									}
-								}, __( 'Remove poster image', 'consent-gate' ) ) : null,
+								}, __( 'Remove poster image', 'calucon-third-party-embed-gate' ) ) : null,
 								el(
 									'p',
 									{ className: 'cg-poster-control__help' },
-									__( 'Shown behind the consent panel until the visitor loads the embed. The image is served from your own media library, never fetched from the provider.', 'consent-gate' )
+									__( 'Shown behind the consent panel until the visitor loads the embed. The image is served from your own media library, never fetched from the provider.', 'calucon-third-party-embed-gate' )
 								)
 							);
 						}
@@ -108,21 +108,21 @@
 						null,
 						el(
 							wp.components.PanelBody,
-							{ title: __( 'Consent Gate', 'consent-gate' ), initialOpen: false },
+							{ title: __( 'Calucon Third-Party Embed Gate', 'calucon-third-party-embed-gate' ), initialOpen: false },
 							el( wp.components.SelectControl, {
-								label: __( 'Gate this embed', 'consent-gate' ),
+								label: __( 'Gate this embed', 'calucon-third-party-embed-gate' ),
 								value: value,
 								options: [
-									{ value: '', label: __( 'Site default', 'consent-gate' ) },
-									{ value: 'always', label: __( 'Always gate', 'consent-gate' ) },
-									{ value: 'never', label: __( 'Never gate', 'consent-gate' ) }
+									{ value: '', label: __( 'Site default', 'calucon-third-party-embed-gate' ) },
+									{ value: 'always', label: __( 'Always gate', 'calucon-third-party-embed-gate' ) },
+									{ value: 'never', label: __( 'Never gate', 'calucon-third-party-embed-gate' ) }
 								],
 								onChange: function ( next ) {
 									props.setAttributes( { consentGate: next } );
 								},
 								help: value === 'never'
-									? __( 'This block’s embeds will load immediately for every visitor, without a consent click.', 'consent-gate' )
-									: __( 'Overrides the site-wide setting for this block only.', 'consent-gate' )
+									? __( 'This block’s embeds will load immediately for every visitor, without a consent click.', 'calucon-third-party-embed-gate' )
+									: __( 'Overrides the site-wide setting for this block only.', 'calucon-third-party-embed-gate' )
 							} ),
 							value === 'never' ? null : posterControls
 						)
@@ -153,10 +153,10 @@
 	// The withdrawal control as a block (§6.2): same server-side renderer as
 	// the [consent_gate_withdraw] shortcode.
 	wp.blocks.registerBlockType( 'consent-gate/withdraw', {
-		title: __( 'Withdraw embed consents', 'consent-gate' ),
+		title: __( 'Withdraw embed consents', 'calucon-third-party-embed-gate' ),
 		icon: 'unlock',
 		category: 'widgets',
-		description: __( 'A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled.', 'consent-gate' ),
+		description: __( 'A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled.', 'calucon-third-party-embed-gate' ),
 		attributes: {
 			label: { type: 'string', default: '' }
 		},
@@ -167,16 +167,16 @@
 				el(
 					'button',
 					{ type: 'button', className: 'cg-withdraw', disabled: true },
-					props.attributes.label || __( 'Withdraw embed consents', 'consent-gate' )
+					props.attributes.label || __( 'Withdraw embed consents', 'calucon-third-party-embed-gate' )
 				),
 				el(
 					wp.blockEditor.InspectorControls,
 					null,
 					el(
 						wp.components.PanelBody,
-						{ title: __( 'Consent Gate', 'consent-gate' ) },
+						{ title: __( 'Calucon Third-Party Embed Gate', 'calucon-third-party-embed-gate' ) },
 						el( wp.components.TextControl, {
-							label: __( 'Button label', 'consent-gate' ),
+							label: __( 'Button label', 'calucon-third-party-embed-gate' ),
 							value: props.attributes.label,
 							onChange: function ( next ) {
 								props.setAttributes( { label: next } );

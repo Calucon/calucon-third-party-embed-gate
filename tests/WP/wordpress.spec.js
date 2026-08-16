@@ -132,13 +132,13 @@ test( 'poster block attribute renders a site-origin poster, gone after activatio
 
 test( 'assets ship only on pages where something was gated', async ( { page } ) => {
 	await page.goto( '/gated-classic/' );
-	await expect( page.locator( 'script[src*="consent-gate/assets/js/gate.js"]' ) ).toHaveCount( 1 );
-	await expect( page.locator( 'link[href*="consent-gate/assets/css/gate.css"]' ) ).toHaveCount( 1 );
+	await expect( page.locator( 'script[src*="calucon-third-party-embed-gate/assets/js/gate.js"]' ) ).toHaveCount( 1 );
+	await expect( page.locator( 'link[href*="calucon-third-party-embed-gate/assets/css/gate.css"]' ) ).toHaveCount( 1 );
 
 	await page.goto( '/no-embeds/' );
 	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 0 );
-	await expect( page.locator( 'script[src*="consent-gate/assets/js/gate.js"]' ) ).toHaveCount( 0 );
-	await expect( page.locator( 'link[href*="consent-gate/assets/css/gate.css"]' ) ).toHaveCount( 0 );
+	await expect( page.locator( 'script[src*="calucon-third-party-embed-gate/assets/js/gate.js"]' ) ).toHaveCount( 0 );
+	await expect( page.locator( 'link[href*="calucon-third-party-embed-gate/assets/css/gate.css"]' ) ).toHaveCount( 0 );
 } );
 
 test( 'escaped markup in a tutorial post survives untouched', async ( { page } ) => {
@@ -265,7 +265,7 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 
 	await page.goto( '/wp-admin/options-general.php?page=consent-gate' );
 
-	await expect( page.locator( 'h1' ) ).toContainText( 'Consent Gate' );
+	await expect( page.locator( 'h1' ) ).toContainText( 'Calucon Third-Party Embed Gate' );
 
 	// Providers is the default tab; the other panels are behind their tabs.
 	await expect( page.locator( 'td', { hasText: 'YouTube' } ).first() ).toBeVisible();

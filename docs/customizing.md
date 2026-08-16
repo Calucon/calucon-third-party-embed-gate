@@ -1,4 +1,4 @@
-# Customizing Consent Gate
+# Customizing Calucon Third-Party Embed Gate
 
 A reference for developers and AI agents customizing this plugin on a site —
 from `functions.php`, a small plugin, or WP-CLI. Everything here works
@@ -6,14 +6,14 @@ without touching plugin files (never edit those; updates overwrite them).
 
 ## The contract your customization must keep
 
-Consent Gate's entire product is: **nothing third-party loads before the
+Calucon Third-Party Embed Gate's entire product is: **nothing third-party loads before the
 visitor clicks**. Not a script, not an iframe, not a thumbnail, not a
 `preconnect`. When customizing:
 
 - **Don't** load a preview image, poster, or favicon from the provider in a
   custom template or placeholder filter. If you want thumbnails, they must
   be served from this site. The supported way: every embed block has a
-  **Set poster image** control (Consent Gate panel in the block inspector)
+  **Set poster image** control (Calucon Third-Party Embed Gate panel in the block inspector)
   that takes a media-library image; the server refuses any poster URL that
   does not resolve to this site's own host, so a CDN-offloaded media
   library needs its CDN host declared under **Detection → Own hosts**.
@@ -184,7 +184,7 @@ add_filter( 'consent_gate_cmp_config', function ( $config ) {
 ```
 
 If you prefer the platform's own content blocker for a specific provider,
-disable that provider under **Providers** — Consent Gate then passes its
+disable that provider under **Providers** — Calucon Third-Party Embed Gate then passes its
 embeds through and the platform's blocker is the only gate. Do not run
 both gates plus the bridge for the same provider expecting them to stack;
 one authority per embed is the design.
