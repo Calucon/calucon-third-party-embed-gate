@@ -123,15 +123,11 @@ final class OutputBuffer {
 				return $buffer;
 			}
 
-			$buffer = substr( $buffer, 0, $body[0] ) . $gated . substr( $buffer, $body[1] );
-
-			// This callback runs on shutdown, after wp_footer has already
-			// been rendered INTO the buffer — wp_enqueue_* is a no-op here.
-			// Without direct injection every placeholder this pass created
-			// would be an unstyled panel with a dead button on exactly the
-			// page-builder sites this option exists for (invariant 2's
-			// "never a button that does nothing").
-			return $this->inject_assets( $buffer );
+			// The placeholder's CSS/JS are already inside the buffer: while
+			// this option is enabled, Plugin::register_assets() enqueues them
+			// on every front-end page (this callback runs on shutdown, after
+			// wp_footer — far too late to enqueue anything).
+			return substr( $buffer, 0, $body[0] ) . $gated . substr( $buffer, $body[1] );
 		} catch ( \Throwable $e ) {
 			// A fatal inside an output callback yields a blank page;
 			// unmodified output is always the better failure.
@@ -162,62 +158,6 @@ final class OutputBuffer {
 		return array( $open_end + 1, $close );
 	}
 
-	/**
-	 * Inject the plugin's CSS and JS directly into the buffered document,
-	 * unless the normal enqueue already printed them (a the_content-gated
-	 * embed on the same page).
-	 *
-	 * @param string $buffer Gated document.
-	 * @return string
-	 */
-	private function inject_assets( string $buffer ): string {
-		$version = rawurlencode( CALUCON_EMBED_GATE_VERSION );
-
-		if ( false === strpos( $buffer, 'id="calucon-embed-gate-css"' )
-			&& false === strpos( $buffer, "id='calucon-embed-gate-css'" ) ) {
-			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- this runs on shutdown, after wp_footer was rendered into the buffer; wp_enqueue_style() is a no-op here.
-			$css        = '<link rel="stylesheet" id="calucon-embed-gate-css" href="'
-				. esc_url( plugins_url( 'assets/css/gate.css', CALUCON_EMBED_GATE_FILE ) . '?ver=' . $version )
-				. '" media="all">';
-			$appearance = $this->plugin->appearance_css();
-			if ( '' !== $appearance ) {
-				$css .= '<style id="calucon-embed-gate-inline-css">' . $appearance . '</style>';
-			}
-			$head = stripos( $buffer, '</head>' );
-			if ( false !== $head ) {
-				$buffer = substr( $buffer, 0, $head ) . $css . substr( $buffer, $head );
-			} else {
-				$buffer = $css . $buffer;
-			}
-		}
-
-		if ( false === strpos( $buffer, 'id="calucon-embed-gate-js"' )
-			&& false === strpos( $buffer, "id='calucon-embed-gate-js'" ) ) {
-			$config = $this->plugin->inline_config_json();
-			$js     = '';
-			if ( null !== $config ) {
-				$js .= '<script id="calucon-embed-gate-js-before">window.caluconEmbedGateConfig = ' . $config . ';</script>';
-			}
-			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- this runs on shutdown, after wp_footer was rendered into the buffer; wp_enqueue_script() is a no-op here.
-			$js .= '<script id="calucon-embed-gate-js" src="'
-				. esc_url( plugins_url( 'assets/js/gate.js', CALUCON_EMBED_GATE_FILE ) . '?ver=' . $version )
-				. '" defer></script>';
-			if ( null !== $this->plugin->cmp_bridge_config() ) {
-				// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- same shutdown constraint as gate.js above.
-				$js .= '<script id="calucon-embed-gate-cmp-js" src="'
-					. esc_url( plugins_url( 'assets/js/cmp-bridge.js', CALUCON_EMBED_GATE_FILE ) . '?ver=' . $version )
-					. '" defer></script>';
-			}
-			$foot = strripos( $buffer, '</body>' );
-			if ( false !== $foot ) {
-				$buffer = substr( $buffer, 0, $foot ) . $js . substr( $buffer, $foot );
-			} else {
-				$buffer .= $js;
-			}
-		}
-
-		return $buffer;
-	}
 
 	/**
 	 * @param string $buffer Response body.

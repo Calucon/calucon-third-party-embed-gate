@@ -221,13 +221,26 @@ final class Plugin {
 		return $this->providers_cache;
 	}
 
+	/** @var array<string,string>|null Lazily loaded $t() translation map. */
+	private ?array $strings_map = null;
+
 	/**
-	 * @return callable Bridges English strings to the site language.
+	 * Bridges the WordPress-free layers' English strings to the site
+	 * language. Translations resolve through the generated
+	 * languages/strings.php map, whose entries are literal __() calls keyed
+	 * by msgid — so no gettext function in the plugin ever receives a
+	 * variable argument, and the wp.org translation parser sees every
+	 * string.
+	 *
+	 * @return callable
 	 */
 	private function translator(): callable {
-		return static function ( string $text ): string {
-			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText -- bridged strings are defined literally at their $t() call sites and mirrored as literal __() calls in languages/strings.php for the translation parser.
-			return __( $text, 'calucon-third-party-embed-gate' );
+		return function ( string $text ): string {
+			if ( null === $this->strings_map ) {
+				$map               = include CALUCON_EMBED_GATE_DIR . '/languages/strings.php';
+				$this->strings_map = is_array( $map ) ? $map : array();
+			}
+			return isset( $this->strings_map[ $text ] ) ? (string) $this->strings_map[ $text ] : $text;
 		};
 	}
 
@@ -579,6 +592,15 @@ final class Plugin {
 		if ( '' !== $appearance ) {
 			wp_add_inline_style( 'calucon-embed-gate', $appearance );
 		}
+
+		// Whole-page buffering (§3.3) gates on shutdown, long after this hook
+		// — too late for a conditional enqueue, and printing tags from the
+		// buffer callback would bypass the enqueue API. So when that option
+		// is on, enqueue the (small, local, cacheable) assets on every
+		// front-end page: the buffer may gate any of them.
+		if ( $this->options['detection']['output_buffer'] && ! $this->should_bail() ) {
+			$this->enqueue_assets();
+		}
 	}
 
 	/**
@@ -754,8 +776,8 @@ final class Plugin {
 					$hosts = array_merge( $hosts, (array) $match[ $key ] );
 				}
 			}
-			if ( isset( $descriptor['hint_hosts'] ) ) {
-				$hosts = array_merge( $hosts, (array) $descriptor['hint_hosts'] );
+			if ( isset( $descriptor['scrub_hint_hosts'] ) ) {
+				$hosts = array_merge( $hosts, (array) $descriptor['scrub_hint_hosts'] );
 			}
 		}
 		return array_values( array_unique( $hosts ) );

@@ -61,7 +61,7 @@ final class Provider {
 				// Sibling CDN hosts performance plugins preconnect/preload for
 				// this provider (i.ytimg.com, pbs.twimg.com). Not gated
 				// themselves — used to scrub resource hints (§9.14).
-				'hint_hosts'         => array(),
+				'scrub_hint_hosts'   => array(),
 			),
 			$descriptor
 		);

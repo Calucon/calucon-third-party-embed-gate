@@ -89,7 +89,7 @@ final class HostMatcher {
 			// Collapse the scheme and any run of (already slash-normalised)
 			// authority slashes into 'scheme://'. Browsers ignore extra,
 			// missing or backslash authority slashes for special schemes, so
-			// 'https:/\/evil.com' and 'https:evil.com' both name host evil.com
+			// 'https:/\/evil.example' and 'https:evil.example' both name host evil.example
 			// — parse_url() alone would miss both and let them through (§3.4).
 			$url  = preg_replace( '#^(https?:)/*#i', '$1//', $url );
 			$host = $this->extract_host( $url );
@@ -143,8 +143,8 @@ final class HostMatcher {
 	 * class and the browser agree on the authority (invariant 6). Browsers
 	 * strip ASCII tab/newline characters anywhere in a URL, and for the
 	 * special schemes this plugin gates they treat a backslash as a forward
-	 * slash. Without this, 'https://evil.com\@own.example/' parses to host
-	 * 'own.example' in PHP but connects to 'evil.com' in every browser — a
+	 * slash. Without this, 'https://evil.example\@own.example/' parses to host
+	 * 'own.example' in PHP but connects to 'evil.example' in every browser — a
 	 * third party slipping past the gate.
 	 *
 	 * @param string $url Raw URL from the markup.

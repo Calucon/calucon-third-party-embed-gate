@@ -33,9 +33,9 @@ final class Descriptors {
 
 		return array(
 			array(
-				'id'           => 'youtube',
-				'label'        => 'YouTube',
-				'match'        => array(
+				'id'               => 'youtube',
+				'label'            => 'YouTube',
+				'match'            => array(
 					'iframe_host' => array(
 						'youtube.com',
 						'www.youtube.com',
@@ -47,41 +47,41 @@ final class Descriptors {
 					'iframe_path' => '#^/embed/(?P<id>[A-Za-z0-9_-]{6,20})#',
 				),
 				// Data minimisation: measured 0 cookies vs 5 on the default host.
-				'load_host'    => 'www.youtube-nocookie.com',
-				'load_path'    => '/embed/{id}',
-				'fallback'     => 'https://www.youtube.com/watch?v={id}',
-				'hint_hosts'   => array( 'i.ytimg.com', 's.ytimg.com', 'img.youtube.com', 'yt3.ggpht.com' ),
-				'privacy_url'  => 'https://policies.google.com/privacy',
-				'controller'   => 'Google Ireland Limited, Dublin, Ireland',
-				'note'         => $t( 'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.' ),
-				'action'       => $t( 'Load video from YouTube' ),
-				'aspect'       => '16:9',
-				'iframe_allow' => 'accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share',
-				'strategy'     => 'iframe',
+				'load_host'        => 'www.youtube-nocookie.com',
+				'load_path'        => '/embed/{id}',
+				'fallback'         => 'https://www.youtube.com/watch?v={id}',
+				'scrub_hint_hosts' => array( 'i.ytimg.com', 's.ytimg.com', 'img.youtube.com', 'yt3.ggpht.com' ),
+				'privacy_url'      => 'https://policies.google.com/privacy',
+				'controller'       => 'Google Ireland Limited, Dublin, Ireland',
+				'note'             => $t( 'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'           => $t( 'Load video from YouTube' ),
+				'aspect'           => '16:9',
+				'iframe_allow'     => 'accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share',
+				'strategy'         => 'iframe',
 			),
 			array(
-				'id'          => 'vimeo',
-				'label'       => 'Vimeo',
-				'match'       => array(
+				'id'               => 'vimeo',
+				'label'            => 'Vimeo',
+				'match'            => array(
 					'iframe_host' => array( 'player.vimeo.com' ),
 					'iframe_path' => '#^/video/(?P<id>[0-9]+)#',
 				),
 				// Keep the original URL (unlisted videos need their ?h= hash)
 				// and merge dnt=1, which suppresses Vimeo's analytics.
-				'load_query'  => array( 'dnt' => '1' ),
-				'fallback'    => 'https://vimeo.com/{id}',
-				'hint_hosts'  => array( 'i.vimeocdn.com', 'f.vimeocdn.com' ),
-				'privacy_url' => 'https://vimeo.com/privacy',
-				'controller'  => 'Vimeo.com, Inc., New York, USA',
-				'note'        => $t( 'Loading this video contacts Vimeo, which receives your IP address and which page you are on, and may set cookies.' ),
-				'action'      => $t( 'Load video from Vimeo' ),
-				'aspect'      => '16:9',
-				'strategy'    => 'iframe',
+				'load_query'       => array( 'dnt' => '1' ),
+				'fallback'         => 'https://vimeo.com/{id}',
+				'scrub_hint_hosts' => array( 'i.vimeocdn.com', 'f.vimeocdn.com' ),
+				'privacy_url'      => 'https://vimeo.com/privacy',
+				'controller'       => 'Vimeo.com, Inc., New York, USA',
+				'note'             => $t( 'Loading this video contacts Vimeo, which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'           => $t( 'Load video from Vimeo' ),
+				'aspect'           => '16:9',
+				'strategy'         => 'iframe',
 			),
 			array(
-				'id'          => 'google-maps',
-				'label'       => 'Google Maps',
-				'match'       => array(
+				'id'               => 'google-maps',
+				'label'            => 'Google Maps',
+				'match'            => array(
 					'iframe_host' => array( 'www.google.com', 'google.com', 'maps.google.com' ),
 					// Three shapes in the field: /maps/embed (Share → Embed a
 					// map), /maps/d/embed (My Maps), and the legacy
@@ -91,12 +91,12 @@ final class Descriptors {
 				// No privacy-preserving variant exists; gate only. The README
 				// suggests OpenStreetMap as the replacement.
 				// phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- nothing is loaded from these hosts; they are listed so the plugin can REMOVE preconnect/dns-prefetch hints pointing at them (resource-hint scrubbing).
-				'hint_hosts'  => array( 'maps.gstatic.com', 'maps.googleapis.com' ),
-				'privacy_url' => 'https://policies.google.com/privacy',
-				'controller'  => 'Google Ireland Limited, Dublin, Ireland',
-				'note'        => $t( 'Loading this map contacts Google Maps, which receives your IP address and which page you are on, and sets cookies.' ),
-				'action'      => $t( 'Load map from Google Maps' ),
-				'strategy'    => 'iframe',
+				'scrub_hint_hosts' => array( 'maps.gstatic.com', 'maps.googleapis.com' ), // REMOVED from resource hints — never requested by this plugin.
+				'privacy_url'      => 'https://policies.google.com/privacy',
+				'controller'       => 'Google Ireland Limited, Dublin, Ireland',
+				'note'             => $t( 'Loading this map contacts Google Maps, which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'           => $t( 'Load map from Google Maps' ),
+				'strategy'         => 'iframe',
 			),
 			array(
 				'id'          => 'openstreetmap',
@@ -112,19 +112,19 @@ final class Descriptors {
 				'strategy'    => 'iframe',
 			),
 			array(
-				'id'          => 'spotify',
-				'label'       => 'Spotify',
-				'match'       => array(
+				'id'               => 'spotify',
+				'label'            => 'Spotify',
+				'match'            => array(
 					'iframe_host' => array( 'open.spotify.com' ),
 					'iframe_path' => '#^/embed/(?P<type>track|album|playlist|episode|show|artist)/(?P<id>[A-Za-z0-9]+)#',
 				),
-				'fallback'    => 'https://open.spotify.com/{type}/{id}',
-				'hint_hosts'  => array( 'i.scdn.co' ),
-				'privacy_url' => 'https://www.spotify.com/legal/privacy-policy/',
-				'controller'  => 'Spotify AB, Stockholm, Sweden',
-				'note'        => $t( 'Loading this player contacts Spotify, which receives your IP address and which page you are on, and sets cookies.' ),
-				'action'      => $t( 'Load player from Spotify' ),
-				'strategy'    => 'iframe',
+				'fallback'         => 'https://open.spotify.com/{type}/{id}',
+				'scrub_hint_hosts' => array( 'i.scdn.co' ),
+				'privacy_url'      => 'https://www.spotify.com/legal/privacy-policy/',
+				'controller'       => 'Spotify AB, Stockholm, Sweden',
+				'note'             => $t( 'Loading this player contacts Spotify, which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'           => $t( 'Load player from Spotify' ),
+				'strategy'         => 'iframe',
 			),
 			array(
 				'id'          => 'soundcloud',
@@ -261,34 +261,34 @@ final class Descriptors {
 				},
 			),
 			array(
-				'id'              => 'twitter',
-				'label'           => 'X (Twitter)',
-				'match'           => array(
+				'id'               => 'twitter',
+				'label'            => 'X (Twitter)',
+				'match'            => array(
 					'iframe_host' => array( 'platform.twitter.com', 'platform.x.com' ),
 					'script_host' => array( 'platform.twitter.com', 'platform.x.com' ),
 				),
-				'privacy_url'     => 'https://x.com/en/privacy',
-				'controller'      => 'Twitter International Unlimited Company, Dublin, Ireland',
-				'note'            => $t( 'Loading this post contacts X (Twitter), which receives your IP address and which page you are on, and sets cookies.' ),
-				'action'          => $t( 'Load post from X (Twitter)' ),
-				'strategy'        => 'script',
-				'companion_class' => array( 'twitter-tweet', 'twitter-timeline' ),
-				'hint_hosts'      => array( 'syndication.twitter.com', 'pbs.twimg.com', 'abs.twimg.com' ),
+				'privacy_url'      => 'https://x.com/en/privacy',
+				'controller'       => 'Twitter International Unlimited Company, Dublin, Ireland',
+				'note'             => $t( 'Loading this post contacts X (Twitter), which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'           => $t( 'Load post from X (Twitter)' ),
+				'strategy'         => 'script',
+				'companion_class'  => array( 'twitter-tweet', 'twitter-timeline' ),
+				'scrub_hint_hosts' => array( 'syndication.twitter.com', 'pbs.twimg.com', 'abs.twimg.com' ),
 			),
 			array(
-				'id'              => 'instagram',
-				'label'           => 'Instagram',
-				'match'           => array(
+				'id'               => 'instagram',
+				'label'            => 'Instagram',
+				'match'            => array(
 					'iframe_host' => array( 'www.instagram.com', 'instagram.com' ),
 					'script_host' => array( 'www.instagram.com', 'instagram.com', 'platform.instagram.com' ),
 				),
-				'privacy_url'     => 'https://privacycenter.instagram.com/policy',
-				'controller'      => 'Meta Platforms Ireland Limited, Dublin, Ireland',
-				'note'            => $t( 'Loading this post contacts Instagram (Meta), which receives your IP address and which page you are on, and sets cookies.' ),
-				'action'          => $t( 'Load post from Instagram' ),
-				'strategy'        => 'script',
-				'companion_class' => array( 'instagram-media' ),
-				'hint_hosts'      => array( 'scontent.cdninstagram.com' ),
+				'privacy_url'      => 'https://privacycenter.instagram.com/policy',
+				'controller'       => 'Meta Platforms Ireland Limited, Dublin, Ireland',
+				'note'             => $t( 'Loading this post contacts Instagram (Meta), which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'           => $t( 'Load post from Instagram' ),
+				'strategy'         => 'script',
+				'companion_class'  => array( 'instagram-media' ),
+				'scrub_hint_hosts' => array( 'scontent.cdninstagram.com' ),
 			),
 			array(
 				'id'              => 'tiktok',
@@ -325,7 +325,7 @@ final class Descriptors {
 						? trim( $attributes['data-href'] ) : '';
 					return preg_match( '#^https://(www|web)\.facebook\.com/#', $href ) ? $href : null;
 				},
-				'hint_hosts'         => array( 'staticxx.facebook.com' ),
+				'scrub_hint_hosts'   => array( 'staticxx.facebook.com' ),
 			),
 			array(
 				'id'              => 'reddit',
