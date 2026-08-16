@@ -1,16 +1,16 @@
 <?php
 /**
- * Plugin Name:       Consent Gate
- * Plugin URI:        https://calucon.de/consent-gate/
+ * Plugin Name:       Third-Party Embed Gate
+ * Plugin URI:        https://calucon.de/third-party-embed-gate/
  * Description:       Two-click embeds: third-party iframes load only after the visitor asks for them. No banner, no consent platform, no third-party request before the click.
- * Version:           0.7.5
+ * Version:           0.8.0
  * Requires at least: 5.9
  * Requires PHP:      7.4
  * Author:            Calucon
  * Author URI:        https://calucon.de
  * License:           GPLv2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       consent-gate
+ * Text Domain:       third-party-embed-gate
  * Domain Path:       /languages
  *
  * @package ConsentGate
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'CONSENT_GATE_VERSION', '0.7.5' );
+define( 'CONSENT_GATE_VERSION', '0.8.0' );
 define( 'CONSENT_GATE_FILE', __FILE__ );
 define( 'CONSENT_GATE_DIR', __DIR__ );
 

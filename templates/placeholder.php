@@ -1,6 +1,6 @@
 <?php
 /**
- * Consent Gate placeholder template.
+ * Third-Party Embed Gate placeholder template.
  *
  * Copy this file to {your-theme}/consent-gate/placeholder.php to override
  * the panel markup. The structure below (PLAN.md §5.1) is the documented

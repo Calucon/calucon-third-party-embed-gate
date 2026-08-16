@@ -1,5 +1,5 @@
 /**
- * Consent Gate editor-canvas badge (PLAN.md §7.5): show per-block gate
+ * Third-Party Embed Gate editor-canvas badge (PLAN.md §7.5): show per-block gate
  * overrides at a glance. Editor-only stylesheet; never enqueued on the
  * front end.
  */
@@ -26,7 +26,7 @@
 .block-editor-block-list__block[data-consent-gate]::before {
 	/* The value is machine-oriented ("always"/"never"); the prefix names
 	   the feature. Informational, editor-only. */
-	content: "Consent Gate: " attr( data-consent-gate );
+	content: "Third-Party Embed Gate: " attr( data-consent-gate );
 	position: absolute;
 	top: -1.5em;
 	right: 0;

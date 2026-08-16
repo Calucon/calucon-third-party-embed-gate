@@ -7,11 +7,11 @@
     "steps": [
         {
             "step": "activatePlugin",
-            "pluginPath": "/wordpress/wp-content/plugins/consent-gate/consent-gate.php"
+            "pluginPath": "/wordpress/wp-content/plugins/third-party-embed-gate/third-party-embed-gate.php"
         },
         {
             "step": "runPHP",
-            "code": "<?php require_once '/wordpress/wp-load.php'; require '/wordpress/wp-content/plugins/consent-gate/tests/wp/seed.php';"
+            "code": "<?php require_once '/wordpress/wp-load.php'; require '/wordpress/wp-content/plugins/third-party-embed-gate/tests/wp/seed.php';"
         }
     ]
 }

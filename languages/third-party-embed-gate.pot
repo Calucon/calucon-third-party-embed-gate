@@ -1,13 +1,13 @@
-# Consent Gate.
-# This file is distributed under the same license as the Consent Gate plugin.
+# Third-Party Embed Gate.
+# This file is distributed under the same license as the Third-Party Embed Gate plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Consent Gate 0.7.3\n"
+"Project-Id-Version: Third-Party Embed Gate 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/Calucon/consent-gate/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Domain: consent-gate\n"
+"X-Domain: third-party-embed-gate\n"
 
 #: src/Admin/SettingsPage.php:139
 msgid "%1$s: %2$s — %3$s"
@@ -82,22 +82,6 @@ msgstr ""
 msgid "Compatibility"
 msgstr ""
 
-#: assets/js/editor.js:111
-#: assets/js/editor.js:177
-#: src/Admin/SettingsPage.php:156
-#: src/Admin/SettingsPage.php:157
-#: src/Admin/SettingsPage.php:192
-msgid "Consent Gate"
-msgstr ""
-
-#: src/Admin/SettingsPage.php:90
-msgid "Consent Gate is free and open source — you can %s."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:207
-msgid "Consent Gate settings sections"
-msgstr ""
-
 #: src/Admin/SettingsPage.php:203
 #: src/Admin/SettingsPage.php:381
 msgid "Consent memory"
@@ -157,19 +141,19 @@ msgid "Detected now: %s."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:567
-msgid "Detected, bridge active: when this platform reports consent for the embeds' category, gated embeds load without a second click, and a withdrawal re-gates them. If the platform does not answer, gating stands (fail closed). Prefer its own blocker for a provider? Disable that provider under Providers and Consent Gate steps aside for it."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:569
-msgid "Detected. Consent Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
+msgid "Detected, bridge active: when this platform reports consent for the embeds' category, gated embeds load without a second click, and a withdrawal re-gates them. If the platform does not answer, gating stands (fail closed). Prefer its own blocker for a provider? Disable that provider under Providers and Third-Party Embed Gate steps aside for it."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:559
-msgid "Detected. Its page cache is flushed automatically when Consent Gate settings change; after activating or deactivating Consent Gate itself, clear it once by hand if pages look stale."
+msgid "Detected. Its page cache is flushed automatically when Third-Party Embed Gate settings change; after activating or deactivating Third-Party Embed Gate itself, clear it once by hand if pages look stale."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:562
 msgid "Detected. Page builders render outside the content filters — if its embeds are not being gated, enable \"Gate the whole page output\" under Detection."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:569
+msgid "Detected. Third-Party Embed Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:561
@@ -193,7 +177,7 @@ msgstr ""
 msgid "Embeds from these hosts load without a placeholder. Use only for third parties you have covered elsewhere — this plugin then no longer prevents their requests."
 msgstr ""
 
-#: src/Plugin.php:355
+#: src/Plugin.php:348
 msgid "Example embed"
 msgstr ""
 
@@ -258,7 +242,7 @@ msgid "IAB TCF (experimental)"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:484
-msgid "If a consent platform (cookie banner) runs on this site, Consent Gate can honour its decision: once the platform reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state, stores nothing itself, and works only with platforms it was tested against; with any other platform, and whenever the platform gives no answer, gating stands unchanged (fail closed)."
+msgid "If a consent platform (cookie banner) runs on this site, Third-Party Embed Gate can honour its decision: once the platform reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state, stores nothing itself, and works only with platforms it was tested against; with any other platform, and whenever the platform gives no answer, gating stands unchanged (fail closed)."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:423
@@ -273,8 +257,8 @@ msgstr ""
 msgid "Load calendar from Google"
 msgstr ""
 
-#: src/Providers/Registry.php:133
-#: src/Providers/Registry.php:163
+#: src/Providers/Registry.php:134
+#: src/Providers/Registry.php:164
 msgid "Load content from %s"
 msgstr ""
 
@@ -354,7 +338,7 @@ msgstr ""
 msgid "Load video from YouTube"
 msgstr ""
 
-#: src/Plugin.php:659
+#: src/Plugin.php:652
 msgid "Loading embedded content…"
 msgstr ""
 
@@ -366,7 +350,7 @@ msgstr ""
 msgid "Loading this calendar contacts Google, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Registry.php:161
+#: src/Providers/Registry.php:162
 msgid "Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
@@ -374,7 +358,7 @@ msgstr ""
 msgid "Loading this content contacts Facebook (Meta), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Registry.php:131
+#: src/Providers/Registry.php:132
 msgid "Loading this content runs a script from %s, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
@@ -506,7 +490,7 @@ msgstr ""
 msgid "Only used with Borlabs Cookie, whose consent groups are defined per site: the ID of the group that covers embedded content. The default installation calls it \"external-media\"."
 msgstr ""
 
-#: src/Plugin.php:661
+#: src/Plugin.php:654
 msgid "Open it on the provider’s site."
 msgstr ""
 
@@ -637,7 +621,7 @@ msgstr ""
 msgid "Status & tools"
 msgstr ""
 
-#: src/Plugin.php:658
+#: src/Plugin.php:651
 msgid "Stored embed consents have been removed. Embeds will ask again."
 msgstr ""
 
@@ -649,8 +633,24 @@ msgstr ""
 msgid "Tested and interoperable: %s."
 msgstr ""
 
-#: src/Plugin.php:660
+#: src/Plugin.php:653
 msgid "The embedded content could not be loaded."
+msgstr ""
+
+#: assets/js/editor.js:111
+#: assets/js/editor.js:177
+#: src/Admin/SettingsPage.php:156
+#: src/Admin/SettingsPage.php:157
+#: src/Admin/SettingsPage.php:192
+msgid "Third-Party Embed Gate"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:90
+msgid "Third-Party Embed Gate is free and open source — you can %s."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:207
+msgid "Third-Party Embed Gate settings sections"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:601
@@ -682,7 +682,7 @@ msgid "Use the privacy-preserving load for %s"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:577
-msgid "What Consent Gate does"
+msgid "What Third-Party Embed Gate does"
 msgstr ""
 
 #: assets/js/editor.js:156

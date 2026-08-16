@@ -1,5 +1,5 @@
 /**
- * Consent Gate — CMP bridge (PLAN.md §6.4).
+ * Third-Party Embed Gate — CMP bridge (PLAN.md §6.4).
  *
  * Dependency-free, ES5-compatible like gate.js. Only enqueued when the site
  * enabled the bridge AND a consent platform from the tested list is

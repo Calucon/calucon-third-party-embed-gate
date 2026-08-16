@@ -1,8 +1,8 @@
-# CLAUDE.md — Consent Gate
+# CLAUDE.md — Third-Party Embed Gate
 
 ## What this plugin is
 
-Consent Gate is a free GPL WordPress plugin that replaces third-party embeds
+Third-Party Embed Gate (formerly "Consent Gate"; slug `third-party-embed-gate`, renamed during the WordPress.org review) is a free GPL WordPress plugin that replaces third-party embeds
 (YouTube, Vimeo, Maps, …) with a server-rendered placeholder until the visitor
 clicks to load them — the two-click pattern. **The entire product is that
 nothing third-party loads before a click.** It is a technical measure, not a
@@ -43,7 +43,7 @@ provider thumbnail goes stale with no invalidation signal. Never propose it
 
 | Path | Role |
 |---|---|
-| `consent-gate.php` | Plugin header + bootstrap only |
+| `third-party-embed-gate.php` | Plugin header + bootstrap only |
 | `src/Plugin.php` | Wiring; no logic |
 | `src/Detection/HtmlScanner.php` | Attribute-tolerant tag reader (§3.2) |
 | `src/Detection/HostMatcher.php` | "is this ours?" (§3.4) |
@@ -109,7 +109,7 @@ composer lint                  # PHPCS: WordPress-Extra + PHPCompatibilityWP (ph
 composer lint:fix              # phpcbf auto-fixes; keep the report clean — no new warnings
 vendor/bin/phpunit --filter youtube-minified   # one fixture by name
 php tests/bin/generate-fixtures.php            # write missing expected.html — review before committing
-php tests/bin/generate-pot.php                 # regenerate languages/consent-gate.pot
+php tests/bin/generate-pot.php                 # regenerate languages/third-party-embed-gate.pot + languages/strings.php (literal gettext mirror of $t() strings for the wp.org translation parser)
 npm install                    # Playwright
 npm run test:e2e               # E2E; in the remote/CI image:
 PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run test:e2e

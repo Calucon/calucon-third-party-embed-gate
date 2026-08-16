@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use ConsentGate\Support\ContentScan;
 
 /**
- * Inspect Consent Gate: which embeds appear in content and whether each is
+ * Inspect Third-Party Embed Gate: which embeds appear in content and whether each is
  * gated, and which providers are configured.
  */
 final class Commands {

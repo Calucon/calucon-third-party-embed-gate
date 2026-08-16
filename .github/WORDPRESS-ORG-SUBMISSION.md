@@ -7,7 +7,7 @@ up. This file is the checklist and the steps.
 ## What is ready
 
 - **Plugin header** — name, description, `Version`, `Requires at least: 5.9`,
-  `Requires PHP: 7.4`, GPLv2-or-later license, `Text Domain: consent-gate`,
+  `Requires PHP: 7.4`, GPLv2-or-later license, `Text Domain: third-party-embed-gate`,
   `Domain Path`, `Plugin URI`, `Author URI`.
 - **readme.txt** — `Stable tag` matches the header; `Contributors: calucon`;
   `Donate link`; `Tested up to: 7.0`; Description, Installation, FAQ,
@@ -20,7 +20,7 @@ up. This file is the checklist and the steps.
   claim, enforced by the E2E suite.
 - **CI green** — PHP 7.4/8.4 lint + unit, E2E + axe, WordPress integration,
   and the Plugin Check workflow.
-- **Build**: `bash bin/build-zip.sh` → `build/consent-gate-<version>.zip`
+- **Build**: `bash bin/build-zip.sh` → `build/third-party-embed-gate-<version>.zip`
   (production files only; verified 66 files, no tests/tooling/vendor).
 
 ## Before you submit — confirm
@@ -34,15 +34,15 @@ up. This file is the checklist and the steps.
    rejection) or bump after testing.
 3. **Run Plugin Check** once more on the final build and read the report
    (the CI job does this on every push; to run locally, install the
-   `plugin-check` plugin on a test site and run `wp plugin check consent-gate`,
+   `plugin-check` plugin on a test site and run `wp plugin check third-party-embed-gate`,
    or use the web tool). Fix any ERROR-level findings; warnings are advisory.
 
 ## Submit (human steps)
 
 1. Build the final zip: `bash bin/build-zip.sh`.
 2. Go to https://wordpress.org/plugins/developers/add/ , sign in, and upload
-   `build/consent-gate-<version>.zip`. Confirm the requested slug is
-   **`consent-gate`** (it must match `Text Domain` and `Stable tag`).
+   `build/third-party-embed-gate-<version>.zip`. Confirm the requested slug is
+   **`third-party-embed-gate`** (it must match `Text Domain` and `Stable tag`).
 3. Accept the guidelines and submit. You will get an automated Plugin Check
    email, then a manual review (typically days to a couple of weeks).
 4. Reply to the review email if changes are requested. On approval you get
@@ -70,7 +70,7 @@ To cut a release: bump the `Version` header (and `Stable tag`), merge to
 `main`. The release job tags and publishes the GitHub release and, when
 `WPORG_DEPLOY` is on, the deploy job pushes it to SVN.
 
-Manual alternative (no CI): `svn co https://plugins.svn.wordpress.org/consent-gate`,
+Manual alternative (no CI): `svn co https://plugins.svn.wordpress.org/third-party-embed-gate`,
 copy the built files into `trunk/`, copy `.wordpress-org/*` into `assets/`,
 `svn cp trunk tags/<version>`, `svn ci`.
 

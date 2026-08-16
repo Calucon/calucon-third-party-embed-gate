@@ -1,5 +1,5 @@
 /**
- * Consent Gate front end.
+ * Third-Party Embed Gate front end.
  *
  * Dependency-free, ES5-compatible by design (PLAN.md §11): must run before
  * any framework and on old browsers. Does nothing until the visitor clicks —

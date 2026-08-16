@@ -1,11 +1,11 @@
-=== Consent Gate ===
+=== Third-Party Embed Gate ===
 Contributors: calucon
 Donate link: https://ko-fi.com/calucon
 Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.7.5
+Stable tag: 0.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,9 +15,9 @@ Two-click embeds: third-party iframes and embed scripts load only after the visi
 
 When an editor pastes a YouTube URL, WordPress turns it into an iframe — and on every page view, before the visitor has been offered any choice, their browser contacts the provider. Measured on a plain GET to `www.youtube.com/embed/…` with no playback and no scripts run: five cookies, two of them ~18-month identifiers. The same request on `www.youtube-nocookie.com` sets zero.
 
-Consent Gate replaces third-party embeds with a server-rendered placeholder until the visitor clicks to load them — the two-click pattern (Zwei-Klick-Lösung). Nothing third-party is contacted before that click: no script, no iframe, no thumbnail, no preconnect. Nothing is stored on the visitor's device before that click either — including by this plugin.
+Third-Party Embed Gate replaces third-party embeds with a server-rendered placeholder until the visitor clicks to load them — the two-click pattern (Zwei-Klick-Lösung). Nothing third-party is contacted before that click: no script, no iframe, no thumbnail, no preconnect. Nothing is stored on the visitor's device before that click either — including by this plugin.
 
-See it in action on the [live demo](https://calucon.de/consent-gate-showcase/), or read the details on the [plugin page](https://calucon.de/consent-gate/).
+See it in action on the [live demo](https://calucon.de/third-party-embed-gate-showcase/), or read the details on the [plugin page](https://calucon.de/third-party-embed-gate/).
 
 **What it does**
 
@@ -38,7 +38,7 @@ See it in action on the [live demo](https://calucon.de/consent-gate-showcase/), 
 
 **What it is not**
 
-Consent Gate is a technical measure. It is not a consent management platform, it does not produce consent records for accountability purposes, it does not scan your site, and it does not make legal claims about your site. What it technically does: it prevents the embed providers' requests until the visitor acts, and the click is scoped to the embed (or, if you enable memory, the scope you configure). You remain responsible for your privacy policy, which still has to name the providers you embed from, and for your legal bases. If you need a documented consent record, you need a consent management platform.
+Third-Party Embed Gate is a technical measure. It is not a consent management platform, it does not produce consent records for accountability purposes, it does not scan your site, and it does not make legal claims about your site. What it technically does: it prevents the embed providers' requests until the visitor acts, and the click is scoped to the embed (or, if you enable memory, the scope you configure). You remain responsible for your privacy policy, which still has to name the providers you embed from, and for your legal bases. If you need a documented consent record, you need a consent management platform.
 
 **Customisation**
 
@@ -50,11 +50,11 @@ Consent Gate is a technical measure. It is not a consent management platform, it
 
 == Installation ==
 
-Consent Gate works the moment it is activated — it gates third-party embeds by default, with no configuration, no account and no external service.
+Third-Party Embed Gate works the moment it is activated — it gates third-party embeds by default, with no configuration, no account and no external service.
 
-1. In your WordPress admin, go to **Plugins → Add New**, search for "Consent Gate", and click **Install Now**, then **Activate**. To install from a downloaded zip instead, go to **Plugins → Add New → Upload Plugin**, choose the file, install and activate.
+1. In your WordPress admin, go to **Plugins → Add New**, search for "Third-Party Embed Gate", and click **Install Now**, then **Activate**. To install from a downloaded zip instead, go to **Plugins → Add New → Upload Plugin**, choose the file, install and activate.
 2. That is all that is required. Your existing embeds are now replaced with a click-to-load placeholder on the front end, and nothing third-party is contacted before the visitor clicks. Editors keep seeing the normal embed in the block editor, so nothing changes about how you write posts.
-3. Optional: open **Settings → Consent Gate** to adjust appearance, per-provider behaviour, detection rules, consent memory and the optional consent-platform bridge. None of it is needed to be protected — the defaults gate everything third-party.
+3. Optional: open **Settings → Third-Party Embed Gate** to adjust appearance, per-provider behaviour, detection rules, consent memory and the optional consent-platform bridge. None of it is needed to be protected — the defaults gate everything third-party.
 
 If you turn on consent memory and want to offer visitors a way to take it back, add the "Withdraw embed consents" block, or place the `[consent_gate_withdraw]` shortcode on your privacy-policy page.
 
@@ -64,7 +64,7 @@ If you turn on consent memory and want to offer visitors a way to take it back, 
 
 = Does this make my site GDPR compliant? =
 
-No plugin can claim that, and this one does not. Consent Gate implements a technical measure: it prevents third-party embed requests (and the storage they trigger on the visitor's device) until the visitor explicitly asks for the content. Whether your site's overall processing is lawful depends on things a plugin cannot know. The relevant background — § 25 TDDDG / ePrivacy Art. 5(3) for terminal-equipment storage, GDPR Art. 6(1)(a) for the processing after the click — is described in the documentation, and your privacy policy still has to name the providers you use.
+No plugin can claim that, and this one does not. Third-Party Embed Gate implements a technical measure: it prevents third-party embed requests (and the storage they trigger on the visitor's device) until the visitor explicitly asks for the content. Whether your site's overall processing is lawful depends on things a plugin cannot know. The relevant background — § 25 TDDDG / ePrivacy Art. 5(3) for terminal-equipment storage, GDPR Art. 6(1)(a) for the processing after the click — is described in the documentation, and your privacy policy still has to name the providers you use.
 
 = Why is there no cookie banner? =
 
@@ -72,15 +72,15 @@ Because there is nothing to announce at page load. If nothing third-party loads 
 
 = I already run a cookie banner (Complianz, Cookiebot, …). Do they fight? =
 
-No. Out of the box Consent Gate ignores the banner and keeps gating — visitors see your banner for its categories and the embed placeholder for embeds, and nothing double-blocks (the placeholder contains no iframe or script for a banner's blocker to catch). If you prefer one decision instead of two, enable the consent platform bridge under Settings → Consent Gate → Consent: a consent your visitor gives in the platform then loads the embeds automatically, and a withdrawal there re-gates them. The bridge works only with the platforms listed on that screen — with any other platform it stays out of the way and gating stands. If you would rather have your platform's own blocker handle a specific provider, disable that provider under Providers and Consent Gate steps aside for it.
+No. Out of the box Third-Party Embed Gate ignores the banner and keeps gating — visitors see your banner for its categories and the embed placeholder for embeds, and nothing double-blocks (the placeholder contains no iframe or script for a banner's blocker to catch). If you prefer one decision instead of two, enable the consent platform bridge under Settings → Third-Party Embed Gate → Consent: a consent your visitor gives in the platform then loads the embeds automatically, and a withdrawal there re-gates them. The bridge works only with the platforms listed on that screen — with any other platform it stays out of the way and gating stands. If you would rather have your platform's own blocker handle a specific provider, disable that provider under Providers and Third-Party Embed Gate steps aside for it.
 
 = Is Google Consent Mode v2 supported? =
 
-Consent Mode is deliberately not read or written directly. It is a signal that consent platforms send to Google's tags; Google publishes no API for other scripts to read it, and no Consent Mode signal governs iframes such as YouTube embeds. The bridge instead connects to the consent platform itself — the same place Consent Mode gets its state from — which is the reliable way to honour the same visitor choice. Consent Gate also never sends `gtag('consent', …)` updates: a click on one embed is consent for that embed, not a site-wide marketing consent, and misreporting that would be wrong.
+Consent Mode is deliberately not read or written directly. It is a signal that consent platforms send to Google's tags; Google publishes no API for other scripts to read it, and no Consent Mode signal governs iframes such as YouTube embeds. The bridge instead connects to the consent platform itself — the same place Consent Mode gets its state from — which is the reliable way to honour the same visitor choice. Third-Party Embed Gate also never sends `gtag('consent', …)` updates: a click on one embed is consent for that embed, not a site-wide marketing consent, and misreporting that would be wrong.
 
 = An embed from my page builder is not being gated =
 
-Page builders render outside WordPress's content filters. Enable "Gate the whole page output" under Settings → Consent Gate → Detection. It is off by default because whole-page buffering can conflict with other buffering plugins.
+Page builders render outside WordPress's content filters. Enable "Gate the whole page output" under Settings → Third-Party Embed Gate → Detection. It is off by default because whole-page buffering can conflict with other buffering plugins.
 
 = The placeholder looks unstyled after an update =
 
@@ -88,11 +88,17 @@ If your minification setup serves CSS from a long-cached URL that does not chang
 
 = Does `loading="lazy"` on an iframe count as consent? =
 
-No. Lazy loading defers the request to scroll time — it is still made without consent. Consent Gate gates lazy iframes like any other.
+No. Lazy loading defers the request to scroll time — it is still made without consent. Third-Party Embed Gate gates lazy iframes like any other.
 
 = How do I report a security issue? =
 
 Privately, please — through GitHub's private vulnerability reporting on the plugin repository (https://github.com/Calucon/consent-gate/security/advisories/new), not in a public issue or support topic. The repository's SECURITY.md describes what counts: besides the usual classes, any way to make a page contact a third party before the click is a vulnerability.
+
+== External services ==
+
+This plugin makes no request to any external service, on any page, at any time. It contacts no API, loads no remote script, font, image or update check, and sends no telemetry. Its entire purpose is the opposite direction: it prevents your pages from contacting embed providers.
+
+Third-party content enters the picture only after a visitor explicitly clicks the "Load" button on an embed placeholder. At that moment the visitor's browser loads that one embed from its provider (for example YouTube, Vimeo, or Google Maps) — exactly as it would have without this plugin, except that it now happens on the visitor's request instead of automatically. Each placeholder names the provider and links its privacy policy before the click, and the provider hostnames in the plugin's source code exist solely so it can recognise and gate that content. No data is sent anywhere by the plugin itself.
 
 == Screenshots ==
 
@@ -103,6 +109,11 @@ Privately, please — through GitHub's private vulnerability reporting on the pl
 5. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, and set an optional poster image from your own media library.
 
 == Changelog ==
+
+= 0.8.0 =
+* Renamed from "Consent Gate" to "Third-Party Embed Gate" (new slug `third-party-embed-gate`) during WordPress.org review, to make clear the plugin gates third-party embeds and is not a consent management platform. No functional change.
+* Translations: the strings defined in the WordPress-free layers are now mirrored in `languages/strings.php` as literal gettext calls, so translate.wordpress.org can extract them. Removed the redundant `load_plugin_textdomain()` call (WordPress loads language packs automatically since 4.6).
+* readme: added the "External services" section stating what the plugin does (and does not) contact.
 
 = 0.7.5 =
 * Compliance: documented the WordPress-free layer's `parse_url()` usage and replaced a WordPress 6.5-only function with a version-agnostic equivalent, so the plugin passes WordPress Plugin Check cleanly on the 5.9 minimum. No functional change.
@@ -130,7 +141,7 @@ Privately, please — through GitHub's private vulnerability reporting on the pl
 * Legacy Google Maps embeds (`maps.google.com/maps?q=…&output=embed`, the older share form that is still widespread) are now recognised as Google Maps instead of falling back to the generic gate. They were already gated either way; they now get the Google Maps label, note and resource-hint scrubbing.
 
 = 0.6.0 =
-* Poster images: every embed block gains a "Set poster image" control (Consent Gate panel in the block inspector). The chosen media-library image is shown behind the consent panel until the visitor loads the embed — served from your own site, never fetched from the provider, so the zero-third-party-requests guarantee is untouched. The panel keeps its solid background on top of the image, so text contrast is preserved.
+* Poster images: every embed block gains a "Set poster image" control (Third-Party Embed Gate panel in the block inspector). The chosen media-library image is shown behind the consent panel until the visitor loads the embed — served from your own site, never fetched from the provider, so the zero-third-party-requests guarantee is untouched. The panel keeps its solid background on top of the image, so text contrast is preserved.
 * Theme placeholder templates receive the poster as a `$poster` variable; see docs/customizing.md.
 
 = 0.5.0 =

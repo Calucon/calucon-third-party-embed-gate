@@ -1,12 +1,12 @@
 <img src=".wordpress-org/icon.svg" alt="" width="96" align="right">
 
-# Consent Gate — a two-click embed plugin for WordPress
+# Third-Party Embed Gate — a two-click embed plugin for WordPress
 
 Hold third-party embeds until the visitor asks for them, so nothing is
 contacted and nothing is stored before a click. No cookie banner, no
 subscription, no consent platform.
 
-**[Plugin page](https://calucon.de/consent-gate/) · [Live demo](https://calucon.de/consent-gate-showcase/)**
+**[Plugin page](https://calucon.de/third-party-embed-gate/) · [Live demo](https://calucon.de/third-party-embed-gate-showcase/)**
 
 **Status: M1–M7 implemented**, including the §6.4 CMP bridge (see below).
 The core claim — zero third-party requests before interaction — is enforced
@@ -109,7 +109,7 @@ that site:
 
 ## Support
 
-Consent Gate is free and GPL, and it stays that way. If it saves you time or
+Third-Party Embed Gate is free and GPL, and it stays that way. If it saves you time or
 helps your visitors, you can support its development on
 [Ko-fi](https://ko-fi.com/calucon) — it goes toward the tooling and time
 behind the plugin. Entirely optional; the plugin is fully functional without it.

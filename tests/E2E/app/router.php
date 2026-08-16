@@ -362,13 +362,13 @@ function cg_e2e_page( string $content, string $extra_css = '', string $config_js
 	header( 'Content-Type: text/html; charset=utf-8' );
 	echo '<!doctype html><html lang="en"><head><meta charset="utf-8">'
 		. '<meta name="viewport" content="width=device-width, initial-scale=1">'
-		. '<title>Consent Gate E2E</title>'
+		. '<title>Third-Party Embed Gate E2E</title>'
 		. '<link rel="stylesheet" href="/assets/gate.css">'
 		. ( '' !== $extra_css ? '<style>' . $extra_css . '</style>' : '' )
 		. '</head><body>'
 		// A real theme provides the page scaffold (landmark + h1); the panel
 		// itself deliberately adds neither (PLAN.md §5.1).
-		. '<main><h1>Consent Gate E2E</h1>'
+		. '<main><h1>Third-Party Embed Gate E2E</h1>'
 		. $gated
 		. '</main>'
 		. ( '' !== $config_js ? '<script>' . $config_js . '</script>' : '' )

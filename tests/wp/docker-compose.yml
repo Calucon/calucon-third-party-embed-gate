@@ -8,7 +8,7 @@
 # Image names are overridable for registries/mirrors (CI rate limits):
 #   CG_WP_IMAGE, CG_WP_CLI_IMAGE, CG_DB_IMAGE
 
-name: consent-gate-wp
+name: third-party-embed-gate-wp
 
 services:
   db:
@@ -38,7 +38,7 @@ services:
       WORDPRESS_DB_NAME: wordpress
     volumes:
       - wp_data:/var/www/html
-      - ../..:/var/www/html/wp-content/plugins/consent-gate:ro
+      - ../..:/var/www/html/wp-content/plugins/third-party-embed-gate:ro
 
   # One-shot wp-cli commands: docker compose run --rm cli wp <command>
   cli:
@@ -54,7 +54,7 @@ services:
       WORDPRESS_DB_NAME: wordpress
     volumes:
       - wp_data:/var/www/html
-      - ../..:/var/www/html/wp-content/plugins/consent-gate:ro
+      - ../..:/var/www/html/wp-content/plugins/third-party-embed-gate:ro
 
 volumes:
   wp_data:

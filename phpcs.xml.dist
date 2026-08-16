@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<ruleset name="Consent Gate">
-	<description>WordPress coding standards for the Consent Gate plugin.</description>
+<ruleset name="Third-Party Embed Gate">
+	<description>WordPress coding standards for the Third-Party Embed Gate plugin.</description>
 
-	<file>consent-gate.php</file>
+	<file>third-party-embed-gate.php</file>
 	<file>uninstall.php</file>
 	<file>src</file>
 	<file>templates</file>
@@ -24,7 +24,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="consent-gate"/>
+				<element value="third-party-embed-gate"/>
 			</property>
 		</properties>
 	</rule>
