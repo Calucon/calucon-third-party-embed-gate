@@ -291,7 +291,7 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	await expect( page.locator( 'form p.submit' ) ).toBeVisible();
 
 	// The Status scan's legacy anchor still lands on the right tab.
-	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg-scan=1#cg-status' );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&calucon-embed-gate-scan=1#cg-status' );
 	await expect( page.locator( '#cg-tabbtn-status' ) ).toHaveAttribute( 'aria-selected', 'true' );
 	await expect( page.locator( '#cg-status' ) ).toBeVisible();
 } );
