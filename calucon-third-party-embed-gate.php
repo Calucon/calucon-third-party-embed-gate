@@ -24,18 +24,6 @@ define( 'CALUCON_EMBED_GATE_VERSION', '0.9.0' );
 define( 'CALUCON_EMBED_GATE_FILE', __FILE__ );
 define( 'CALUCON_EMBED_GATE_DIR', __DIR__ );
 
-/*
- * Back-compat aliases. The child theme on calucon.de disables its own embed
- * gate while this plugin is active by testing for the version constant; if it
- * stops being detected, both gates run and every embed gets two opt-in panels.
- * The theme accepts either name now, but a plugin update and a theme deploy are
- * not atomic. Keep these until at least 1.0.0 and remove them in a release of
- * their own, never alongside other changes.
- */
-define( 'CONSENT_GATE_VERSION', CALUCON_EMBED_GATE_VERSION );
-define( 'CONSENT_GATE_FILE', CALUCON_EMBED_GATE_FILE );
-define( 'CONSENT_GATE_DIR', CALUCON_EMBED_GATE_DIR );
-
 spl_autoload_register(
 	static function ( $class_name ) {
 		if ( 0 !== strpos( $class_name, 'CaluconEmbedGate\\' ) ) {

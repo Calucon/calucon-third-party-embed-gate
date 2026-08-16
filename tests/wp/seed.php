@@ -63,7 +63,7 @@ $cg_seed_posts = array(
 	),
 	'poster-embed'   => array(
 		'title'   => 'Poster embed',
-		'content' => "<!-- wp:html {\"consentGatePoster\":" . $cg_poster_id . "} -->\n<figure class=\"wp-block-embed is-type-video wp-block-embed-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio\"><div class=\"wp-block-embed__wrapper\">\n<iframe title=\"Kolkja Cycling\" width=\"500\" height=\"281\" src=\"https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed\" frameborder=\"0\" allowfullscreen></iframe>\n</div></figure>\n<!-- /wp:html -->",
+		'content' => "<!-- wp:html {\"caluconEmbedGatePoster\":" . $cg_poster_id . "} -->\n<figure class=\"wp-block-embed is-type-video wp-block-embed-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio\"><div class=\"wp-block-embed__wrapper\">\n<iframe title=\"Kolkja Cycling\" width=\"500\" height=\"281\" src=\"https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed\" frameborder=\"0\" allowfullscreen></iframe>\n</div></figure>\n<!-- /wp:html -->",
 	),
 	'no-embeds'      => array(
 		'title'   => 'No embeds here',
@@ -77,14 +77,6 @@ $cg_seed_posts = array(
 	'withdraw-page'  => array(
 		'title'   => 'Privacy tools',
 		'content' => '<p>Manage stored embed consents:</p>' . "\n" . '[calucon_embed_gate_withdraw]',
-	),
-	// Content authored BEFORE the 0.9.0 identifier rename: the old shortcode
-	// and the old block name live in published pages in the field and must
-	// keep rendering through the back-compat aliases (removal ≥ 1.0.0).
-	'legacy-page'    => array(
-		'title'   => 'Legacy identifiers',
-		'content' => '<p>Old shortcode:</p>' . "\n" . '[consent_gate_withdraw]' . "\n\n"
-			. "<!-- wp:consent-gate/withdraw -->\n<!-- /wp:consent-gate/withdraw -->",
 	),
 );
 

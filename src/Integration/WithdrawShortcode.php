@@ -39,10 +39,6 @@ final class WithdrawShortcode {
 	 */
 	public function register(): void {
 		add_shortcode( 'calucon_embed_gate_withdraw', array( $this, 'render' ) );
-		// Back-compat: the pre-rename shortcode lives in published page
-		// content (an unknown shortcode would render as literal text on a
-		// privacy page). Remove no earlier than 1.0.0, in a release of its own.
-		add_shortcode( 'consent_gate_withdraw', array( $this, 'render' ) );
 	}
 
 	/**

@@ -111,9 +111,8 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 == Changelog ==
 
 = 0.9.0 =
-* Before the WordPress.org listing goes live — the last moment this is possible without breaking anyone — the plugin's internal identifiers were aligned with its new name: filters and actions are now `calucon_embed_gate_*`, the shortcode is `[calucon_embed_gate_withdraw]`, the block is `calucon-embed-gate/withdraw`, the WP-CLI namespace is `wp calucon-embed-gate`, and the theme template override directory is `{theme}/calucon-embed-gate/`.
-* Nothing breaks if you used the old names: the previous shortcode, block, CLI command and template directory keep working as aliases (removal no earlier than 1.0.0, in a release of its own), settings are migrated automatically, and remembered embed consents in visitors' browsers are carried over.
-* The `.cg-embed` CSS classes, `--cg-*` custom properties and `data-cg-*` attributes are unchanged — existing stylesheets and theme overrides keep working as-is.
+* Before the WordPress.org listing goes live — while no installed sites exist to break — the plugin's internal identifiers were aligned with its new name, with no legacy aliases: filters and actions are `calucon_embed_gate_*`, the shortcode is `[calucon_embed_gate_withdraw]`, the block is `calucon-embed-gate/withdraw`, the WP-CLI namespace is `wp calucon-embed-gate`, the theme template override directory is `{theme}/calucon-embed-gate/`, and the settings option was renamed. If you somehow installed a pre-release build, update those references and re-save the settings.
+* The `.cg-embed` CSS classes, `--cg-*` custom properties and `data-cg-*` attributes are unchanged.
 
 = 0.8.1 =
 * Renamed the plugin's constants to match the plugin: CALUCON_EMBED_GATE_VERSION, _FILE and _DIR. The previous CONSENT_GATE_* names remain defined as aliases and will be removed no earlier than 0.9.0, in a release of their own.

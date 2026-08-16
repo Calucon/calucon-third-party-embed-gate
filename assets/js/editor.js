@@ -30,16 +30,12 @@
 			if ( ! isGatedBlock( name ) ) {
 				return settings;
 			}
-			// The attribute keys keep their original names on purpose: they are
-			// stored in published post content (block comment JSON), so
-			// renaming them would silently drop existing per-block overrides
-			// and posters. Do not "finish" the plugin rename here.
 			settings.attributes = Object.assign( {}, settings.attributes, {
-				consentGate: { type: 'string', default: '' },
+				caluconEmbedGate: { type: 'string', default: '' },
 				// Owner-supplied poster (§5.4): the ID is what the server
 				// renders from; the URL exists only for the inspector preview.
-				consentGatePoster: { type: 'number', default: 0 },
-				consentGatePosterUrl: { type: 'string', default: '' }
+				caluconEmbedGatePoster: { type: 'number', default: 0 },
+				caluconEmbedGatePosterUrl: { type: 'string', default: '' }
 			} );
 			return settings;
 		}
@@ -53,8 +49,8 @@
 				if ( ! isGatedBlock( props.name ) ) {
 					return el( BlockEdit, props );
 				}
-				var value = props.attributes.consentGate || '';
-				var posterUrl = props.attributes.consentGatePosterUrl || '';
+				var value = props.attributes.caluconEmbedGate || '';
+				var posterUrl = props.attributes.caluconEmbedGatePosterUrl || '';
 
 				// Poster picker (§5.4, owner-supplied variant): images come
 				// from the media library so the placeholder stays site-origin.
@@ -63,12 +59,12 @@
 					null,
 					el( wp.blockEditor.MediaUpload, {
 						allowedTypes: [ 'image' ],
-						value: props.attributes.consentGatePoster || 0,
+						value: props.attributes.caluconEmbedGatePoster || 0,
 						onSelect: function ( media ) {
 							var large = media && media.sizes && media.sizes.large ? media.sizes.large.url : '';
 							props.setAttributes( {
-								consentGatePoster: media && media.id ? media.id : 0,
-								consentGatePosterUrl: large || ( media && media.url ? media.url : '' )
+								caluconEmbedGatePoster: media && media.id ? media.id : 0,
+								caluconEmbedGatePosterUrl: large || ( media && media.url ? media.url : '' )
 							} );
 						},
 						render: function ( obj ) {
@@ -90,7 +86,7 @@
 									variant: 'link',
 									isDestructive: true,
 									onClick: function () {
-										props.setAttributes( { consentGatePoster: 0, consentGatePosterUrl: '' } );
+										props.setAttributes( { caluconEmbedGatePoster: 0, caluconEmbedGatePosterUrl: '' } );
 									}
 								}, __( 'Remove poster image', 'calucon-third-party-embed-gate' ) ) : null,
 								el(
@@ -122,7 +118,7 @@
 									{ value: 'never', label: __( 'Never gate', 'calucon-third-party-embed-gate' ) }
 								],
 								onChange: function ( next ) {
-									props.setAttributes( { consentGate: next } );
+									props.setAttributes( { caluconEmbedGate: next } );
 								},
 								help: value === 'never'
 									? __( 'This block’s embeds will load immediately for every visitor, without a consent click.', 'calucon-third-party-embed-gate' )
@@ -143,11 +139,11 @@
 		'calucon-embed-gate/badge',
 		wp.compose.createHigherOrderComponent( function ( BlockListBlock ) {
 			return function ( props ) {
-				if ( ! isGatedBlock( props.name ) || ! props.attributes.consentGate ) {
+				if ( ! isGatedBlock( props.name ) || ! props.attributes.caluconEmbedGate ) {
 					return el( BlockListBlock, props );
 				}
 				var wrapperProps = Object.assign( {}, props.wrapperProps, {
-					'data-consent-gate': props.attributes.consentGate
+					'data-calucon-embed-gate': props.attributes.caluconEmbedGate
 				} );
 				return el( BlockListBlock, Object.assign( {}, props, { wrapperProps: wrapperProps } ) );
 			};
@@ -196,11 +192,4 @@
 	};
 
 	wp.blocks.registerBlockType( 'calucon-embed-gate/withdraw', withdrawBlock );
-	// Back-compat: the pre-rename block name exists in stored post content;
-	// registering it keeps those blocks editable instead of "unsupported".
-	// Hidden from the inserter; remove no earlier than 1.0.0.
-	wp.blocks.registerBlockType(
-		'consent-gate/withdraw',
-		Object.assign( {}, withdrawBlock, { supports: { inserter: false } } )
-	);
 }( window.wp ) );

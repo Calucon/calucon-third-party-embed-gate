@@ -209,17 +209,6 @@ test( 'withdraw shortcode renders a real button with its live region', async ( {
 	await expect( page.locator( `#${ statusId }[aria-live="polite"]` ) ).toHaveCount( 1 );
 } );
 
-test( 'pre-rename identifiers in stored content keep working through the aliases', async ( { page } ) => {
-	// /legacy-page/ was authored before the 0.9.0 rename: it uses the old
-	// [consent_gate_withdraw] shortcode and the old consent-gate/withdraw
-	// block. Both must render real buttons — an unregistered shortcode would
-	// show as literal text on someone's privacy page, and an unregistered
-	// block renders nothing.
-	await page.goto( '/legacy-page/' );
-
-	await expect( page.locator( 'button.cg-withdraw[data-cg-withdraw]' ) ).toHaveCount( 2 );
-	await expect( page.locator( 'body' ) ).not.toContainText( '[consent_gate_withdraw]' );
-} );
 
 test( 'admin: appearance controls are novice-usable — pickers, live preview, contrast report', async ( { page } ) => {
 	await page.goto( '/wp-login.php' );

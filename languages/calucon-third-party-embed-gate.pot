@@ -13,7 +13,7 @@ msgstr ""
 msgid "%1$s: %2$s — %3$s"
 msgstr ""
 
-#: assets/js/editor.js:163
+#: assets/js/editor.js:159
 msgid "A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled."
 msgstr ""
 
@@ -37,7 +37,7 @@ msgstr ""
 msgid "Also honour an IAB TCF v2.2 signal (sites running an ad-industry consent framework)"
 msgstr ""
 
-#: assets/js/editor.js:121
+#: assets/js/editor.js:117
 msgid "Always gate"
 msgstr ""
 
@@ -62,7 +62,7 @@ msgstr ""
 msgid "Button background"
 msgstr ""
 
-#: assets/js/editor.js:183
+#: assets/js/editor.js:179
 msgid "Button label"
 msgstr ""
 
@@ -74,8 +74,8 @@ msgstr ""
 msgid "Button text on the button background"
 msgstr ""
 
-#: assets/js/editor.js:115
-#: assets/js/editor.js:181
+#: assets/js/editor.js:111
+#: assets/js/editor.js:177
 #: src/Admin/SettingsPage.php:156
 #: src/Admin/SettingsPage.php:157
 #: src/Admin/SettingsPage.php:192
@@ -193,7 +193,7 @@ msgstr ""
 msgid "Embeds from these hosts load without a placeholder. Use only for third parties you have covered elsewhere — this plugin then no longer prevents their requests."
 msgstr ""
 
-#: src/Plugin.php:360
+#: src/Plugin.php:346
 msgid "Example embed"
 msgstr ""
 
@@ -233,7 +233,7 @@ msgstr ""
 msgid "Gate third-party scripts in content"
 msgstr ""
 
-#: assets/js/editor.js:117
+#: assets/js/editor.js:113
 msgid "Gate this embed"
 msgstr ""
 
@@ -354,7 +354,7 @@ msgstr ""
 msgid "Load video from YouTube"
 msgstr ""
 
-#: src/Plugin.php:664
+#: src/Plugin.php:650
 msgid "Loading embedded content…"
 msgstr ""
 
@@ -458,7 +458,7 @@ msgstr ""
 msgid "NOT gated — provider disabled in the table above"
 msgstr ""
 
-#: assets/js/editor.js:122
+#: assets/js/editor.js:118
 msgid "Never gate"
 msgstr ""
 
@@ -506,7 +506,7 @@ msgstr ""
 msgid "Only used with Borlabs Cookie, whose consent groups are defined per site: the ID of the group that covers embedded content. The default installation calls it \"external-media\"."
 msgstr ""
 
-#: src/Plugin.php:666
+#: src/Plugin.php:652
 msgid "Open it on the provider’s site."
 msgstr ""
 
@@ -515,7 +515,7 @@ msgstr ""
 msgid "Open on %s"
 msgstr ""
 
-#: assets/js/editor.js:129
+#: assets/js/editor.js:125
 msgid "Overrides the site-wide setting for this block only."
 msgstr ""
 
@@ -576,7 +576,7 @@ msgstr ""
 msgid "Remember consent"
 msgstr ""
 
-#: assets/js/editor.js:95
+#: assets/js/editor.js:91
 msgid "Remove poster image"
 msgstr ""
 
@@ -584,7 +584,7 @@ msgstr ""
 msgid "Renders your latest posts and pages in memory and reports every embed found and whether it is gated. Read-only; no outbound requests."
 msgstr ""
 
-#: assets/js/editor.js:87
+#: assets/js/editor.js:83
 msgid "Replace poster image"
 msgstr ""
 
@@ -612,15 +612,15 @@ msgstr ""
 msgid "Scope"
 msgstr ""
 
-#: assets/js/editor.js:88
+#: assets/js/editor.js:84
 msgid "Set poster image"
 msgstr ""
 
-#: assets/js/editor.js:99
+#: assets/js/editor.js:95
 msgid "Shown behind the consent panel until the visitor loads the embed. The image is served from your own media library, never fetched from the provider."
 msgstr ""
 
-#: assets/js/editor.js:120
+#: assets/js/editor.js:116
 msgid "Site default"
 msgstr ""
 
@@ -637,7 +637,7 @@ msgstr ""
 msgid "Status & tools"
 msgstr ""
 
-#: src/Plugin.php:663
+#: src/Plugin.php:649
 msgid "Stored embed consents have been removed. Embeds will ask again."
 msgstr ""
 
@@ -649,7 +649,7 @@ msgstr ""
 msgid "Tested and interoperable: %s."
 msgstr ""
 
-#: src/Plugin.php:665
+#: src/Plugin.php:651
 msgid "The embedded content could not be loaded."
 msgstr ""
 
@@ -661,7 +661,7 @@ msgstr ""
 msgid "Third-party embeds are replaced with a placeholder until the visitor clicks to load them. Nothing is contacted, and nothing is stored, before that click."
 msgstr ""
 
-#: assets/js/editor.js:128
+#: assets/js/editor.js:124
 msgid "This block’s embeds will load immediately for every visitor, without a consent click."
 msgstr ""
 
@@ -685,9 +685,9 @@ msgstr ""
 msgid "What Calucon Third-Party Embed Gate does"
 msgstr ""
 
-#: assets/js/editor.js:160
-#: assets/js/editor.js:174
-#: src/Integration/WithdrawShortcode.php:59
+#: assets/js/editor.js:156
+#: assets/js/editor.js:170
+#: src/Integration/WithdrawShortcode.php:55
 msgid "Withdraw embed consents"
 msgstr ""
 

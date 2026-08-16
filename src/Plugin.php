@@ -112,17 +112,6 @@ final class Plugin {
 	}
 
 	private function __construct() {
-		// One-time option migration from the pre-rename name. Runs only while
-		// the new option is absent and the old one exists; the old row is
-		// removed so this is a single write, not a recurring cost.
-		if ( false === get_option( Options::OPTION ) ) {
-			$legacy = get_option( 'consent_gate_options' );
-			if ( false !== $legacy ) {
-				add_option( Options::OPTION, $legacy );
-				delete_option( 'consent_gate_options' );
-			}
-		}
-
 		$this->options = Options::sanitize( get_option( Options::OPTION, Options::defaults() ) );
 
 		// No load_plugin_textdomain() call: WordPress ≥ 4.6 loads the
@@ -180,9 +169,6 @@ final class Plugin {
 				}
 			);
 			\WP_CLI::add_command( 'calucon-embed-gate', $cli );
-			// Back-compat: scripts and CI may still call `wp consent-gate …`.
-			// Remove no earlier than 1.0.0, in a release of its own.
-			\WP_CLI::add_command( 'consent-gate', $cli );
 		}
 
 		if ( $this->options['detection']['output_buffer'] ) {

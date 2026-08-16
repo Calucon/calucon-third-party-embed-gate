@@ -208,7 +208,7 @@ if ( '/page/shapes' === $uri ) {
 if ( '/page/poster' === $uri ) {
 	// Owner-supplied poster (§5.4): the integration layer resolved a
 	// media-library image to a site-origin URL and put it in the context —
-	// exactly what RenderBlock does for the consentGatePoster attribute.
+	// exactly what RenderBlock does for the caluconEmbedGatePoster attribute.
 	$content = implode(
 		"\n",
 		array(

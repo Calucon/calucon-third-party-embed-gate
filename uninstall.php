@@ -23,12 +23,8 @@ if ( is_multisite() ) {
 		)
 	) as $calucon_embed_gate_site_id ) {
 		delete_blog_option( $calucon_embed_gate_site_id, 'calucon_embed_gate_options' );
-		// Pre-rename option name, in case the plugin never ran to migrate it.
-		delete_blog_option( $calucon_embed_gate_site_id, 'consent_gate_options' );
 	}
 	unset( $calucon_embed_gate_site_id );
 } else {
 	delete_option( 'calucon_embed_gate_options' );
-	// Pre-rename option name, in case the plugin never ran to migrate it.
-	delete_option( 'consent_gate_options' );
 }

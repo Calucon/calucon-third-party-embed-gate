@@ -40,12 +40,6 @@ final class TemplateLoader {
 	 */
 	public function placeholder_template(): string {
 		$path = (string) call_user_func( $this->locator, 'calucon-embed-gate/placeholder.php' );
-		if ( '' === $path || ! is_file( $path ) ) {
-			// Back-compat: the pre-rename override directory. Themes that
-			// shipped {theme}/consent-gate/placeholder.php keep working;
-			// remove no earlier than 1.0.0, in a release of its own.
-			$path = (string) call_user_func( $this->locator, 'consent-gate/placeholder.php' );
-		}
 		return ( '' !== $path && is_file( $path ) ) ? $path : '';
 	}
 

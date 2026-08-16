@@ -92,25 +92,6 @@
 	// only READS storage. Client-side only (§6.3): server-side state would
 	// make every page uncacheable.
 	var STORAGE_KEY = 'calucon-embed-gate';
-	var LEGACY_STORAGE_KEY = 'consent-gate';
-
-	// One-time migration of consents stored under the pre-rename key, so a
-	// returning visitor's remembered choices survive the plugin rename. Only
-	// moves data that already exists — nothing is written for visitors who
-	// never consented (invariant 3). Remove no earlier than 1.0.0.
-	function migrateLegacyStorage( store ) {
-		try {
-			var legacy = store.getItem( LEGACY_STORAGE_KEY );
-			if ( legacy !== null ) {
-				if ( store.getItem( STORAGE_KEY ) === null ) {
-					store.setItem( STORAGE_KEY, legacy );
-				}
-				store.removeItem( LEGACY_STORAGE_KEY );
-			}
-		} catch ( e ) {
-			// Storage blocked: nothing to migrate.
-		}
-	}
 
 	function memoryConfig() {
 		var config = window.caluconEmbedGateConfig || {};
@@ -125,9 +106,7 @@
 
 	function memoryStore( config ) {
 		try {
-			var store = config.memory === 'session' ? window.sessionStorage : window.localStorage;
-			migrateLegacyStorage( store );
-			return store;
+			return config.memory === 'session' ? window.sessionStorage : window.localStorage;
 		} catch ( e ) {
 			return null; // Storage blocked: memory silently degrades to off.
 		}
@@ -223,11 +202,9 @@
 		// next page load.
 		try {
 			window.sessionStorage.removeItem( STORAGE_KEY );
-			window.sessionStorage.removeItem( LEGACY_STORAGE_KEY );
 		} catch ( e ) { /* Storage blocked: nothing was stored. */ }
 		try {
 			window.localStorage.removeItem( STORAGE_KEY );
-			window.localStorage.removeItem( LEGACY_STORAGE_KEY );
 		} catch ( e ) { /* Storage blocked: nothing was stored. */ }
 	}
 

@@ -34,7 +34,6 @@
 			<property name="prefixes" type="array">
 				<element value="CaluconEmbedGate"/>
 				<element value="calucon_embed_gate"/>
-				<element value="CONSENT_GATE"/>
 				<element value="CALUCON_EMBED_GATE"/>
 			</property>
 		</properties>

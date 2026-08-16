@@ -61,22 +61,19 @@ final class BlockEditor {
 	 * @return void
 	 */
 	public function register_blocks(): void {
-		$withdraw = array(
-			'api_version'     => 2,
-			'attributes'      => array(
-				'label' => array(
-					'type'    => 'string',
-					'default' => '',
+		register_block_type(
+			'calucon-embed-gate/withdraw',
+			array(
+				'api_version'     => 2,
+				'attributes'      => array(
+					'label' => array(
+						'type'    => 'string',
+						'default' => '',
+					),
 				),
-			),
-			'render_callback' => array( $this, 'render_withdraw' ),
+				'render_callback' => array( $this, 'render_withdraw' ),
+			)
 		);
-
-		register_block_type( 'calucon-embed-gate/withdraw', $withdraw );
-		// Back-compat: the pre-rename block name is stored in published post
-		// content as <!-- wp:consent-gate/withdraw --> and must keep
-		// rendering. Remove no earlier than 1.0.0, in a release of its own.
-		register_block_type( 'consent-gate/withdraw', $withdraw );
 	}
 
 	/**
