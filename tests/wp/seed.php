@@ -78,6 +78,14 @@ $cg_seed_posts = array(
 		'title'   => 'Privacy tools',
 		'content' => '<p>Manage stored embed consents:</p>' . "\n" . '[calucon_embed_gate_withdraw]',
 	),
+	// Content authored BEFORE the 0.9.0 identifier rename: the old shortcode
+	// and the old block name live in published pages in the field and must
+	// keep rendering through the back-compat aliases (removal ≥ 1.0.0).
+	'legacy-page'    => array(
+		'title'   => 'Legacy identifiers',
+		'content' => '<p>Old shortcode:</p>' . "\n" . '[consent_gate_withdraw]' . "\n\n"
+			. "<!-- wp:consent-gate/withdraw -->\n<!-- /wp:consent-gate/withdraw -->",
+	),
 );
 
 foreach ( $cg_seed_posts as $cg_slug => $cg_post ) {
