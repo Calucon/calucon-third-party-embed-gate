@@ -1,0 +1,54 @@
+diff --git a/.github/workflows/plugin-check.yml b/.github/workflows/plugin-check.yml
+index 1a8868f..d5e1a18 100644
+--- a/.github/workflows/plugin-check.yml
++++ b/.github/workflows/plugin-check.yml
+@@ -31,5 +31,5 @@ jobs:
+         # tracking v1 keeps the ruleset current at low risk.
+         uses: WordPress/plugin-check-action@v1
+         with:
+-          build-dir: build/consent-gate
++          build-dir: build/third-party-embed-gate
+           ignore-warnings: true
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index ec97421..bf477cb 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -1,7 +1,7 @@
+ # Build and publish a release with the installable plugin zip on every push
+ # to main (i.e. every merge).
+ #
+-# The tag comes from the Version header in consent-gate.php: v0.1.0 for the
++# The tag comes from the Version header in third-party-embed-gate.php: v0.1.0 for the
+ # first merge at that version. If that tag already exists (a merge without a
+ # version bump), the release is still created, as v0.1.0-build.<run number>,
+ # so every merge yields a downloadable zip. Bump the Version header to cut a
+@@ -46,9 +46,9 @@ jobs:
+       - name: Determine version and tag
+         id: version
+         run: |
+-          VERSION=$(sed -nE 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*([0-9][0-9A-Za-z.\-]*)[[:space:]]*$/\1/p' consent-gate.php | head -n1)
++          VERSION=$(sed -nE 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*([0-9][0-9A-Za-z.\-]*)[[:space:]]*$/\1/p' third-party-embed-gate.php | head -n1)
+           if [ -z "$VERSION" ]; then
+-            echo "Could not read the Version header from consent-gate.php" >&2
++            echo "Could not read the Version header from third-party-embed-gate.php" >&2
+             exit 1
+           fi
+           TAG="v${VERSION}"
+@@ -65,8 +65,8 @@ jobs:
+         uses: softprops/action-gh-release@v2
+         with:
+           tag_name: ${{ steps.version.outputs.tag }}
+-          name: Consent Gate ${{ steps.version.outputs.tag }}
+-          files: build/consent-gate-${{ steps.version.outputs.version }}.zip
++          name: Third-Party Embed Gate ${{ steps.version.outputs.tag }}
++          files: build/third-party-embed-gate-${{ steps.version.outputs.version }}.zip
+           generate_release_notes: true
+ 
+   # WordPress.org SVN deploy. Kept in THIS workflow rather than a separate one
+@@ -90,5 +90,5 @@ jobs:
+         env:
+           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+-          SLUG: consent-gate
++          SLUG: third-party-embed-gate
+           VERSION: ${{ needs.release.outputs.version }}
