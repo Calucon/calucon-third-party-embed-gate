@@ -148,7 +148,7 @@ All hooks: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`
 `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`,
 `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`,
 `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`; actions
-`calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated`.
+`calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated`, `calucon_embed_gate_flush_caches`.
 
 ## The consent platform bridge
 

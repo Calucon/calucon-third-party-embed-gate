@@ -24,6 +24,21 @@ define( 'CALUCON_EMBED_GATE_VERSION', '0.9.1' );
 define( 'CALUCON_EMBED_GATE_FILE', __FILE__ );
 define( 'CALUCON_EMBED_GATE_DIR', __DIR__ );
 
+// Cloudflare's official plugin builds its purge-trigger list through ITS
+// 'cloudflare_purge_everything_actions' filter, applied while that plugin
+// loads — registering here at include time (this plugin sorts before
+// "cloudflare" in the load order) is the only reliably-early spot. Effect:
+// when this plugin fires its own calucon_embed_gate_flush_caches action
+// (settings change, deactivation), Cloudflare purges its cache too.
+add_filter(
+	'cloudflare_purge_everything_actions',
+	static function ( $actions ) {
+		$actions   = is_array( $actions ) ? $actions : array();
+		$actions[] = 'calucon_embed_gate_flush_caches';
+		return $actions;
+	}
+);
+
 spl_autoload_register(
 	static function ( $class_name ) {
 		if ( 0 !== strpos( $class_name, 'CaluconEmbedGate\\' ) ) {

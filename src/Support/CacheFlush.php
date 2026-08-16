@@ -47,11 +47,10 @@ final class CacheFlush {
 		if ( function_exists( 'sg_cachepress_purge_cache' ) ) {
 			sg_cachepress_purge_cache();
 		}
-		// Cloudflare: fire the official plugin's OWN purge hook, only when
-		// that plugin is installed. Not a hook of ours — invoking theirs is
-		// the entire point of this integration.
-		if ( defined( 'CLOUDFLARE_PLUGIN_DIR' ) ) {
-			do_action( 'cloudflare_purge_everything' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- the Cloudflare plugin's own purge hook.
-		}
+		// Fired whenever this plugin flushes caches. Cloudflare's official
+		// plugin subscribes to it through its cloudflare_purge_everything_actions
+		// filter (registered in the plugin bootstrap), and site code may hook
+		// it too.
+		do_action( 'calucon_embed_gate_flush_caches' );
 	}
 }
