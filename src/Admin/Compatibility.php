@@ -1,7 +1,7 @@
 <?php
 /**
  * Environment detection for the Compatibility screen (PLAN.md §7.1): the
- * detected CMP, cache plugin and page builder, and what Third-Party Embed Gate
+ * detected CMP, cache plugin and page builder, and what Calucon Third-Party Embed Gate
  * decided to do about each. Read-only.
  *
  * @package ConsentGate

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Third-Party Embed Gate
+ * Plugin Name:       Calucon Third-Party Embed Gate
  * Plugin URI:        https://calucon.de/consent-gate/
  * Description:       Two-click embeds: third-party iframes load only after the visitor asks for them. No banner, no consent platform, no third-party request before the click.
  * Version:           0.8.0
@@ -10,7 +10,7 @@
  * Author URI:        https://calucon.de
  * License:           GPLv2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       third-party-embed-gate
+ * Text Domain:       calucon-third-party-embed-gate
  * Domain Path:       /languages
  *
  * @package ConsentGate

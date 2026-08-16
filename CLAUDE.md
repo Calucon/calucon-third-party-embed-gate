@@ -1,8 +1,8 @@
-# CLAUDE.md — Third-Party Embed Gate
+# CLAUDE.md — Calucon Third-Party Embed Gate
 
 ## What this plugin is
 
-Third-Party Embed Gate (formerly "Consent Gate"; slug `third-party-embed-gate`, renamed during the WordPress.org review) is a free GPL WordPress plugin that replaces third-party embeds
+Calucon Third-Party Embed Gate (formerly "Consent Gate"; slug `calucon-third-party-embed-gate`, renamed during the WordPress.org review) is a free GPL WordPress plugin that replaces third-party embeds
 (YouTube, Vimeo, Maps, …) with a server-rendered placeholder until the visitor
 clicks to load them — the two-click pattern. **The entire product is that
 nothing third-party loads before a click.** It is a technical measure, not a
@@ -27,8 +27,8 @@ provider thumbnail goes stale with no invalidation signal. Never propose it
 (or a Google-Fonts downloader) again.
 
 **The two-name rule (Aug 2026 wp.org review):** the public identity is
-**Third-Party Embed Gate** — display name, slug/text domain
-`third-party-embed-gate`, main file `third-party-embed-gate.php` — after the
+**Calucon Third-Party Embed Gate** — display name, slug/text domain
+`calucon-third-party-embed-gate`, main file `calucon-third-party-embed-gate.php` — after the
 review flagged "Consent Gate" as generic/CMP-adjacent. Everything internal
 deliberately keeps the original working prefix: `ConsentGate\` namespace,
 `consent_gate_*` hooks/option/shortcode, `CONSENT_GATE_*` constants,
@@ -56,7 +56,7 @@ them; keep it in the build-zip whitelist.
 
 | Path | Role |
 |---|---|
-| `third-party-embed-gate.php` | Plugin header + bootstrap only |
+| `calucon-third-party-embed-gate.php` | Plugin header + bootstrap only |
 | `src/Plugin.php` | Wiring; no logic |
 | `src/Detection/HtmlScanner.php` | Attribute-tolerant tag reader (§3.2) |
 | `src/Detection/HostMatcher.php` | "is this ours?" (§3.4) |
@@ -122,7 +122,7 @@ composer lint                  # PHPCS: WordPress-Extra + PHPCompatibilityWP (ph
 composer lint:fix              # phpcbf auto-fixes; keep the report clean — no new warnings
 vendor/bin/phpunit --filter youtube-minified   # one fixture by name
 php tests/bin/generate-fixtures.php            # write missing expected.html — review before committing
-php tests/bin/generate-pot.php                 # regenerate languages/third-party-embed-gate.pot + languages/strings.php (literal gettext mirror of $t() strings for the wp.org translation parser)
+php tests/bin/generate-pot.php                 # regenerate languages/calucon-third-party-embed-gate.pot + languages/strings.php (literal gettext mirror of $t() strings for the wp.org translation parser)
 npm install                    # Playwright
 npm run test:e2e               # E2E; in the remote/CI image:
 PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run test:e2e

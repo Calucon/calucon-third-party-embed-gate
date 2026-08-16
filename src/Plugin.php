@@ -229,7 +229,7 @@ final class Plugin {
 	private function translator(): callable {
 		return static function ( string $text ): string {
 			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText -- bridged strings are defined literally at their $t() call sites and mirrored as literal __() calls in languages/strings.php for the translation parser.
-			return __( $text, 'third-party-embed-gate' );
+			return __( $text, 'calucon-third-party-embed-gate' );
 		};
 	}
 
@@ -345,7 +345,7 @@ final class Plugin {
 			array(
 				'width'  => '480',
 				'height' => '270',
-				'title'  => __( 'Example embed', 'third-party-embed-gate' ),
+				'title'  => __( 'Example embed', 'calucon-third-party-embed-gate' ),
 			),
 			array( 'integration' => 'admin-preview' )
 		);
@@ -353,7 +353,7 @@ final class Plugin {
 
 	/**
 	 * Render content through the_content with this plugin's gating
-	 * suspended: what the front end WOULD serve without Third-Party Embed Gate.
+	 * suspended: what the front end WOULD serve without Calucon Third-Party Embed Gate.
 	 *
 	 * The scanner must see original markup to classify it — in wp-admin
 	 * should_bail() already guarantees that, but WP-CLI is neither admin
@@ -648,10 +648,10 @@ final class Plugin {
 		$consent = $this->options['consent'];
 		$config  = array(
 			'i18n' => array(
-				'withdrawn' => __( 'Stored embed consents have been removed. Embeds will ask again.', 'third-party-embed-gate' ),
-				'loading'   => __( 'Loading embedded content…', 'third-party-embed-gate' ),
-				'error'     => __( 'The embedded content could not be loaded.', 'third-party-embed-gate' ),
-				'errorLink' => __( 'Open it on the provider’s site.', 'third-party-embed-gate' ),
+				'withdrawn' => __( 'Stored embed consents have been removed. Embeds will ask again.', 'calucon-third-party-embed-gate' ),
+				'loading'   => __( 'Loading embedded content…', 'calucon-third-party-embed-gate' ),
+				'error'     => __( 'The embedded content could not be loaded.', 'calucon-third-party-embed-gate' ),
+				'errorLink' => __( 'Open it on the provider’s site.', 'calucon-third-party-embed-gate' ),
 			),
 		);
 		if ( 'off' !== $consent['memory'] ) {

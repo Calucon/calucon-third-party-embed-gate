@@ -48,7 +48,7 @@ final class BlockEditor {
 			CONSENT_GATE_VERSION,
 			true
 		);
-		wp_set_script_translations( 'consent-gate-editor', 'third-party-embed-gate' );
+		wp_set_script_translations( 'consent-gate-editor', 'calucon-third-party-embed-gate' );
 		wp_enqueue_style(
 			'consent-gate-editor',
 			plugins_url( 'assets/css/editor.css', CONSENT_GATE_FILE ),

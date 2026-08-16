@@ -102,4 +102,4 @@ foreach ( $cg_seed_posts as $cg_slug => $cg_post ) {
 $GLOBALS['wp_rewrite']->set_permalink_structure( '/%postname%/' );
 flush_rewrite_rules();
 
-echo "third-party-embed-gate: seed complete\n";
+echo "calucon-third-party-embed-gate: seed complete\n";

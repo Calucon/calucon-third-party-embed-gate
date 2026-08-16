@@ -1,13 +1,13 @@
-# Third-Party Embed Gate.
-# This file is distributed under the same license as the Third-Party Embed Gate plugin.
+# Calucon Third-Party Embed Gate.
+# This file is distributed under the same license as the Calucon Third-Party Embed Gate plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Third-Party Embed Gate 0.8.0\n"
+"Project-Id-Version: Calucon Third-Party Embed Gate 0.8.0\n"
 "Report-Msgid-Bugs-To: https://github.com/Calucon/consent-gate/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Domain: third-party-embed-gate\n"
+"X-Domain: calucon-third-party-embed-gate\n"
 
 #: src/Admin/SettingsPage.php:139
 msgid "%1$s: %2$s — %3$s"
@@ -72,6 +72,22 @@ msgstr ""
 
 #: src/Admin/SettingsPage.php:141
 msgid "Button text on the button background"
+msgstr ""
+
+#: assets/js/editor.js:111
+#: assets/js/editor.js:177
+#: src/Admin/SettingsPage.php:156
+#: src/Admin/SettingsPage.php:157
+#: src/Admin/SettingsPage.php:192
+msgid "Calucon Third-Party Embed Gate"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:90
+msgid "Calucon Third-Party Embed Gate is free and open source — you can %s."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:207
+msgid "Calucon Third-Party Embed Gate settings sections"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:342
@@ -141,19 +157,19 @@ msgid "Detected now: %s."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:567
-msgid "Detected, bridge active: when this platform reports consent for the embeds' category, gated embeds load without a second click, and a withdrawal re-gates them. If the platform does not answer, gating stands (fail closed). Prefer its own blocker for a provider? Disable that provider under Providers and Third-Party Embed Gate steps aside for it."
+msgid "Detected, bridge active: when this platform reports consent for the embeds' category, gated embeds load without a second click, and a withdrawal re-gates them. If the platform does not answer, gating stands (fail closed). Prefer its own blocker for a provider? Disable that provider under Providers and Calucon Third-Party Embed Gate steps aside for it."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:569
+msgid "Detected. Calucon Third-Party Embed Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:559
-msgid "Detected. Its page cache is flushed automatically when Third-Party Embed Gate settings change; after activating or deactivating Third-Party Embed Gate itself, clear it once by hand if pages look stale."
+msgid "Detected. Its page cache is flushed automatically when Calucon Third-Party Embed Gate settings change; after activating or deactivating Calucon Third-Party Embed Gate itself, clear it once by hand if pages look stale."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:562
 msgid "Detected. Page builders render outside the content filters — if its embeds are not being gated, enable \"Gate the whole page output\" under Detection."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:569
-msgid "Detected. Third-Party Embed Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:561
@@ -242,18 +258,18 @@ msgid "IAB TCF (experimental)"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:484
-msgid "If a consent platform (cookie banner) runs on this site, Third-Party Embed Gate can honour its decision: once the platform reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state, stores nothing itself, and works only with platforms it was tested against; with any other platform, and whenever the platform gives no answer, gating stands unchanged (fail closed)."
+msgid "If a consent platform (cookie banner) runs on this site, Calucon Third-Party Embed Gate can honour its decision: once the platform reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state, stores nothing itself, and works only with platforms it was tested against; with any other platform, and whenever the platform gives no answer, gating stands unchanged (fail closed)."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:423
 msgid "If your site sends a Content-Security-Policy, it needs to allow the enabled providers' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:240
+#: src/Providers/Builtin/Descriptors.php:241
 msgid "Load activity from Strava"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:163
+#: src/Providers/Builtin/Descriptors.php:164
 msgid "Load calendar from Google"
 msgstr ""
 
@@ -262,7 +278,7 @@ msgstr ""
 msgid "Load content from %s"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:316
+#: src/Providers/Builtin/Descriptors.php:317
 msgid "Load content from Facebook"
 msgstr ""
 
@@ -270,63 +286,63 @@ msgstr ""
 msgid "Load embeds automatically when the detected consent platform reports consent for them"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:176
+#: src/Providers/Builtin/Descriptors.php:177
 msgid "Load form from Google"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:215
+#: src/Providers/Builtin/Descriptors.php:216
 msgid "Load form from Typeform"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:353
+#: src/Providers/Builtin/Descriptors.php:354
 msgid "Load image from GIPHY"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:97
+#: src/Providers/Builtin/Descriptors.php:98
 msgid "Load map from Google Maps"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:110
+#: src/Providers/Builtin/Descriptors.php:111
 msgid "Load map from OpenStreetMap"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:202
+#: src/Providers/Builtin/Descriptors.php:203
 msgid "Load model from Sketchfab"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:150
+#: src/Providers/Builtin/Descriptors.php:151
 msgid "Load player from Apple"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:138
+#: src/Providers/Builtin/Descriptors.php:139
 msgid "Load player from SoundCloud"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:125
+#: src/Providers/Builtin/Descriptors.php:126
 msgid "Load player from Spotify"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:287
+#: src/Providers/Builtin/Descriptors.php:288
 msgid "Load post from Instagram"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:339
+#: src/Providers/Builtin/Descriptors.php:340
 msgid "Load post from Reddit"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:272
+#: src/Providers/Builtin/Descriptors.php:273
 msgid "Load post from X (Twitter)"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:228
+#: src/Providers/Builtin/Descriptors.php:229
 msgid "Load scheduler from Calendly"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:189
+#: src/Providers/Builtin/Descriptors.php:190
 msgid "Load tour from Matterport"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:302
+#: src/Providers/Builtin/Descriptors.php:303
 msgid "Load video from TikTok"
 msgstr ""
 
@@ -342,11 +358,11 @@ msgstr ""
 msgid "Loading embedded content…"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:239
+#: src/Providers/Builtin/Descriptors.php:240
 msgid "Loading this activity contacts Strava, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:162
+#: src/Providers/Builtin/Descriptors.php:163
 msgid "Loading this calendar contacts Google, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
@@ -354,7 +370,7 @@ msgstr ""
 msgid "Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:315
+#: src/Providers/Builtin/Descriptors.php:316
 msgid "Loading this content contacts Facebook (Meta), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
@@ -362,63 +378,63 @@ msgstr ""
 msgid "Loading this content runs a script from %s, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:175
+#: src/Providers/Builtin/Descriptors.php:176
 msgid "Loading this form contacts Google, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:214
+#: src/Providers/Builtin/Descriptors.php:215
 msgid "Loading this form contacts Typeform, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:352
+#: src/Providers/Builtin/Descriptors.php:353
 msgid "Loading this image contacts GIPHY, which receives your IP address and which page you are on."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:96
+#: src/Providers/Builtin/Descriptors.php:97
 msgid "Loading this map contacts Google Maps, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:109
+#: src/Providers/Builtin/Descriptors.php:110
 msgid "Loading this map contacts OpenStreetMap, which receives your IP address and which page you are on."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:201
+#: src/Providers/Builtin/Descriptors.php:202
 msgid "Loading this model contacts Sketchfab, which receives your IP address and which page you are on."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:149
+#: src/Providers/Builtin/Descriptors.php:150
 msgid "Loading this player contacts Apple, which receives your IP address and which page you are on."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:137
+#: src/Providers/Builtin/Descriptors.php:138
 msgid "Loading this player contacts SoundCloud, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:124
+#: src/Providers/Builtin/Descriptors.php:125
 msgid "Loading this player contacts Spotify, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:286
+#: src/Providers/Builtin/Descriptors.php:287
 msgid "Loading this post contacts Instagram (Meta), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:338
+#: src/Providers/Builtin/Descriptors.php:339
 msgid "Loading this post contacts Reddit, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:271
+#: src/Providers/Builtin/Descriptors.php:272
 msgid "Loading this post contacts X (Twitter), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:227
+#: src/Providers/Builtin/Descriptors.php:228
 msgid "Loading this scheduler contacts Calendly, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:188
+#: src/Providers/Builtin/Descriptors.php:189
 msgid "Loading this tour contacts Matterport, which receives your IP address and which page you are on."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:301
+#: src/Providers/Builtin/Descriptors.php:302
 msgid "Loading this video contacts TikTok, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
@@ -637,22 +653,6 @@ msgstr ""
 msgid "The embedded content could not be loaded."
 msgstr ""
 
-#: assets/js/editor.js:111
-#: assets/js/editor.js:177
-#: src/Admin/SettingsPage.php:156
-#: src/Admin/SettingsPage.php:157
-#: src/Admin/SettingsPage.php:192
-msgid "Third-Party Embed Gate"
-msgstr ""
-
-#: src/Admin/SettingsPage.php:90
-msgid "Third-Party Embed Gate is free and open source — you can %s."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:207
-msgid "Third-Party Embed Gate settings sections"
-msgstr ""
-
 #: src/Admin/SettingsPage.php:601
 msgid "Third-party assets in your theme"
 msgstr ""
@@ -682,7 +682,7 @@ msgid "Use the privacy-preserving load for %s"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:577
-msgid "What Third-Party Embed Gate does"
+msgid "What Calucon Third-Party Embed Gate does"
 msgstr ""
 
 #: assets/js/editor.js:156
