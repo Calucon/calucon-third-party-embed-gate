@@ -171,13 +171,13 @@ final class OutputBuffer {
 	 * @return string
 	 */
 	private function inject_assets( string $buffer ): string {
-		$version = rawurlencode( CONSENT_GATE_VERSION );
+		$version = rawurlencode( CALUCON_EMBED_GATE_VERSION );
 
 		if ( false === strpos( $buffer, 'id="consent-gate-css"' )
 			&& false === strpos( $buffer, "id='consent-gate-css'" ) ) {
 			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- this runs on shutdown, after wp_footer was rendered into the buffer; wp_enqueue_style() is a no-op here.
 			$css        = '<link rel="stylesheet" id="consent-gate-css" href="'
-				. esc_url( plugins_url( 'assets/css/gate.css', CONSENT_GATE_FILE ) . '?ver=' . $version )
+				. esc_url( plugins_url( 'assets/css/gate.css', CALUCON_EMBED_GATE_FILE ) . '?ver=' . $version )
 				. '" media="all">';
 			$appearance = $this->plugin->appearance_css();
 			if ( '' !== $appearance ) {
@@ -200,12 +200,12 @@ final class OutputBuffer {
 			}
 			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- this runs on shutdown, after wp_footer was rendered into the buffer; wp_enqueue_script() is a no-op here.
 			$js .= '<script id="consent-gate-js" src="'
-				. esc_url( plugins_url( 'assets/js/gate.js', CONSENT_GATE_FILE ) . '?ver=' . $version )
+				. esc_url( plugins_url( 'assets/js/gate.js', CALUCON_EMBED_GATE_FILE ) . '?ver=' . $version )
 				. '" defer></script>';
 			if ( null !== $this->plugin->cmp_bridge_config() ) {
 				// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- same shutdown constraint as gate.js above.
 				$js .= '<script id="consent-gate-cmp-js" src="'
-					. esc_url( plugins_url( 'assets/js/cmp-bridge.js', CONSENT_GATE_FILE ) . '?ver=' . $version )
+					. esc_url( plugins_url( 'assets/js/cmp-bridge.js', CALUCON_EMBED_GATE_FILE ) . '?ver=' . $version )
 					. '" defer></script>';
 			}
 			$foot = strripos( $buffer, '</body>' );

@@ -190,7 +190,7 @@ final class Plugin {
 		// a page cache still serving placeholders would reference assets
 		// that no longer load. Flush what we can reach.
 		register_deactivation_hook(
-			CONSENT_GATE_FILE,
+			CALUCON_EMBED_GATE_FILE,
 			static function (): void {
 				CacheFlush::flush_all();
 			}
@@ -545,24 +545,24 @@ final class Plugin {
 	public function register_assets(): void {
 		wp_register_script(
 			'consent-gate',
-			plugins_url( 'assets/js/gate.js', CONSENT_GATE_FILE ),
+			plugins_url( 'assets/js/gate.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CONSENT_GATE_VERSION,
+			CALUCON_EMBED_GATE_VERSION,
 			true
 		);
 		wp_register_style(
 			'consent-gate',
-			plugins_url( 'assets/css/gate.css', CONSENT_GATE_FILE ),
+			plugins_url( 'assets/css/gate.css', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CONSENT_GATE_VERSION
+			CALUCON_EMBED_GATE_VERSION
 		);
 		// The §6.4 bridge is a separate file so the default build (bridge
 		// off) ships not a byte of CMP code to visitors.
 		wp_register_script(
 			'consent-gate-cmp',
-			plugins_url( 'assets/js/cmp-bridge.js', CONSENT_GATE_FILE ),
+			plugins_url( 'assets/js/cmp-bridge.js', CALUCON_EMBED_GATE_FILE ),
 			array( 'consent-gate' ),
-			CONSENT_GATE_VERSION,
+			CALUCON_EMBED_GATE_VERSION,
 			true
 		);
 

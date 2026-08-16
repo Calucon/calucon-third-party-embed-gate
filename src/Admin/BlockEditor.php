@@ -43,17 +43,17 @@ final class BlockEditor {
 	public function enqueue_editor_assets(): void {
 		wp_enqueue_script(
 			'consent-gate-editor',
-			plugins_url( 'assets/js/editor.js', CONSENT_GATE_FILE ),
+			plugins_url( 'assets/js/editor.js', CALUCON_EMBED_GATE_FILE ),
 			array( 'wp-hooks', 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-compose', 'wp-i18n' ),
-			CONSENT_GATE_VERSION,
+			CALUCON_EMBED_GATE_VERSION,
 			true
 		);
 		wp_set_script_translations( 'consent-gate-editor', 'calucon-third-party-embed-gate' );
 		wp_enqueue_style(
 			'consent-gate-editor',
-			plugins_url( 'assets/css/editor.css', CONSENT_GATE_FILE ),
+			plugins_url( 'assets/css/editor.css', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CONSENT_GATE_VERSION
+			CALUCON_EMBED_GATE_VERSION
 		);
 	}
 
