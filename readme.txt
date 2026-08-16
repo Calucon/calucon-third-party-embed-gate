@@ -17,7 +17,7 @@ When an editor pastes a YouTube URL, WordPress turns it into an iframe — and o
 
 Third-Party Embed Gate replaces third-party embeds with a server-rendered placeholder until the visitor clicks to load them — the two-click pattern (Zwei-Klick-Lösung). Nothing third-party is contacted before that click: no script, no iframe, no thumbnail, no preconnect. Nothing is stored on the visitor's device before that click either — including by this plugin.
 
-See it in action on the [live demo](https://calucon.de/third-party-embed-gate-showcase/), or read the details on the [plugin page](https://calucon.de/third-party-embed-gate/).
+See it in action on the [live demo](https://calucon.de/consent-gate-showcase/), or read the details on the [plugin page](https://calucon.de/consent-gate/).
 
 **What it does**
 
