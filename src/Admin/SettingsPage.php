@@ -624,10 +624,10 @@ final class SettingsPage {
 		<h2 id="cg-status"><?php esc_html_e( 'Status', 'calucon-third-party-embed-gate' ); ?></h2>
 		<?php
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only scan, no state changes; capability-gated by the page.
-		if ( ! isset( $_GET['cg-scan'] ) ) {
+		if ( ! isset( $_GET['calucon-embed-gate-scan'] ) ) {
 			?>
 			<p>
-				<a class="button" href="<?php echo esc_url( add_query_arg( 'cg-scan', '1' ) . '#cg-status' ); ?>"><?php esc_html_e( 'Scan recent content', 'calucon-third-party-embed-gate' ); ?></a>
+				<a class="button" href="<?php echo esc_url( add_query_arg( 'calucon-embed-gate-scan', '1' ) . '#cg-status' ); ?>"><?php esc_html_e( 'Scan recent content', 'calucon-third-party-embed-gate' ); ?></a>
 				<span class="description"><?php esc_html_e( 'Renders your latest posts and pages in memory and reports every embed found and whether it is gated. Read-only; no outbound requests.', 'calucon-third-party-embed-gate' ); ?></span>
 			</p>
 			<?php
