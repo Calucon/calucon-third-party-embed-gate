@@ -84,7 +84,7 @@ $pot = <<<'HEADER'
 msgid ""
 msgstr ""
 "Project-Id-Version: Calucon Third-Party Embed Gate {{VERSION}}\n"
-"Report-Msgid-Bugs-To: https://github.com/Calucon/consent-gate/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/Calucon/calucon-third-party-embed-gate/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"

@@ -27,7 +27,7 @@ product claim itself is a security property. Please report:
 ## Reporting
 
 Please report vulnerabilities privately via
-[GitHub private vulnerability reporting](https://github.com/Calucon/consent-gate/security/advisories/new)
+[GitHub private vulnerability reporting](https://github.com/Calucon/calucon-third-party-embed-gate/security/advisories/new)
 rather than a public issue.
 
 Coordinated disclosure: please allow a fix to be released before publishing

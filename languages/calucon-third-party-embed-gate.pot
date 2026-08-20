@@ -2,8 +2,8 @@
 # This file is distributed under the same license as the Calucon Third-Party Embed Gate plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Calucon Third-Party Embed Gate 0.9.2\n"
-"Report-Msgid-Bugs-To: https://github.com/Calucon/consent-gate/issues\n"
+"Project-Id-Version: Calucon Third-Party Embed Gate 0.9.3\n"
+"Report-Msgid-Bugs-To: https://github.com/Calucon/calucon-third-party-embed-gate/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
