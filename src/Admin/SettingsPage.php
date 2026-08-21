@@ -215,7 +215,43 @@ final class SettingsPage {
 			<form action="options.php" method="post">
 				<?php settings_fields( 'calucon_embed_gate' ); ?>
 
-				<div id="cg-tab-providers" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-providers">
+				<?php $this->render_providers_tab( $providers ); ?>
+
+				<?php $this->render_detection_tab( $detection ); ?>
+
+				<?php $this->render_appearance_tab( $options['appearance'] ); ?>
+
+				<?php $this->render_consent_tab( $options ); ?>
+
+				<?php submit_button(); ?>
+			</form>
+
+			<?php
+			// Read-only diagnostics and generated snippets: admin-tabs.js hides
+			// the form's Save button while this panel is active (data-cg-readonly).
+			?>
+			<div id="cg-tab-status" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-status" data-cg-readonly="1">
+			<h2><?php esc_html_e( 'Content-Security-Policy snippet', 'calucon-third-party-embed-gate' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'If your site sends a Content-Security-Policy, it needs to allow the enabled providers\' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic.', 'calucon-third-party-embed-gate' ); ?></p>
+			<textarea readonly rows="4" class="large-text code" aria-label="<?php echo esc_attr( __( 'Content-Security-Policy snippet', 'calucon-third-party-embed-gate' ) ); ?>"><?php echo esc_textarea( Csp::snippet( $this->providers() ) ); ?></textarea>
+
+			<?php $this->render_compatibility( $options ); ?>
+			<?php $this->render_status(); ?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * The Providers tab: per-provider gate, privacy-variant and text
+	 * overrides (§7.1).
+	 *
+	 * @param array $providers Sanitised per-provider option rows.
+	 * @return void
+	 */
+	private function render_providers_tab( array $providers ): void {
+		?>
+<div id="cg-tab-providers" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-providers">
 				<h2><?php esc_html_e( 'Providers', 'calucon-third-party-embed-gate' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Disabling a provider stops gating its embeds — they load exactly as WordPress renders them. Unknown third-party iframes and scripts are always gated by the generic entries.', 'calucon-third-party-embed-gate' ); ?></p>
 				<table class="widefat striped" style="max-width: 60rem;">
@@ -275,8 +311,18 @@ final class SettingsPage {
 					</tbody>
 				</table>
 				</div>
+<?php // phpcs:ignore Generic.WhiteSpace.ScopeIndent.Incorrect -- the close tag sits at column 0 so the method emits the moved block byte-identically, with no stray indentation.
+	}
 
-				<div id="cg-tab-detection" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-detection">
+	/**
+	 * The Detection tab: rule toggles and the host lists (§7.1).
+	 *
+	 * @param array $detection Sanitised detection option subtree.
+	 * @return void
+	 */
+	private function render_detection_tab( array $detection ): void {
+		?>
+<div id="cg-tab-detection" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-detection">
 				<h2><?php esc_html_e( 'Detection', 'calucon-third-party-embed-gate' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -328,8 +374,19 @@ final class SettingsPage {
 					</tr>
 				</table>
 				</div>
+<?php // phpcs:ignore Generic.WhiteSpace.ScopeIndent.Incorrect -- the close tag sits at column 0 so the method emits the moved block byte-identically, with no stray indentation.
+	}
 
-				<div id="cg-tab-appearance" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-appearance">
+	/**
+	 * The Appearance tab: preset, corners and colours, with the live
+	 * preview (§7.1).
+	 *
+	 * @param array $appearance Sanitised appearance option subtree.
+	 * @return void
+	 */
+	private function render_appearance_tab( array $appearance ): void {
+		?>
+<div id="cg-tab-appearance" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-appearance">
 				<h2><?php esc_html_e( 'Appearance', 'calucon-third-party-embed-gate' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Style the placeholder panel without writing any CSS: pick a style, pick colours, and watch the preview below update as you go. The readability check tells you immediately if a colour combination would be hard to read.', 'calucon-third-party-embed-gate' ); ?></p>
 				<table class="form-table" role="presentation">
@@ -337,9 +394,9 @@ final class SettingsPage {
 						<th scope="row"><label for="cg-preset"><?php esc_html_e( 'Panel style', 'calucon-third-party-embed-gate' ); ?></label></th>
 						<td>
 							<select id="cg-preset" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][preset]">
-								<option value="default" <?php selected( $options['appearance']['preset'], 'default' ); ?>><?php esc_html_e( 'Default — filled panel', 'calucon-third-party-embed-gate' ); ?></option>
-								<option value="minimal" <?php selected( $options['appearance']['preset'], 'minimal' ); ?>><?php esc_html_e( 'Minimal — transparent with a border', 'calucon-third-party-embed-gate' ); ?></option>
-								<option value="card" <?php selected( $options['appearance']['preset'], 'card' ); ?>><?php esc_html_e( 'Card — border, rounded corners, shadow', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="default" <?php selected( $appearance['preset'], 'default' ); ?>><?php esc_html_e( 'Default — filled panel', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="minimal" <?php selected( $appearance['preset'], 'minimal' ); ?>><?php esc_html_e( 'Minimal — transparent with a border', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="card" <?php selected( $appearance['preset'], 'card' ); ?>><?php esc_html_e( 'Card — border, rounded corners, shadow', 'calucon-third-party-embed-gate' ); ?></option>
 							</select>
 						</td>
 					</tr>
@@ -347,10 +404,10 @@ final class SettingsPage {
 						<th scope="row"><label for="cg-corners"><?php esc_html_e( 'Corners', 'calucon-third-party-embed-gate' ); ?></label></th>
 						<td>
 							<select id="cg-corners" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][corners]">
-								<option value="" <?php selected( $options['appearance']['corners'], '' ); ?>><?php esc_html_e( 'Default — slightly rounded', 'calucon-third-party-embed-gate' ); ?></option>
-								<option value="square" <?php selected( $options['appearance']['corners'], 'square' ); ?>><?php esc_html_e( 'Square', 'calucon-third-party-embed-gate' ); ?></option>
-								<option value="rounded" <?php selected( $options['appearance']['corners'], 'rounded' ); ?>><?php esc_html_e( 'Rounded', 'calucon-third-party-embed-gate' ); ?></option>
-								<option value="pill" <?php selected( $options['appearance']['corners'], 'pill' ); ?>><?php esc_html_e( 'Rounded, with a pill-shaped button', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="" <?php selected( $appearance['corners'], '' ); ?>><?php esc_html_e( 'Default — slightly rounded', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="square" <?php selected( $appearance['corners'], 'square' ); ?>><?php esc_html_e( 'Square', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="rounded" <?php selected( $appearance['corners'], 'rounded' ); ?>><?php esc_html_e( 'Rounded', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="pill" <?php selected( $appearance['corners'], 'pill' ); ?>><?php esc_html_e( 'Rounded, with a pill-shaped button', 'calucon-third-party-embed-gate' ); ?></option>
 							</select>
 						</td>
 					</tr>
@@ -367,7 +424,7 @@ final class SettingsPage {
 						<tr>
 							<th scope="row"><label for="<?php echo esc_attr( $color_id ); ?>"><?php echo esc_html( $color_label ); ?></label></th>
 							<td>
-								<input type="text" id="<?php echo esc_attr( $color_id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $color_key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $color_key . ']' ); ?>" value="<?php echo esc_attr( $options['appearance'][ $color_key ] ); ?>">
+								<input type="text" id="<?php echo esc_attr( $color_id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $color_key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $color_key . ']' ); ?>" value="<?php echo esc_attr( $appearance[ $color_key ] ); ?>">
 							</td>
 						</tr>
 					<?php endforeach; ?>
@@ -376,8 +433,18 @@ final class SettingsPage {
 
 				<?php $this->render_preview(); ?>
 				</div>
+<?php // phpcs:ignore Generic.WhiteSpace.ScopeIndent.Incorrect -- the close tag sits at column 0 so the method emits the moved block byte-identically, with no stray indentation.
+	}
 
-				<div id="cg-tab-consent" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-consent">
+	/**
+	 * The Consent memory tab (§6.2), including the §6.4 bridge section.
+	 *
+	 * @param array $options Sanitised option tree.
+	 * @return void
+	 */
+	private function render_consent_tab( array $options ): void {
+		?>
+<div id="cg-tab-consent" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-consent">
 				<h2><?php esc_html_e( 'Consent memory', 'calucon-third-party-embed-gate' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor\'s browser only — after their first click, never before — and a withdrawal control becomes available via the [calucon_embed_gate_withdraw] shortcode for your privacy policy page.', 'calucon-third-party-embed-gate' ); ?></p>
 				<table class="form-table" role="presentation">
@@ -410,24 +477,7 @@ final class SettingsPage {
 				<?php $this->render_cmp_bridge( $options ); ?>
 
 				</div>
-
-				<?php submit_button(); ?>
-			</form>
-
-			<?php
-			// Read-only diagnostics and generated snippets: admin-tabs.js hides
-			// the form's Save button while this panel is active (data-cg-readonly).
-			?>
-			<div id="cg-tab-status" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-status" data-cg-readonly="1">
-			<h2><?php esc_html_e( 'Content-Security-Policy snippet', 'calucon-third-party-embed-gate' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'If your site sends a Content-Security-Policy, it needs to allow the enabled providers\' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic.', 'calucon-third-party-embed-gate' ); ?></p>
-			<textarea readonly rows="4" class="large-text code" aria-label="<?php echo esc_attr( __( 'Content-Security-Policy snippet', 'calucon-third-party-embed-gate' ) ); ?>"><?php echo esc_textarea( Csp::snippet( $this->providers() ) ); ?></textarea>
-
-			<?php $this->render_compatibility(); ?>
-			<?php $this->render_status(); ?>
-			</div>
-		</div>
-		<?php
+<?php // phpcs:ignore Generic.WhiteSpace.ScopeIndent.Incorrect -- the close tag sits at column 0 so the method emits the moved block byte-identically, with no stray indentation.
 	}
 
 	/**
@@ -550,11 +600,11 @@ final class SettingsPage {
 	 * Compatibility (§7.1): the detected CMP, cache plugin and page builder,
 	 * and what the plugin decided to do about each.
 	 *
+	 * @param array $options Sanitised option tree, as render() already read it.
 	 * @return void
 	 */
-	private function render_compatibility(): void {
+	private function render_compatibility( array $options ): void {
 		$found    = Compatibility::detect();
-		$options  = Options::sanitize( get_option( Options::OPTION, Options::defaults() ) );
 		$messages = array(
 			'cache'   => __( 'Detected. Its page cache is flushed automatically when Calucon Third-Party Embed Gate settings change; after activating or deactivating Calucon Third-Party Embed Gate itself, clear it once by hand if pages look stale.', 'calucon-third-party-embed-gate' ),
 			'builder' => $options['detection']['output_buffer']

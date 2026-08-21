@@ -28,7 +28,6 @@ use CaluconEmbedGate\Providers\Registry;
 final class ContentScan {
 
 	public const GATED             = 'gated';
-	public const STRIPPED          = 'stripped';
 	public const OWN_HOST          = 'own-host';
 	public const NO_USABLE_URL     = 'no-usable-url';
 	public const RULE_DISABLED     = 'rule-disabled';

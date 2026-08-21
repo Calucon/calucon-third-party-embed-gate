@@ -83,3 +83,40 @@ test( 'a blocked SDK does not strand the sibling embeds', async ( { page } ) => 
 	await expect( page.locator( '[data-cg-provider="twitter"]' ).first().locator( '.cg-embed__error a' ) )
 		.toHaveAttribute( 'href', 'https://twitter.com/calucon/status/1111111111111111111' );
 } );
+
+test( 'a retried activation after a failed SDK load does not corrupt state', async ( { page } ) => {
+	let attempts = 0;
+	await page.route( '**/widgets.js', ( route ) => {
+		attempts++;
+		if ( attempts === 1 ) {
+			return route.abort(); // First click: blocked.
+		}
+		// Retry: serve an empty SDK so onload fires.
+		return route.fulfill( { contentType: 'application/javascript', body: '' } );
+	} );
+
+	await page.goto( '/page/scripts-multi' );
+	const first = page.locator( '[data-cg-provider="twitter"]' ).first();
+
+	await first.locator( '.cg-embed__button' ).click();
+	await expect( first.locator( '.cg-embed__error' ) ).toHaveCount( 1 );
+
+	// The bridge (or a second gesture) may retry after a failure. The retry
+	// must not lose the stashed panel, stack a second error, duplicate the
+	// active class, or leave a dead <script> from the first attempt behind.
+	await page.evaluate( () => {
+		const el = document.querySelector( '[data-cg-provider="twitter"]' );
+		el.removeAttribute( 'data-cg-activated' ); // as the failure path does
+		window.caluconEmbedGateBridge.grant( el );
+	} );
+	await expect.poll( () => attempts ).toBe( 2 );
+	await expect( first.locator( '.cg-embed__error' ) ).toHaveCount( 1 );
+	const state = await first.evaluate( ( el ) => ( {
+		stash: el._cgStash ? el._cgStash.length : -1,
+		classes: el.className,
+		deadScripts: document.querySelectorAll( 'script[src*="widgets.js"]' ).length,
+	} ) );
+	expect( state.stash ).toBeGreaterThan( 0 ); // panel nodes preserved for a future regate
+	expect( state.classes.split( 'cg-embed--active' ).length - 1 ).toBe( 1 ); // no duplicate class
+	expect( state.deadScripts ).toBe( 1 ); // failed element removed, only the retry's element remains
+} );

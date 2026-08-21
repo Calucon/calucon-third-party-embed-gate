@@ -95,7 +95,7 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 		'match'       => array(
 			'iframe_host' => array( 'embed.example-videos.com', 'example-videos.com' ),
 			// Optional: named captures interpolated (URL-encoded) into
-			// load_path / fallback / thumbnail as {id}-style tokens.
+			// load_path / fallback as {id}-style tokens.
 			'iframe_path' => '#^/embed/(?<id>[A-Za-z0-9_-]+)#',
 		),
 		// Optional privacy-preserving load target used after the click.
@@ -147,7 +147,8 @@ All hooks: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`
 `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`,
 `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`,
 `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`,
-`calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`; actions
+`calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`,
+`calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority`; actions
 `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated`, `calucon_embed_gate_flush_caches`.
 
 ## The consent platform bridge

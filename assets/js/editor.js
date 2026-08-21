@@ -8,7 +8,8 @@
 ( function ( wp ) {
 	'use strict';
 
-	if ( ! wp || ! wp.hooks || ! wp.element || ! wp.blocks ) {
+	if ( ! wp || ! wp.hooks || ! wp.element || ! wp.blocks || ! wp.i18n
+		|| ! wp.compose || ! wp.blockEditor || ! wp.components ) {
 		return;
 	}
 

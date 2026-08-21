@@ -11,7 +11,7 @@
  * rebuild unsent sections from defaults: silent data loss.
  *
  * Deep links: '#cg-tab-appearance' selects a tab; a hash pointing INSIDE a
- * panel (the Status scan uses '?cg-scan=1#cg-status') selects that panel's
+ * panel (the Status scan uses '?calucon-embed-gate-scan=1#cg-status') selects that panel's
  * tab. The current tab is appended to _wp_http_referer so saving returns to
  * the tab the owner was on.
  */

@@ -126,8 +126,8 @@ final class PlaceholderRenderer {
 	 *                           carries the original inline document instead.
 	 * @param array  $attributes Original tag attributes (lowercased, decoded).
 	 * @param array  $ctx        Integration context (post ID, block name, …).
-	 * @param array  $options    Optional: 'tag' => 'embed'|'object' when the
-	 *                           rebuilt element is not an iframe.
+	 * @param array  $options    Optional: 'tag' => 'embed'|'object'|'img' when
+	 *                           the rebuilt element is not an iframe.
 	 * @return string HTML.
 	 */
 	public function render( array $provider, string $src, array $attributes, array $ctx = array(), array $options = array() ): string {

@@ -2,9 +2,9 @@
 /**
  * Wiring; no logic (PLAN.md §2.2).
  *
- * This is the only place (besides Integration/ and Admin/) where WordPress
- * globals may appear. Detection/, Providers/ and Rendering/ receive plain
- * callables bridging to WordPress filters and i18n.
+ * WordPress globals may appear here and in Integration/, Admin/, Cli/ and
+ * Support/CacheFlush.php. Detection/, Providers/ and Rendering/ receive
+ * plain callables bridging to WordPress filters and i18n.
  *
  * @package CaluconEmbedGate
  */
@@ -27,6 +27,7 @@ use CaluconEmbedGate\Detection\HtmlScanner;
 use CaluconEmbedGate\Detection\IframeRule;
 use CaluconEmbedGate\Detection\ImageRule;
 use CaluconEmbedGate\Detection\ScriptRule;
+use CaluconEmbedGate\Integration\Assets;
 use CaluconEmbedGate\Integration\Comments;
 use CaluconEmbedGate\Integration\Descriptions;
 use CaluconEmbedGate\Integration\Excerpt;
@@ -43,6 +44,7 @@ use CaluconEmbedGate\Rendering\TemplateLoader;
 use CaluconEmbedGate\Support\CacheFlush;
 use CaluconEmbedGate\Support\ContentScan;
 use CaluconEmbedGate\Support\Options;
+use CaluconEmbedGate\Support\Pipeline;
 use CaluconEmbedGate\Support\ResourceHints;
 
 /**
@@ -53,41 +55,20 @@ final class Plugin {
 	/** @var Plugin|null */
 	private static ?Plugin $instance = null;
 
-	/** @var IframeRule|null Built lazily; see build_pipeline(). */
-	private ?IframeRule $iframe_rule = null;
-
-	/** @var EmbedObjectRule|null */
-	private ?EmbedObjectRule $embed_object_rule = null;
-
-	/** @var ScriptRule|null */
-	private ?ScriptRule $script_rule = null;
-
-	/** @var ImageRule|null */
-	private ?ImageRule $image_rule = null;
-
-	/** @var Registry|null */
-	private ?Registry $registry = null;
-
-	/** @var HostMatcher|null */
-	private ?HostMatcher $host_matcher = null;
+	/** @var Pipeline|null Built lazily; see pipeline(). */
+	private ?Pipeline $pipeline = null;
 
 	/** @var array Sanitised option tree. */
 	private array $options;
 
-	/** @var EmbedStripper|null */
-	private ?EmbedStripper $stripper = null;
-
-	/** @var HtmlScanner|null */
-	private ?HtmlScanner $scanner = null;
-
-	/** @var ResourceHints|null */
-	private ?ResourceHints $hint_scrubber = null;
-
-	/** @var PlaceholderRenderer|null */
-	private ?PlaceholderRenderer $renderer = null;
+	/** @var Assets Front-end asset registration/enqueue. */
+	private Assets $assets;
 
 	/** @var array[]|null Filtered provider descriptors; resolved lazily. */
 	private ?array $providers_cache = null;
+
+	/** @var array<string,string>|null Lazily loaded $t() translation map. */
+	private ?array $strings_map = null;
 
 	/** @var bool True while render_ungated() runs; see should_bail(). */
 	private bool $gating_suspended = false;
@@ -103,14 +84,6 @@ final class Plugin {
 		}
 	}
 
-	/**
-	 * @return Plugin
-	 */
-	public static function instance(): Plugin {
-		self::boot();
-		return self::$instance;
-	}
-
 	private function __construct() {
 		$this->options = Options::sanitize( get_option( Options::OPTION, Options::defaults() ) );
 
@@ -118,7 +91,16 @@ final class Plugin {
 		// wordpress.org language packs for the plugin's text domain
 		// automatically, and the plugin ships no .mo files of its own.
 
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
+		$this->assets = new Assets(
+			$this->options,
+			function (): ?array {
+				return $this->cmp_bridge_config();
+			},
+			function (): bool {
+				return $this->should_bail();
+			}
+		);
+		$this->assets->register();
 
 		( new RenderBlock( $this ) )->register();
 		( new TheContent( $this ) )->register();
@@ -131,7 +113,7 @@ final class Plugin {
 				// The withdrawal control's intended home is a privacy-policy
 				// page with no embeds — without this enqueue the button is a
 				// dead element there (invariant 2's spirit).
-				$this->enqueue_assets();
+				$this->assets->enqueue_assets();
 			}
 		);
 		$withdraw->register();
@@ -149,8 +131,7 @@ final class Plugin {
 		) )->register();
 		( new ResourceHintsIntegration(
 			function (): ResourceHints {
-				$this->build_pipeline();
-				return $this->hint_scrubber;
+				return $this->pipeline()->hint_scrubber;
 			}
 		) )->register();
 
@@ -221,9 +202,6 @@ final class Plugin {
 		return $this->providers_cache;
 	}
 
-	/** @var array<string,string>|null Lazily loaded $t() translation map. */
-	private ?array $strings_map = null;
-
 	/**
 	 * Bridges the WordPress-free layers' English strings to the site
 	 * language. Translations resolve through the generated
@@ -250,11 +228,11 @@ final class Plugin {
 	 * — at plugins_loaded, domain-mapping and multilingual plugins have not
 	 * registered their host filters yet (§9.11).
 	 *
-	 * @return void
+	 * @return Pipeline
 	 */
-	private function build_pipeline(): void {
-		if ( null !== $this->iframe_rule ) {
-			return;
+	private function pipeline(): Pipeline {
+		if ( null !== $this->pipeline ) {
+			return $this->pipeline;
 		}
 
 		$translate = $this->translator();
@@ -319,20 +297,23 @@ final class Plugin {
 			return (bool) apply_filters( 'calucon_embed_gate_should_gate', $gate, $url, $ctx );
 		};
 		$on_gated    = function ( array $provider, array $ctx ): void {
-			$this->enqueue_assets();
+			$this->assets->enqueue_assets();
 			do_action( 'calucon_embed_gate_embed_gated', $provider, $ctx );
 		};
 
-		$this->scanner           = $scanner;
-		$this->registry          = $registry;
-		$this->renderer          = $renderer;
-		$this->host_matcher      = $hosts;
-		$this->iframe_rule       = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
-		$this->embed_object_rule = new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
-		$this->script_rule       = new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
-		$this->image_rule        = new ImageRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
-		$this->stripper          = new EmbedStripper( $scanner, $hosts, $registry, $translate );
-		$this->hint_scrubber     = new ResourceHints( $this->provider_hosts( $providers ), $hosts );
+		$this->pipeline = new Pipeline(
+			new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
+			new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
+			new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
+			new ImageRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
+			$registry,
+			$hosts,
+			new EmbedStripper( $scanner, $hosts, $registry, $translate ),
+			$scanner,
+			new ResourceHints( $this->provider_hosts( $providers ), $hosts ),
+			$renderer
+		);
+		return $this->pipeline;
 	}
 
 	/**
@@ -346,11 +327,11 @@ final class Plugin {
 	 * @return string
 	 */
 	public function preview_placeholder_html(): string {
-		$this->build_pipeline();
+		$pipeline = $this->pipeline();
 		$url      = 'https://www.youtube.com/embed/preview';
-		$provider = $this->registry->resolve_for_url( $url, 'www.youtube.com' );
+		$provider = $pipeline->registry->resolve_for_url( $url, 'www.youtube.com' );
 
-		return $this->renderer->render(
+		return $pipeline->renderer->render(
 			$provider,
 			$url,
 			array(
@@ -389,11 +370,11 @@ final class Plugin {
 	 * @return ContentScan
 	 */
 	public function content_scanner(): ContentScan {
-		$this->build_pipeline();
+		$pipeline = $this->pipeline();
 		return new ContentScan(
-			$this->scanner,
-			$this->host_matcher,
-			$this->registry,
+			$pipeline->scanner,
+			$pipeline->host_matcher,
+			$pipeline->registry,
 			array(
 				'iframes' => $this->options['detection']['iframes'],
 				'scripts' => $this->options['detection']['scripts'],
@@ -414,16 +395,15 @@ final class Plugin {
 	 * @return bool
 	 */
 	public function has_gateable_markup( string $html ): bool {
-		$probes = array( '<iframe', '<script', '<embed', '<object' );
-		if ( $this->options['detection']['images'] ) {
-			$probes[] = '<img';
-		}
-		foreach ( $probes as $probe ) {
-			if ( false !== stripos( $html, $probe ) ) {
-				return true;
-			}
-		}
-		return false;
+		// The single hottest line in the plugin: this runs for every
+		// the_content/render_block/widget/comment fragment on every page
+		// view, and most fragments contain no gateable tag. One combined
+		// alternation scans the string once instead of once per tag name
+		// (measured ~4x on a 60 KB text-only post).
+		$pattern = $this->options['detection']['images']
+			? '/<(?:iframe|script|embed|object|img)/i'
+			: '/<(?:iframe|script|embed|object)/i';
+		return 1 === preg_match( $pattern, $html );
 	}
 
 	/**
@@ -434,18 +414,18 @@ final class Plugin {
 	 * @return string
 	 */
 	public function gate( string $html, array $ctx ): string {
-		$this->build_pipeline();
+		$pipeline = $this->pipeline();
 		if ( $this->options['detection']['iframes'] ) {
-			$html = $this->iframe_rule->apply( $html, $ctx );
+			$html = $pipeline->iframe_rule->apply( $html, $ctx );
 			// <embed>/<object> are frame-shaped embeds under the same toggle:
 			// Flash-era markup requests third-party content on load too.
-			$html = $this->embed_object_rule->apply( $html, $ctx );
+			$html = $pipeline->embed_object_rule->apply( $html, $ctx );
 		}
 		if ( $this->options['detection']['scripts'] ) {
-			$html = $this->script_rule->apply( $html, $ctx );
+			$html = $pipeline->script_rule->apply( $html, $ctx );
 		}
 		if ( $this->options['detection']['images'] ) {
-			$html = $this->image_rule->apply( $html, $ctx );
+			$html = $pipeline->image_rule->apply( $html, $ctx );
 		}
 		return $html;
 	}
@@ -473,8 +453,7 @@ final class Plugin {
 		if ( ! is_string( $url ) || '' === $url ) {
 			return '';
 		}
-		$this->build_pipeline();
-		if ( HostMatcher::OWN !== $this->host_matcher->classify( $url ) ) {
+		if ( HostMatcher::OWN !== $this->pipeline()->host_matcher->classify( $url ) ) {
 			return '';
 		}
 		return $url;
@@ -488,8 +467,7 @@ final class Plugin {
 	 * @return string
 	 */
 	public function strip( string $html ): string {
-		$this->build_pipeline();
-		return $this->stripper->strip( $html );
+		return $this->pipeline()->stripper->strip( $html );
 	}
 
 	/**
@@ -501,8 +479,8 @@ final class Plugin {
 	 * @return string
 	 */
 	public function scrub_hint_tags( string $html ): string {
-		$this->build_pipeline();
-		return $this->hint_scrubber->scrub_tags( $html, $this->scanner );
+		$pipeline = $this->pipeline();
+		return $pipeline->hint_scrubber->scrub_tags( $html, $pipeline->scanner );
 	}
 
 	/**
@@ -548,154 +526,6 @@ final class Plugin {
 	}
 
 	/**
-	 * Register front-end assets; they are only enqueued when a placeholder
-	 * was actually rendered, so pages without embeds ship no extra bytes.
-	 *
-	 * @return void
-	 */
-	public function register_assets(): void {
-		wp_register_script(
-			'calucon-embed-gate',
-			plugins_url( 'assets/js/gate.js', CALUCON_EMBED_GATE_FILE ),
-			array(),
-			CALUCON_EMBED_GATE_VERSION,
-			true
-		);
-		wp_register_style(
-			'calucon-embed-gate',
-			plugins_url( 'assets/css/gate.css', CALUCON_EMBED_GATE_FILE ),
-			array(),
-			CALUCON_EMBED_GATE_VERSION
-		);
-		// The §6.4 bridge is a separate file so the default build (bridge
-		// off) ships not a byte of CMP code to visitors.
-		wp_register_script(
-			'calucon-embed-gate-cmp',
-			plugins_url( 'assets/js/cmp-bridge.js', CALUCON_EMBED_GATE_FILE ),
-			array( 'calucon-embed-gate' ),
-			CALUCON_EMBED_GATE_VERSION,
-			true
-		);
-
-		// Consent-memory config (§6.2): only shipped when the site enabled
-		// memory. The default build stores nothing and needs no config.
-		$config = $this->inline_config_json();
-		if ( null !== $config ) {
-			wp_add_inline_script(
-				'calucon-embed-gate',
-				'window.caluconEmbedGateConfig = ' . $config . ';',
-				'before'
-			);
-		}
-
-		$appearance = $this->appearance_css();
-		if ( '' !== $appearance ) {
-			wp_add_inline_style( 'calucon-embed-gate', $appearance );
-		}
-
-		// Whole-page buffering (§3.3) gates on shutdown, long after this hook
-		// — too late for a conditional enqueue, and printing tags from the
-		// buffer callback would bypass the enqueue API. So when that option
-		// is on, enqueue the (small, local, cacheable) assets on every
-		// front-end page: the buffer may gate any of them.
-		if ( $this->options['detection']['output_buffer'] && ! $this->should_bail() ) {
-			$this->enqueue_assets();
-		}
-	}
-
-	/**
-	 * CSS for the Appearance settings (§7.1): preset + colour overrides of
-	 * the §7.3 custom properties. '' when everything is at defaults.
-	 *
-	 * @return string
-	 */
-	public function appearance_css(): string {
-		$a    = $this->options['appearance'];
-		$vars = '';
-		foreach ( array(
-			'bg'        => '--cg-bg',
-			'fg'        => '--cg-fg',
-			'accent'    => '--cg-accent',
-			'accent_fg' => '--cg-accent-fg',
-		) as $option_key => $property ) {
-			if ( '' !== $a[ $option_key ] ) {
-				$vars .= $property . ':' . $a[ $option_key ] . ';';
-			}
-		}
-
-		$css = '';
-		if ( '' !== $vars ) {
-			$css .= '.cg-embed{' . $vars . '}';
-		}
-		if ( 'minimal' === $a['preset'] ) {
-			// Transparent panel on the page's own background; --cg-fg
-			// defaults to the theme's contrast preset, so text keeps its
-			// ratio against the page.
-			$css .= '.cg-embed:not(.cg-embed--active){background:transparent;border:1px solid var(--cg-fg);}';
-		} elseif ( 'card' === $a['preset'] ) {
-			$css .= '.cg-embed:not(.cg-embed--active){border:1px solid rgba(0,0,0,0.12);border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.18);}';
-		}
-
-		// Emitted after the preset rules at equal specificity, so an explicit
-		// corner choice beats the card preset's radius. The admin preview
-		// (assets/js/admin-appearance.js) mirrors these values inline —
-		// change them in both places.
-		$radii = array(
-			'square'  => '0',
-			'rounded' => '12px',
-			'pill'    => '12px',
-		);
-		if ( isset( $radii[ $a['corners'] ] ) ) {
-			$radius = $radii[ $a['corners'] ];
-			$css   .= '.cg-embed{--cg-radius:' . $radius . ';}.cg-embed:not(.cg-embed--active){border-radius:' . $radius . ';}';
-			if ( 'pill' === $a['corners'] ) {
-				$css .= '.cg-embed .cg-embed__button{border-radius:999px;}';
-			}
-		}
-
-		return $css;
-	}
-
-	/**
-	 * The caluconEmbedGateConfig JSON. Shared by the enqueue path and the
-	 * output-buffer path, which injects tags directly because it runs after
-	 * wp_footer. Always present: the loading/error announcements (§8) must
-	 * be translatable even when consent memory is off.
-	 *
-	 * @return string|null
-	 */
-	public function inline_config_json(): ?string {
-		$consent = $this->options['consent'];
-		$config  = array(
-			'i18n' => array(
-				'withdrawn' => __( 'Stored embed consents have been removed. Embeds will ask again.', 'calucon-third-party-embed-gate' ),
-				'loading'   => __( 'Loading embedded content…', 'calucon-third-party-embed-gate' ),
-				'error'     => __( 'The embedded content could not be loaded.', 'calucon-third-party-embed-gate' ),
-				'errorLink' => __( 'Open it on the provider’s site.', 'calucon-third-party-embed-gate' ),
-			),
-		);
-		if ( 'off' !== $consent['memory'] ) {
-			$config['memory']       = $consent['memory'];
-			$config['scope']        = $consent['scope'];
-			$config['durationDays'] = $consent['duration_days'];
-		}
-		$cmp = $this->cmp_bridge_config();
-		if ( null !== $cmp ) {
-			$config['cmp'] = $cmp;
-		}
-		// Emitted verbatim inside an inline <script> (enqueue path and the
-		// output-buffer shutdown path). Default json_encode already escapes
-		// '/', so '</script>' cannot break out; JSON_HEX_TAG|APOS|QUOT|AMP is
-		// belt-and-braces consistency with the data-cg-payload path (§9.1) so
-		// no config string — i18n, a filtered CMP category — can ever inject
-		// markup, matching esc_json()'s guarantees.
-		return (string) wp_json_encode(
-			$config,
-			JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
-		);
-	}
-
-	/**
 	 * The §6.4 bridge config, or null when the bridge stays off — because
 	 * the option is off, or because no platform from the tested list is
 	 * installed (fail closed; an untested CMP gets no adapter).
@@ -711,17 +541,6 @@ final class Plugin {
 		$config = BridgeConfig::build( Detector::detected(), $this->options['cmp'] );
 		$config = apply_filters( 'calucon_embed_gate_cmp_config', $config, $this->options['cmp'] );
 		return is_array( $config ) ? $config : null;
-	}
-
-	/**
-	 * @return void
-	 */
-	private function enqueue_assets(): void {
-		wp_enqueue_script( 'calucon-embed-gate' );
-		wp_enqueue_style( 'calucon-embed-gate' );
-		if ( null !== $this->cmp_bridge_config() ) {
-			wp_enqueue_script( 'calucon-embed-gate-cmp' );
-		}
 	}
 
 	/**
