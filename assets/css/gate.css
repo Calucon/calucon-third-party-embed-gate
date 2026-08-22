@@ -247,5 +247,29 @@
 }
 
 .cg-withdraw__status {
-	margin-left: 0.5em;
+	margin-inline-start: 0.5em; /* Logical: follows RTL. */
+}
+
+/* Windows High Contrast / forced colours: the system palette replaces
+   ours, so rely on borders (which forced-colors keeps) rather than fills
+   to keep the panel, the buttons and the glyph distinguishable. */
+@media ( forced-colors: active ) {
+	.cg-embed,
+	.cg-withdraw {
+		border: 1px solid CanvasText;
+	}
+
+	.cg-embed__button,
+	.cg-withdraw {
+		border: 1px solid ButtonText;
+	}
+
+	.cg-embed__button::before {
+		background: ButtonText;
+	}
+
+	.cg-embed__button:focus-visible,
+	.cg-withdraw:focus-visible {
+		outline: 2px solid Highlight;
+	}
 }

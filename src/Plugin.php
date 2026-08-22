@@ -98,6 +98,15 @@ final class Plugin {
 			},
 			function (): bool {
 				return $this->should_bail();
+			},
+			function (): array {
+				$kinds = array();
+				foreach ( $this->providers() as $descriptor ) {
+					if ( ! empty( $descriptor['id'] ) && is_string( $descriptor['id'] ) ) {
+						$kinds[ $descriptor['id'] ] = isset( $descriptor['kind'] ) ? (string) $descriptor['kind'] : '';
+					}
+				}
+				return $kinds;
 			}
 		);
 		$this->assets->register();

@@ -280,6 +280,13 @@ final class OptionsTest extends TestCase {
 		foreach ( array( 'button_style', 'button_width', 'hover', 'poster_panel' ) as $key ) {
 			self::assertSame( '', $bad['appearance'][ $key ], $key );
 		}
+
+		$more = Options::sanitize( array( 'appearance' => array( 'poster_dim' => 'light', 'link' => '#0A5BD3' ) ) );
+		self::assertSame( 'light', $more['appearance']['poster_dim'] );
+		self::assertSame( '#0a5bd3', $more['appearance']['link'] );
+		$worse = Options::sanitize( array( 'appearance' => array( 'poster_dim' => 'pitch-black', 'link' => 'blue' ) ) );
+		self::assertSame( '', $worse['appearance']['poster_dim'] );
+		self::assertSame( '', $worse['appearance']['link'] );
 	}
 
 	public function test_privacy_link_toggle_defaults_on_and_becomes_boolean(): void {

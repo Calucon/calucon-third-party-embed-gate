@@ -41,6 +41,9 @@ final class Provider {
 				'load_query'         => array(),
 				'fallback'           => '',
 				'privacy_url'        => null,
+				// What the embed is, for the optional button glyph: 'video' |
+				// 'map' | 'audio' | '' (generic). Purely presentational.
+				'kind'               => '',
 				'controller'         => null,
 				'note'               => '',
 				'action'             => '',

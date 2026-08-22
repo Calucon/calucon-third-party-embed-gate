@@ -39,7 +39,11 @@ final class Assets {
 	 * @param callable $cmp_config_source fn(): ?array — Plugin::cmp_bridge_config().
 	 * @param callable $should_bail       fn(): bool — Plugin::should_bail().
 	 */
-	public function __construct( array $options, callable $cmp_config_source, callable $should_bail ) {
+	/** @var callable|null fn(): array — provider id => kind, for the button glyph. */
+	private $kinds_source;
+
+	public function __construct( array $options, callable $cmp_config_source, callable $should_bail, ?callable $kinds_source = null ) {
+		$this->kinds_source      = $kinds_source;
 		$this->options           = $options;
 		$this->cmp_config_source = $cmp_config_source;
 		$this->should_bail       = $should_bail;
@@ -93,7 +97,8 @@ final class Assets {
 			);
 		}
 
-		$appearance = AppearanceCss::build( $this->options['appearance'] );
+		$kinds      = null !== $this->kinds_source ? (array) call_user_func( $this->kinds_source ) : array();
+		$appearance = AppearanceCss::build( $this->options['appearance'], $kinds );
 		if ( '' !== $appearance ) {
 			wp_add_inline_style( 'calucon-embed-gate', $appearance );
 		}

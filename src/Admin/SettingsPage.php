@@ -453,6 +453,21 @@ final class SettingsPage {
 					<button type="button" id="cg-appearance-reset" class="button"><?php esc_html_e( 'Reset appearance to defaults', 'calucon-third-party-embed-gate' ); ?></button>
 					<span class="description"><?php esc_html_e( 'Clears every field on this tab. Nothing changes on your site until you save.', 'calucon-third-party-embed-gate' ); ?></span>
 				</p>
+				<fieldset class="cg-quick-styles">
+					<legend><?php esc_html_e( 'Quick styles', 'calucon-third-party-embed-gate' ); ?></legend>
+					<p class="description"><?php esc_html_e( 'Each one fills in every control below as a starting point — then change whatever you like. Nothing is saved until you click Save.', 'calucon-third-party-embed-gate' ); ?></p>
+					<?php
+					$quick_styles = array(
+						'cinema'  => __( 'Dark cinema', 'calucon-third-party-embed-gate' ),
+						'minimal' => __( 'Light minimal', 'calucon-third-party-embed-gate' ),
+						'card'    => __( 'Brand card', 'calucon-third-party-embed-gate' ),
+						'pastel'  => __( 'Soft pastel', 'calucon-third-party-embed-gate' ),
+					);
+					foreach ( $quick_styles as $style_key => $style_label ) :
+						?>
+						<button type="button" class="button cg-quick-style" data-cg-quick-style="<?php echo esc_attr( $style_key ); ?>"><?php echo esc_html( $style_label ); ?></button>
+					<?php endforeach; ?>
+				</fieldset>
 
 				<h3><?php esc_html_e( 'Panel', 'calucon-third-party-embed-gate' ); ?></h3>
 				<table class="form-table" role="presentation">
@@ -470,6 +485,7 @@ final class SettingsPage {
 					);
 					$this->color_row( 'bg', __( 'Panel background', 'calucon-third-party-embed-gate' ), $appearance );
 					$this->color_row( 'fg', __( 'Panel text', 'calucon-third-party-embed-gate' ), $appearance );
+					$this->color_row( 'link', __( 'Link colour', 'calucon-third-party-embed-gate' ), $appearance, __( 'The "Open on …" and privacy-policy links. Cleared, they use the panel text colour.', 'calucon-third-party-embed-gate' ) );
 					$this->select_row(
 						'cg-shadow',
 						'shadow',
@@ -599,10 +615,10 @@ final class SettingsPage {
 					);
 					?>
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Play icon', 'calucon-third-party-embed-gate' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'Button icon', 'calucon-third-party-embed-gate' ); ?></th>
 						<td>
 							<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][play_icon]" value="0">
-							<label><input type="checkbox" id="cg-play-icon" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][play_icon]" value="1" <?php checked( $appearance['play_icon'] ); ?>> <?php esc_html_e( 'Show a play symbol on the button (a bundled glyph — nothing is fetched)', 'calucon-third-party-embed-gate' ); ?></label>
+							<label><input type="checkbox" id="cg-play-icon" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][play_icon]" value="1" <?php checked( $appearance['play_icon'] ); ?>> <?php esc_html_e( 'Show an icon on the button: a play symbol for videos, a pin for maps, a note for audio, a generic symbol otherwise (bundled glyphs — nothing is fetched)', 'calucon-third-party-embed-gate' ); ?></label>
 						</td>
 					</tr>
 				</table>
@@ -621,6 +637,18 @@ final class SettingsPage {
 						),
 						$appearance,
 						__( 'Applies to embeds that have a poster image set in the block editor. Tick "Preview with a poster image" under the preview to see it.', 'calucon-third-party-embed-gate' )
+					);
+					$this->select_row(
+						'cg-poster-dim',
+						'poster_dim',
+						__( 'Poster dimming', 'calucon-third-party-embed-gate' ),
+						array(
+							''       => __( 'None', 'calucon-third-party-embed-gate' ),
+							'light'  => __( 'Light — slightly darker', 'calucon-third-party-embed-gate' ),
+							'strong' => __( 'Strong — darker and softened', 'calucon-third-party-embed-gate' ),
+						),
+						$appearance,
+						__( 'Darkens the poster behind the panel so the panel stands out.', 'calucon-third-party-embed-gate' )
 					);
 					?>
 				</table>
@@ -744,6 +772,11 @@ final class SettingsPage {
 			<label>
 				<input type="checkbox" id="cg-preview-poster">
 				<?php esc_html_e( 'Preview with a poster image', 'calucon-third-party-embed-gate' ); ?>
+			</label>
+			&nbsp;
+			<label>
+				<input type="checkbox" id="cg-preview-narrow">
+				<?php esc_html_e( 'Preview at phone width', 'calucon-third-party-embed-gate' ); ?>
 			</label>
 		</p>
 		<p id="cg-contrast-report" class="cg-contrast-report" role="status" aria-live="polite"></p>

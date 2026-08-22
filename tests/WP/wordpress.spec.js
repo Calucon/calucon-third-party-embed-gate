@@ -228,9 +228,9 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	const pluginOffenders = () => offenders.filter( ( url ) => ! url.includes( 'gravatar.com' ) );
 	expect( pluginOffenders(), 'settings screen made a third-party request' ).toEqual( [] );
 
-	// Every colour — the five base ones and the four dark-mode ones — got a
-	// real WordPress colour picker; no hex typing anywhere.
-	await expect( page.locator( '.wp-picker-container' ) ).toHaveCount( 9 );
+	// Every colour — six base ones (incl. border and link) and the four
+	// dark-mode ones — got a real WordPress colour picker; no hex typing.
+	await expect( page.locator( '.wp-picker-container' ) ).toHaveCount( 10 );
 
 	// The Appearance panel lives behind its tab.
 	await page.click( '#cg-tabbtn-appearance' );
@@ -277,6 +277,23 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await expect( sample.locator( '.cg-embed__panel' ) ).toHaveCSS( 'justify-self', 'stretch' );
 	await page.uncheck( '#cg-preview-poster' );
 	await expect( sample.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
+
+	// Round 4: a quick style fills in the controls AND the preview in one
+	// click; poster dimming and the phone-width preview mirror too.
+	await page.click( '.cg-quick-style[data-cg-quick-style="cinema"]' );
+	await expect( page.locator( '#cg-corners' ) ).toHaveValue( 'rounded' );
+	await expect( page.locator( '#cg-play-icon' ) ).toBeChecked();
+	await expect( page.locator( '[data-cg-color="bg"]' ) ).toHaveValue( '#101418' );
+	await expect( sample ).toHaveCSS( 'background-color', 'rgb(16, 20, 24)' );
+	await expect( page.locator( '#cg-contrast-report' ) ).not.toContainText( 'hard to read' );
+	await page.check( '#cg-preview-poster' );
+	await expect( sample.locator( 'img.cg-embed__poster' ) ).toHaveCSS( 'filter', /brightness\(0\.5\)/ );
+	await page.uncheck( '#cg-preview-poster' );
+	await page.check( '#cg-preview-narrow' );
+	await expect( page.locator( '#cg-preview-stage' ) ).toHaveCSS( 'max-width', '360px' );
+	await page.uncheck( '#cg-preview-narrow' );
+	await page.click( '#cg-appearance-reset' );
+	await expect( page.locator( '[data-cg-color="bg"]' ) ).toHaveValue( '' );
 
 	// Round-2 controls: the withdraw sample restyles with its variant, the
 	// dark colour rows reveal behind their toggle, and the play icon class

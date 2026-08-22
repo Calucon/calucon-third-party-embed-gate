@@ -78,6 +78,10 @@
 				applyBorder();
 				return;
 			}
+			if ( 'link' === key ) {
+				applyLinkColor( value );
+				return;
+			}
 			if ( 0 === key.indexOf( 'dark_' ) ) {
 				palette.dark[ key.slice( 5 ) ] = value;
 			} else {
@@ -267,6 +271,7 @@
 				sample.classList.remove( 'cg-embed--poster' );
 			}
 			applyPosterPanel( ( document.getElementById( 'cg-poster-panel' ) || { value: '' } ).value );
+			applyPosterDim( ( document.getElementById( 'cg-poster-dim' ) || { value: '' } ).value );
 		}
 
 		// Mirrors AppearanceCss::build() poster placements.
@@ -295,6 +300,100 @@
 				panel.style.borderRadius = '0 0 var( --cg-radius ) var( --cg-radius )';
 			}
 			refresh();
+		}
+
+		function applyLinkColor( value ) {
+			var links = sample ? sample.querySelectorAll( '.cg-embed__fallback a, .cg-embed__privacy a' ) : [];
+			for ( var i = 0; i < links.length; i++ ) {
+				links[ i ].style.color = value || '';
+			}
+			refresh();
+		}
+
+		// Mirrors AppearanceCss::build() poster dimming.
+		var DIMS = { light: 'brightness(0.75)', strong: 'brightness(0.5) blur(2px)' };
+		function applyPosterDim( dim ) {
+			var poster = sample ? sample.querySelector( '.cg-embed__poster' ) : null;
+			if ( poster ) {
+				poster.style.filter = DIMS[ dim ] || '';
+			}
+		}
+
+		function applyNarrow( on ) {
+			if ( stage ) {
+				stage.classList.toggle( 'cg-preview-stage--narrow', !! on );
+				refresh();
+			}
+		}
+
+		// Quick styles: bundles that fill in every control as a starting
+		// point. Values are plain option values — Options::sanitize() still
+		// bounds them on save. Every colour pair here clears 4.5:1.
+		var QUICK_STYLES = {
+			cinema: {
+				'cg-preset': 'default', 'cg-corners': 'rounded', 'cg-shadow': 'strong', 'cg-density': 'spacious',
+				'cg-align': 'center', 'cg-button-size': 'large', 'cg-button-style': '', 'cg-button-width': '',
+				'cg-hover': 'strong', 'cg-play-icon': true, 'cg-poster-panel': 'center', 'cg-poster-dim': 'strong',
+				'cg-withdraw-style': 'outline', 'cg-note-size': '',
+				colors: { bg: '#101418', fg: '#f3f4f6', accent: '#c62828', accent_fg: '#ffffff', link: '#f3f4f6', border_color: '' }
+			},
+			minimal: {
+				'cg-preset': 'minimal', 'cg-corners': 'square', 'cg-shadow': 'none', 'cg-density': '',
+				'cg-align': '', 'cg-button-size': '', 'cg-button-style': 'outline', 'cg-button-width': '',
+				'cg-hover': '', 'cg-play-icon': false, 'cg-poster-panel': '', 'cg-poster-dim': '',
+				'cg-withdraw-style': 'link', 'cg-note-size': 'small',
+				colors: { bg: '', fg: '', accent: '', accent_fg: '', link: '', border_color: '' }
+			},
+			card: {
+				'cg-preset': 'card', 'cg-corners': 'custom', 'cg-radius': '16', 'cg-shadow': 'soft', 'cg-density': '',
+				'cg-align': '', 'cg-button-size': '', 'cg-button-style': '', 'cg-button-width': 'full',
+				'cg-hover': '', 'cg-play-icon': true, 'cg-poster-panel': 'bar', 'cg-poster-dim': 'light',
+				'cg-withdraw-style': '', 'cg-note-size': '', 'cg-border-width': '1',
+				colors: { bg: '#ffffff', fg: '#1f2937', accent: '#1d4ed8', accent_fg: '#ffffff', link: '#1d4ed8', border_color: '#d1d5db' }
+			},
+			pastel: {
+				'cg-preset': 'default', 'cg-corners': 'pill', 'cg-shadow': 'none', 'cg-density': 'spacious',
+				'cg-align': 'center', 'cg-button-size': '', 'cg-button-style': '', 'cg-button-width': '',
+				'cg-hover': '', 'cg-play-icon': false, 'cg-poster-panel': 'center', 'cg-poster-dim': 'light',
+				'cg-withdraw-style': 'outline', 'cg-note-size': '',
+				colors: { bg: '#f4f1ea', fg: '#2b2b2b', accent: '#2f6f73', accent_fg: '#ffffff', link: '#2f6f73', border_color: '' }
+			}
+		};
+
+		function applyQuickStyle( name ) {
+			var bundle = QUICK_STYLES[ name ];
+			if ( ! bundle ) {
+				return;
+			}
+			// Start from a clean slate so a bundle means the same thing
+			// whatever was there before.
+			$( '#cg-appearance-reset' ).trigger( 'click' );
+			for ( var id in bundle ) {
+				if ( ! Object.prototype.hasOwnProperty.call( bundle, id ) || 'colors' === id ) {
+					continue;
+				}
+				var el = document.getElementById( id );
+				if ( ! el ) {
+					continue;
+				}
+				if ( 'checkbox' === el.type ) {
+					el.checked = !! bundle[ id ];
+				} else {
+					el.value = bundle[ id ];
+				}
+			}
+			for ( var key in bundle.colors ) {
+				if ( Object.prototype.hasOwnProperty.call( bundle.colors, key ) ) {
+					var field = $( '[data-cg-color="' + key + '"]' );
+					if ( field.length ) {
+						field.wpColorPicker( 'color', bundle.colors[ key ] );
+						if ( ! bundle.colors[ key ] ) {
+							field.closest( '.wp-picker-container' ).find( '.wp-picker-clear' ).trigger( 'click' );
+						}
+					}
+				}
+			}
+			syncFromForm();
 		}
 
 		var GAPS = { compact: '0.5rem', spacious: '1.25rem' };
@@ -489,6 +588,15 @@
 		$( '#cg-preview-poster' ).on( 'change', function () {
 			applyPosterPreview( this.checked );
 		} );
+		$( '#cg-poster-dim' ).on( 'change', function () {
+			applyPosterDim( this.value );
+		} );
+		$( '#cg-preview-narrow' ).on( 'change', function () {
+			applyNarrow( this.checked );
+		} );
+		$( '.cg-quick-style' ).on( 'click', function () {
+			applyQuickStyle( this.getAttribute( 'data-cg-quick-style' ) );
+		} );
 		$( '#cg-appearance-reset' ).on( 'click', function () {
 			// Back to "inherit everything": selects to their first option,
 			// numbers to their defaults, checkboxes off, every colour cleared
@@ -552,6 +660,8 @@
 		applyButtonWidth( ( document.getElementById( 'cg-button-width' ) || { value: '' } ).value );
 		applyHover( ( document.getElementById( 'cg-hover' ) || { value: '' } ).value );
 		applyPosterPanel( ( document.getElementById( 'cg-poster-panel' ) || { value: '' } ).value );
+		applyPosterDim( ( document.getElementById( 'cg-poster-dim' ) || { value: '' } ).value );
+		applyLinkColor( ( document.querySelector( '[data-cg-color="link"]' ) || { value: '' } ).value );
 		applyPreset( ( document.getElementById( 'cg-preset' ) || { value: '' } ).value );
 		}
 		syncFromForm();

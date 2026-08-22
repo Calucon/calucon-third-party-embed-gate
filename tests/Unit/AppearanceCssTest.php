@@ -48,6 +48,8 @@ final class AppearanceCssTest extends TestCase {
 				'button_width'   => '',
 				'hover'          => '',
 				'poster_panel'   => '',
+				'poster_dim'     => '',
+				'link'           => '',
 			),
 			$overrides
 		);
@@ -195,8 +197,43 @@ final class AppearanceCssTest extends TestCase {
 		self::assertStringContainsString( '.cg-embed .cg-embed__button::before', $css );
 		self::assertStringContainsString( 'data:image/svg+xml', $css );
 		self::assertStringContainsString( 'background:currentColor', $css );
+		self::assertStringContainsString( 'margin-inline-end:0.5em', $css, 'logical margin — RTL sites' );
 		// Invariant 9: the only url() in the emission is the data: one.
 		self::assertSame( substr_count( $css, 'url(' ), substr_count( $css, 'url("data:' ) );
+	}
+
+	public function test_icon_is_kind_aware_per_provider_and_generic_otherwise(): void {
+		$css = AppearanceCss::build(
+			self::appearance( array( 'play_icon' => true ) ),
+			array(
+				'youtube'     => 'video',
+				'vimeo'       => 'video',
+				'google-maps' => 'map',
+				'spotify'     => 'audio',
+				'typeform'    => '',
+				'evil"]'      => 'video', // not a slug: never interpolated into a selector
+			)
+		);
+
+		self::assertStringContainsString( '.cg-embed[data-cg-provider="youtube"] .cg-embed__button::before,.cg-embed[data-cg-provider="vimeo"] .cg-embed__button::before{', $css );
+		self::assertStringContainsString( '.cg-embed[data-cg-provider="google-maps"] .cg-embed__button::before{', $css );
+		self::assertStringContainsString( '.cg-embed[data-cg-provider="spotify"] .cg-embed__button::before{', $css );
+		self::assertStringNotContainsString( 'typeform', $css, 'generic providers use the base glyph' );
+		self::assertStringNotContainsString( 'evil', $css );
+		// Four glyph rules (base + video + map + audio), each emitted as
+		// -webkit-mask AND mask → eight inline SVGs.
+		self::assertSame( 8, substr_count( $css, "viewBox='0 0 16 16'" ) );
+	}
+
+	public function test_poster_dim_and_link_colour(): void {
+		self::assertSame(
+			'.cg-embed--poster:not(.cg-embed--active) .cg-embed__poster{filter:brightness(0.5) blur(2px);}',
+			AppearanceCss::build( self::appearance( array( 'poster_dim' => 'strong' ) ) )
+		);
+		self::assertSame(
+			'.cg-embed .cg-embed__fallback a,.cg-embed .cg-embed__privacy a{color:#0a5bd3;}',
+			AppearanceCss::build( self::appearance( array( 'link' => '#0a5bd3' ) ) )
+		);
 	}
 
 	public function test_note_size_and_alignment(): void {

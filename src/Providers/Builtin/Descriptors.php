@@ -34,6 +34,7 @@ final class Descriptors {
 		return array(
 			array(
 				'id'               => 'youtube',
+				'kind'             => 'video',
 				'label'            => 'YouTube',
 				'match'            => array(
 					'iframe_host' => array(
@@ -61,6 +62,7 @@ final class Descriptors {
 			),
 			array(
 				'id'               => 'vimeo',
+				'kind'             => 'video',
 				'label'            => 'Vimeo',
 				'match'            => array(
 					'iframe_host' => array( 'player.vimeo.com' ),
@@ -80,6 +82,7 @@ final class Descriptors {
 			),
 			array(
 				'id'               => 'google-maps',
+				'kind'             => 'map',
 				'label'            => 'Google Maps',
 				'match'            => array(
 					'iframe_host' => array( 'www.google.com', 'google.com', 'maps.google.com' ),
@@ -100,6 +103,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'openstreetmap',
+				'kind'        => 'map',
 				'label'       => 'OpenStreetMap',
 				'match'       => array(
 					'iframe_host' => array( 'www.openstreetmap.org', 'openstreetmap.org' ),
@@ -113,6 +117,7 @@ final class Descriptors {
 			),
 			array(
 				'id'               => 'spotify',
+				'kind'             => 'audio',
 				'label'            => 'Spotify',
 				'match'            => array(
 					'iframe_host' => array( 'open.spotify.com' ),
@@ -128,6 +133,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'soundcloud',
+				'kind'        => 'audio',
 				'label'       => 'SoundCloud',
 				'match'       => array(
 					'iframe_host' => array( 'w.soundcloud.com' ),
@@ -141,6 +147,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'apple-music',
+				'kind'        => 'audio',
 				'label'       => 'Apple Music',
 				'match'       => array(
 					'iframe_host' => array( 'embed.music.apple.com', 'embed.podcasts.apple.com' ),
@@ -292,6 +299,7 @@ final class Descriptors {
 			),
 			array(
 				'id'              => 'tiktok',
+				'kind'            => 'video',
 				'label'           => 'TikTok',
 				'match'           => array(
 					'iframe_host' => array( 'www.tiktok.com' ),
@@ -343,6 +351,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'giphy',
+				'kind'        => 'video',
 				'label'       => 'GIPHY',
 				'match'       => array(
 					'iframe_host' => array( 'giphy.com' ),

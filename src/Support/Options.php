@@ -104,6 +104,8 @@ final class Options {
 				'button_width'   => '', // '' | full.
 				'hover'          => '', // '' (subtle) | none | strong.
 				'poster_panel'   => '', // '' (bottom-left card) | center | bar.
+				'poster_dim'     => '', // '' | light | strong — darkens the poster behind the panel.
+				'link'           => '', // Link colour (hex); '' inherits the panel text colour.
 			),
 			'consent'    => array(
 				// Consent memory (§6.2). Off by default: out of the box,
@@ -235,6 +237,7 @@ final class Options {
 				'button_width' => array( '', 'full' ),
 				'hover'        => array( '', 'none', 'strong' ),
 				'poster_panel' => array( '', 'center', 'bar' ),
+				'poster_dim'   => array( '', 'light', 'strong' ),
 			) as $enum_key => $allowed ) {
 				if ( isset( $a[ $enum_key ] ) && in_array( $a[ $enum_key ], $allowed, true ) ) {
 					$clean['appearance'][ $enum_key ] = $a[ $enum_key ];
@@ -245,7 +248,7 @@ final class Options {
 					$clean['appearance'][ $appearance_flag ] = self::truthy( $a[ $appearance_flag ] );
 				}
 			}
-			foreach ( array( 'bg', 'fg', 'accent', 'accent_fg', 'border_color', 'dark_bg', 'dark_fg', 'dark_accent', 'dark_accent_fg' ) as $color_key ) {
+			foreach ( array( 'bg', 'fg', 'accent', 'accent_fg', 'border_color', 'link', 'dark_bg', 'dark_fg', 'dark_accent', 'dark_accent_fg' ) as $color_key ) {
 				if ( isset( $a[ $color_key ] ) && is_string( $a[ $color_key ] ) ) {
 					$color = strtolower( trim( $a[ $color_key ] ) );
 					// Hex colours only: anything else could smuggle CSS out
