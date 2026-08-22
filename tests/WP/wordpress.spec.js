@@ -295,3 +295,82 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	await expect( page.locator( '#cg-tabbtn-status' ) ).toHaveAttribute( 'aria-selected', 'true' );
 	await expect( page.locator( '#cg-status' ) ).toBeVisible();
 } );
+
+test( 'resource hints to gated providers are removed; harmless hints survive', async ( { page } ) => {
+	// The seed's mu-plugin emulates a performance plugin: one preconnect to
+	// a gated provider and one to a safe CDN via the wp_resource_hints
+	// filter, plus two literal <link> tags printed straight into wp_head.
+	await page.goto( '/gated-classic/' );
+	await expect( page.locator( '.cg-embed' ).first() ).toBeVisible();
+
+	// Filter path: the gated host is stripped, the safe one is proof the
+	// hint actually flowed through the filter (not a vacuous zero).
+	await expect( page.locator( 'link[rel="preconnect"][href*="platform.twitter.com"]' ) ).toHaveCount( 0 );
+	await expect( page.locator( 'link[rel="preconnect"][href*="cdn.filter-safe.example"]' ) ).toHaveCount( 1 );
+
+	// Literal tags bypass every filter — WITHOUT output buffering they are
+	// out of the plugin's reach. This pins the documented boundary; the
+	// buffering test below asserts the same tag IS scrubbed when it's on.
+	await expect( page.locator( 'link[rel="preconnect"][href="https://www.youtube.com"]' ) ).toHaveCount( 1 );
+	await expect( page.locator( 'link[rel="preconnect"][href*="cdn.literal-safe.example"]' ) ).toHaveCount( 1 );
+} );
+
+test( 'whole-page buffering: gates, enqueues everywhere, and restores cleanly', async ( { page } ) => {
+	// The output-buffer path had no integration coverage while it was
+	// refactored twice (0.9.1 asset delivery, 0.9.4 structure) — this test
+	// closes that gap. It runs LAST in this file and restores the option so
+	// the earlier assets-only-when-gated assertions stay true on re-runs.
+	await page.goto( '/wp-login.php' );
+	await page.fill( '#user_login', 'admin' );
+	await page.fill( '#user_pass', 'password' );
+	await page.click( '#wp-submit' );
+	await page.waitForURL( /wp-admin/ );
+
+	const OPTION = 'input[name="calucon_embed_gate_options[detection][output_buffer]"][type="checkbox"]';
+	const save = async () => {
+		await page.click( 'form p.submit input[type="submit"], form input#submit' );
+		await page.waitForURL( /options-general\.php/ );
+	};
+
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.click( '#cg-tabbtn-detection' );
+	await page.check( OPTION );
+	await save();
+
+	try {
+		// With buffering on, the (local) assets are delivered on every page —
+		// the buffer gates on shutdown, far too late to enqueue conditionally.
+		const offenders = [];
+		page.on( 'request', ( request ) => {
+			const host = new URL( request.url() ).hostname;
+			if ( ! OWN_HOSTS.includes( host ) && ! request.url().includes( 'gravatar.com' ) ) {
+				offenders.push( request.url() );
+			}
+		} );
+
+		await page.goto( '/no-embeds/' );
+		await expect( page.locator( 'script[src*="assets/js/gate.js"]' ) ).toHaveCount( 1 );
+		await expect( page.locator( 'link[href*="assets/css/gate.css"]' ) ).toHaveCount( 1 );
+
+		// With the whole document in hand, the literal hint tag printed by
+		// the mu-plugin (unfilterable, see the hints test above) IS scrubbed
+		// for the gated host — and only for the gated host (§9.14).
+		await expect( page.locator( 'link[rel="preconnect"][href="https://www.youtube.com"]' ) ).toHaveCount( 0 );
+		await expect( page.locator( 'link[rel="preconnect"][href*="cdn.literal-safe.example"]' ) ).toHaveCount( 1 );
+
+		// Gating itself still holds end to end with the buffer active.
+		await page.goto( '/gated-classic/' );
+		await page.waitForLoadState( 'networkidle' );
+		await expect( page.locator( '.cg-embed .cg-embed__button' ).first() ).toBeVisible();
+		expect( await page.locator( 'iframe[src*="youtube"]' ).count() ).toBe( 0 );
+		expect( offenders, 'INVARIANT 1 VIOLATED with output buffering active' ).toEqual( [] );
+	} finally {
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+		await page.click( '#cg-tabbtn-detection' );
+		await page.uncheck( OPTION );
+		await save();
+	}
+
+	await page.goto( '/no-embeds/' );
+	await expect( page.locator( 'script[src*="assets/js/gate.js"]' ) ).toHaveCount( 0 );
+} );

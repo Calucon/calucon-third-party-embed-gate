@@ -105,4 +105,47 @@ final class HtmlScannerTest extends TestCase {
 		self::assertSame( 'a > b', $tags[0]['attributes']['title'] );
 		self::assertSame( 'https://a.example/x', $tags[0]['attributes']['src'] );
 	}
+
+	/**
+	 * Unterminated parsed containers must neither hide embeds nor blow up:
+	 * browsers still render markup inside an unclosed <pre>/<code>, so the
+	 * iframe after thousands of them must be found — and in linear time (the
+	 * failed close-tag search is memoized; without the memo this input class
+	 * was quadratic, ~28 ms at 6000 openers and ~1 s extrapolated at 500 KB).
+	 */
+	public function test_unterminated_parsed_containers_stay_linear_and_visible(): void {
+		$scanner = new HtmlScanner();
+		// 40 000 openers is the point where the two cost regimes separate by
+		// ~90x: linear is ~14 ms, the pre-memo quadratic search extrapolates
+		// to ~1.2 s (28 ms measured at 6000, growing as N^2). The 0.3 s bound
+		// sits an order of magnitude above linear and well below quadratic, so
+		// runner noise cannot flip it either way — a smaller input would let
+		// the quadratic regression pass and defeat the test's purpose.
+		$html = str_repeat( '<code x>text ', 40000 )
+			. '<iframe src="https://www.youtube.com/embed/x"></iframe>';
+
+		$start = microtime( true );
+		$tags  = $scanner->find_tags( $html, 'iframe' );
+		$spent = microtime( true ) - $start;
+
+		self::assertCount( 1, $tags, 'the iframe after unterminated containers must be found' );
+		self::assertLessThan( 0.3, $spent, 'pathological input must stay far from quadratic cost' );
+	}
+
+	/**
+	 * The memo must not weaken real exclusion: content inside a properly
+	 * closed <pre> stays excluded even after an earlier unterminated <code>
+	 * poisoned that tag's close-tag search.
+	 */
+	public function test_memo_does_not_bleed_between_container_tags(): void {
+		$scanner = new HtmlScanner();
+		$html    = '<code x>unterminated '
+			. '<pre><iframe src="https://a.example/hidden"></iframe></pre>'
+			. '<iframe src="https://a.example/visible"></iframe>';
+
+		$tags = $scanner->find_tags( $html, 'iframe' );
+
+		self::assertCount( 1, $tags );
+		self::assertSame( 'https://a.example/visible', $tags[0]['attributes']['src'] );
+	}
 }

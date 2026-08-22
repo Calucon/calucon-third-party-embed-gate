@@ -82,6 +82,66 @@ final class PlaceholderRendererTest extends TestCase {
 		self::assertTrue( $payload['attrs']['allowfullscreen'] );
 	}
 
+	public function test_autoplay_stripped_from_a_provider_supplied_allow(): void {
+		// The descriptor's iframe_allow is a second injection point for the
+		// allow attribute, separate from the original tag's copied allow. A
+		// provider (own registry or the consent_gate_providers filter) that
+		// lists autoplay must not get it back on the rebuilt frame (invariant
+		// 8) — the original embed carried no allow here, so this value can
+		// only come from the descriptor path.
+		$provider = Provider::normalize(
+			array(
+				'id'           => 'generic',
+				'label'        => 'www.youtube.com',
+				'note'         => 'Note text.',
+				'action'       => 'Load it',
+				'fallback'     => 'https://www.youtube.com/embed/x',
+				'iframe_allow' => 'autoplay; encrypted-media; picture-in-picture',
+			)
+		);
+
+		$html    = ( new PlaceholderRenderer() )->render( $provider, 'https://www.youtube.com/embed/x', array( 'title' => 'T' ) );
+		$payload = $this->payload_of( $html );
+
+		self::assertSame( 'encrypted-media; picture-in-picture', $payload['attrs']['allow'] );
+	}
+
+	public function test_fallback_url_with_a_non_navigable_scheme_is_dropped(): void {
+		// safe_url guards the fallback href against schemes htmlspecialchars
+		// does not neutralise. A javascript:/data:/vbscript: fallback — from a
+		// provider descriptor or the calucon_embed_gate_fallback filter — must
+		// yield no link at all, never a live hostile href (invariant 2 gives a
+		// real link or none, never a trap).
+		foreach ( array( 'javascript:alert(1)', 'data:text/html,<script>x</script>', 'vbscript:msgbox', 'JavaScript:alert(1)' ) as $bad ) {
+			$provider = Provider::normalize(
+				array(
+					'id'       => 'generic',
+					'label'    => 'www.youtube.com',
+					'note'     => 'Note text.',
+					'action'   => 'Load it',
+					'fallback' => $bad,
+				)
+			);
+
+			// src is '' so the fallback URL is the only navigable-URL source.
+			$html = ( new PlaceholderRenderer() )->render( $provider, '', array( 'title' => 'T' ) );
+
+			self::assertStringNotContainsStringIgnoringCase( 'javascript:', $html, $bad );
+			self::assertStringNotContainsStringIgnoringCase( 'vbscript:', $html, $bad );
+			self::assertStringNotContainsString( 'data:text/html', $html, $bad );
+			self::assertStringNotContainsString( 'cg-embed__fallback', $html, $bad );
+		}
+	}
+
+	public function test_https_fallback_url_survives(): void {
+		// The negative test above must fail for the right reason: a real https
+		// fallback still renders a link.
+		$html = $this->render( array( 'title' => 'T' ) );
+
+		self::assertStringContainsString( 'cg-embed__fallback', $html );
+		self::assertStringContainsString( 'href="https://www.youtube.com/embed/x"', $html );
+	}
+
 	private function render_with_ctx( array $ctx ): string {
 		$provider = Provider::normalize(
 			array(

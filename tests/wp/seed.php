@@ -95,6 +95,32 @@ foreach ( $cg_seed_posts as $cg_slug => $cg_post ) {
 	);
 }
 
+// A performance-plugin emulator: adds a preconnect for a gated provider and
+// a safe CDN through the wp_resource_hints filter (priority 5, before the
+// plugin's own filter at 10), and prints literal <link> hint tags into
+// wp_head the way Perfmatters-class plugins do — bypassing every filter
+// (§9.14). The integration tests assert the filter path is always cleaned
+// and the literal path is cleaned exactly when output buffering is on.
+$cg_mu_dir = defined( 'WPMU_PLUGIN_DIR' ) ? WPMU_PLUGIN_DIR : WP_CONTENT_DIR . '/mu-plugins';
+if ( ! is_dir( $cg_mu_dir ) ) {
+	mkdir( $cg_mu_dir, 0755, true );
+}
+$cg_mu_source = <<<'MUPLUGIN'
+<?php
+add_filter( 'wp_resource_hints', function ( $urls, $rel ) {
+	if ( 'preconnect' === $rel ) {
+		$urls[] = 'https://platform.twitter.com';
+		$urls[] = 'https://cdn.filter-safe.example';
+	}
+	return $urls;
+}, 5, 2 );
+add_action( 'wp_head', function () {
+	echo '<link rel="preconnect" href="https://www.youtube.com">' . "\n";
+	echo '<link rel="preconnect" href="https://cdn.literal-safe.example">' . "\n";
+}, 99 );
+MUPLUGIN;
+file_put_contents( $cg_mu_dir . '/cg-test-hints.php', $cg_mu_source . "\n" );
+
 // Pretty permalinks so the tests can address posts by slug. Flush
 // unconditionally: newer Playground images pre-set the structure WITHOUT
 // building the rules, so a structure-changed guard skips the flush and the

@@ -15,6 +15,9 @@ module.exports = defineConfig( {
 	webServer: {
 		command: 'php -S 127.0.0.1:8931 tests/E2E/app/router.php',
 		url: 'http://127.0.0.1:8931/healthz',
-		reuseExistingServer: true,
+		// A stale php -S from another checkout/branch silently serves stale
+		// code to the whole suite (the WP config's twin caused an 11/13
+		// mystery failure). Fail loudly on a busy port instead.
+		reuseExistingServer: false,
 	},
 } );
