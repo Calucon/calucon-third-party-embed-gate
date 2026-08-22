@@ -37,15 +37,17 @@
 		var panel = sample ? sample.querySelector( '.cg-embed__panel' ) : null;
 		var withdraw = document.getElementById( 'cg-preview-withdraw' );
 
-		// A colour control is a swatch group (Default | theme colours | Custom)
-		// whose checked radio is the submitted value, plus the picker for
-		// Custom. The preview resolves a theme swatch through its data-cg-hex.
-		function swatchGroup( key ) {
-			return document.querySelector( '.cg-swatches[data-cg-color-key="' + key + '"]' );
+		// A colour control is a <details>: the summary shows the current dot
+		// and name; the menu holds real radios (Default | the theme's colours
+		// | Custom) and, for Custom, the picker. The checked radio IS the
+		// submitted value, so none of this is needed for the form to work —
+		// it keeps summary, picker and preview in step.
+		function colorControl( key ) {
+			return document.querySelector( '.cg-color[data-cg-color-key="' + key + '"]' );
 		}
 		function checkedSwatch( key ) {
-			var group = swatchGroup( key );
-			return group ? group.querySelector( 'input[type="radio"]:checked' ) : null;
+			var control = colorControl( key );
+			return control ? control.querySelector( 'input[type="radio"]:checked' ) : null;
 		}
 		function pickerField( key ) {
 			return document.querySelector( '.cg-color-field[data-cg-color="' + key + '"]' );
@@ -62,34 +64,48 @@
 			}
 			return radio.getAttribute( 'data-cg-hex' ) || '';
 		}
-		// Reflect the checked swatch: reveal the picker for Custom, name the
-		// choice next to the row.
 		function reflectSwatch( key ) {
-			var group = swatchGroup( key );
+			var control = colorControl( key );
 			var radio = checkedSwatch( key );
-			if ( ! group || ! radio ) {
+			if ( ! control || ! radio ) {
 				return;
 			}
-			var custom = group.parentNode.querySelector( '.cg-swatch-custom' );
+			var custom = control.querySelector( '.cg-color__custom' );
 			if ( custom ) {
 				custom.hidden = 'custom' !== radio.value;
 			}
-			var current = group.querySelector( '.cg-swatch-current' );
-			if ( current ) {
-				current.textContent = radio.getAttribute( 'data-cg-name' ) || '';
+			var hex = effectiveColor( key );
+			var dot = control.querySelector( '.cg-color__summary .cg-color__dot' );
+			var name = control.querySelector( '.cg-color__name' );
+			if ( dot ) {
+				dot.style.background = hex || '';
+				dot.classList.toggle( 'cg-color__dot--missing', ! hex );
+			}
+			if ( name ) {
+				var text = radio.getAttribute( 'data-cg-name' ) || '';
+				name.textContent = 'custom' === radio.value && hex ? text + ' ' + hex : text;
 			}
 		}
 		function checkSwatch( key, value ) {
-			var group = swatchGroup( key );
-			if ( ! group ) {
+			var control = colorControl( key );
+			if ( ! control ) {
 				return;
 			}
-			var radios = group.querySelectorAll( 'input[type="radio"]' );
+			var radios = control.querySelectorAll( 'input[type="radio"]' );
 			for ( var i = 0; i < radios.length; i++ ) {
 				radios[ i ].checked = radios[ i ].value === value;
 			}
 			reflectSwatch( key );
 		}
+		function closeColorMenus( except ) {
+			var open = document.querySelectorAll( '.cg-color[open]' );
+			for ( var i = 0; i < open.length; i++ ) {
+				if ( open[ i ] !== except ) {
+					open[ i ].removeAttribute( 'open' );
+				}
+			}
+		}
+
 		function colorChanged( key ) {
 			var value = effectiveColor( key );
 			if ( 'border_color' === key ) {
@@ -145,8 +161,16 @@
 		}
 
 		function setColor( key, value ) {
+			var picker = pickerField( key );
+			if ( picker && picker.value !== value ) {
+				// Iris fires change before it writes the field; keep the
+				// field (the submitted value) and the summary in step.
+				picker.value = value;
+			}
 			if ( value ) {
 				checkSwatch( key, 'custom' );
+			} else {
+				reflectSwatch( key );
 			}
 			colorChanged( key );
 		}
@@ -456,6 +480,10 @@
 				}
 			}
 			syncFromForm();
+			// Iris paints (and fires change) on its own timer: resolve from
+			// the form once more after it settles, so the preview and the
+			// readability report never show a half-applied bundle.
+			window.setTimeout( syncFromForm, 60 );
 		}
 
 		// Each quick-style button gets a miniature of the panel it produces,
@@ -716,8 +744,9 @@
 		$( '#cg-preview-narrow' ).on( 'change', function () {
 			applyNarrow( this.checked );
 		} );
-		$( '.cg-swatches input[type="radio"]' ).on( 'change', function () {
-			var key = this.closest( '.cg-swatches' ).getAttribute( 'data-cg-color-key' );
+		$( '.cg-color input[type="radio"]' ).on( 'change', function () {
+			var control = this.closest( '.cg-color' );
+			var key = control.getAttribute( 'data-cg-color-key' );
 			reflectSwatch( key );
 			if ( 'custom' === this.value ) {
 				var picker = pickerField( key );
@@ -726,8 +755,28 @@
 					// picked yet would preview as inherit.
 					$( picker ).closest( '.wp-picker-container' ).find( '.wp-color-result' ).trigger( 'click' );
 				}
+			} else {
+				// A named choice is final: close the menu, hand focus back.
+				control.removeAttribute( 'open' );
+				control.querySelector( 'summary' ).focus();
 			}
 			colorChanged( key );
+		} );
+		// One colour menu at a time; Escape closes; a click elsewhere closes.
+		$( '.cg-color' ).on( 'toggle', function () {
+			if ( this.open ) {
+				closeColorMenus( this );
+			}
+		} );
+		$( document ).on( 'keydown', function ( event ) {
+			if ( 'Escape' === event.key ) {
+				closeColorMenus( null );
+			}
+		} );
+		$( document ).on( 'mousedown', function ( event ) {
+			if ( ! $( event.target ).closest( '.cg-color, .wp-picker-holder, .iris-picker' ).length ) {
+				closeColorMenus( null );
+			}
 		} );
 		$( '.cg-quick-style' ).on( 'click', function () {
 			applyQuickStyle( this.getAttribute( 'data-cg-quick-style' ) );
@@ -745,12 +794,13 @@
 			$( '#cg-tab-appearance .wp-picker-clear' ).each( function () {
 				this.click();
 			} );
-			$( '.cg-swatches' ).each( function () {
+			$( '.cg-color' ).each( function () {
 				checkSwatch( this.getAttribute( 'data-cg-color-key' ), '' );
 			} );
 			$( '.cg-dark-row' ).prop( 'hidden', true );
 			palette = { base: {}, dark: {} };
 			syncFromForm();
+			window.setTimeout( syncFromForm, 60 );
 		} );
 		$( '#cg-dark-enabled' ).on( 'change', function () {
 			var rows = document.querySelectorAll( '.cg-dark-row' );
@@ -803,7 +853,7 @@
 		applyLinkColor( effectiveColor( 'link' ) );
 		applyPreset( ( document.getElementById( 'cg-preset' ) || { value: '' } ).value );
 		}
-		$( '.cg-swatches' ).each( function () {
+		$( '.cg-color' ).each( function () {
 			reflectSwatch( this.getAttribute( 'data-cg-color-key' ) );
 		} );
 		drawQuickCards();

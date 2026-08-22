@@ -132,74 +132,176 @@
 	}
 }
 
-/* Colour swatch groups: Default (dashed) · theme colours · Custom (spectrum).
-   Real radios underneath, so keyboard and screen readers get native
-   semantics; the dot is the visual. */
-.cg-swatches {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 6px;
-}
-
-.cg-swatch {
+/* Colour controls: a <details> whose summary shows the current colour and
+   its name; the menu lists Default · the theme's colours (named) · Custom.
+   Real radios underneath — keyboard and screen readers get native
+   semantics, and the form works without JavaScript. */
+.cg-color {
 	position: relative;
 	display: inline-block;
-	width: 30px;
-	height: 30px;
-	cursor: pointer;
+	max-width: 100%;
 }
 
-.cg-swatch input {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	margin: 0;
-	opacity: 0;
+.cg-color__summary {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 30px;
+	padding: 0 10px 0 4px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	background: #fff;
+	color: #1d2327;
 	cursor: pointer;
+	list-style: none;
+	line-height: 2;
 }
 
-.cg-swatch__dot {
-	display: block;
-	width: 28px;
-	height: 28px;
-	margin: 1px;
+.cg-color__summary::-webkit-details-marker {
+	display: none;
+}
+
+.cg-color__summary::after {
+	content: '';
+	width: 6px;
+	height: 6px;
+	margin-left: 2px;
+	border: solid #50575e;
+	border-width: 0 2px 2px 0;
+	transform: translateY( -2px ) rotate( 45deg );
+}
+
+.cg-color[open] > .cg-color__summary {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+.cg-color__summary:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}
+
+.cg-color__dot {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
 	border-radius: 50%;
 	border: 1px solid rgba( 0, 0, 0, 0.25 );
 	box-sizing: border-box;
+	flex: 0 0 auto;
 }
 
-.cg-swatch input:checked + .cg-swatch__dot {
-	box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2271b1;
-}
-
-.cg-swatch input:focus-visible + .cg-swatch__dot {
-	outline: 2px solid #2271b1;
-	outline-offset: 3px;
-}
-
-.cg-swatch--default .cg-swatch__dot {
-	background: #fff linear-gradient( 135deg, transparent 45%, #c00 45%, #c00 55%, transparent 55% );
-	border-style: dashed;
-}
-
-.cg-swatch--custom .cg-swatch__dot {
+.cg-color__dot--spectrum {
 	background: conic-gradient( #e53935, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935 );
 }
 
-.cg-swatch--missing .cg-swatch__dot {
-	background: repeating-linear-gradient( 45deg, #fff, #fff 4px, #ddd 4px, #ddd 8px );
+.cg-color__dot--missing {
+	background: repeating-linear-gradient( 45deg, #fff, #fff 3px, #ddd 3px, #ddd 6px );
 }
 
-.cg-swatch-current {
-	margin-left: 6px;
-	color: #50575e;
-	font-size: 13px;
+.cg-color__menu {
+	position: absolute;
+	z-index: 20;
+	top: calc( 100% + 4px );
+	left: 0;
+	display: grid;
+	grid-template-columns: repeat( 2, minmax( 150px, 1fr ) );
+	gap: 2px 12px;
+	min-width: 320px;
+	max-height: 360px;
+	overflow: auto;
+	padding: 8px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #fff;
+	box-shadow: 0 4px 16px rgba( 0, 0, 0, 0.18 );
 }
 
-.cg-swatch-custom {
-	margin-top: 8px;
+.cg-color__option {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 6px;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.cg-color__option:hover {
+	background: #f0f0f1;
+}
+
+.cg-color__option input {
+	position: absolute;
+	opacity: 0;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+}
+
+.cg-color__option input:checked ~ .cg-color__label {
+	font-weight: 600;
+}
+
+.cg-color__option input:checked ~ .cg-color__dot {
+	box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2271b1;
+}
+
+.cg-color__option input:focus-visible ~ .cg-color__dot {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}
+
+.cg-color__option--custom {
+	grid-column: 1 / -1;
+	border-top: 1px solid #f0f0f1;
+	margin-top: 4px;
+	padding-top: 8px;
+}
+
+.cg-color__custom {
+	grid-column: 1 / -1;
+	padding: 4px 6px 2px;
+}
+
+/* Advanced sections start collapsed unless already in use. */
+.cg-section {
+	margin: 1.5em 0 0;
+}
+
+.cg-section > summary {
+	cursor: pointer;
+	list-style: none;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.cg-section > summary::-webkit-details-marker {
+	display: none;
+}
+
+.cg-section > summary::before {
+	content: '';
+	width: 7px;
+	height: 7px;
+	border: solid #50575e;
+	border-width: 0 2px 2px 0;
+	transform: rotate( -45deg );
+	transition: transform 120ms ease;
+}
+
+.cg-section[open] > summary::before {
+	transform: rotate( 45deg );
+}
+
+.cg-section > summary h3 {
+	display: inline;
+	margin: 0;
+}
+
+.cg-section > summary:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
 }
 
 /* Quick-style cards: a miniature of the panel each style produces. */

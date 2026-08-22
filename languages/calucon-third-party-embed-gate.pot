@@ -13,7 +13,7 @@ msgstr ""
 msgid "%1$s: %2$s — %3$s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:470
+#: src/Admin/SettingsPage.php:540
 msgid "%s (not in the current theme)"
 msgstr ""
 
@@ -25,15 +25,15 @@ msgstr ""
 msgid "A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:723
+#: src/Admin/SettingsPage.php:802
 msgid "A little"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:724
+#: src/Admin/SettingsPage.php:803
 msgid "A lot, softened"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:546
+#: src/Admin/SettingsPage.php:622
 msgid "A style fills in every control below; \"Theme default\" clears them all. Nothing changes on your site until you save."
 msgstr ""
 
@@ -41,19 +41,19 @@ msgstr ""
 msgid "Additional own hosts"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:627
+#: src/Admin/SettingsPage.php:703
 msgid "Alignment"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:804
+#: src/Admin/SettingsPage.php:888
 msgid "All embeds"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:803
+#: src/Admin/SettingsPage.php:887
 msgid "All embeds of the same provider"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:939
+#: src/Admin/SettingsPage.php:1023
 msgid "Also honour an IAB TCF v2.2 signal (sites running an ad-industry consent framework)"
 msgstr ""
 
@@ -66,43 +66,43 @@ msgid "Always gate these hosts"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:219
-#: src/Admin/SettingsPage.php:525
+#: src/Admin/SettingsPage.php:601
 msgid "Appearance"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:713
+#: src/Admin/SettingsPage.php:792
 msgid "Bar along the bottom"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:557
+#: src/Admin/SettingsPage.php:633
 msgid "Border"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:594
+#: src/Admin/SettingsPage.php:670
 msgid "Border width (px)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:927
+#: src/Admin/SettingsPage.php:1011
 msgid "Borlabs Cookie service group"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:537
+#: src/Admin/SettingsPage.php:613
 msgid "Brand card"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:898
+#: src/Admin/SettingsPage.php:982
 msgid "Bridge"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:647
+#: src/Admin/SettingsPage.php:724
 msgid "Button"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:554
+#: src/Admin/SettingsPage.php:630
 msgid "Button background"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:763
+#: src/Admin/SettingsPage.php:846
 msgid "Button background (dark)"
 msgstr ""
 
@@ -110,11 +110,11 @@ msgstr ""
 msgid "Button label"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:555
+#: src/Admin/SettingsPage.php:631
 msgid "Button text"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:764
+#: src/Admin/SettingsPage.php:847
 msgid "Button text (dark)"
 msgstr ""
 
@@ -142,40 +142,40 @@ msgstr ""
 msgid "Calucon Third-Party Embed Gate settings sections"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:571
+#: src/Admin/SettingsPage.php:647
 msgid "Card — border, rounded corners, shadow"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:711
+#: src/Admin/SettingsPage.php:790
 msgid "Card, bottom-left"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:712
+#: src/Admin/SettingsPage.php:791
 msgid "Card, centred"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:630
+#: src/Admin/SettingsPage.php:706
 msgid "Centred"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:549
+#: src/Admin/SettingsPage.php:625
 msgid "Colours"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:619
+#: src/Admin/SettingsPage.php:695
 msgid "Compact"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:971
+#: src/Admin/SettingsPage.php:1055
 msgid "Compatibility"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:220
-#: src/Admin/SettingsPage.php:785
+#: src/Admin/SettingsPage.php:869
 msgid "Consent memory"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:881
+#: src/Admin/SettingsPage.php:965
 msgid "Consent platform bridge"
 msgstr ""
 
@@ -184,21 +184,24 @@ msgstr ""
 msgid "Content-Security-Policy snippet"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:590
+#: src/Admin/SettingsPage.php:666
 msgid "Corner radius (px)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:578
+#: src/Admin/SettingsPage.php:654
 msgid "Corners"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1080
+#: src/Admin/SettingsPage.php:1164
 msgid "Count"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:467
-#: src/Admin/SettingsPage.php:497
+#: src/Admin/SettingsPage.php:573
 msgid "Custom"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:534
+msgid "Custom %s"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:285
@@ -209,9 +212,8 @@ msgstr ""
 msgid "Custom button text for %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:496
-#: src/Admin/SettingsPage.php:499
-msgid "Custom colour"
+#: src/Admin/SettingsPage.php:575
+msgid "Custom colour…"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:284
@@ -222,64 +224,69 @@ msgstr ""
 msgid "Custom note for %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:584
+#: src/Admin/SettingsPage.php:660
 msgid "Custom radius…"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:535
+#: src/Admin/SettingsPage.php:611
 msgid "Dark cinema"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:749
+#: src/Admin/SettingsPage.php:832
 msgid "Dark mode"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:752
+#: src/Admin/SettingsPage.php:835
 msgid "Dark mode colours"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:458
-#: src/Admin/SettingsPage.php:478
-#: src/Admin/SettingsPage.php:618
-#: src/Admin/SettingsPage.php:639
-#: src/Admin/SettingsPage.php:665
+#: src/Admin/SettingsPage.php:694
+#: src/Admin/SettingsPage.php:715
+#: src/Admin/SettingsPage.php:742
 msgid "Default"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:477
-#: src/Admin/SettingsPage.php:480
-msgid "Default — follows your theme"
+#: src/Admin/SettingsPage.php:472
+msgid "Default — built-in"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:976
+#: src/Admin/SettingsPage.php:450
+msgid "Default — same as panel text"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:466
+msgid "Default — theme %s"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:1060
 msgid "Detected"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:967
+#: src/Admin/SettingsPage.php:1051
 msgid "Detected and tested for interoperation. Gating currently ignores its choices — the fail-closed default. Enable the consent platform bridge under Consent to load embeds automatically once this platform reports consent for them."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:917
+#: src/Admin/SettingsPage.php:1001
 msgid "Detected now: %s."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:966
+#: src/Admin/SettingsPage.php:1050
 msgid "Detected, bridge active: when this platform reports consent for the embeds' category, gated embeds load without a second click, and a withdrawal re-gates them. If the platform does not answer, gating stands (fail closed). Prefer its own blocker for a provider? Disable that provider under Providers and Calucon Third-Party Embed Gate steps aside for it."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:968
+#: src/Admin/SettingsPage.php:1052
 msgid "Detected. Calucon Third-Party Embed Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:958
+#: src/Admin/SettingsPage.php:1042
 msgid "Detected. Its page cache is flushed automatically when Calucon Third-Party Embed Gate settings change; after activating or deactivating Calucon Third-Party Embed Gate itself, clear it once by hand if pages look stale."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:961
+#: src/Admin/SettingsPage.php:1045
 msgid "Detected. Page builders render outside the content filters — if its embeds are not being gated, enable \"Gate the whole page output\" under Detection."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:960
+#: src/Admin/SettingsPage.php:1044
 msgid "Detected. Whole-page gating is enabled, so this builder's embeds are covered."
 msgstr ""
 
@@ -288,7 +295,7 @@ msgstr ""
 msgid "Detection"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:720
+#: src/Admin/SettingsPage.php:799
 msgid "Dim the poster"
 msgstr ""
 
@@ -304,7 +311,7 @@ msgstr ""
 msgid "Embeds from these hosts load without a placeholder. Use only for third parties you have covered elsewhere — this plugin then no longer prevents their requests."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:597
+#: src/Admin/SettingsPage.php:673
 msgid "Empty: the panel style decides. 0 removes the border."
 msgstr ""
 
@@ -316,35 +323,35 @@ msgstr ""
 msgid "Fallback link on the panel background"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:655
+#: src/Admin/SettingsPage.php:732
 msgid "Filled"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:569
+#: src/Admin/SettingsPage.php:645
 msgid "Filled panel"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:739
+#: src/Admin/SettingsPage.php:820
 msgid "Filled — like the load button"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1082
+#: src/Admin/SettingsPage.php:1166
 msgid "First seen in"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:676
+#: src/Admin/SettingsPage.php:753
 msgid "Fits its text"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:703
+#: src/Admin/SettingsPage.php:782
 msgid "For embeds with a poster image set in the block editor. Tick \"Preview with a poster image\" to see these."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:793
+#: src/Admin/SettingsPage.php:877
 msgid "For this browser session"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:677
+#: src/Admin/SettingsPage.php:754
 msgid "Full panel width"
 msgstr ""
 
@@ -376,15 +383,15 @@ msgstr ""
 msgid "Gate this embed"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1047
+#: src/Admin/SettingsPage.php:1131
 msgid "Gated"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:941
+#: src/Admin/SettingsPage.php:1025
 msgid "Grants require both the storage purpose and the provider's registered vendor consent; providers without a Global Vendor List entry always keep the click. Leave this off unless your site serves programmatic advertising."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1078
+#: src/Admin/SettingsPage.php:1162
 msgid "Host"
 msgstr ""
 
@@ -392,19 +399,19 @@ msgstr ""
 msgid "Host matching"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:684
+#: src/Admin/SettingsPage.php:761
 msgid "Hover effect"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:934
+#: src/Admin/SettingsPage.php:1018
 msgid "IAB TCF (experimental)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:694
+#: src/Admin/SettingsPage.php:771
 msgid "Icon"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:883
+#: src/Admin/SettingsPage.php:967
 msgid "If a consent platform (cookie banner) runs on this site, Calucon Third-Party Embed Gate can honour its decision: once the platform reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state, stores nothing itself, and works only with platforms it was tested against; with any other platform, and whenever the platform gives no answer, gating stands unchanged (fail closed)."
 msgstr ""
 
@@ -412,15 +419,15 @@ msgstr ""
 msgid "If your site sends a Content-Security-Policy, it needs to allow the enabled providers' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:667
+#: src/Admin/SettingsPage.php:744
 msgid "Large"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:629
+#: src/Admin/SettingsPage.php:705
 msgid "Left"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:536
+#: src/Admin/SettingsPage.php:612
 msgid "Light minimal"
 msgstr ""
 
@@ -428,7 +435,7 @@ msgstr ""
 msgid "Link each provider's privacy policy in the placeholder panel, so visitors can read it before loading anything. Applies to the providers listed below; unknown embeds have no known policy to link."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:556
+#: src/Admin/SettingsPage.php:632
 msgid "Links"
 msgstr ""
 
@@ -449,7 +456,7 @@ msgstr ""
 msgid "Load content from Facebook"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:903
+#: src/Admin/SettingsPage.php:987
 msgid "Load embeds automatically when the detected consent platform reports consent for them"
 msgstr ""
 
@@ -613,15 +620,15 @@ msgstr ""
 msgid "Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:570
+#: src/Admin/SettingsPage.php:646
 msgid "Minimal — transparent with a border"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1050
+#: src/Admin/SettingsPage.php:1134
 msgid "NOT gated — its detection rule is disabled"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1051
+#: src/Admin/SettingsPage.php:1135
 msgid "NOT gated — provider disabled in the table above"
 msgstr ""
 
@@ -633,32 +640,32 @@ msgstr ""
 msgid "Never gate these hosts"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:722
+#: src/Admin/SettingsPage.php:801
 msgid "No"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:792
+#: src/Admin/SettingsPage.php:876
 msgid "No (default) — ask on every page view"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:973
+#: src/Admin/SettingsPage.php:1057
 msgid "No cache plugin, consent platform or page builder detected."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:908
+#: src/Admin/SettingsPage.php:992
 msgid "No tested consent platform is currently detected. The setting can stay enabled; it takes effect as soon as one is installed."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1074
+#: src/Admin/SettingsPage.php:1158
 msgid "No third-party embeds found in the scanned content."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1049
+#: src/Admin/SettingsPage.php:1133
 msgid "No usable URL — passes through"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:607
-#: src/Admin/SettingsPage.php:687
+#: src/Admin/SettingsPage.php:683
+#: src/Admin/SettingsPage.php:764
 msgid "None"
 msgstr ""
 
@@ -666,11 +673,11 @@ msgstr ""
 msgid "Notice text for this embed"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:637
+#: src/Admin/SettingsPage.php:713
 msgid "Notice text size"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:786
+#: src/Admin/SettingsPage.php:870
 msgid "Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor's browser only — after their first click, never before — and a withdrawal control becomes available via the [calucon_embed_gate_withdraw] shortcode for your privacy policy page."
 msgstr ""
 
@@ -686,11 +693,11 @@ msgstr ""
 msgid "Only enable this if embeds from a page builder are not being gated. It buffers the entire page, which can conflict with other buffering or streaming plugins. Any error inside the buffer returns the page unmodified."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:756
+#: src/Admin/SettingsPage.php:839
 msgid "Only the colours you set here change; the rest keep the values above. Tick \"Preview on a dark page background\" to check them."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:930
+#: src/Admin/SettingsPage.php:1014
 msgid "Only used with Borlabs Cookie, whose consent groups are defined per site: the ID of the group that covers embedded content. The default installation calls it \"external-media\"."
 msgstr ""
 
@@ -703,8 +710,8 @@ msgstr ""
 msgid "Open on %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:656
-#: src/Admin/SettingsPage.php:740
+#: src/Admin/SettingsPage.php:733
+#: src/Admin/SettingsPage.php:821
 msgid "Outline"
 msgstr ""
 
@@ -712,7 +719,7 @@ msgstr ""
 msgid "Overrides the site-wide setting for this block only."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1048
+#: src/Admin/SettingsPage.php:1132
 msgid "Own host — not gated"
 msgstr ""
 
@@ -720,31 +727,31 @@ msgstr ""
 msgid "Page builders"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:552
+#: src/Admin/SettingsPage.php:628
 msgid "Panel background"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:761
+#: src/Admin/SettingsPage.php:844
 msgid "Panel background (dark)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:709
+#: src/Admin/SettingsPage.php:788
 msgid "Panel position"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:567
+#: src/Admin/SettingsPage.php:643
 msgid "Panel style"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:606
+#: src/Admin/SettingsPage.php:682
 msgid "Panel style decides"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:553
+#: src/Admin/SettingsPage.php:629
 msgid "Panel text"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:762
+#: src/Admin/SettingsPage.php:845
 msgid "Panel text (dark)"
 msgstr ""
 
@@ -752,11 +759,11 @@ msgstr ""
 msgid "Panel text on the panel background"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:809
+#: src/Admin/SettingsPage.php:893
 msgid "Persistent lifetime (days)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:794
+#: src/Admin/SettingsPage.php:878
 msgid "Persistently, with an expiry"
 msgstr ""
 
@@ -764,23 +771,23 @@ msgstr ""
 msgid "Plain text, for example “Load the trailer”. Empty keeps the provider’s default."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:702
+#: src/Admin/SettingsPage.php:781
 msgid "Poster image"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:838
+#: src/Admin/SettingsPage.php:922
 msgid "Preview"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:856
+#: src/Admin/SettingsPage.php:940
 msgid "Preview at phone width"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:846
+#: src/Admin/SettingsPage.php:930
 msgid "Preview on a dark page background"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:851
+#: src/Admin/SettingsPage.php:935
 msgid "Preview with a poster image"
 msgstr ""
 
@@ -805,11 +812,11 @@ msgstr ""
 msgid "Providers"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:859
+#: src/Admin/SettingsPage.php:943
 msgid "Readability (WCAG 4.5:1):"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:789
+#: src/Admin/SettingsPage.php:873
 msgid "Remember consent"
 msgstr ""
 
@@ -817,7 +824,7 @@ msgstr ""
 msgid "Remove poster image"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1030
+#: src/Admin/SettingsPage.php:1114
 msgid "Renders your latest posts and pages in memory and reports every embed found and whether it is gated. Read-only; no outbound requests."
 msgstr ""
 
@@ -829,11 +836,11 @@ msgstr ""
 msgid "Replaces the notice above the button for this embed only. Keep it honest: the notice tells visitors what loading the content does."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:582
+#: src/Admin/SettingsPage.php:658
 msgid "Rounded"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:583
+#: src/Admin/SettingsPage.php:659
 msgid "Rounded, with a pill-shaped button"
 msgstr ""
 
@@ -841,15 +848,15 @@ msgstr ""
 msgid "Rules"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1029
+#: src/Admin/SettingsPage.php:1113
 msgid "Scan recent content"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1068
+#: src/Admin/SettingsPage.php:1152
 msgid "Scanned the %d most recent published posts and pages. Widgets, template parts and builder-rendered layouts are not part of this scan."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:799
+#: src/Admin/SettingsPage.php:883
 msgid "Scope"
 msgstr ""
 
@@ -857,15 +864,15 @@ msgstr ""
 msgid "Set poster image"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:604
+#: src/Admin/SettingsPage.php:680
 msgid "Shadow"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:561
+#: src/Admin/SettingsPage.php:637
 msgid "Shape and layout"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:697
+#: src/Admin/SettingsPage.php:774
 msgid "Show an icon that matches the embed (play, map pin, audio, generic)"
 msgstr ""
 
@@ -879,45 +886,45 @@ msgstr ""
 msgid "Site default"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:663
+#: src/Admin/SettingsPage.php:740
 msgid "Size"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:580
+#: src/Admin/SettingsPage.php:656
 msgid "Slightly rounded (default)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:640
-#: src/Admin/SettingsPage.php:666
+#: src/Admin/SettingsPage.php:716
+#: src/Admin/SettingsPage.php:743
 msgid "Small"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:608
+#: src/Admin/SettingsPage.php:684
 msgid "Soft"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:538
+#: src/Admin/SettingsPage.php:614
 msgid "Soft pastel"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:616
+#: src/Admin/SettingsPage.php:692
 msgid "Spacing"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:620
+#: src/Admin/SettingsPage.php:696
 msgid "Spacious"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:581
+#: src/Admin/SettingsPage.php:657
 msgid "Square"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:531
+#: src/Admin/SettingsPage.php:607
 msgid "Start from a style"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1023
-#: src/Admin/SettingsPage.php:1081
+#: src/Admin/SettingsPage.php:1107
+#: src/Admin/SettingsPage.php:1165
 msgid "Status"
 msgstr ""
 
@@ -929,37 +936,37 @@ msgstr ""
 msgid "Stored embed consents have been removed. Embeds will ask again."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:609
-#: src/Admin/SettingsPage.php:688
+#: src/Admin/SettingsPage.php:685
+#: src/Admin/SettingsPage.php:765
 msgid "Strong"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:653
-#: src/Admin/SettingsPage.php:737
+#: src/Admin/SettingsPage.php:730
+#: src/Admin/SettingsPage.php:818
 msgid "Style"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:526
+#: src/Admin/SettingsPage.php:602
 msgid "Style the placeholder without writing CSS. Pick a starting point, change what you like, and watch the preview. Colours can follow your theme's palette or be your own; the readability check flags any pair that would be hard to read."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:686
+#: src/Admin/SettingsPage.php:763
 msgid "Subtle"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:890
+#: src/Admin/SettingsPage.php:974
 msgid "Tested and interoperable: %s."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:741
+#: src/Admin/SettingsPage.php:822
 msgid "Text link"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:556
+#: src/Admin/SettingsPage.php:632
 msgid "The \"Open on …\" and privacy-policy links. Default: the panel text colour."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:744
+#: src/Admin/SettingsPage.php:825
 msgid "The \"Withdraw embed consents\" block or shortcode. It uses the colours and corners above."
 msgstr ""
 
@@ -967,11 +974,11 @@ msgstr ""
 msgid "The embedded content could not be loaded."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:544
+#: src/Admin/SettingsPage.php:620
 msgid "Theme default"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1000
+#: src/Admin/SettingsPage.php:1084
 msgid "Third-party assets in your theme"
 msgstr ""
 
@@ -983,7 +990,7 @@ msgstr ""
 msgid "This block’s embeds will load immediately for every visitor, without a consent click."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:802
+#: src/Admin/SettingsPage.php:886
 msgid "This embed only"
 msgstr ""
 
@@ -991,11 +998,11 @@ msgstr ""
 msgid "Treat www.example.com and example.com as the same site"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1079
+#: src/Admin/SettingsPage.php:1163
 msgid "Type"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:755
+#: src/Admin/SettingsPage.php:838
 msgid "Use different colours for visitors who prefer a dark colour scheme"
 msgstr ""
 
@@ -1003,19 +1010,19 @@ msgstr ""
 msgid "Use the privacy-preserving load for %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:557
+#: src/Admin/SettingsPage.php:633
 msgid "Used when a border is shown (see Shape). Default: the panel text colour."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:976
+#: src/Admin/SettingsPage.php:1060
 msgid "What Calucon Third-Party Embed Gate does"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:674
+#: src/Admin/SettingsPage.php:751
 msgid "Width"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:731
+#: src/Admin/SettingsPage.php:812
 msgid "Withdraw button"
 msgstr ""
 
@@ -1025,12 +1032,12 @@ msgstr ""
 
 #: assets/js/editor.js:178
 #: assets/js/editor.js:192
-#: src/Admin/SettingsPage.php:841
+#: src/Admin/SettingsPage.php:925
 #: src/Integration/WithdrawShortcode.php:63
 msgid "Withdraw embed consents"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1001
+#: src/Admin/SettingsPage.php:1085
 msgid "Your theme references these third-party asset hosts (found by reading its files — nothing was fetched). Fonts and CDN assets load on every page view without consent, outside what an embed gate can cover. Consider serving them locally; your theme or a localisation plugin can usually do this."
 msgstr ""
 

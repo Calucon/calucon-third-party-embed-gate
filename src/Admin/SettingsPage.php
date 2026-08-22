@@ -433,10 +433,70 @@ final class SettingsPage {
 	}
 
 	/**
-	 * One colour row of the Appearance tab: a swatch group — Default
-	 * (inherit), the theme's palette by name, Custom — plus the picker,
-	 * shown only for Custom. Submits "<key>" = '' | preset:<slug> | custom
-	 * and "<key>_custom" = the picker's hex (see Options::sanitize()).
+	 * What a cleared colour resolves to, for showing "Default" honestly:
+	 * the theme's base/contrast/accent-8 presets when the palette has them
+	 * (the stylesheet's own fallbacks), else the plugin's built-in colours.
+	 *
+	 * @param string $key     appearance colour key.
+	 * @param array  $palette Theme palette entries.
+	 * @return array{hex:string,name:string}
+	 */
+	private function default_color( string $key, array $palette ): array {
+		$base = (string) preg_replace( '/^dark_/', '', $key );
+		if ( 'link' === $base || 'border_color' === $base ) {
+			$fg = $this->default_color( 'fg', $palette );
+			return array(
+				'hex'  => $fg['hex'],
+				'name' => __( 'Default — same as panel text', 'calucon-third-party-embed-gate' ),
+			);
+		}
+		$map  = array(
+			'bg'        => array( 'base', '#1b1b1b' ),
+			'fg'        => array( 'contrast', '#f0f0f0' ),
+			'accent'    => array( 'accent-8', '#5c9e00' ),
+			'accent_fg' => array( '', '#1b1b1b' ),
+		);
+		$slug = isset( $map[ $base ] ) ? $map[ $base ][0] : '';
+		$hex  = isset( $map[ $base ] ) ? $map[ $base ][1] : '';
+		foreach ( $palette as $entry ) {
+			if ( '' !== $slug && $entry['slug'] === $slug ) {
+				return array(
+					'hex'  => $entry['color'],
+					/* translators: %s: the theme's colour name. */
+					'name' => sprintf( __( 'Default — theme %s', 'calucon-third-party-embed-gate' ), $entry['name'] ),
+				);
+			}
+		}
+		return array(
+			'hex'  => $hex,
+			'name' => __( 'Default — built-in', 'calucon-third-party-embed-gate' ),
+		);
+	}
+
+	/**
+	 * Whether any option in a group differs from its default — an advanced
+	 * section starts open only when the owner has already used it.
+	 *
+	 * @param array $appearance Sanitised subtree.
+	 * @param array $keys       Option keys in the section.
+	 * @return bool
+	 */
+	private function section_touched( array $appearance, array $keys ): bool {
+		$defaults = Options::defaults()['appearance'];
+		foreach ( $keys as $key ) {
+			if ( isset( $appearance[ $key ], $defaults[ $key ] ) && $appearance[ $key ] !== $defaults[ $key ] ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * One colour row of the Appearance tab: a compact disclosure showing the
+	 * current colour and its name, opening a menu of Default · the theme's
+	 * palette (named) · Custom (reveals the picker). Native <details>, real
+	 * radios — it works without JavaScript and reads right in forms mode.
+	 * Submits "<key>" = '' | preset:<slug> | custom and "<key>_custom" = hex.
 	 *
 	 * @param string $key         appearance option key.
 	 * @param string $label       Row label.
@@ -455,54 +515,70 @@ final class SettingsPage {
 		$slug      = $is_preset ? substr( $stored, 7 ) : '';
 		$is_custom = '' !== $stored && ! $is_preset;
 		$palette   = $this->theme_palette();
-		$current   = __( 'Default', 'calucon-third-party-embed-gate' );
+		$default   = $this->default_color( $key, $palette );
+		$current   = $default;
 		$known     = false;
 		foreach ( $palette as $entry ) {
-			if ( $entry['slug'] === $slug ) {
-				$current = $entry['name'];
+			if ( $is_preset && $entry['slug'] === $slug ) {
+				$current = array(
+					'hex'  => $entry['color'],
+					'name' => $entry['name'],
+				);
 				$known   = true;
 			}
 		}
 		if ( $is_custom ) {
-			$current = __( 'Custom', 'calucon-third-party-embed-gate' );
+			$current = array(
+				'hex'  => $stored,
+				/* translators: %s: hex colour. */
+				'name' => sprintf( __( 'Custom %s', 'calucon-third-party-embed-gate' ), $stored ),
+			);
 		} elseif ( $is_preset && ! $known ) {
-			/* translators: %s: theme colour slug no longer in the theme's palette. */
-			$current = sprintf( __( '%s (not in the current theme)', 'calucon-third-party-embed-gate' ), $slug );
+			$current = array(
+				'hex'  => '',
+				/* translators: %s: theme colour slug no longer in the theme's palette. */
+				'name' => sprintf( __( '%s (not in the current theme)', 'calucon-third-party-embed-gate' ), $slug ),
+			);
 		}
 		?>
 					<tr <?php echo $row_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- literal attribute strings from this class. ?>>
 						<th scope="row"><span id="<?php echo esc_attr( $label_id ); ?>"><?php echo esc_html( $label ); ?></span></th>
 						<td>
-							<div class="cg-swatches" role="radiogroup" aria-labelledby="<?php echo esc_attr( $label_id ); ?>" data-cg-color-key="<?php echo esc_attr( $key ); ?>">
-								<label class="cg-swatch cg-swatch--default" title="<?php esc_attr_e( 'Default — follows your theme', 'calucon-third-party-embed-gate' ); ?>">
-									<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="" data-cg-name="<?php esc_attr_e( 'Default', 'calucon-third-party-embed-gate' ); ?>" <?php checked( ! $is_preset && ! $is_custom ); ?>>
-									<span class="cg-swatch__dot"></span>
-									<span class="screen-reader-text"><?php esc_html_e( 'Default — follows your theme', 'calucon-third-party-embed-gate' ); ?></span>
-								</label>
-								<?php foreach ( $palette as $entry ) : ?>
-									<label class="cg-swatch" title="<?php echo esc_attr( $entry['name'] ); ?>">
-										<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="preset:<?php echo esc_attr( $entry['slug'] ); ?>" data-cg-hex="<?php echo esc_attr( $entry['color'] ); ?>" data-cg-name="<?php echo esc_attr( $entry['name'] ); ?>" <?php checked( $is_preset && $entry['slug'] === $slug ); ?>>
-										<span class="cg-swatch__dot" style="background:<?php echo esc_attr( $entry['color'] ); ?>"></span>
-										<span class="screen-reader-text"><?php echo esc_html( $entry['name'] ); ?></span>
+							<details class="cg-color" data-cg-color-key="<?php echo esc_attr( $key ); ?>">
+								<summary class="cg-color__summary">
+									<span class="cg-color__dot<?php echo '' === $current['hex'] ? ' cg-color__dot--missing' : ''; ?>"<?php echo '' !== $current['hex'] ? ' style="background:' . esc_attr( $current['hex'] ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?>></span>
+									<span class="cg-color__name"><?php echo esc_html( $current['name'] ); ?></span>
+								</summary>
+								<div class="cg-color__menu" role="radiogroup" aria-labelledby="<?php echo esc_attr( $label_id ); ?>">
+									<label class="cg-color__option">
+										<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="" data-cg-hex="<?php echo esc_attr( $default['hex'] ); ?>" data-cg-name="<?php echo esc_attr( $default['name'] ); ?>" <?php checked( ! $is_preset && ! $is_custom ); ?>>
+										<span class="cg-color__dot" style="background:<?php echo esc_attr( $default['hex'] ); ?>"></span>
+										<span class="cg-color__label"><?php echo esc_html( $default['name'] ); ?></span>
 									</label>
-								<?php endforeach; ?>
-								<?php if ( $is_preset && ! $known ) : ?>
-									<label class="cg-swatch cg-swatch--missing" title="<?php echo esc_attr( $current ); ?>">
-										<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( $stored ); ?>" data-cg-name="<?php echo esc_attr( $current ); ?>" checked>
-										<span class="cg-swatch__dot"></span>
-										<span class="screen-reader-text"><?php echo esc_html( $current ); ?></span>
+									<?php foreach ( $palette as $entry ) : ?>
+										<label class="cg-color__option">
+											<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="preset:<?php echo esc_attr( $entry['slug'] ); ?>" data-cg-hex="<?php echo esc_attr( $entry['color'] ); ?>" data-cg-name="<?php echo esc_attr( $entry['name'] ); ?>" <?php checked( $is_preset && $entry['slug'] === $slug ); ?>>
+											<span class="cg-color__dot" style="background:<?php echo esc_attr( $entry['color'] ); ?>"></span>
+											<span class="cg-color__label"><?php echo esc_html( $entry['name'] ); ?></span>
+										</label>
+									<?php endforeach; ?>
+									<?php if ( $is_preset && ! $known ) : ?>
+										<label class="cg-color__option">
+											<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( $stored ); ?>" data-cg-hex="" data-cg-name="<?php echo esc_attr( $current['name'] ); ?>" checked>
+											<span class="cg-color__dot cg-color__dot--missing"></span>
+											<span class="cg-color__label"><?php echo esc_html( $current['name'] ); ?></span>
+										</label>
+									<?php endif; ?>
+									<label class="cg-color__option cg-color__option--custom">
+										<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="custom" data-cg-hex="<?php echo esc_attr( $is_custom ? $stored : '' ); ?>" data-cg-name="<?php esc_attr_e( 'Custom', 'calucon-third-party-embed-gate' ); ?>" <?php checked( $is_custom ); ?>>
+										<span class="cg-color__dot cg-color__dot--spectrum"></span>
+										<span class="cg-color__label"><?php esc_html_e( 'Custom colour…', 'calucon-third-party-embed-gate' ); ?></span>
 									</label>
-								<?php endif; ?>
-								<label class="cg-swatch cg-swatch--custom" title="<?php esc_attr_e( 'Custom colour', 'calucon-third-party-embed-gate' ); ?>">
-									<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="custom" data-cg-name="<?php esc_attr_e( 'Custom', 'calucon-third-party-embed-gate' ); ?>" <?php checked( $is_custom ); ?>>
-									<span class="cg-swatch__dot"></span>
-									<span class="screen-reader-text"><?php esc_html_e( 'Custom colour', 'calucon-third-party-embed-gate' ); ?></span>
-								</label>
-								<span class="cg-swatch-current"><?php echo esc_html( $current ); ?></span>
-							</div>
-							<div class="cg-swatch-custom" <?php echo $is_custom ? '' : 'hidden'; ?>>
-								<input type="text" id="<?php echo esc_attr( $id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $key . '_custom]' ); ?>" value="<?php echo esc_attr( $is_custom ? $stored : '' ); ?>">
-							</div>
+									<div class="cg-color__custom" <?php echo $is_custom ? '' : 'hidden'; ?>>
+										<input type="text" id="<?php echo esc_attr( $id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $key . '_custom]' ); ?>" value="<?php echo esc_attr( $is_custom ? $stored : '' ); ?>">
+									</div>
+								</div>
+							</details>
 							<?php if ( '' !== $description ) : ?>
 								<p class="description"><?php echo esc_html( $description ); ?></p>
 							<?php endif; ?>
@@ -644,7 +720,8 @@ final class SettingsPage {
 					?>
 				</table>
 
-				<h3><?php esc_html_e( 'Button', 'calucon-third-party-embed-gate' ); ?></h3>
+				<details class="cg-section" <?php echo $this->section_touched( $appearance, array( 'button_style', 'button_size', 'button_width', 'hover', 'play_icon' ) ) ? 'open' : ''; ?>>
+					<summary><h3><?php esc_html_e( 'Button', 'calucon-third-party-embed-gate' ); ?></h3></summary>
 				<table class="form-table" role="presentation">
 					<?php
 					$this->select_row(
@@ -698,8 +775,10 @@ final class SettingsPage {
 						</td>
 					</tr>
 				</table>
+				</details>
 
-				<h3><?php esc_html_e( 'Poster image', 'calucon-third-party-embed-gate' ); ?></h3>
+				<details class="cg-section" <?php echo $this->section_touched( $appearance, array( 'poster_panel', 'poster_dim' ) ) ? 'open' : ''; ?>>
+					<summary><h3><?php esc_html_e( 'Poster image', 'calucon-third-party-embed-gate' ); ?></h3></summary>
 				<p class="description"><?php esc_html_e( 'For embeds with a poster image set in the block editor. Tick "Preview with a poster image" to see these.', 'calucon-third-party-embed-gate' ); ?></p>
 				<table class="form-table" role="presentation">
 					<?php
@@ -727,8 +806,10 @@ final class SettingsPage {
 					);
 					?>
 				</table>
+				</details>
 
-				<h3><?php esc_html_e( 'Withdraw button', 'calucon-third-party-embed-gate' ); ?></h3>
+				<details class="cg-section" <?php echo $this->section_touched( $appearance, array( 'withdraw_style' ) ) ? 'open' : ''; ?>>
+					<summary><h3><?php esc_html_e( 'Withdraw button', 'calucon-third-party-embed-gate' ); ?></h3></summary>
 				<table class="form-table" role="presentation">
 					<?php
 					$this->select_row(
@@ -745,8 +826,10 @@ final class SettingsPage {
 					);
 					?>
 				</table>
+				</details>
 
-				<h3><?php esc_html_e( 'Dark mode', 'calucon-third-party-embed-gate' ); ?></h3>
+				<details class="cg-section" <?php echo $this->section_touched( $appearance, array( 'dark', 'dark_bg', 'dark_fg', 'dark_accent', 'dark_accent_fg' ) ) ? 'open' : ''; ?>>
+					<summary><h3><?php esc_html_e( 'Dark mode', 'calucon-third-party-embed-gate' ); ?></h3></summary>
 				<table class="form-table" role="presentation">
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Dark mode colours', 'calucon-third-party-embed-gate' ); ?></th>
@@ -764,6 +847,7 @@ final class SettingsPage {
 					$this->color_row( 'dark_accent_fg', __( 'Button text (dark)', 'calucon-third-party-embed-gate' ), $appearance, '', $dark_rows );
 					?>
 				</table>
+				</details>
 				</div>
 				<div class="cg-appearance-preview">
 				<?php $this->render_preview(); ?>

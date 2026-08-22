@@ -50,6 +50,9 @@ async function settings( page ) {
 	// 2 — Appearance: pickers + live preview + contrast report.
 	await settings( page );
 	await page.click( '#cg-tabbtn-appearance' );
+	// The advanced sections start collapsed; open them so the listing image
+	// shows what is there.
+	await page.evaluate( () => document.querySelectorAll( '#cg-tab-appearance details.cg-section' ).forEach( ( d ) => { d.open = true; } ) );
 	// Show the 0.10 controls doing something in the live preview instead of
 	// an all-default form: nothing is saved, the preview mirrors the form.
 	await page.selectOption( '#cg-corners', 'custom' );

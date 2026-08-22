@@ -235,6 +235,16 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	// The Appearance panel lives behind its tab.
 	await page.click( '#cg-tabbtn-appearance' );
 
+	// Advanced sections start collapsed on an untouched site (progressive
+	// disclosure); open them all so every control below is reachable.
+	const sections = page.locator( '#cg-tab-appearance details.cg-section' );
+	await expect( sections ).toHaveCount( 4 );
+	await expect( page.locator( '#cg-tab-appearance details.cg-section[open]' ) ).toHaveCount( 0 );
+	for ( let i = 0; i < 4; i++ ) {
+		await sections.nth( i ).locator( ':scope > summary' ).click();
+	}
+	await expect( page.locator( '#cg-tab-appearance details.cg-section[open]' ) ).toHaveCount( 4 );
+
 	// The live preview is the real placeholder markup, and the contrast
 	// report measured every colour pair.
 	const sample = page.locator( '#cg-preview-stage .cg-embed' );
@@ -278,27 +288,36 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await page.uncheck( '#cg-preview-poster' );
 	await expect( sample.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
 
-	// Colour rows are swatch groups: Default · theme colours · Custom.
-	const bgGroup = page.locator( '.cg-swatches[data-cg-color-key="bg"]' );
-	const bgRadios = bgGroup.locator( 'input[type="radio"]' );
+	// Colour rows are compact disclosures: the summary names the current
+	// colour; the menu lists Default · theme colours (named) · Custom.
+	const bgControl = page.locator( '.cg-color[data-cg-color-key="bg"]' );
+	const bgRadios = bgControl.locator( 'input[type="radio"]' );
+	await expect( bgControl.locator( '.cg-color__name' ) ).toHaveText( /^Default/ );
+	await bgControl.locator( 'summary' ).click();
+	await expect( bgControl ).toHaveAttribute( 'open', '' );
 	expect( await bgRadios.count() ).toBeGreaterThan( 3 );
 	await expect( bgRadios.first() ).toHaveValue( '' );
 	await expect( bgRadios.last() ).toHaveValue( 'custom' );
-	// A theme colour: reference stored, name shown, preview painted, picker hidden.
+	// Every option shows its name, not just a dot.
+	await expect( bgControl.locator( '.cg-color__label' ).nth( 1 ) ).not.toBeEmpty();
+	// A theme colour: reference stored, summary names it, preview painted,
+	// menu closes, picker stays hidden.
 	const themeRadio = bgRadios.nth( 1 );
 	const themeSlug = await themeRadio.getAttribute( 'value' );
 	const themeHex = await themeRadio.getAttribute( 'data-cg-hex' );
 	const themeName = await themeRadio.getAttribute( 'data-cg-name' );
 	expect( themeSlug ).toMatch( /^preset:[a-z0-9-]+$/ );
-	await themeRadio.check();
-	await expect( bgGroup.locator( '.cg-swatch-current' ) ).toHaveText( themeName );
+	await themeRadio.check( { force: true } );
+	await expect( bgControl.locator( '.cg-color__name' ) ).toHaveText( themeName );
+	await expect( bgControl ).not.toHaveAttribute( 'open', '' );
 	await expect( page.locator( '#cg-color-bg' ) ).toBeHidden();
 	if ( themeHex.length === 7 ) {
 		await expect( sample ).toHaveCSS( 'background-color', `rgb(${ parseInt( themeHex.slice( 1, 3 ), 16 ) }, ${ parseInt( themeHex.slice( 3, 5 ), 16 ) }, ${ parseInt( themeHex.slice( 5, 7 ), 16 ) })` );
 	}
-	// Custom: the picker appears (with the theme palette as named swatches
-	// inside it too) and a picked colour moves the group to Custom.
-	await bgRadios.last().check();
+	// Custom: the picker appears inside the menu (with the theme palette as
+	// named swatches in it too); a picked colour keeps Custom and shows hex.
+	await bgControl.locator( 'summary' ).click();
+	await bgRadios.last().check( { force: true } );
 	await expect( page.locator( '#cg-color-bg' ) ).toBeVisible();
 	const bgPicker = page.locator( '#cg-color-bg' ).locator( 'xpath=ancestor::*[contains(@class,"wp-picker-container")]' );
 	const irisSwatches = bgPicker.locator( '.iris-palette' );
@@ -307,7 +326,9 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await irisSwatches.first().click();
 	await expect( page.locator( '#cg-color-bg' ) ).toHaveValue( /^#[0-9a-f]{3,6}$/ );
 	await expect( bgRadios.last() ).toBeChecked();
-	await bgPicker.locator( '.wp-color-result' ).click();
+	await expect( bgControl.locator( '.cg-color__name' ) ).toHaveText( /^Custom #/ );
+	await page.keyboard.press( 'Escape' );
+	await expect( bgControl ).not.toHaveAttribute( 'open', '' );
 
 	// Round 4: a quick style fills in the controls AND the preview in one
 	// click; poster dimming and the phone-width preview mirror too.
