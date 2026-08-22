@@ -507,6 +507,11 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	// Status & tools is read-only: the CSP snippet shows, the Save button
 	// does not.
 	await page.click( '#cg-tabbtn-status' );
+	await expect( page.locator( '#cg-compatibility' ) ).toBeVisible();
+	// The CSP helper is an advanced, collapsed section at the end.
+	await expect( page.locator( '#cg-csp-snippet' ) ).toBeHidden();
+	await page.locator( '#cg-csp > summary' ).click();
+	await expect( page.locator( 'textarea[aria-label="Content-Security-Policy snippet"]' ) ).toBeVisible();
 	await expect( page.locator( 'textarea[aria-label="Content-Security-Policy snippet"]' ) ).toContainText( 'frame-src' );
 	await expect( page.locator( 'form p.submit' ) ).toBeHidden();
 	await page.click( '#cg-tabbtn-providers' );
@@ -697,4 +702,114 @@ test( 'whole-page buffering: gates, enqueues everywhere, and restores cleanly', 
 
 	await page.goto( '/no-embeds/' );
 	await expect( page.locator( 'script[src*="assets/js/gate.js"]' ) ).toHaveCount( 0 );
+} );
+
+test( 'admin: the CSP helper says whether the site sends a policy and which hosts it still lacks', async ( { page } ) => {
+	await page.goto( '/wp-login.php' );
+	await page.fill( '#user_login', 'admin' );
+	await page.fill( '#user_pass', 'password' );
+	await page.click( '#wp-submit' );
+	await page.waitForURL( /wp-admin/ );
+
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-status' );
+	await page.locator( '#cg-csp > summary' ).click();
+	const check = page.locator( '#cg-csp-check' );
+	const result = page.locator( '#cg-csp-result' );
+	await expect( check ).toBeVisible();
+	await expect( result ).toBeHidden();
+
+	// The evaluation is pure; drive it with a table before touching the network.
+	const required = { 'frame-src': [ 'www.youtube-nocookie.com', 'player.vimeo.com' ], 'script-src': [ 'platform.twitter.com' ] };
+	const cases = await page.evaluate( ( req ) => {
+		const m = window.caluconEmbedGateCspCheck.missing;
+		return {
+			unrestricted: m( "img-src 'self'", req ),
+			none: m( "default-src 'none'", req ),
+			self: m( "default-src 'self'; frame-src 'self' https://www.youtube-nocookie.com", req ),
+			wildcardHost: m( 'default-src *.vimeo.com https://*.twitter.com; frame-src https://www.youtube-nocookie.com https://*.vimeo.com', req ),
+			scheme: m( 'default-src https:', req ),
+			childSrc: m( "default-src 'self'; child-src https://www.youtube-nocookie.com https://player.vimeo.com; script-src 'self' platform.twitter.com", req ),
+			httpOnly: m( 'default-src http://www.youtube-nocookie.com http://player.vimeo.com http://platform.twitter.com', req ),
+			port: m( 'default-src https://www.youtube-nocookie.com:443 https://player.vimeo.com:8443 https://platform.twitter.com:*', req ),
+			firstWins: m( "default-src 'none'; default-src *", req ),
+			meta: window.caluconEmbedGateCspCheck.metaPolicy( '<html><head><meta\ncontent="default-src &#039;self&#039;" http-equiv=Content-Security-Policy></head></html>' ),
+		};
+	}, required );
+	expect( cases.unrestricted ).toEqual( {} );
+	expect( cases.none ).toEqual( required );
+	expect( cases.self ).toEqual( { 'frame-src': [ 'player.vimeo.com' ], 'script-src': [ 'platform.twitter.com' ] } );
+	expect( cases.wildcardHost ).toEqual( {} );
+	expect( cases.scheme ).toEqual( {} );
+	expect( cases.childSrc ).toEqual( {} );
+	expect( cases.httpOnly ).toEqual( required );
+	expect( cases.port ).toEqual( { 'frame-src': [ 'player.vimeo.com' ] } );
+	expect( cases.firstWins ).toEqual( required );
+	expect( cases.meta ).toBe( "default-src 'self'" );
+
+	// 1. No policy on the home page: "skip this section".
+	await check.click();
+	await expect( result ).toContainText( 'sends no Content-Security-Policy' );
+	await expect( result ).toHaveClass( /cg-csp-result--ok/ );
+
+	// 2. A policy that allows only YouTube: the others are listed as missing.
+	await page.route( '**/*', ( route ) => {
+		const req = route.request();
+		if ( 'fetch' === req.resourceType() && ! req.url().includes( '/wp-admin/' ) ) {
+			return route.fulfill( {
+				status: 200,
+				headers: { 'content-type': 'text/html', 'content-security-policy': "default-src 'self'; frame-src 'self' https://www.youtube-nocookie.com" },
+				body: '<html><body>home</body></html>',
+			} );
+		}
+		return route.continue();
+	} );
+	await check.click();
+	await expect( result ).toHaveClass( /cg-csp-result--todo/ );
+	await expect( result ).toContainText( 'does not yet allow' );
+	await expect( result.locator( 'code', { hasText: 'player.vimeo.com' } ) ).toBeVisible();
+	await expect( result.locator( 'code', { hasText: 'www.youtube-nocookie.com' } ) ).toHaveCount( 0 );
+	await page.unroute( '**/*' );
+
+	// 3. A policy that allows everything the snippet lists: nothing to do.
+	const snippet = await page.locator( '#cg-csp-snippet' ).inputValue();
+	await page.route( '**/*', ( route ) => {
+		const req = route.request();
+		if ( 'fetch' === req.resourceType() && ! req.url().includes( '/wp-admin/' ) ) {
+			return route.fulfill( {
+				status: 200,
+				headers: { 'content-type': 'text/html', 'content-security-policy': "default-src 'self'; " + snippet.replace( /\n/g, ' ' ) },
+				body: '<html><body>home</body></html>',
+			} );
+		}
+		return route.continue();
+	} );
+	await check.click();
+	await expect( result ).toHaveClass( /cg-csp-result--ok/ );
+	await expect( result ).toContainText( 'already allows every enabled provider' );
+	await page.unroute( '**/*' );
+
+	// 4. Report-only: informational, never "todo".
+	await page.route( '**/*', ( route ) => {
+		const req = route.request();
+		if ( 'fetch' === req.resourceType() && ! req.url().includes( '/wp-admin/' ) ) {
+			return route.fulfill( {
+				status: 200,
+				headers: { 'content-type': 'text/html', 'content-security-policy-report-only': "default-src 'self'" },
+				body: '<html><body>home</body></html>',
+			} );
+		}
+		return route.continue();
+	} );
+	await check.click();
+	await expect( result ).toHaveClass( /cg-csp-result--info/ );
+	await expect( result ).toContainText( 'report-only' );
+	await expect( result.locator( 'code', { hasText: 'player.vimeo.com' } ) ).toBeVisible();
+	await page.unroute( '**/*' );
+
+	// The "which provider needs which host" table explains the snippet.
+	await page.locator( '.cg-csp__providers > summary' ).click();
+	const youtubeRow = page.locator( '.cg-csp-table tbody tr', { hasText: 'YouTube' } ).first();
+	await expect( youtubeRow ).toContainText( 'www.youtube-nocookie.com' );
+	await expect( youtubeRow ).not.toContainText( 'www.youtube.com' );
+	await expect( page.locator( '.cg-csp-table thead' ) ).toContainText( 'frame-src' );
 } );

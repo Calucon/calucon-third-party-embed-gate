@@ -123,6 +123,7 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 * New: multilingual sites — the custom notice and button texts (settings and per block) are registered for WPML and Polylang via a shipped wpml-config.xml.
 * New: per-provider privacy policy URL override on the Providers tab, for a localised or moved policy page (https only).
 * New: a "Settings" link next to the plugin on the Plugins screen, and a "Support development" link in its row details.
+* New: the Content-Security-Policy section (Status & tools) now explains in plain language whether you need it at all, can check your own home page from the browser for an existing policy and say which provider hosts it still lacks, offers a Copy button, and lists which provider needs which host. It is collapsed by default — most sites send no policy.
 * New: every colour can follow one of the theme's own palette colours by name — the panel then changes with the theme — or be set to a custom colour; the pickers also offer the palette as named swatches.
 * Fixed: right-to-left sites (icon and status spacing now follow the text direction) and Windows High Contrast mode (panel, buttons and icon keep visible borders).
 * Fixed: the error state after a failed load could link the wrong destination when the panel showed more than one link.

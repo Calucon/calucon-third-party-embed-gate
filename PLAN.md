@@ -831,6 +831,15 @@ a **generated CSP snippet** in the admin based on which providers are enabled �
 and note that the whole point is those hosts are *not* contacted until consent,
 so the CSP entry is permission, not traffic.
 
+The admin section is collapsed and leads with "do I need this?" — most sites
+send no policy. It offers a browser-side self-check: the owner's browser
+fetches the site's own home page (same-origin, on click), reads the
+`Content-Security-Policy` header or `<meta http-equiv>`, and reports whether
+the enabled providers' hosts are already permitted, honouring the CSP3
+fallback chain (`frame-src` → `child-src` → `default-src`). The server makes
+no request (invariant 9). Report-only policies are reported as
+informational, never as blocking.
+
 ### 9.14 Resource hints
 
 `dns-prefetch` and `preconnect` to a provider undermine the gate to different

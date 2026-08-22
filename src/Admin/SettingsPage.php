@@ -167,6 +167,41 @@ final class SettingsPage {
 			CALUCON_EMBED_GATE_VERSION,
 			true
 		);
+		wp_enqueue_script(
+			'calucon-embed-gate-admin-csp',
+			plugins_url( 'assets/js/admin-csp.js', CALUCON_EMBED_GATE_FILE ),
+			array(),
+			CALUCON_EMBED_GATE_VERSION,
+			true
+		);
+		wp_add_inline_script(
+			'calucon-embed-gate-admin-csp',
+			'window.caluconEmbedGateCsp = ' . wp_json_encode(
+				array(
+					// The owner's browser loads this once, same-origin, on an
+					// explicit click, to read the site's own CSP header. The
+					// server never requests anything (invariant 9).
+					'home'       => home_url( '/' ),
+					'required'   => Csp::directives( $this->providers() ),
+					'directives' => $this->csp_directive_labels(),
+					'i18n'       => array(
+						'checking'          => __( 'Checking your home page…', 'calucon-third-party-embed-gate' ),
+						'error'             => __( 'Could not load your home page from this browser, so nothing could be checked. Try again; if it keeps failing, open the home page in a new tab and look for a Content-Security-Policy header in the browser\'s developer tools (Network panel).', 'calucon-third-party-embed-gate' ),
+						'none'              => __( 'Your home page sends no Content-Security-Policy. You can skip this section.', 'calucon-third-party-embed-gate' ),
+						'noneHint'          => __( 'Checked just now, as your browser sees the page. If you are sure a policy is set somewhere (some setups only send it on certain pages), add the lines below to it anyway — listing a host that is never loaded is harmless.', 'calucon-third-party-embed-gate' ),
+						'clean'             => __( 'Your site sends a Content-Security-Policy, and it already allows every enabled provider. Nothing to do.', 'calucon-third-party-embed-gate' ),
+						'missing'           => __( 'Your site sends a Content-Security-Policy that does not yet allow these hosts — their embeds would stay empty after the visitor clicks Load:', 'calucon-third-party-embed-gate' ),
+						'missingHint'       => __( 'Add the lines below to your policy, where it is defined, and run the check again.', 'calucon-third-party-embed-gate' ),
+						'reportOnly'        => __( 'Your site sends a report-only policy (Content-Security-Policy-Report-Only). It logs violations but blocks nothing, so embeds still load.', 'calucon-third-party-embed-gate' ),
+						'reportOnlyMissing' => __( 'If you later switch it to an enforced policy, it would need these hosts:', 'calucon-third-party-embed-gate' ),
+						'reportOnlyClean'   => __( 'It already lists every enabled provider, so switching it to enforced would be safe for the embeds.', 'calucon-third-party-embed-gate' ),
+						'copied'            => __( 'Copied to the clipboard.', 'calucon-third-party-embed-gate' ),
+						'copyFailed'        => __( 'Could not copy — select the text and copy it by hand.', 'calucon-third-party-embed-gate' ),
+					),
+				)
+			) . ';',
+			'before'
+		);
 		wp_add_inline_script(
 			'calucon-embed-gate-admin',
 			'window.caluconEmbedGateAdminPalette = ' . wp_json_encode( $this->theme_palette() ) . ';',
@@ -303,12 +338,9 @@ final class SettingsPage {
 			// the form's Save button while this panel is active (data-cg-readonly).
 			?>
 			<div id="cg-tab-status" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-status" data-cg-readonly="1">
-			<h2><?php esc_html_e( 'Content-Security-Policy snippet', 'calucon-third-party-embed-gate' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'If your site sends a Content-Security-Policy, it needs to allow the enabled providers\' hosts so embeds can load after consent. These hosts are not contacted until the visitor clicks — the CSP entry is permission, not traffic.', 'calucon-third-party-embed-gate' ); ?></p>
-			<textarea readonly rows="4" class="large-text code" aria-label="<?php echo esc_attr( __( 'Content-Security-Policy snippet', 'calucon-third-party-embed-gate' ) ); ?>"><?php echo esc_textarea( Csp::snippet( $this->providers() ) ); ?></textarea>
-
 			<?php $this->render_compatibility( $options ); ?>
 			<?php $this->render_status(); ?>
+			<?php $this->render_csp(); ?>
 			</div>
 		</div>
 		<?php
@@ -1164,6 +1196,75 @@ final class SettingsPage {
 				</td>
 			</tr>
 		</table>
+		<?php
+	}
+
+	/**
+	 * Plain-language names for the CSP directives the snippet uses.
+	 *
+	 * @return array<string,string> directive => label.
+	 */
+	private function csp_directive_labels(): array {
+		return array(
+			'frame-src'  => __( 'frame-src (embedded players, maps and other iframes)', 'calucon-third-party-embed-gate' ),
+			'script-src' => __( 'script-src (provider scripts, e.g. for social-media posts)', 'calucon-third-party-embed-gate' ),
+		);
+	}
+
+	/**
+	 * Content-Security-Policy helper (PLAN.md §9.13), on the Status & tools
+	 * tab. Collapsed by default: most sites send no policy and never need
+	 * this. Leads with "do I need this?", offers a browser-side self-check
+	 * (admin-csp.js — same-origin, on click; the server requests nothing),
+	 * then the snippet with a copy button, merge instructions and a table
+	 * saying which provider needs which host.
+	 *
+	 * @return void
+	 */
+	private function render_csp(): void {
+		$providers = $this->providers();
+		?>
+		<details class="cg-section cg-csp" id="cg-csp">
+			<summary><h3><?php esc_html_e( 'Content-Security-Policy (advanced)', 'calucon-third-party-embed-gate' ); ?></h3></summary>
+
+			<p><?php esc_html_e( 'A Content-Security-Policy (CSP) is a security setting some sites send to browsers. It lists which other websites a page is allowed to load anything from — and blocks the rest. Most WordPress sites do not send one. If you never set one up in a security plugin, your hosting panel or the web server, you can skip this section.', 'calucon-third-party-embed-gate' ); ?></p>
+			<p><?php esc_html_e( 'Why it matters here: when a policy does not list a provider, that provider\'s embed stays empty after the visitor clicks Load, and the browser console reports “Refused to frame …”. Listing a host only grants permission; it does not load anything — nothing is contacted before the click either way.', 'calucon-third-party-embed-gate' ); ?></p>
+
+			<p id="cg-csp-check-wrap" hidden>
+				<button type="button" class="button" id="cg-csp-check"><?php esc_html_e( 'Check my site for a policy', 'calucon-third-party-embed-gate' ); ?></button>
+				<span class="description"><?php esc_html_e( 'Loads your home page once, in this browser, and reads whether it sends a policy and what it allows. Nothing leaves your site.', 'calucon-third-party-embed-gate' ); ?></span>
+			</p>
+			<div id="cg-csp-result" class="cg-csp-result" role="status" aria-live="polite" hidden></div>
+
+			<h4><?php esc_html_e( 'Lines to add', 'calucon-third-party-embed-gate' ); ?></h4>
+			<textarea readonly rows="6" id="cg-csp-snippet" class="large-text code" aria-label="<?php echo esc_attr( __( 'Content-Security-Policy snippet', 'calucon-third-party-embed-gate' ) ); ?>"><?php echo esc_textarea( Csp::snippet( $providers ) ); ?></textarea>
+			<p id="cg-csp-copy-wrap" hidden>
+				<button type="button" class="button" id="cg-csp-copy"><?php esc_html_e( 'Copy', 'calucon-third-party-embed-gate' ); ?></button>
+				<span id="cg-csp-copied" role="status" aria-live="polite" class="description"></span>
+			</p>
+			<p class="description"><?php esc_html_e( 'Add them wherever your policy is defined — a security plugin, your hosting panel or the web server configuration. Merge, do not replace: if the policy already has a frame-src line, add these hosts to that line instead of adding a second one. If it has neither frame-src nor script-src, the browser falls back to default-src — add the hosts there.', 'calucon-third-party-embed-gate' ); ?></p>
+
+			<details class="cg-csp__providers">
+				<summary><?php esc_html_e( 'Show which provider needs which host', 'calucon-third-party-embed-gate' ); ?></summary>
+				<p class="description"><?php esc_html_e( 'Only enabled providers are listed; disable a provider under Providers and its hosts disappear from the lines above. A host can differ from the embed address when the plugin loads a privacy-preserving variant (YouTube loads from youtube-nocookie.com, for example).', 'calucon-third-party-embed-gate' ); ?></p>
+				<table class="widefat striped cg-csp-table" style="max-width: 60rem;">
+					<thead><tr>
+						<th scope="col"><?php esc_html_e( 'Provider', 'calucon-third-party-embed-gate' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'Embeds load from (frame-src)', 'calucon-third-party-embed-gate' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'Scripts load from (script-src)', 'calucon-third-party-embed-gate' ); ?></th>
+					</tr></thead>
+					<tbody>
+					<?php foreach ( Csp::by_provider( $providers ) as $label => $hosts ) : ?>
+						<tr>
+							<td><?php echo esc_html( $label ); ?></td>
+							<td><?php echo $hosts['frame-src'] ? '<code>' . implode( '</code><br><code>', array_map( 'esc_html', $hosts['frame-src'] ) ) : '—'; ?></td>
+							<td><?php echo $hosts['script-src'] ? '<code>' . implode( '</code><br><code>', array_map( 'esc_html', $hosts['script-src'] ) ) : '—'; ?></td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+			</details>
+		</details>
 		<?php
 	}
 

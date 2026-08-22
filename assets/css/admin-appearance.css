@@ -483,3 +483,60 @@
 	gap: 6px;
 	margin: 10px 0;
 }
+
+/* Status & tools: the Content-Security-Policy helper. */
+.cg-csp-result {
+	max-width: 60rem;
+	margin: 10px 0 16px;
+	padding: 10px 14px;
+	border-left: 4px solid #72aee6;
+	background: #fff;
+	box-shadow: 0 1px 1px rgba( 0, 0, 0, 0.04 );
+}
+
+.cg-csp-result--ok {
+	border-left-color: #00a32a;
+}
+
+.cg-csp-result--todo {
+	border-left-color: #dba617;
+}
+
+.cg-csp-result--error {
+	border-left-color: #d63638;
+}
+
+.cg-csp-result p {
+	margin: 0.5em 0;
+}
+
+.cg-csp-result__verdict {
+	font-weight: 600;
+}
+
+.cg-csp-result ul {
+	margin: 0.5em 0 0.5em 1.2em;
+	list-style: disc;
+}
+
+.cg-csp textarea {
+	max-width: 60rem;
+}
+
+.cg-csp .description {
+	max-width: 60rem;
+}
+
+.cg-csp__providers {
+	margin: 12px 0 0;
+}
+
+.cg-csp__providers > summary {
+	cursor: pointer;
+	color: #2271b1;
+	text-decoration: underline;
+}
+
+.cg-csp-table code {
+	white-space: nowrap;
+}

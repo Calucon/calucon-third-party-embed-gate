@@ -82,6 +82,7 @@ async function settings( page ) {
 
 	// 3 — Compatibility overview (under Status & tools).
 	await page.click( '#cg-tabbtn-status' );
+	await page.evaluate( () => { document.getElementById( 'cg-csp' ).open = true; } );
 	await page.waitForTimeout( 500 );
 	await page.locator( '#cg-tab-status' ).screenshot( { path: path.join( OUT, 'screenshot-3.png' ) } );
 
