@@ -37,20 +37,75 @@
 		var panel = sample ? sample.querySelector( '.cg-embed__panel' ) : null;
 		var withdraw = document.getElementById( 'cg-preview-withdraw' );
 
-		// A colour control is a pair: the Theme colour select (a palette slug,
-		// resolved to its current hex through the option's data-cg-hex) and
-		// the picker (a custom hex). The select wins, matching the sanitiser.
-		function presetSelect( key ) {
-			return document.querySelector( '.cg-theme-color[data-cg-color-preset="' + key + '"]' );
+		// A colour control is a swatch group (Default | theme colours | Custom)
+		// whose checked radio is the submitted value, plus the picker for
+		// Custom. The preview resolves a theme swatch through its data-cg-hex.
+		function swatchGroup( key ) {
+			return document.querySelector( '.cg-swatches[data-cg-color-key="' + key + '"]' );
+		}
+		function checkedSwatch( key ) {
+			var group = swatchGroup( key );
+			return group ? group.querySelector( 'input[type="radio"]:checked' ) : null;
+		}
+		function pickerField( key ) {
+			return document.querySelector( '.cg-color-field[data-cg-color="' + key + '"]' );
 		}
 		function effectiveColor( key ) {
-			var select = presetSelect( key );
-			if ( select && select.value ) {
-				var opt = select.options[ select.selectedIndex ];
-				return ( opt && opt.getAttribute( 'data-cg-hex' ) ) || '';
+			var radio = checkedSwatch( key );
+			if ( ! radio ) {
+				var field = pickerField( key );
+				return field ? field.value : '';
 			}
-			var field = document.querySelector( '.cg-color-field[data-cg-color="' + key + '"]' );
-			return field ? field.value : '';
+			if ( 'custom' === radio.value ) {
+				var picker = pickerField( key );
+				return picker ? picker.value : '';
+			}
+			return radio.getAttribute( 'data-cg-hex' ) || '';
+		}
+		// Reflect the checked swatch: reveal the picker for Custom, name the
+		// choice next to the row.
+		function reflectSwatch( key ) {
+			var group = swatchGroup( key );
+			var radio = checkedSwatch( key );
+			if ( ! group || ! radio ) {
+				return;
+			}
+			var custom = group.parentNode.querySelector( '.cg-swatch-custom' );
+			if ( custom ) {
+				custom.hidden = 'custom' !== radio.value;
+			}
+			var current = group.querySelector( '.cg-swatch-current' );
+			if ( current ) {
+				current.textContent = radio.getAttribute( 'data-cg-name' ) || '';
+			}
+		}
+		function checkSwatch( key, value ) {
+			var group = swatchGroup( key );
+			if ( ! group ) {
+				return;
+			}
+			var radios = group.querySelectorAll( 'input[type="radio"]' );
+			for ( var i = 0; i < radios.length; i++ ) {
+				radios[ i ].checked = radios[ i ].value === value;
+			}
+			reflectSwatch( key );
+		}
+		function colorChanged( key ) {
+			var value = effectiveColor( key );
+			if ( 'border_color' === key ) {
+				applyBorder();
+				return;
+			}
+			if ( 'link' === key ) {
+				applyLinkColor( value );
+				return;
+			}
+			if ( 0 === key.indexOf( 'dark_' ) ) {
+				palette.dark[ key.slice( 5 ) ] = value;
+			} else if ( VARS[ key ] ) {
+				palette.base[ key ] = value;
+			}
+			applyPalette();
 		}
 
 		// One palette store feeds the preview: the base colours, overlaid by
@@ -90,24 +145,10 @@
 		}
 
 		function setColor( key, value ) {
-			var select = presetSelect( key );
-			if ( select && value && select.value ) {
-				select.value = '';
+			if ( value ) {
+				checkSwatch( key, 'custom' );
 			}
-			if ( 'border_color' === key ) {
-				applyBorder();
-				return;
-			}
-			if ( 'link' === key ) {
-				applyLinkColor( effectiveColor( 'link' ) );
-				return;
-			}
-			if ( 0 === key.indexOf( 'dark_' ) ) {
-				palette.dark[ key.slice( 5 ) ] = value;
-			} else {
-				palette.base[ key ] = value;
-			}
-			applyPalette();
+			colorChanged( key );
 		}
 
 		function applyPreset( preset ) {
@@ -404,16 +445,53 @@
 			}
 			for ( var key in bundle.colors ) {
 				if ( Object.prototype.hasOwnProperty.call( bundle.colors, key ) ) {
-					var field = $( '[data-cg-color="' + key + '"]' );
-					if ( field.length ) {
+					var field = $( '.cg-color-field[data-cg-color="' + key + '"]' );
+					if ( bundle.colors[ key ] ) {
+						checkSwatch( key, 'custom' );
 						field.wpColorPicker( 'color', bundle.colors[ key ] );
-						if ( ! bundle.colors[ key ] ) {
-							field.closest( '.wp-picker-container' ).find( '.wp-picker-clear' ).trigger( 'click' );
-						}
+					} else {
+						checkSwatch( key, '' );
+						field.closest( '.wp-picker-container' ).find( '.wp-picker-clear' ).trigger( 'click' );
 					}
 				}
 			}
 			syncFromForm();
+		}
+
+		// Each quick-style button gets a miniature of the panel it produces,
+		// drawn from the bundle's own colours — a picture beats a name.
+		function drawQuickCards() {
+			$( '.cg-quick-style[data-cg-quick-style]' ).each( function () {
+				var bundle = QUICK_STYLES[ this.getAttribute( 'data-cg-quick-style' ) ];
+				if ( ! bundle || this.querySelector( '.cg-quick-card' ) ) {
+					return;
+				}
+				var c = bundle.colors;
+				var mock = document.createElement( 'span' );
+				mock.className = 'cg-quick-card';
+				mock.setAttribute( 'aria-hidden', 'true' );
+				mock.style.background = c.bg || ( 'minimal' === bundle[ 'cg-preset' ] ? 'transparent' : '#1b1b1b' );
+				mock.style.borderColor = c.border_color || c.fg || '#f0f0f0';
+				mock.style.borderRadius = 'square' === bundle[ 'cg-corners' ] ? '0' : ( 'pill' === bundle[ 'cg-corners' ] ? '14px' : '6px' );
+				var line = document.createElement( 'span' );
+				line.className = 'cg-quick-card__line';
+				line.style.background = c.fg || '#f0f0f0';
+				var btn = document.createElement( 'span' );
+				btn.className = 'cg-quick-card__btn';
+				btn.style.background = 'outline' === bundle[ 'cg-button-style' ] ? 'transparent' : ( c.accent || '#5c9e00' );
+				btn.style.borderColor = c.accent || '#5c9e00';
+				btn.style.borderRadius = 'pill' === bundle[ 'cg-corners' ] ? '999px' : '3px';
+				mock.appendChild( line );
+				mock.appendChild( btn );
+				this.insertBefore( mock, this.firstChild );
+			} );
+			var reset = document.getElementById( 'cg-appearance-reset' );
+			if ( reset && ! reset.querySelector( '.cg-quick-card' ) ) {
+				var blank = document.createElement( 'span' );
+				blank.className = 'cg-quick-card cg-quick-card--default';
+				blank.setAttribute( 'aria-hidden', 'true' );
+				reset.insertBefore( blank, reset.firstChild );
+			}
 		}
 
 		var GAPS = { compact: '0.5rem', spacious: '1.25rem' };
@@ -515,8 +593,10 @@
 			if ( ! report || ! sample ) {
 				return;
 			}
-			var lines = [];
 			var template = i18n.line || '%1$s: %2$s — %3$s';
+			while ( report.firstChild ) {
+				report.removeChild( report.firstChild );
+			}
 			pairs().forEach( function ( pair ) {
 				var fg = parseColor( getComputedStyle( pair.el ).color );
 				var bg = effectiveBackground( pair.el );
@@ -527,15 +607,17 @@
 					fg = over( fg, bg );
 				}
 				var r = ratio( fg, bg );
-				var verdict = r >= 4.5 ? i18n.pass : i18n.fail;
-				lines.push(
+				var ok = r >= 4.5;
+				var line = document.createElement( 'span' );
+				line.className = 'cg-contrast-line ' + ( ok ? 'cg-contrast-line--pass' : 'cg-contrast-line--fail' );
+				line.appendChild( document.createTextNode(
 					template
 						.replace( '%1$s', pair.label || '' )
 						.replace( '%2$s', r.toFixed( 1 ) + ':1' )
-						.replace( '%3$s', verdict || '' )
-				);
+						.replace( '%3$s', ( ok ? i18n.pass : i18n.fail ) || '' )
+				) );
+				report.appendChild( line );
 			} );
-			report.textContent = lines.join( '\n' );
 		}
 
 		// --- Wiring ---
@@ -634,25 +716,18 @@
 		$( '#cg-preview-narrow' ).on( 'change', function () {
 			applyNarrow( this.checked );
 		} );
-		$( '.cg-theme-color' ).on( 'change', function () {
-			var key = this.getAttribute( 'data-cg-color-preset' );
-			var field = $( '.cg-color-field[data-cg-color="' + key + '"]' );
-			if ( this.value && field.length ) {
-				// Following the theme: the picker's custom value no longer applies.
-				field.closest( '.wp-picker-container' ).find( '.wp-picker-clear' ).trigger( 'click' );
-				if ( 0 === key.indexOf( 'dark_' ) ) {
-					palette.dark[ key.slice( 5 ) ] = effectiveColor( key );
-				} else if ( VARS[ key ] ) {
-					palette.base[ key ] = effectiveColor( key );
+		$( '.cg-swatches input[type="radio"]' ).on( 'change', function () {
+			var key = this.closest( '.cg-swatches' ).getAttribute( 'data-cg-color-key' );
+			reflectSwatch( key );
+			if ( 'custom' === this.value ) {
+				var picker = pickerField( key );
+				if ( picker && ! picker.value ) {
+					// Open the picker straight away: "Custom" with nothing
+					// picked yet would preview as inherit.
+					$( picker ).closest( '.wp-picker-container' ).find( '.wp-color-result' ).trigger( 'click' );
 				}
 			}
-			if ( 'border_color' === key ) {
-				applyBorder();
-			} else if ( 'link' === key ) {
-				applyLinkColor( effectiveColor( 'link' ) );
-			} else {
-				applyPalette();
-			}
+			colorChanged( key );
 		} );
 		$( '.cg-quick-style' ).on( 'click', function () {
 			applyQuickStyle( this.getAttribute( 'data-cg-quick-style' ) );
@@ -670,7 +745,9 @@
 			$( '#cg-tab-appearance .wp-picker-clear' ).each( function () {
 				this.click();
 			} );
-			$( '.cg-theme-color' ).val( '' );
+			$( '.cg-swatches' ).each( function () {
+				checkSwatch( this.getAttribute( 'data-cg-color-key' ), '' );
+			} );
 			$( '.cg-dark-row' ).prop( 'hidden', true );
 			palette = { base: {}, dark: {} };
 			syncFromForm();
@@ -726,6 +803,10 @@
 		applyLinkColor( effectiveColor( 'link' ) );
 		applyPreset( ( document.getElementById( 'cg-preset' ) || { value: '' } ).value );
 		}
+		$( '.cg-swatches' ).each( function () {
+			reflectSwatch( this.getAttribute( 'data-cg-color-key' ) );
+		} );
+		drawQuickCards();
 		syncFromForm();
 	} );
 }( window.jQuery ) );

@@ -131,3 +131,147 @@
 		margin-top: 0;
 	}
 }
+
+/* Colour swatch groups: Default (dashed) · theme colours · Custom (spectrum).
+   Real radios underneath, so keyboard and screen readers get native
+   semantics; the dot is the visual. */
+.cg-swatches {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+}
+
+.cg-swatch {
+	position: relative;
+	display: inline-block;
+	width: 30px;
+	height: 30px;
+	cursor: pointer;
+}
+
+.cg-swatch input {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.cg-swatch__dot {
+	display: block;
+	width: 28px;
+	height: 28px;
+	margin: 1px;
+	border-radius: 50%;
+	border: 1px solid rgba( 0, 0, 0, 0.25 );
+	box-sizing: border-box;
+}
+
+.cg-swatch input:checked + .cg-swatch__dot {
+	box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2271b1;
+}
+
+.cg-swatch input:focus-visible + .cg-swatch__dot {
+	outline: 2px solid #2271b1;
+	outline-offset: 3px;
+}
+
+.cg-swatch--default .cg-swatch__dot {
+	background: #fff linear-gradient( 135deg, transparent 45%, #c00 45%, #c00 55%, transparent 55% );
+	border-style: dashed;
+}
+
+.cg-swatch--custom .cg-swatch__dot {
+	background: conic-gradient( #e53935, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935 );
+}
+
+.cg-swatch--missing .cg-swatch__dot {
+	background: repeating-linear-gradient( 45deg, #fff, #fff 4px, #ddd 4px, #ddd 8px );
+}
+
+.cg-swatch-current {
+	margin-left: 6px;
+	color: #50575e;
+	font-size: 13px;
+}
+
+.cg-swatch-custom {
+	margin-top: 8px;
+}
+
+/* Quick-style cards: a miniature of the panel each style produces. */
+.cg-quick-styles__grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin: 6px 0 8px;
+}
+
+.cg-quick-style.button {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	height: auto;
+	padding: 8px 10px;
+}
+
+.cg-quick-card {
+	display: block;
+	width: 104px;
+	height: 58px;
+	padding: 8px;
+	border: 1px solid;
+	box-sizing: border-box;
+	background: #1b1b1b;
+}
+
+.cg-quick-card__line {
+	display: block;
+	width: 70%;
+	height: 5px;
+	border-radius: 3px;
+	opacity: 0.85;
+}
+
+.cg-quick-card__btn {
+	display: block;
+	width: 46px;
+	height: 13px;
+	margin-top: 18px;
+	border: 1px solid;
+	box-sizing: border-box;
+}
+
+.cg-quick-card--default {
+	background: repeating-linear-gradient( 45deg, #fff, #fff 5px, #e5e5e5 5px, #e5e5e5 10px );
+	border-color: #c3c4c7;
+	border-radius: 6px;
+}
+
+/* Readability lines: a pass/fail mark before each pair. */
+.cg-contrast-line {
+	display: block;
+	margin: 2px 0;
+}
+
+.cg-contrast-line::before {
+	content: '';
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	margin-right: 6px;
+	border-radius: 50%;
+	vertical-align: baseline;
+}
+
+.cg-contrast-line--pass::before {
+	background: #00a32a;
+}
+
+.cg-contrast-line--fail::before {
+	background: #d63638;
+}

@@ -278,31 +278,36 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await page.uncheck( '#cg-preview-poster' );
 	await expect( sample.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
 
-	// Theme palette swatches: opening a picker shows the active theme's
-	// colours (theme.json on the Playground default theme), each named.
-	const bgPicker = page.locator( '#cg-color-bg' ).locator( 'xpath=ancestor::*[contains(@class,"wp-picker-container")]' );
-	await bgPicker.locator( '.wp-color-result' ).click();
-	const swatches = bgPicker.locator( '.iris-palette' );
-	expect( await swatches.count() ).toBeGreaterThan( 2 );
-	await expect( swatches.first() ).toHaveAttribute( 'title', /.+/ );
-	await swatches.first().click();
-	await expect( page.locator( '#cg-color-bg' ) ).toHaveValue( /^#[0-9a-f]{3,6}$/ );
-	await bgPicker.locator( '.wp-color-result' ).click();
-
-	// Theme colour by name: the select stores a reference, the preview shows
-	// that palette colour, and the picker is cleared (the select wins).
-	const bgSelect = page.locator( '.cg-theme-color[data-cg-color-preset="bg"]' );
-	expect( await bgSelect.locator( 'option' ).count() ).toBeGreaterThan( 2 );
-	const secondSlug = await bgSelect.locator( 'option' ).nth( 1 ).getAttribute( 'value' );
-	const secondHex = await bgSelect.locator( 'option' ).nth( 1 ).getAttribute( 'data-cg-hex' );
-	await bgSelect.selectOption( secondSlug );
-	await expect( page.locator( '#cg-color-bg' ) ).toHaveValue( '' );
-	const rgb = secondHex.length === 7
-		? `rgb(${ parseInt( secondHex.slice( 1, 3 ), 16 ) }, ${ parseInt( secondHex.slice( 3, 5 ), 16 ) }, ${ parseInt( secondHex.slice( 5, 7 ), 16 ) })`
-		: null;
-	if ( rgb ) {
-		await expect( sample ).toHaveCSS( 'background-color', rgb );
+	// Colour rows are swatch groups: Default · theme colours · Custom.
+	const bgGroup = page.locator( '.cg-swatches[data-cg-color-key="bg"]' );
+	const bgRadios = bgGroup.locator( 'input[type="radio"]' );
+	expect( await bgRadios.count() ).toBeGreaterThan( 3 );
+	await expect( bgRadios.first() ).toHaveValue( '' );
+	await expect( bgRadios.last() ).toHaveValue( 'custom' );
+	// A theme colour: reference stored, name shown, preview painted, picker hidden.
+	const themeRadio = bgRadios.nth( 1 );
+	const themeSlug = await themeRadio.getAttribute( 'value' );
+	const themeHex = await themeRadio.getAttribute( 'data-cg-hex' );
+	const themeName = await themeRadio.getAttribute( 'data-cg-name' );
+	expect( themeSlug ).toMatch( /^preset:[a-z0-9-]+$/ );
+	await themeRadio.check();
+	await expect( bgGroup.locator( '.cg-swatch-current' ) ).toHaveText( themeName );
+	await expect( page.locator( '#cg-color-bg' ) ).toBeHidden();
+	if ( themeHex.length === 7 ) {
+		await expect( sample ).toHaveCSS( 'background-color', `rgb(${ parseInt( themeHex.slice( 1, 3 ), 16 ) }, ${ parseInt( themeHex.slice( 3, 5 ), 16 ) }, ${ parseInt( themeHex.slice( 5, 7 ), 16 ) })` );
 	}
+	// Custom: the picker appears (with the theme palette as named swatches
+	// inside it too) and a picked colour moves the group to Custom.
+	await bgRadios.last().check();
+	await expect( page.locator( '#cg-color-bg' ) ).toBeVisible();
+	const bgPicker = page.locator( '#cg-color-bg' ).locator( 'xpath=ancestor::*[contains(@class,"wp-picker-container")]' );
+	const irisSwatches = bgPicker.locator( '.iris-palette' );
+	expect( await irisSwatches.count() ).toBeGreaterThan( 2 );
+	await expect( irisSwatches.first() ).toHaveAttribute( 'title', /.+/ );
+	await irisSwatches.first().click();
+	await expect( page.locator( '#cg-color-bg' ) ).toHaveValue( /^#[0-9a-f]{3,6}$/ );
+	await expect( bgRadios.last() ).toBeChecked();
+	await bgPicker.locator( '.wp-color-result' ).click();
 
 	// Round 4: a quick style fills in the controls AND the preview in one
 	// click; poster dimming and the phone-width preview mirror too.
@@ -310,6 +315,9 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await expect( page.locator( '#cg-corners' ) ).toHaveValue( 'rounded' );
 	await expect( page.locator( '#cg-play-icon' ) ).toBeChecked();
 	await expect( page.locator( '[data-cg-color="bg"]' ) ).toHaveValue( '#101418' );
+	await expect( bgRadios.last() ).toBeChecked();
+	// Every quick-style button carries a miniature drawn in its colours.
+	await expect( page.locator( '.cg-quick-style .cg-quick-card' ) ).toHaveCount( 5 );
 	await expect( sample ).toHaveCSS( 'background-color', 'rgb(16, 20, 24)' );
 	await expect( page.locator( '#cg-contrast-report' ) ).not.toContainText( 'hard to read' );
 	await page.check( '#cg-preview-poster' );
@@ -320,6 +328,9 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await page.uncheck( '#cg-preview-narrow' );
 	await page.click( '#cg-appearance-reset' );
 	await expect( page.locator( '[data-cg-color="bg"]' ) ).toHaveValue( '' );
+	await expect( bgRadios.first() ).toBeChecked();
+	// The readability report is marked pass/fail per line.
+	expect( await page.locator( '#cg-contrast-report .cg-contrast-line--pass' ).count() ).toBeGreaterThan( 0 );
 
 	// Round-2 controls: the withdraw sample restyles with its variant, the
 	// dark colour rows reveal behind their toggle, and the play icon class

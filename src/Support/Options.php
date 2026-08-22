@@ -261,28 +261,21 @@ final class Options {
 				}
 			}
 			foreach ( array( 'bg', 'fg', 'accent', 'accent_fg', 'border_color', 'link', 'dark_bg', 'dark_fg', 'dark_accent', 'dark_accent_fg' ) as $color_key ) {
-				// A theme-colour reference wins over the picker: the settings
-				// form submits both ("<key>_preset" is the Theme colour select),
-				// and a stored value is either a hex or "preset:<slug>". The slug
-				// grammar is the only thing ever interpolated into a
+				// One swatch row per colour (the settings UI): '' = inherit,
+				// 'preset:<slug>' = follow a theme colour, 'custom' = the hex
+				// in "<key>_custom". A raw hex in the main key is accepted too
+				// (re-sanitising a stored tree, or programmatic updates). The
+				// slug grammar is the only thing ever interpolated into a
 				// custom-property name; the hex grammar is the only thing ever
 				// emitted as a colour.
-				$preset = isset( $a[ $color_key . '_preset' ] ) && is_string( $a[ $color_key . '_preset' ] )
-					? strtolower( trim( $a[ $color_key . '_preset' ] ) )
-					: '';
-				if ( '' !== $preset && preg_match( '/^[a-z0-9-]{1,64}$/', $preset ) ) {
-					$clean['appearance'][ $color_key ] = 'preset:' . $preset;
-					continue;
+				$value = isset( $a[ $color_key ] ) && is_string( $a[ $color_key ] ) ? strtolower( trim( $a[ $color_key ] ) ) : '';
+				if ( 'custom' === $value ) {
+					$value = isset( $a[ $color_key . '_custom' ] ) && is_string( $a[ $color_key . '_custom' ] )
+						? strtolower( trim( $a[ $color_key . '_custom' ] ) )
+						: '';
 				}
-				if ( isset( $a[ $color_key ] ) && is_string( $a[ $color_key ] ) ) {
-					$color = strtolower( trim( $a[ $color_key ] ) );
-					if ( preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/', $color ) ) {
-						$clean['appearance'][ $color_key ] = $color;
-					} elseif ( preg_match( '/^preset:[a-z0-9-]{1,64}$/', $color ) ) {
-						// Re-sanitising an already-stored tree (Plugin reads
-						// through sanitize()): keep a stored reference.
-						$clean['appearance'][ $color_key ] = $color;
-					}
+				if ( preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/', $value ) || preg_match( '/^preset:[a-z0-9-]{1,64}$/', $value ) ) {
+					$clean['appearance'][ $color_key ] = $value;
 				}
 			}
 		}

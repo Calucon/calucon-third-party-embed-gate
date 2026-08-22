@@ -318,26 +318,28 @@ final class OptionsTest extends TestCase {
 		self::assertSame( 'https://policies.google.com/privacy', $by_id['youtube']['privacy_url'], 'rejected override leaves the built-in' );
 	}
 
-	public function test_theme_colour_reference_beats_the_picker_and_is_slug_guarded(): void {
+	public function test_colour_swatch_grammar_inherit_theme_reference_or_custom_hex(): void {
 		$clean = Options::sanitize(
 			array(
 				'appearance' => array(
-					'bg'               => '#112233',
-					'bg_preset'        => 'Base',          // select wins; slug lowercased
-					'fg'               => '#ffffff',
-					'fg_preset'        => '',              // custom hex kept
-					'accent'           => '',
-					'accent_preset'    => 'accent-2) ;x',  // not a slug → rejected, nothing stored
-					'link'             => 'preset:contrast', // already-stored reference survives re-sanitising
-					'dark_bg'          => '',
-					'dark_bg_preset'   => 'contrast-2',
+					'bg'               => 'preset:Base',     // theme reference, slug lowercased
+					'fg'               => 'custom',
+					'fg_custom'        => '#FFFFFF',         // custom hex from the picker
+					'accent'           => 'custom',
+					'accent_custom'    => 'red',             // invalid hex → inherit
+					'accent_fg'        => 'preset:accent-2) ;x', // not a slug → inherit
+					'link'             => '#0a5bd3',         // raw hex (stored tree) accepted
+					'border_color'     => '',                // inherit
+					'dark_bg'          => 'preset:contrast-2',
 				),
 			)
 		);
 		self::assertSame( 'preset:base', $clean['appearance']['bg'] );
 		self::assertSame( '#ffffff', $clean['appearance']['fg'] );
 		self::assertSame( '', $clean['appearance']['accent'] );
-		self::assertSame( 'preset:contrast', $clean['appearance']['link'] );
+		self::assertSame( '', $clean['appearance']['accent_fg'] );
+		self::assertSame( '#0a5bd3', $clean['appearance']['link'] );
+		self::assertSame( '', $clean['appearance']['border_color'] );
 		self::assertSame( 'preset:contrast-2', $clean['appearance']['dark_bg'] );
 	}
 

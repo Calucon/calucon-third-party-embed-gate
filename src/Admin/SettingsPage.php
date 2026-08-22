@@ -433,9 +433,12 @@ final class SettingsPage {
 	}
 
 	/**
-	 * One colour-picker row of the Appearance tab.
+	 * One colour row of the Appearance tab: a swatch group — Default
+	 * (inherit), the theme's palette by name, Custom — plus the picker,
+	 * shown only for Custom. Submits "<key>" = '' | preset:<slug> | custom
+	 * and "<key>_custom" = the picker's hex (see Options::sanitize()).
 	 *
-	 * @param string $key         appearance option key (hex colour).
+	 * @param string $key         appearance option key.
 	 * @param string $label       Row label.
 	 * @param array  $appearance  Sanitised appearance subtree.
 	 * @param string $description Optional description line.
@@ -443,31 +446,63 @@ final class SettingsPage {
 	 * @return void
 	 */
 	private function color_row( string $key, string $label, array $appearance, string $description = '', string $row_attrs = '' ): void {
-		$id        = 'cg-color-' . str_replace( '_', '-', $key );
-		$select_id = 'cg-theme-color-' . str_replace( '_', '-', $key );
+		$dashed    = str_replace( '_', '-', $key );
+		$id        = 'cg-color-' . $dashed;
+		$label_id  = 'cg-label-' . $dashed;
+		$name      = Options::OPTION . '[appearance][' . $key . ']';
 		$stored    = (string) $appearance[ $key ];
-		$preset    = 0 === strpos( $stored, 'preset:' ) ? substr( $stored, 7 ) : '';
-		$hex       = '' === $preset ? $stored : '';
+		$is_preset = 0 === strpos( $stored, 'preset:' );
+		$slug      = $is_preset ? substr( $stored, 7 ) : '';
+		$is_custom = '' !== $stored && ! $is_preset;
 		$palette   = $this->theme_palette();
+		$current   = __( 'Default', 'calucon-third-party-embed-gate' );
 		$known     = false;
+		foreach ( $palette as $entry ) {
+			if ( $entry['slug'] === $slug ) {
+				$current = $entry['name'];
+				$known   = true;
+			}
+		}
+		if ( $is_custom ) {
+			$current = __( 'Custom', 'calucon-third-party-embed-gate' );
+		} elseif ( $is_preset && ! $known ) {
+			/* translators: %s: theme colour slug no longer in the theme's palette. */
+			$current = sprintf( __( '%s (not in the current theme)', 'calucon-third-party-embed-gate' ), $slug );
+		}
 		?>
 					<tr <?php echo $row_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- literal attribute strings from this class. ?>>
-						<th scope="row"><label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $label ); ?></label></th>
+						<th scope="row"><span id="<?php echo esc_attr( $label_id ); ?>"><?php echo esc_html( $label ); ?></span></th>
 						<td>
-							<?php if ( ! empty( $palette ) ) : ?>
-								<label class="screen-reader-text" for="<?php echo esc_attr( $select_id ); ?>"><?php echo esc_html( $label ); ?> — <?php esc_html_e( 'theme colour', 'calucon-third-party-embed-gate' ); ?></label>
-								<select id="<?php echo esc_attr( $select_id ); ?>" class="cg-theme-color" data-cg-color-preset="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $key . '_preset]' ); ?>">
-									<option value=""><?php esc_html_e( 'Custom colour / inherit', 'calucon-third-party-embed-gate' ); ?></option>
-									<?php foreach ( $palette as $entry ) : ?>
-										<?php $known = $known || $entry['slug'] === $preset; ?>
-										<option value="<?php echo esc_attr( $entry['slug'] ); ?>" data-cg-hex="<?php echo esc_attr( $entry['color'] ); ?>" <?php selected( $entry['slug'], $preset ); ?>><?php echo esc_html( $entry['name'] ); ?></option>
-									<?php endforeach; ?>
-									<?php if ( '' !== $preset && ! $known ) : ?>
-										<option value="<?php echo esc_attr( $preset ); ?>" selected><?php echo esc_html( sprintf( /* translators: %s: theme colour slug no longer in the theme's palette. */ __( '%s (not in the current theme)', 'calucon-third-party-embed-gate' ), $preset ) ); ?></option>
-									<?php endif; ?>
-								</select>
-							<?php endif; ?>
-							<input type="text" id="<?php echo esc_attr( $id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $key . ']' ); ?>" value="<?php echo esc_attr( $hex ); ?>">
+							<div class="cg-swatches" role="radiogroup" aria-labelledby="<?php echo esc_attr( $label_id ); ?>" data-cg-color-key="<?php echo esc_attr( $key ); ?>">
+								<label class="cg-swatch cg-swatch--default" title="<?php esc_attr_e( 'Default — follows your theme', 'calucon-third-party-embed-gate' ); ?>">
+									<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="" data-cg-name="<?php esc_attr_e( 'Default', 'calucon-third-party-embed-gate' ); ?>" <?php checked( ! $is_preset && ! $is_custom ); ?>>
+									<span class="cg-swatch__dot"></span>
+									<span class="screen-reader-text"><?php esc_html_e( 'Default — follows your theme', 'calucon-third-party-embed-gate' ); ?></span>
+								</label>
+								<?php foreach ( $palette as $entry ) : ?>
+									<label class="cg-swatch" title="<?php echo esc_attr( $entry['name'] ); ?>">
+										<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="preset:<?php echo esc_attr( $entry['slug'] ); ?>" data-cg-hex="<?php echo esc_attr( $entry['color'] ); ?>" data-cg-name="<?php echo esc_attr( $entry['name'] ); ?>" <?php checked( $is_preset && $entry['slug'] === $slug ); ?>>
+										<span class="cg-swatch__dot" style="background:<?php echo esc_attr( $entry['color'] ); ?>"></span>
+										<span class="screen-reader-text"><?php echo esc_html( $entry['name'] ); ?></span>
+									</label>
+								<?php endforeach; ?>
+								<?php if ( $is_preset && ! $known ) : ?>
+									<label class="cg-swatch cg-swatch--missing" title="<?php echo esc_attr( $current ); ?>">
+										<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( $stored ); ?>" data-cg-name="<?php echo esc_attr( $current ); ?>" checked>
+										<span class="cg-swatch__dot"></span>
+										<span class="screen-reader-text"><?php echo esc_html( $current ); ?></span>
+									</label>
+								<?php endif; ?>
+								<label class="cg-swatch cg-swatch--custom" title="<?php esc_attr_e( 'Custom colour', 'calucon-third-party-embed-gate' ); ?>">
+									<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="custom" data-cg-name="<?php esc_attr_e( 'Custom', 'calucon-third-party-embed-gate' ); ?>" <?php checked( $is_custom ); ?>>
+									<span class="cg-swatch__dot"></span>
+									<span class="screen-reader-text"><?php esc_html_e( 'Custom colour', 'calucon-third-party-embed-gate' ); ?></span>
+								</label>
+								<span class="cg-swatch-current"><?php echo esc_html( $current ); ?></span>
+							</div>
+							<div class="cg-swatch-custom" <?php echo $is_custom ? '' : 'hidden'; ?>>
+								<input type="text" id="<?php echo esc_attr( $id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $key . '_custom]' ); ?>" value="<?php echo esc_attr( $is_custom ? $stored : '' ); ?>">
+							</div>
 							<?php if ( '' !== $description ) : ?>
 								<p class="description"><?php echo esc_html( $description ); ?></p>
 							<?php endif; ?>
@@ -488,16 +523,13 @@ final class SettingsPage {
 		?>
 <div id="cg-tab-appearance" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-appearance">
 				<h2><?php esc_html_e( 'Appearance', 'calucon-third-party-embed-gate' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Style the placeholder panel without writing any CSS: pick a style, pick colours, and watch the preview update as you go. For every colour you can either follow one of your theme\'s own palette colours by name — the panel then changes with the theme — or set a custom colour; the readability check tells you immediately if a combination would be hard to read.', 'calucon-third-party-embed-gate' ); ?></p>
-				<p>
-					<button type="button" id="cg-appearance-reset" class="button"><?php esc_html_e( 'Reset appearance to defaults', 'calucon-third-party-embed-gate' ); ?></button>
-					<span class="description"><?php esc_html_e( 'Clears every field on this tab. Nothing changes on your site until you save.', 'calucon-third-party-embed-gate' ); ?></span>
-				</p>
+				<p class="description"><?php esc_html_e( 'Style the placeholder without writing CSS. Pick a starting point, change what you like, and watch the preview. Colours can follow your theme\'s palette or be your own; the readability check flags any pair that would be hard to read.', 'calucon-third-party-embed-gate' ); ?></p>
+
 				<div class="cg-appearance-layout">
 				<div class="cg-appearance-controls">
 				<fieldset class="cg-quick-styles">
-					<legend><?php esc_html_e( 'Quick styles', 'calucon-third-party-embed-gate' ); ?></legend>
-					<p class="description"><?php esc_html_e( 'Each one fills in every control below as a starting point — then change whatever you like. Nothing is saved until you click Save.', 'calucon-third-party-embed-gate' ); ?></p>
+					<legend><?php esc_html_e( 'Start from a style', 'calucon-third-party-embed-gate' ); ?></legend>
+					<div class="cg-quick-styles__grid">
 					<?php
 					$quick_styles = array(
 						'cinema'  => __( 'Dark cinema', 'calucon-third-party-embed-gate' ),
@@ -507,11 +539,26 @@ final class SettingsPage {
 					);
 					foreach ( $quick_styles as $style_key => $style_label ) :
 						?>
-						<button type="button" class="button cg-quick-style" data-cg-quick-style="<?php echo esc_attr( $style_key ); ?>"><?php echo esc_html( $style_label ); ?></button>
+						<button type="button" class="button cg-quick-style" data-cg-quick-style="<?php echo esc_attr( $style_key ); ?>"><span class="cg-quick-style__name"><?php echo esc_html( $style_label ); ?></span></button>
 					<?php endforeach; ?>
+						<button type="button" id="cg-appearance-reset" class="button cg-quick-style cg-quick-style--reset"><span class="cg-quick-style__name"><?php esc_html_e( 'Theme default', 'calucon-third-party-embed-gate' ); ?></span></button>
+					</div>
+					<p class="description"><?php esc_html_e( 'A style fills in every control below; "Theme default" clears them all. Nothing changes on your site until you save.', 'calucon-third-party-embed-gate' ); ?></p>
 				</fieldset>
 
-				<h3><?php esc_html_e( 'Panel', 'calucon-third-party-embed-gate' ); ?></h3>
+				<h3><?php esc_html_e( 'Colours', 'calucon-third-party-embed-gate' ); ?></h3>
+				<table class="form-table" role="presentation">
+					<?php
+					$this->color_row( 'bg', __( 'Panel background', 'calucon-third-party-embed-gate' ), $appearance );
+					$this->color_row( 'fg', __( 'Panel text', 'calucon-third-party-embed-gate' ), $appearance );
+					$this->color_row( 'accent', __( 'Button background', 'calucon-third-party-embed-gate' ), $appearance );
+					$this->color_row( 'accent_fg', __( 'Button text', 'calucon-third-party-embed-gate' ), $appearance );
+					$this->color_row( 'link', __( 'Links', 'calucon-third-party-embed-gate' ), $appearance, __( 'The "Open on …" and privacy-policy links. Default: the panel text colour.', 'calucon-third-party-embed-gate' ) );
+					$this->color_row( 'border_color', __( 'Border', 'calucon-third-party-embed-gate' ), $appearance, __( 'Used when a border is shown (see Shape). Default: the panel text colour.', 'calucon-third-party-embed-gate' ) );
+					?>
+				</table>
+
+				<h3><?php esc_html_e( 'Shape and layout', 'calucon-third-party-embed-gate' ); ?></h3>
 				<table class="form-table" role="presentation">
 					<?php
 					$this->select_row(
@@ -519,21 +566,44 @@ final class SettingsPage {
 						'preset',
 						__( 'Panel style', 'calucon-third-party-embed-gate' ),
 						array(
-							'default' => __( 'Default — filled panel', 'calucon-third-party-embed-gate' ),
+							'default' => __( 'Filled panel', 'calucon-third-party-embed-gate' ),
 							'minimal' => __( 'Minimal — transparent with a border', 'calucon-third-party-embed-gate' ),
 							'card'    => __( 'Card — border, rounded corners, shadow', 'calucon-third-party-embed-gate' ),
 						),
 						$appearance
 					);
-					$this->color_row( 'bg', __( 'Panel background', 'calucon-third-party-embed-gate' ), $appearance );
-					$this->color_row( 'fg', __( 'Panel text', 'calucon-third-party-embed-gate' ), $appearance );
-					$this->color_row( 'link', __( 'Link colour', 'calucon-third-party-embed-gate' ), $appearance, __( 'The "Open on …" and privacy-policy links. Cleared, they use the panel text colour.', 'calucon-third-party-embed-gate' ) );
+					$this->select_row(
+						'cg-corners',
+						'corners',
+						__( 'Corners', 'calucon-third-party-embed-gate' ),
+						array(
+							''        => __( 'Slightly rounded (default)', 'calucon-third-party-embed-gate' ),
+							'square'  => __( 'Square', 'calucon-third-party-embed-gate' ),
+							'rounded' => __( 'Rounded', 'calucon-third-party-embed-gate' ),
+							'pill'    => __( 'Rounded, with a pill-shaped button', 'calucon-third-party-embed-gate' ),
+							'custom'  => __( 'Custom radius…', 'calucon-third-party-embed-gate' ),
+						),
+						$appearance
+					);
+					?>
+					<tr id="cg-radius-row" <?php echo 'custom' === $appearance['corners'] ? '' : 'hidden'; ?>>
+						<th scope="row"><label for="cg-radius"><?php esc_html_e( 'Corner radius (px)', 'calucon-third-party-embed-gate' ); ?></label></th>
+						<td><input type="number" id="cg-radius" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][radius]" value="<?php echo esc_attr( (string) $appearance['radius'] ); ?>" min="0" max="48" step="1" class="small-text"></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="cg-border-width"><?php esc_html_e( 'Border width (px)', 'calucon-third-party-embed-gate' ); ?></label></th>
+						<td>
+							<input type="number" id="cg-border-width" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][border_width]" value="<?php echo esc_attr( (string) $appearance['border_width'] ); ?>" min="0" max="10" step="1" class="small-text" placeholder="—">
+							<p class="description"><?php esc_html_e( 'Empty: the panel style decides. 0 removes the border.', 'calucon-third-party-embed-gate' ); ?></p>
+						</td>
+					</tr>
+					<?php
 					$this->select_row(
 						'cg-shadow',
 						'shadow',
 						__( 'Shadow', 'calucon-third-party-embed-gate' ),
 						array(
-							''       => __( 'Default — follows the panel style', 'calucon-third-party-embed-gate' ),
+							''       => __( 'Panel style decides', 'calucon-third-party-embed-gate' ),
 							'none'   => __( 'None', 'calucon-third-party-embed-gate' ),
 							'soft'   => __( 'Soft', 'calucon-third-party-embed-gate' ),
 							'strong' => __( 'Strong', 'calucon-third-party-embed-gate' ),
@@ -546,17 +616,17 @@ final class SettingsPage {
 						__( 'Spacing', 'calucon-third-party-embed-gate' ),
 						array(
 							''         => __( 'Default', 'calucon-third-party-embed-gate' ),
-							'compact'  => __( 'Compact — tighter panel', 'calucon-third-party-embed-gate' ),
-							'spacious' => __( 'Spacious — more breathing room', 'calucon-third-party-embed-gate' ),
+							'compact'  => __( 'Compact', 'calucon-third-party-embed-gate' ),
+							'spacious' => __( 'Spacious', 'calucon-third-party-embed-gate' ),
 						),
 						$appearance
 					);
 					$this->select_row(
 						'cg-align',
 						'align',
-						__( 'Panel alignment', 'calucon-third-party-embed-gate' ),
+						__( 'Alignment', 'calucon-third-party-embed-gate' ),
 						array(
-							''       => __( 'Left (default)', 'calucon-third-party-embed-gate' ),
+							''       => __( 'Left', 'calucon-third-party-embed-gate' ),
 							'center' => __( 'Centred', 'calucon-third-party-embed-gate' ),
 						),
 						$appearance
@@ -564,9 +634,9 @@ final class SettingsPage {
 					$this->select_row(
 						'cg-note-size',
 						'note_size',
-						__( 'Notice text', 'calucon-third-party-embed-gate' ),
+						__( 'Notice text size', 'calucon-third-party-embed-gate' ),
 						array(
-							''      => __( 'Default size', 'calucon-third-party-embed-gate' ),
+							''      => __( 'Default', 'calucon-third-party-embed-gate' ),
 							'small' => __( 'Small', 'calucon-third-party-embed-gate' ),
 						),
 						$appearance
@@ -574,59 +644,23 @@ final class SettingsPage {
 					?>
 				</table>
 
-				<h3><?php esc_html_e( 'Corners and border', 'calucon-third-party-embed-gate' ); ?></h3>
-				<table class="form-table" role="presentation">
-					<?php
-					$this->select_row(
-						'cg-corners',
-						'corners',
-						__( 'Corners', 'calucon-third-party-embed-gate' ),
-						array(
-							''        => __( 'Default — slightly rounded', 'calucon-third-party-embed-gate' ),
-							'square'  => __( 'Square', 'calucon-third-party-embed-gate' ),
-							'rounded' => __( 'Rounded', 'calucon-third-party-embed-gate' ),
-							'pill'    => __( 'Rounded, with a pill-shaped button', 'calucon-third-party-embed-gate' ),
-							'custom'  => __( 'Custom radius…', 'calucon-third-party-embed-gate' ),
-						),
-						$appearance
-					);
-					?>
-					<tr id="cg-radius-row" <?php echo 'custom' === $appearance['corners'] ? '' : 'hidden'; ?>>
-						<th scope="row"><label for="cg-radius"><?php esc_html_e( 'Corner radius (px)', 'calucon-third-party-embed-gate' ); ?></label></th>
-						<td>
-							<input type="number" id="cg-radius" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][radius]" value="<?php echo esc_attr( (string) $appearance['radius'] ); ?>" min="0" max="48" step="1" class="small-text">
-							<p class="description"><?php esc_html_e( 'Used with the “Custom radius” corner option. 0 is square; 48 is very round.', 'calucon-third-party-embed-gate' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="cg-border-width"><?php esc_html_e( 'Border width (px)', 'calucon-third-party-embed-gate' ); ?></label></th>
-						<td>
-							<input type="number" id="cg-border-width" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][border_width]" value="<?php echo esc_attr( (string) $appearance['border_width'] ); ?>" min="0" max="10" step="1" class="small-text" placeholder="—">
-							<p class="description"><?php esc_html_e( 'Leave empty to let the panel style decide. 0 removes the border even from the Minimal and Card styles.', 'calucon-third-party-embed-gate' ); ?></p>
-						</td>
-					</tr>
-					<?php $this->color_row( 'border_color', __( 'Border colour', 'calucon-third-party-embed-gate' ), $appearance, __( 'Cleared, the border uses the panel text colour (or the style\'s own border colour).', 'calucon-third-party-embed-gate' ) ); ?>
-				</table>
-
 				<h3><?php esc_html_e( 'Button', 'calucon-third-party-embed-gate' ); ?></h3>
 				<table class="form-table" role="presentation">
 					<?php
-					$this->color_row( 'accent', __( 'Button background', 'calucon-third-party-embed-gate' ), $appearance );
-					$this->color_row( 'accent_fg', __( 'Button text', 'calucon-third-party-embed-gate' ), $appearance );
 					$this->select_row(
 						'cg-button-style',
 						'button_style',
-						__( 'Button style', 'calucon-third-party-embed-gate' ),
+						__( 'Style', 'calucon-third-party-embed-gate' ),
 						array(
 							''        => __( 'Filled', 'calucon-third-party-embed-gate' ),
-							'outline' => __( 'Outline — panel text colour with the button colour as a border', 'calucon-third-party-embed-gate' ),
+							'outline' => __( 'Outline', 'calucon-third-party-embed-gate' ),
 						),
 						$appearance
 					);
 					$this->select_row(
 						'cg-button-size',
 						'button_size',
-						__( 'Button size', 'calucon-third-party-embed-gate' ),
+						__( 'Size', 'calucon-third-party-embed-gate' ),
 						array(
 							''      => __( 'Default', 'calucon-third-party-embed-gate' ),
 							'small' => __( 'Small', 'calucon-third-party-embed-gate' ),
@@ -637,7 +671,7 @@ final class SettingsPage {
 					$this->select_row(
 						'cg-button-width',
 						'button_width',
-						__( 'Button width', 'calucon-third-party-embed-gate' ),
+						__( 'Width', 'calucon-third-party-embed-gate' ),
 						array(
 							''     => __( 'Fits its text', 'calucon-third-party-embed-gate' ),
 							'full' => __( 'Full panel width', 'calucon-third-party-embed-gate' ),
@@ -649,7 +683,7 @@ final class SettingsPage {
 						'hover',
 						__( 'Hover effect', 'calucon-third-party-embed-gate' ),
 						array(
-							''       => __( 'Subtle (default)', 'calucon-third-party-embed-gate' ),
+							''       => __( 'Subtle', 'calucon-third-party-embed-gate' ),
 							'none'   => __( 'None', 'calucon-third-party-embed-gate' ),
 							'strong' => __( 'Strong', 'calucon-third-party-embed-gate' ),
 						),
@@ -657,58 +691,57 @@ final class SettingsPage {
 					);
 					?>
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Button icon', 'calucon-third-party-embed-gate' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'Icon', 'calucon-third-party-embed-gate' ); ?></th>
 						<td>
 							<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][play_icon]" value="0">
-							<label><input type="checkbox" id="cg-play-icon" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][play_icon]" value="1" <?php checked( $appearance['play_icon'] ); ?>> <?php esc_html_e( 'Show an icon on the button: a play symbol for videos, a pin for maps, a note for audio, a generic symbol otherwise (bundled glyphs — nothing is fetched)', 'calucon-third-party-embed-gate' ); ?></label>
+							<label><input type="checkbox" id="cg-play-icon" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][play_icon]" value="1" <?php checked( $appearance['play_icon'] ); ?>> <?php esc_html_e( 'Show an icon that matches the embed (play, map pin, audio, generic)', 'calucon-third-party-embed-gate' ); ?></label>
 						</td>
 					</tr>
 				</table>
 
 				<h3><?php esc_html_e( 'Poster image', 'calucon-third-party-embed-gate' ); ?></h3>
+				<p class="description"><?php esc_html_e( 'For embeds with a poster image set in the block editor. Tick "Preview with a poster image" to see these.', 'calucon-third-party-embed-gate' ); ?></p>
 				<table class="form-table" role="presentation">
 					<?php
 					$this->select_row(
 						'cg-poster-panel',
 						'poster_panel',
-						__( 'Panel placement over a poster', 'calucon-third-party-embed-gate' ),
+						__( 'Panel position', 'calucon-third-party-embed-gate' ),
 						array(
-							''       => __( 'Card in the bottom-left corner (default)', 'calucon-third-party-embed-gate' ),
-							'center' => __( 'Card in the centre', 'calucon-third-party-embed-gate' ),
-							'bar'    => __( 'Full-width bar along the bottom', 'calucon-third-party-embed-gate' ),
+							''       => __( 'Card, bottom-left', 'calucon-third-party-embed-gate' ),
+							'center' => __( 'Card, centred', 'calucon-third-party-embed-gate' ),
+							'bar'    => __( 'Bar along the bottom', 'calucon-third-party-embed-gate' ),
 						),
-						$appearance,
-						__( 'Applies to embeds that have a poster image set in the block editor. Tick "Preview with a poster image" under the preview to see it.', 'calucon-third-party-embed-gate' )
+						$appearance
 					);
 					$this->select_row(
 						'cg-poster-dim',
 						'poster_dim',
-						__( 'Poster dimming', 'calucon-third-party-embed-gate' ),
+						__( 'Dim the poster', 'calucon-third-party-embed-gate' ),
 						array(
-							''       => __( 'None', 'calucon-third-party-embed-gate' ),
-							'light'  => __( 'Light — slightly darker', 'calucon-third-party-embed-gate' ),
-							'strong' => __( 'Strong — darker and softened', 'calucon-third-party-embed-gate' ),
+							''       => __( 'No', 'calucon-third-party-embed-gate' ),
+							'light'  => __( 'A little', 'calucon-third-party-embed-gate' ),
+							'strong' => __( 'A lot, softened', 'calucon-third-party-embed-gate' ),
 						),
-						$appearance,
-						__( 'Darkens the poster behind the panel so the panel stands out.', 'calucon-third-party-embed-gate' )
+						$appearance
 					);
 					?>
 				</table>
 
-				<h3><?php esc_html_e( 'Withdraw control', 'calucon-third-party-embed-gate' ); ?></h3>
+				<h3><?php esc_html_e( 'Withdraw button', 'calucon-third-party-embed-gate' ); ?></h3>
 				<table class="form-table" role="presentation">
 					<?php
 					$this->select_row(
 						'cg-withdraw-style',
 						'withdraw_style',
-						__( 'Withdraw button', 'calucon-third-party-embed-gate' ),
+						__( 'Style', 'calucon-third-party-embed-gate' ),
 						array(
-							''        => __( 'Filled — matches the load button', 'calucon-third-party-embed-gate' ),
-							'outline' => __( 'Outline — quieter', 'calucon-third-party-embed-gate' ),
-							'link'    => __( 'Text link — quietest', 'calucon-third-party-embed-gate' ),
+							''        => __( 'Filled — like the load button', 'calucon-third-party-embed-gate' ),
+							'outline' => __( 'Outline', 'calucon-third-party-embed-gate' ),
+							'link'    => __( 'Text link', 'calucon-third-party-embed-gate' ),
 						),
 						$appearance,
-						__( 'The "Withdraw embed consents" control from the block or shortcode. It follows the colours and corners above in every style.', 'calucon-third-party-embed-gate' )
+						__( 'The "Withdraw embed consents" block or shortcode. It uses the colours and corners above.', 'calucon-third-party-embed-gate' )
 					);
 					?>
 				</table>
@@ -716,11 +749,11 @@ final class SettingsPage {
 				<h3><?php esc_html_e( 'Dark mode', 'calucon-third-party-embed-gate' ); ?></h3>
 				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Dark mode', 'calucon-third-party-embed-gate' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'Dark mode colours', 'calucon-third-party-embed-gate' ); ?></th>
 						<td>
 							<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][dark]" value="0">
-							<label><input type="checkbox" id="cg-dark-enabled" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][dark]" value="1" <?php checked( $appearance['dark'] ); ?>> <?php esc_html_e( 'Use different colours when the visitor prefers a dark colour scheme', 'calucon-third-party-embed-gate' ); ?></label>
-							<p class="description"><?php esc_html_e( 'Only the colours you set below change in dark mode; cleared ones keep the values above. Tick "Preview on a dark page background" under the preview to check them.', 'calucon-third-party-embed-gate' ); ?></p>
+							<label><input type="checkbox" id="cg-dark-enabled" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][dark]" value="1" <?php checked( $appearance['dark'] ); ?>> <?php esc_html_e( 'Use different colours for visitors who prefer a dark colour scheme', 'calucon-third-party-embed-gate' ); ?></label>
+							<p class="description"><?php esc_html_e( 'Only the colours you set here change; the rest keep the values above. Tick "Preview on a dark page background" to check them.', 'calucon-third-party-embed-gate' ); ?></p>
 						</td>
 					</tr>
 					<?php
@@ -731,7 +764,6 @@ final class SettingsPage {
 					$this->color_row( 'dark_accent_fg', __( 'Button text (dark)', 'calucon-third-party-embed-gate' ), $appearance, '', $dark_rows );
 					?>
 				</table>
-				<p class="description"><?php esc_html_e( 'A cleared colour inherits your theme\'s palette — that is the default, and usually the best choice. The preview cannot use your theme\'s palette here in the admin, so with cleared colours it shows the plugin\'s built-in look; on your site the panel follows the theme.', 'calucon-third-party-embed-gate' ); ?></p>
 				</div>
 				<div class="cg-appearance-preview">
 				<?php $this->render_preview(); ?>
@@ -824,7 +856,8 @@ final class SettingsPage {
 				<?php esc_html_e( 'Preview at phone width', 'calucon-third-party-embed-gate' ); ?>
 			</label>
 		</p>
-		<p id="cg-contrast-report" class="cg-contrast-report" role="status" aria-live="polite"></p>
+		<p class="description"><?php esc_html_e( 'Readability (WCAG 4.5:1):', 'calucon-third-party-embed-gate' ); ?></p>
+		<div id="cg-contrast-report" class="cg-contrast-report" role="status" aria-live="polite"></div>
 		<?php
 	}
 
