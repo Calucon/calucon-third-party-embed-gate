@@ -362,7 +362,7 @@ msgid "Detected. Calucon Third-Party Embed Gate has no tested bridge to this con
 msgstr ""
 
 #: src/Admin/SettingsPage.php:1469
-msgid "Detected. Its page cache is flushed automatically when Calucon Third-Party Embed Gate settings change; after activating or deactivating Calucon Third-Party Embed Gate itself, clear it once by hand if pages look stale."
+msgid "Detected. Its page cache is flushed automatically when Calucon Third-Party Embed Gate settings change and when the plugin is activated, deactivated or updated. If pages still look stale, clear it once by hand."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:1472
@@ -418,7 +418,7 @@ msgstr ""
 msgid "Empty: the panel style decides. 0 removes the border."
 msgstr ""
 
-#: src/Plugin.php:365
+#: src/Plugin.php:389
 msgid "Example embed"
 msgstr ""
 

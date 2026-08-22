@@ -95,6 +95,22 @@ No. Lazy loading defers the request to scroll time — it is still made without 
 
 Privately, please — through GitHub's private vulnerability reporting on the plugin repository (https://github.com/Calucon/calucon-third-party-embed-gate/security/advisories/new), not in a public issue or support topic. The repository's SECURITY.md describes what counts: besides the usual classes, any way to make a page contact a third party before the click is a vulnerability.
 
+= Can I add a provider that is not in the list? =
+
+Yes, without code: Providers → *Your own providers* takes a name, the embed hosts (one per line) and, optionally, script hosts and a kind for the button icon. After saving it appears in the provider table with its own notice, button text and privacy-policy link. Unknown hosts are gated either way — a provider of your own only gives such a host a proper name and texts. Hosts the built-in providers handle stay with them, and your own providers are always gated; the never-gate list under Detection is the place to exempt a host.
+
+= Why does every placeholder link the provider's privacy policy? =
+
+So a visitor can read what loading the content means before asking for it. The link points at the provider's own policy page (you can set a different URL per provider, for example a localised page) and can be turned off on the Providers tab. The link is plain markup — nothing is fetched from the provider by showing it.
+
+= Do I need the Content-Security-Policy section? =
+
+Only if your site sends a Content-Security-Policy header — most WordPress sites do not. The section on Status &amp; tools can check your own home page for one (from your browser, nothing leaves your site) and tells you whether the enabled providers are already allowed; if not, it lists the lines to add.
+
+= Can I change how the placeholder looks without writing CSS? =
+
+Yes. The Appearance tab has quick styles, colours that can follow your theme's palette, and controls for corners, border, shadow, spacing, the button, the poster image and dark mode, with a live preview and an automatic readability check. Your own CSS still works on top: the panel exposes CSS custom properties and a template override (see docs/customizing.md in the plugin folder).
+
 == External services ==
 
 This plugin makes no request to any external service, on any page, at any time. It contacts no API, loads no remote script, font, image or update check, and sends no telemetry. Its entire purpose is the opposite direction: it prevents your pages from contacting embed providers.
@@ -108,6 +124,11 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 3. The Status &amp; tools tab: the Compatibility overview (which cache plugin, consent platform and page builder are detected), a read-only scan that reports whether every embed on your site is gated, and the Content-Security-Policy helper — a check of your own home page for an existing policy, the lines to add, and which provider needs which host.
 4. The Providers tab: per-provider on/off, privacy-preserving load variants, custom notice and button text, the privacy-policy link and its per-provider URL, and your own providers — no code required.
 5. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, set an optional poster image from your own media library, and give this one embed its own button and notice text.
+
+== Upgrade Notice ==
+
+= 0.10.0 =
+Placeholders now link the provider's privacy policy by default (turn it off under Providers if you prefer); the panel's look is unchanged unless you use the new Appearance controls. If a page cache serves your site, clear it once after updating so placeholders pick up the new markup. Adds your own providers, a CSP helper and a much larger Appearance tab.
 
 == Changelog ==
 

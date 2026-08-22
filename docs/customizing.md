@@ -109,7 +109,10 @@ either way (a row only adds the name, icon and texts), hosts a built-in
 provider handles are refused at save time (with a notice) and ignored at
 run time, and owner-defined providers are always gated — there is no Gate
 checkbox for them; exempting a host is the never-gate list's explicit job.
-At most 100 rows of 50 hosts. They never rewrite the load URL; for
+At most 100 rows of 50 hosts. With the consent-platform bridge on, your
+own providers follow the same category consent as every other embed; the
+experimental TCF bridge only recognises providers with a vendor id, so
+they stay gated under it (fail closed). They never rewrite the load URL; for
 `load_host`/`load_path`, path captures, companion classes or hint scrubbing,
 register a descriptor in code:
 

@@ -6,6 +6,7 @@
 namespace CaluconEmbedGate\Tests\Unit;
 
 use CaluconEmbedGate\Providers\Builtin\Descriptors;
+use CaluconEmbedGate\Support\AppearanceCss;
 use CaluconEmbedGate\Support\Options;
 use CaluconEmbedGate\Tests\Support\PipelineFactory;
 use PHPUnit\Framework\TestCase;
@@ -442,5 +443,50 @@ final class OptionsTest extends TestCase {
 		$second = Options::sanitize( array( 'custom_providers' => $first['custom_providers'] ) );
 
 		self::assertSame( $first['custom_providers'], $second['custom_providers'] );
+	}
+
+	/**
+	 * A 0.9.4 option tree as stored on a live site, with the customisations
+	 * an owner could make then. After the 0.10.0 upgrade: every new key at
+	 * its default, the old customisations kept, and the emitted appearance
+	 * CSS identical to what those old values alone produce — the panel's
+	 * look does not change on update.
+	 */
+	public function test_a_0_9_4_option_tree_upgrades_without_changing_the_look(): void {
+		$stored = array(
+			'providers'  => array( 'youtube' => array( 'enabled' => true, 'privacy_variant' => false, 'note' => 'House rules.' ) ),
+			'detection'  => array( 'iframes' => true, 'scripts' => true, 'images' => false, 'own_hosts' => array( 'cdn.example' ), 'never_gate' => array(), 'always_gate' => array(), 'www_equivalence' => true, 'output_buffer' => false ),
+			'appearance' => array( 'preset' => 'card', 'bg' => '#123456', 'fg' => '#ffffff', 'accent' => '', 'accent_fg' => '', 'corners' => 'rounded' ),
+			'consent'    => array( 'memory' => 'session', 'scope' => 'provider', 'duration_days' => 180 ),
+			'cmp'        => array( 'bridge' => false, 'borlabs_group' => 'external-media', 'tcf' => false ),
+		);
+
+		$clean = Options::sanitize( $stored );
+
+		// Old values survive.
+		self::assertSame( 'card', $clean['appearance']['preset'] );
+		self::assertSame( '#123456', $clean['appearance']['bg'] );
+		self::assertSame( 'rounded', $clean['appearance']['corners'] );
+		self::assertFalse( $clean['providers']['youtube']['privacy_variant'] );
+		self::assertSame( 'House rules.', $clean['providers']['youtube']['note'] );
+		self::assertSame( array( 'cdn.example' ), $clean['detection']['own_hosts'] );
+		self::assertSame( 'session', $clean['consent']['memory'] );
+		// New keys at their defaults.
+		$defaults = Options::defaults();
+		self::assertSame( array(), $clean['custom_providers'] );
+		self::assertTrue( $clean['display']['privacy_link'] );
+		foreach ( $defaults['appearance'] as $key => $default ) {
+			if ( ! isset( $stored['appearance'][ $key ] ) ) {
+				self::assertSame( $default, $clean['appearance'][ $key ], "appearance.$key" );
+			}
+		}
+		// Same CSS as the pre-0.10 values alone: the new defaults emit nothing.
+		$old_only = $stored['appearance'] + $defaults['appearance'];
+		self::assertSame( AppearanceCss::build( $old_only ), AppearanceCss::build( $clean['appearance'] ) );
+		self::assertSame( '', AppearanceCss::build( $defaults['appearance'] ), 'an untouched 0.10.0 emits no CSS' );
+		// And a pristine 0.9.4 default tree round-trips to the 0.10.0 defaults.
+		$pristine = $stored;
+		$pristine['appearance'] = array( 'preset' => 'default', 'bg' => '', 'fg' => '', 'accent' => '', 'accent_fg' => '', 'corners' => '' );
+		self::assertSame( $defaults['appearance'], Options::sanitize( $pristine )['appearance'] );
 	}
 }

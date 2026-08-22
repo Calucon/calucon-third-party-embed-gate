@@ -185,6 +185,30 @@ final class Plugin {
 				CacheFlush::flush_all();
 			}
 		);
+		// Activation: cached pages hold ungated embeds until the cache
+		// learns otherwise. Updates: cached pages hold the previous version's
+		// placeholder markup (this hook runs in the code that was active
+		// during the update, so it covers every update after the one that
+		// introduced it).
+		register_activation_hook(
+			CALUCON_EMBED_GATE_FILE,
+			static function (): void {
+				CacheFlush::flush_all();
+			}
+		);
+		add_action(
+			'upgrader_process_complete',
+			static function ( $upgrader, $extra ): void {
+				if ( ! is_array( $extra ) || 'update' !== ( $extra['action'] ?? '' ) || 'plugin' !== ( $extra['type'] ?? '' ) ) {
+					return;
+				}
+				if ( in_array( plugin_basename( CALUCON_EMBED_GATE_FILE ), (array) ( $extra['plugins'] ?? array() ), true ) ) {
+					CacheFlush::flush_all();
+				}
+			},
+			10,
+			2
+		);
 	}
 
 	/**

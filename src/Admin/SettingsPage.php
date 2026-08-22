@@ -1466,7 +1466,7 @@ final class SettingsPage {
 	private function render_compatibility( array $options ): void {
 		$found    = Compatibility::detect();
 		$messages = array(
-			'cache'   => __( 'Detected. Its page cache is flushed automatically when Calucon Third-Party Embed Gate settings change; after activating or deactivating Calucon Third-Party Embed Gate itself, clear it once by hand if pages look stale.', 'calucon-third-party-embed-gate' ),
+			'cache'   => __( 'Detected. Its page cache is flushed automatically when Calucon Third-Party Embed Gate settings change and when the plugin is activated, deactivated or updated. If pages still look stale, clear it once by hand.', 'calucon-third-party-embed-gate' ),
 			'builder' => $options['detection']['output_buffer']
 				? __( 'Detected. Whole-page gating is enabled, so this builder\'s embeds are covered.', 'calucon-third-party-embed-gate' )
 				: __( 'Detected. Page builders render outside the content filters — if its embeds are not being gated, enable "Gate the whole page output" under Detection.', 'calucon-third-party-embed-gate' ),
