@@ -49,6 +49,22 @@ test( 'the WP Consent API fail-open trap does not ungate', async ( { page } ) =>
 	await page.goto( '/page/cmp-trap' );
 	await page.waitForLoadState( 'networkidle' );
 
+	// Guard: gated placeholders must exist — a broken route would make the
+	// negative assertions below pass while proving nothing.
+	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 2 );
+	expect( offenders ).toEqual( [] );
+	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
+
+	// Second, independent fail-open path: a consent-change event carrying
+	// 'allow' while no consent type is set must not grant either — the
+	// adapter's event handler re-checks typeKnown, and this is the only
+	// test that exercises that leg.
+	await page.evaluate( () => {
+		var detail = [];
+		detail.marketing = 'allow';
+		document.dispatchEvent( new CustomEvent( 'wp_listen_for_consent_change', { detail: detail } ) );
+	} );
+	await page.waitForLoadState( 'networkidle' );
 	expect( offenders ).toEqual( [] );
 	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
 } );

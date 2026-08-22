@@ -36,6 +36,16 @@ final class ImageRuleTest extends TestCase {
 		self::assertStringNotContainsString( '<img', $out );
 	}
 
+	public function test_gated_image_output_is_idempotent(): void {
+		// ImageRule runs outside the fixture pipeline, so the corpus-wide
+		// second-pass check never sees its output — assert re-processing
+		// safety (§9.1) here instead.
+		$html = '<img src="https://i.ytimg.com/vi/x/hqdefault.jpg" alt="Video poster" width="480" height="360">';
+		$out  = $this->rule->apply( $html );
+
+		self::assertSame( $out, $this->rule->apply( $out ) );
+	}
+
 	public function test_own_and_relative_images_pass_through_byte_identical(): void {
 		$html = '<img src="https://example.test/a.jpg" alt=""><img src="/wp-content/uploads/b.png" alt="">';
 

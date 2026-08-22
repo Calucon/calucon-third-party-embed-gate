@@ -35,6 +35,9 @@ test( 'nothing is stored before consent', async ( { page } ) => {
 	// Invariant 3: the plugin itself must not write to terminal equipment.
 	await page.goto( '/page/gated' );
 	await page.waitForLoadState( 'networkidle' );
+	// Guard: empty storage is also true of an error page — prove the gate
+	// actually rendered before the negative assertions mean anything.
+	await expect( page.locator( '.cg-embed' ).first() ).toBeVisible();
 
 	const storage = await page.evaluate( () => ( {
 		localStorage: window.localStorage.length,

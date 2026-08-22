@@ -166,7 +166,7 @@ calucon-embed-gate/
 │   │   ├── PlaceholderRenderer.php
 │   │   ├── TemplateLoader.php       Theme override                 (§7.4)
 │   │   ├── AspectRatio.php          Layout preservation            (§5.3)
-│   │   └── Thumbnail/               Local poster cache             (§5.4)
+│   │   └── Thumbnail/               [REJECTED — never build: §5.4 auto-fetch is an outbound request]
 │   ├── Integration/
 │   │   ├── RenderBlock.php
 │   │   ├── TheContent.php
@@ -210,7 +210,7 @@ Tempting, and wrong for the default path:
 
 Use a **targeted tag reader** — find candidate start tags, parse just their
 attributes, replace just that span. Everything else in the content is passed
-through byte-for-byte. `DOMDocument` is acceptable in the thumbnail importer and
+through byte-for-byte. `DOMDocument` is acceptable in admin-only tooling and
 in tests, where correctness beats fidelity.
 
 ### 3.2 The minified-HTML problem

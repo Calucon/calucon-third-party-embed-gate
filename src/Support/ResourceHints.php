@@ -24,6 +24,13 @@ use CaluconEmbedGate\Detection\HtmlScanner;
  */
 final class ResourceHints {
 
+	/**
+	 * Relations that reveal the visitor to the provider (preconnect opens
+	 * TCP+TLS; prefetch/prerender/preload fetch the resource outright) plus
+	 * dns-prefetch, pointless once gated.
+	 */
+	private const HINT_RELATIONS = array( 'preconnect', 'dns-prefetch', 'prefetch', 'prerender', 'preload', 'modulepreload' );
+
 	/** @var string[] Normalised provider hosts the plugin gates. */
 	private array $gated_hosts;
 
@@ -38,13 +45,6 @@ final class ResourceHints {
 		$this->gated_hosts = array_map( 'strtolower', $gated_hosts );
 		$this->matcher     = $matcher;
 	}
-
-	/**
-	 * Relations that reveal the visitor to the provider (preconnect opens
-	 * TCP+TLS; prefetch/prerender/preload fetch the resource outright) plus
-	 * dns-prefetch, pointless once gated.
-	 */
-	private const HINT_RELATIONS = array( 'preconnect', 'dns-prefetch', 'prefetch', 'prerender', 'preload', 'modulepreload' );
 
 	/**
 	 * Filter a wp_resource_hints URL list.
@@ -100,6 +100,18 @@ final class ResourceHints {
 	 */
 	public function scrub_tags( string $html, HtmlScanner $scanner ): string {
 		if ( false === stripos( $html, '<link' ) ) {
+			return $html;
+		}
+		// Nearly every page has stylesheet <link> tags, so the tag probe
+		// alone rarely saves the scan. Only a hint RELATION can make a link
+		// scrubbable — probe for those before paying for a full-document
+		// find_tags() (in output-buffer mode this runs over the whole page).
+		// The '&#' branch keeps the probe sound: the scanner entity-decodes
+		// attribute values, so rel="precon&#110;ect" is scrubbable markup the
+		// literal word-probe alone would miss (never "let a tracker through,
+		// invisibly" — invariant 6).
+		if ( ! preg_match( '/(?:preconnect|dns-prefetch|prefetch|preload|prerender|modulepreload)/i', $html )
+			&& false === strpos( $html, '&#' ) ) {
 			return $html;
 		}
 

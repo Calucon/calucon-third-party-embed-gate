@@ -84,4 +84,48 @@ final class ResourceHintsTest extends TestCase {
 			)
 		);
 	}
+
+	// ---- scrub_tags(): the literal-<link> path (§9.14, output-buffer mode).
+	// Performance plugins print hint tags directly, bypassing every filter —
+	// these pin the only defense against that, including its fast-path probe.
+
+	public function test_scrub_tags_removes_gated_hints_and_keeps_everything_else(): void {
+		$scanner = new \CaluconEmbedGate\Detection\HtmlScanner();
+		$html    = '<link rel="preconnect" href="https://www.youtube.com" crossorigin>'
+			. '<link rel="stylesheet" href="https://www.youtube.com/style.css">'
+			. '<link rel="preconnect" href="https://cdn.example.test">'
+			. '<link rel="dns-prefetch" href="//platform.twitter.com">';
+
+		self::assertSame(
+			'<link rel="stylesheet" href="https://www.youtube.com/style.css">'
+			. '<link rel="preconnect" href="https://cdn.example.test">',
+			$this->hints->scrub_tags( $html, $scanner ),
+			'gated hints vanish; a stylesheet (even to a gated host) and own-host hints stay'
+		);
+	}
+
+	public function test_scrub_tags_handles_minified_unquoted_attributes(): void {
+		// The §3.2 trap applies here too: Perfmatters-style output is minified.
+		$scanner = new \CaluconEmbedGate\Detection\HtmlScanner();
+		$html    = "<link\nrel=preconnect href=//www.youtube.com><p>kept</p>";
+
+		self::assertSame( '<p>kept</p>', $this->hints->scrub_tags( $html, $scanner ) );
+	}
+
+	public function test_scrub_tags_probe_is_sound_against_entity_encoded_rel(): void {
+		// The fast-path probe looks for literal relation words; the scanner
+		// entity-decodes attribute values. An encoded rel must still be
+		// scrubbed (invariant 6: never let a tracker through invisibly).
+		$scanner = new \CaluconEmbedGate\Detection\HtmlScanner();
+		$html    = '<link rel="precon&#110;ect" href="https://www.youtube.com">';
+
+		self::assertSame( '', $this->hints->scrub_tags( $html, $scanner ) );
+	}
+
+	public function test_scrub_tags_fast_path_leaves_hintless_documents_untouched(): void {
+		$scanner = new \CaluconEmbedGate\Detection\HtmlScanner();
+		$html    = '<link rel="stylesheet" href="/app.css"><p>body copy</p>';
+
+		self::assertSame( $html, $this->hints->scrub_tags( $html, $scanner ) );
+	}
 }

@@ -65,3 +65,35 @@ test( 'withdrawal clears storage, announces it, and embeds ask again', async ( {
 	await page.reload();
 	await expect( page.locator( '.cg-embed__panel' ) ).toHaveCount( 1 );
 } );
+
+test( 'persistent memory: localStorage, the identifier-free * key, cross-provider restore, and expiry', async ( { page } ) => {
+	await abortThirdParty( page );
+	await page.goto( '/page/memory-persistent' );
+	await expect( page.locator( '.cg-embed__panel' ) ).toHaveCount( 2 );
+
+	// One click on the YouTube panel under scope:'all'.
+	await page.locator( '.cg-embed__button' ).first().click();
+	await expect( page.locator( '.cg-embed iframe' ) ).toHaveCount( 1 );
+
+	const stored = await storageState( page );
+	expect( stored.session ).toBeNull(); // Persistent lifetime → localStorage only.
+	expect( Object.keys( JSON.parse( stored.local ).g ) ).toEqual( [ '*' ] );
+
+	// The '*' grant restores BOTH providers on the next load.
+	await page.reload();
+	await expect( page.locator( '.cg-embed iframe' ) ).toHaveCount( 2 );
+	await expect( page.locator( '.cg-embed__panel' ) ).toHaveCount( 0 );
+
+	// Age the grant past durationDays (1): the lazy expiry must re-gate —
+	// a stale consent is no consent (§6.2).
+	await page.evaluate( () => {
+		const raw = JSON.parse( window.localStorage.getItem( 'calucon-embed-gate' ) );
+		for ( const key of Object.keys( raw.g ) ) {
+			raw.g[ key ] = Date.now() - 2 * 86400000;
+		}
+		window.localStorage.setItem( 'calucon-embed-gate', JSON.stringify( raw ) );
+	} );
+	await page.reload();
+	await expect( page.locator( '.cg-embed__panel' ) ).toHaveCount( 2 );
+	await expect( page.locator( '.cg-embed iframe' ) ).toHaveCount( 0 );
+} );

@@ -99,7 +99,7 @@ final class ImageRule {
 
 			// A zero-sized or hidden foreign image is a tracking pixel, not
 			// content: nothing to offer a panel for, nothing to link to.
-			if ( $this->is_invisible( $attributes ) ) {
+			if ( Visibility::is_invisible( $attributes ) ) {
 				$html = substr( $html, 0, $tag_match['start'] ) . substr( $html, $tag_match['end'] );
 				continue;
 			}
@@ -136,6 +136,9 @@ final class ImageRule {
 	 * @return string|null
 	 */
 	private function foreign_src( array $attributes ) {
+		// Narrower than IframeRule::LAZY_SRC_ATTRIBUTES on purpose:
+		// 'data-original' on images is used by galleries for full-size
+		// variants of an already-local thumbnail, not for lazy loading.
 		foreach ( array( 'src', 'data-src', 'data-lazy-src' ) as $name ) {
 			if ( isset( $attributes[ $name ] ) && is_string( $attributes[ $name ] ) ) {
 				$candidate = trim( $attributes[ $name ] );
@@ -145,22 +148,5 @@ final class ImageRule {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * @param array $attributes Lowercased, decoded attributes.
-	 * @return bool
-	 */
-	private function is_invisible( array $attributes ): bool {
-		if ( array_key_exists( 'hidden', $attributes ) ) {
-			return true;
-		}
-		$width  = isset( $attributes['width'] ) ? trim( (string) $attributes['width'] ) : null;
-		$height = isset( $attributes['height'] ) ? trim( (string) $attributes['height'] ) : null;
-		if ( in_array( $width, array( '0', '1' ), true ) && in_array( $height, array( '0', '1' ), true ) ) {
-			return true;
-		}
-		$style = isset( $attributes['style'] ) && is_string( $attributes['style'] ) ? $attributes['style'] : '';
-		return (bool) preg_match( '/display\s*:\s*none/i', $style );
 	}
 }

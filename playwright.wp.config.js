@@ -34,6 +34,10 @@ module.exports = defineConfig( {
 			// only returns 200 once the seed's posts and permalinks exist.
 			url: baseURL + '/gated-classic/',
 			timeout: 300000,
-			reuseExistingServer: true,
+			// A stale Playground holds a stale WordPress (old activation record,
+			// old seed) and once made 11/13 tests fail mysteriously. Fail loudly
+			// on a busy port instead; point WP_BASE_URL at a server you manage
+			// deliberately.
+			reuseExistingServer: false,
 		},
 } );

@@ -44,7 +44,6 @@ final class Provider {
 				'controller'         => null,
 				'note'               => '',
 				'action'             => '',
-				'thumbnail'          => null,
 				'aspect'             => null,
 				'iframe_allow'       => null,
 				'strategy'           => 'iframe',

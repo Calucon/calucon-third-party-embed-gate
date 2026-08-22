@@ -30,24 +30,13 @@
 
 	var category = typeof config.category === 'string' && config.category ? config.category : 'marketing';
 
-	function indexOf( list, value ) {
-		for ( var i = 0; i < list.length; i++ ) {
-			if ( list[ i ] === value ) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
 	// The initial state check runs immediately AND on window load: this
 	// script and the CMP's are independent plugins, so neither load order
 	// is guaranteed. Change events are bound unconditionally — binding to
 	// an event a missing CMP will never fire is free.
 	function onSettled( check ) {
 		check();
-		if ( window.addEventListener ) {
-			window.addEventListener( 'load', check, false );
-		}
+		window.addEventListener( 'load', check, false );
 	}
 
 	var adapters = {
@@ -112,7 +101,7 @@
 			document.addEventListener( 'cmplz_enable_category', function ( e ) {
 				var detail = e.detail || {};
 				if ( detail.category === category
-					|| ( detail.categories && indexOf( detail.categories, category ) !== -1 ) ) {
+					|| ( detail.categories && detail.categories.indexOf( category ) !== -1 ) ) {
 					bridge.grantAll();
 				}
 			}, false );
@@ -139,6 +128,11 @@
 					&& typeof b.Consents.hasConsentForServiceGroup === 'function'
 					&& b.Consents.hasConsentForServiceGroup( group ) );
 			}
+			function grantIfConsented() {
+				if ( granted() ) {
+					bridge.grantAll();
+				}
+			}
 			function sync() {
 				if ( granted() ) {
 					bridge.grantAll();
@@ -146,17 +140,9 @@
 					bridge.regate();
 				}
 			}
-			window.addEventListener( 'borlabs-cookie-after-init', function () {
-				if ( granted() ) {
-					bridge.grantAll();
-				}
-			}, false );
+			window.addEventListener( 'borlabs-cookie-after-init', grantIfConsented, false );
 			window.addEventListener( 'borlabs-cookie-consent-saved', sync, false );
-			onSettled( function () {
-				if ( granted() ) {
-					bridge.grantAll();
-				}
-			} );
+			onSettled( grantIfConsented );
 		},
 
 		// Cookiebot: read-only consent properties; CookiebotOnConsentReady
@@ -209,9 +195,9 @@
 			}, false );
 			document.addEventListener( 'cookieyes_consent_update', function ( e ) {
 				var detail = e.detail || {};
-				if ( indexOf( detail.accepted || [], category ) !== -1 ) {
+				if ( ( detail.accepted || [] ).indexOf( category ) !== -1 ) {
 					bridge.grantAll();
-				} else if ( indexOf( detail.rejected || [], category ) !== -1 ) {
+				} else if ( ( detail.rejected || [] ).indexOf( category ) !== -1 ) {
 					bridge.regate();
 				}
 			}, false );

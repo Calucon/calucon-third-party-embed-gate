@@ -148,6 +148,21 @@ if ( '/page/memory' === $uri ) {
 	return true;
 }
 
+if ( '/page/memory-persistent' === $uri ) {
+	// Persistent memory with the widest scope and a short lifetime: pins
+	// localStorage (not sessionStorage) selection, the identifier-free '*'
+	// grant key, cross-provider restore, and lazy expiry of aged grants.
+	$content = '<iframe title="Video" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>'
+		. "\n" . '<iframe title="Other video" src="https://player.vimeo.com/video/76979871" width="500" height="281" frameborder="0"></iframe>';
+
+	cg_e2e_page(
+		$content,
+		'',
+		'window.caluconEmbedGateConfig = {"memory":"persistent","scope":"all","durationDays":1};'
+	);
+	return true;
+}
+
 if ( '/page/light' === $uri ) {
 	// A light block theme: base/contrast presets defined, no accent-8 — the
 	// panel inverts to light while the button keeps the green accent fallback.

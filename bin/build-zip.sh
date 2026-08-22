@@ -7,7 +7,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION=$(sed -nE 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*([0-9][0-9A-Za-z.\-]*)[[:space:]]*$/\1/p' calucon-third-party-embed-gate.php | head -n1)
+VERSION=$(bash bin/plugin-version.sh)
 if [ -z "$VERSION" ]; then
 	echo "Could not read the Version header from calucon-third-party-embed-gate.php" >&2
 	exit 1

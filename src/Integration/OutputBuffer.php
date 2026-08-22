@@ -50,7 +50,7 @@ final class OutputBuffer {
 	 * @return void
 	 */
 	public function start(): void {
-		if ( $this->plugin->should_bail() || is_feed() ) {
+		if ( $this->plugin->should_bail() ) { // should_bail() already covers feeds.
 			return;
 		}
 		// REST responses are not HTML pages to gate. Use the core REST_REQUEST
@@ -124,7 +124,7 @@ final class OutputBuffer {
 			}
 
 			// The placeholder's CSS/JS are already inside the buffer: while
-			// this option is enabled, Plugin::register_assets() enqueues them
+			// this option is enabled, Assets::register_assets() enqueues them
 			// on every front-end page (this callback runs on shutdown, after
 			// wp_footer — far too late to enqueue anything).
 			return substr( $buffer, 0, $body[0] ) . $gated . substr( $buffer, $body[1] );

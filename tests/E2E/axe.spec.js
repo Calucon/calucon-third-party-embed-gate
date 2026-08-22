@@ -15,6 +15,9 @@ for ( const path of PAGES ) {
 		test( `axe: ${ path } at ${ viewport.width }px`, async ( { page } ) => {
 			await page.setViewportSize( viewport );
 			await page.goto( path );
+			// Guard: axe finds nothing on an error page either — require the
+			// panels this scan exists to audit.
+			await expect( page.locator( '.cg-embed' ).first() ).toBeVisible();
 
 			const results = await new AxeBuilder( { page } ).analyze();
 

@@ -31,6 +31,16 @@
 		return null;
 	}
 
+	function findByClass( root, tagName, className ) {
+		var els = root.getElementsByTagName( tagName );
+		for ( var i = 0; i < els.length; i++ ) {
+			if ( hasClass( els[ i ], className ) ) {
+				return els[ i ];
+			}
+		}
+		return null;
+	}
+
 	function stripAutoplay( allow ) {
 		var parts = String( allow ).split( ';' );
 		var kept = [];
@@ -99,8 +109,7 @@
 		return {
 			memory: memory,
 			scope: config.scope === 'embed' || config.scope === 'all' ? config.scope : 'provider',
-			durationDays: typeof config.durationDays === 'number' && config.durationDays > 0 ? config.durationDays : 180,
-			i18n: config.i18n || {}
+			durationDays: typeof config.durationDays === 'number' && config.durationDays > 0 ? config.durationDays : 180
 		};
 	}
 
@@ -178,12 +187,9 @@
 		writeGrants( config, grants );
 	}
 
-	function hasStoredConsent( container, payload ) {
-		var config = memoryConfig();
-		if ( config.memory === 'off' ) {
-			return false;
-		}
-		var grants = readGrants( config );
+	// config and grants are passed in so the restore pass reads storage once
+	// for the whole page instead of once per placeholder.
+	function hasStoredConsent( config, grants, container, payload ) {
 		if ( Object.prototype.hasOwnProperty.call( grants, '*' ) ) {
 			return true;
 		}
@@ -280,9 +286,13 @@
 		el.onerror = function () {
 			// A blocked or unreachable SDK must be reportable (§8), and a
 			// retry must be possible: forget the state so the next click
-			// creates a fresh script element.
+			// creates a fresh script element — and remove the dead element
+			// so retries do not accumulate them in <head>.
 			var failures = state.failures;
 			delete scriptStates[ src ];
+			if ( el.parentNode ) {
+				el.parentNode.removeChild( el );
+			}
 			for ( var i = 0; i < failures.length; i++ ) {
 				failures[ i ]();
 			}
@@ -299,14 +309,7 @@
 	// container's live region. It must exist before its text changes or
 	// screen readers may not announce the change.
 	function setStatus( container, message ) {
-		var status = null;
-		var spans = container.getElementsByTagName( 'span' );
-		for ( var i = 0; i < spans.length; i++ ) {
-			if ( hasClass( spans[ i ], 'cg-embed__status' ) ) {
-				status = spans[ i ];
-				break;
-			}
-		}
+		var status = findByClass( container, 'span', 'cg-embed__status' );
 		if ( ! status ) {
 			status = document.createElement( 'span' );
 			status.className = 'cg-embed__status';
@@ -320,8 +323,7 @@
 	// Error state announced via role="alert" with a route to the fallback
 	// (PLAN.md §8): silent failure leaves a keyboard user on a dead button.
 	function showError( container ) {
-		if ( container.getElementsByClassName
-			&& container.getElementsByClassName( 'cg-embed__error' ).length ) {
+		if ( container.getElementsByClassName( 'cg-embed__error' ).length ) {
 			return;
 		}
 		setStatus( container, '' );
@@ -346,15 +348,10 @@
 
 	function removePanel( container ) {
 		container.setAttribute( 'data-cg-activated', '1' );
-		container.className += ' cg-embed--active';
-		var panel = null;
-		var divs = container.getElementsByTagName( 'div' );
-		for ( var i = 0; i < divs.length; i++ ) {
-			if ( hasClass( divs[ i ], 'cg-embed__panel' ) ) {
-				panel = divs[ i ];
-				break;
-			}
+		if ( ! hasClass( container, 'cg-embed--active' ) ) {
+			container.className += ' cg-embed--active';
 		}
+		var panel = findByClass( container, 'div', 'cg-embed__panel' );
 		if ( panel && panel.parentNode === container ) {
 			// Keep the fallback destination reachable for the error state
 			// before the panel (and its link) is removed.
@@ -379,7 +376,12 @@
 		for ( var k = 0; k < stash.length; k++ ) {
 			container.removeChild( stash[ k ] );
 		}
-		container._cgStash = stash;
+		// A retried activation after a failed SDK load finds no panel in the
+		// DOM (it is already stashed); overwriting the stash with the empty
+		// result would orphan the original nodes forever.
+		if ( ! container._cgStash || ! container._cgStash.length ) {
+			container._cgStash = stash;
+		}
 	}
 
 	// Undo a bridge activation (§6.4): remove the built frame, restore the
@@ -398,7 +400,10 @@
 			}
 			var name = child.nodeName;
 			if ( name === 'IFRAME' || name === 'EMBED' || name === 'OBJECT'
-				|| ( name === 'IMG' && ! hasClass( child, 'cg-embed__poster' ) ) ) {
+				|| ( name === 'IMG' && ! hasClass( child, 'cg-embed__poster' ) )
+				// A failed load may have appended the §8 error alert; a
+				// restored panel must not sit next to a stale one.
+				|| ( name === 'P' && hasClass( child, 'cg-embed__error' ) ) ) {
 				frames.push( child );
 			}
 		}
@@ -407,20 +412,14 @@
 		}
 		// Re-insert before the live-region status span (appended during
 		// activation), keeping the restored DOM in server order.
-		var status = null;
-		var spans  = container.getElementsByTagName( 'span' );
-		for ( var k = 0; k < spans.length; k++ ) {
-			if ( hasClass( spans[ k ], 'cg-embed__status' ) ) {
-				status = spans[ k ];
-				break;
-			}
-		}
+		var status = findByClass( container, 'span', 'cg-embed__status' );
 		for ( var l = 0; l < nodes.length; l++ ) {
 			container.insertBefore( nodes[ l ], status );
 		}
 		container._cgStash = null;
 		container.removeAttribute( 'data-cg-activated' );
 		container.removeAttribute( 'data-cg-bridged' );
+		container.removeAttribute( 'tabindex' ); // Added by a focusing activation; the restored panel manages its own focus.
 		container.className = ( ' ' + container.className + ' ' )
 			.replace( ' cg-embed--active ', ' ' )
 			.replace( /^\s+|\s+$/g, '' );
@@ -540,9 +539,13 @@
 	// consented to. Read-only: no write happens on page load, and no focus
 	// moves — there was no user gesture.
 	function restoreFromMemory() {
-		if ( memoryConfig().memory === 'off' || ! document.querySelectorAll ) {
+		var config = memoryConfig();
+		if ( config.memory === 'off' || ! document.querySelectorAll ) {
 			return;
 		}
+		// One storage read + parse for the whole page; nothing writes during
+		// this read-only pass, so the snapshot cannot go stale.
+		var grants = readGrants( config );
 		var containers = document.querySelectorAll( '.cg-embed[data-cg-payload]' );
 		for ( var i = 0; i < containers.length; i++ ) {
 			var container = containers[ i ];
@@ -552,7 +555,7 @@
 			} catch ( e ) {
 				continue;
 			}
-			if ( hasStoredConsent( container, payload ) ) {
+			if ( hasStoredConsent( config, grants, container, payload ) ) {
 				activate( container, { focus: false, remember: false } );
 			}
 		}
@@ -591,8 +594,7 @@
 	function announceWithdrawal( trigger ) {
 		var status = document.getElementById( trigger.getAttribute( 'aria-controls' ) || '' );
 		if ( status ) {
-			status.textContent = memoryConfig().i18n.withdrawn
-				|| 'Stored embed consents have been removed. Embeds will ask again.';
+			status.textContent = i18n( 'withdrawn', 'Stored embed consents have been removed. Embeds will ask again.' );
 		}
 	}
 

@@ -204,6 +204,12 @@ final class HtmlScanner {
 		$len    = strlen( $html );
 		$pos    = 0;
 
+		// Once a close-tag search for a tag name has failed, every later
+		// search for the same name scans a strict suffix of that failed scan
+		// and must fail too. Without this memo, N unterminated <code> openers
+		// cost N full-tail scans — quadratic on adversarial input.
+		$no_close = array();
+
 		$opener = '/<!--|<(' . implode( '|', array_merge( self::RAW_CONTAINERS, self::PARSED_CONTAINERS ) ) . ')(?=[\s\/>])/i';
 
 		while ( $pos < $len && preg_match( $opener, $html, $m, PREG_OFFSET_CAPTURE, $pos ) ) {
@@ -224,12 +230,14 @@ final class HtmlScanner {
 			}
 
 			$tag = strtolower( $m[1][0] );
-			if ( preg_match( '/<\/' . $tag . '\s*>/i', $html, $close_tag, PREG_OFFSET_CAPTURE, $start + 1 ) ) {
+			if ( ! isset( $no_close[ $tag ] )
+				&& preg_match( '/<\/' . $tag . '\s*>/i', $html, $close_tag, PREG_OFFSET_CAPTURE, $start + 1 ) ) {
 				$end      = $close_tag[0][1] + strlen( $close_tag[0][0] );
 				$ranges[] = array( $start, $end );
 				$pos      = $end;
 				continue;
 			}
+			$no_close[ $tag ] = true;
 
 			if ( in_array( $tag, self::PARSED_CONTAINERS, true ) ) {
 				// Unterminated <pre>/<code>: browsers still render the markup

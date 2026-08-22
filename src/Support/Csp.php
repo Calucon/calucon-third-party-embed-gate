@@ -69,8 +69,8 @@ final class Csp {
 			$lines[] = $directive . ' ' . implode(
 				' ',
 				array_map(
-					static function ( string $host ): string {
-						return 'https://' . $host;
+					static function ( $host ): string {
+						return 'https://' . (string) $host;
 					},
 					$hosts
 				)

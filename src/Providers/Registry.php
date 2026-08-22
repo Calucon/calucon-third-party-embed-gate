@@ -88,7 +88,7 @@ final class Registry {
 					continue;
 				}
 				$captures = array_filter( $m, 'is_string', ARRAY_FILTER_USE_KEY );
-				foreach ( array( 'load_path', 'fallback', 'thumbnail' ) as $key ) {
+				foreach ( array( 'load_path', 'fallback' ) as $key ) {
 					if ( ! empty( $descriptor[ $key ] ) ) {
 						$descriptor[ $key ] = Provider::interpolate( $descriptor[ $key ], $captures );
 					}

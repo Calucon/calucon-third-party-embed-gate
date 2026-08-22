@@ -13,8 +13,10 @@ rules. Milestone status: M1–M7 are implemented, including the §6.4 CMP
 bridge (opt-in, client-side, fail-closed; adapters for the tested list are
 exercised in CI against simulations of each platform's documented public
 API — `tests/E2E/cmp-bridge.spec.js`; validation against real CMP installs
-remains a manual follow-up). One deliberate gap: the WordPress.org
-submission itself (a human act). See PLAN.md §13. The bridge never touches
+remains a manual follow-up). The plugin is LIVE on WordPress.org
+(slug `calucon-third-party-embed-gate`); every merge to main auto-deploys
+there via the release workflow, so version-bump discipline applies to
+every PR. See PLAN.md §13. The bridge never touches
 Google Consent Mode v2 (no public read API; written by CMPs for Google
 tags; no consent-mode signal governs iframes) — bridging the CMP itself is
 the reliable read of the same choice. Never "fix" the WP Consent API
@@ -86,12 +88,12 @@ translate.wordpress.org can extract them; keep it in the build-zip whitelist.
 | `src/Admin/BlockEditor.php` + `assets/js/editor.js` | §7.5 per-block override + withdrawal block (no build step) |
 | `src/Admin/SettingsPage.php` + `assets/js/{admin-appearance,admin-tabs}.js` | §7.1 tabbed settings; Appearance colour pickers, live preview + contrast check (admin-only JS; may use jQuery/wp-color-picker). Tabs are client-side only — one form, one save; per-tab forms would let `Options::sanitize()` wipe unsent sections |
 | `src/Rendering/PlaceholderRenderer.php` | The §5.1 markup contract — public API, version it |
-| `src/Integration/{RenderBlock,TheContent}.php` | The only place WordPress hooks live |
+| `src/Integration/*.php` | Where WordPress hooks live (content filters, buffer, widgets, comments, hints, shortcode) |
 | `src/Cli/Commands.php` | Read-only WP-CLI (`scan`, `providers`); scan renders via `Plugin::render_ungated()` — plain `the_content` would gate the markup before the scanner sees it |
 | `docs/customizing.md` | Site-level customization reference, ships in the zip; update it when hooks/descriptor keys change |
 | `assets/js/gate.js` | Dependency-free ES5; no build step |
 | `src/Cmp/{Detector,BridgeConfig}.php` + `assets/js/cmp-bridge.js` | §6.4 CMP bridge: tested-platform detection, pure config builder (fail-closed rules pinned in `BridgeConfigTest`), ES5 adapters; one adapter per page, native before generic |
-| `templates/`, `Admin/`, … | Later milestones (PLAN.md §13) |
+| `templates/placeholder.php` | The overridable §5.1 template; ships in the zip |
 
 **Hard rule:** `Detection/`, `Providers/` and `Rendering/` are WordPress-free —
 plain strings and arrays in, plain strings and arrays out. WordPress filters
