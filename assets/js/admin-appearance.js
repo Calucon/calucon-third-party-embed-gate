@@ -977,25 +977,118 @@
 			}
 			return false;
 		}
+		// A section's badge NAMES what differs from the defaults ("Icon,
+		// Size"), and every such row gets a one-click Reset — a count alone
+		// tells the owner that something was customised, not what.
+		function rowLabel( row ) {
+			var th = row.querySelector( 'th' );
+			if ( ! th ) {
+				return '';
+			}
+			// The label only — not the Reset button this script appends.
+			var text = '';
+			for ( var i = 0; i < th.childNodes.length; i++ ) {
+				var node = th.childNodes[ i ];
+				if ( ! ( node.classList && node.classList.contains( 'cg-row-reset' ) ) ) {
+					text += node.textContent;
+				}
+			}
+			return text.replace( /\s+/g, ' ' ).trim();
+		}
+		function rowChanged( row ) {
+			var fields = row.querySelectorAll( 'select, input[type="checkbox"], input[type="radio"], input[type="number"]' );
+			for ( var i = 0; i < fields.length; i++ ) {
+				if ( controlChanged( fields[ i ] ) ) {
+					return true;
+				}
+			}
+			return false;
+		}
+		function resetRow( row ) {
+			$( row ).find( '.cg-choice' ).each( function () {
+				var first = this.querySelector( 'input[type="radio"]' );
+				if ( first ) {
+					setChoice( this.id, first.value );
+				}
+			} );
+			$( row ).find( '.cg-color[data-cg-color-key]' ).each( function () {
+				var key = this.getAttribute( 'data-cg-color-key' );
+				var clear = this.querySelector( '.wp-picker-clear' );
+				if ( clear ) {
+					clear.click();
+				}
+				checkSwatch( key, '' );
+				if ( 0 === key.indexOf( 'dark_' ) ) {
+					delete palette.dark[ key.slice( 5 ) ];
+				} else {
+					delete palette.base[ key ];
+				}
+			} );
+			$( row ).find( 'select' ).each( function () {
+				this.selectedIndex = 0;
+			} );
+			$( row ).find( 'input[type="checkbox"]' ).each( function () {
+				if ( this.checked ) {
+					this.checked = false;
+					$( this ).trigger( 'change' );
+				}
+			} );
+			$( row ).find( 'input[type="number"]' ).each( function () {
+				this.value = 'cg-radius' === this.id ? '12' : '';
+			} );
+			syncFromForm();
+			window.setTimeout( syncFromForm, 60 );
+		}
 		function updateBadges() {
 			$( '#cg-tab-appearance details.cg-section' ).each( function () {
-				var count = 0;
-				var fields = this.querySelectorAll( 'select, input[type="checkbox"], input[type="radio"], input[type="number"]' );
-				for ( var i = 0; i < fields.length; i++ ) {
-					if ( controlChanged( fields[ i ] ) ) {
-						count++;
+				var names = [];
+				$( this ).find( 'tr' ).each( function () {
+					var changed = rowChanged( this );
+					this.classList.toggle( 'cg-row--customised', changed );
+					var reset = this.querySelector( '.cg-row-reset' );
+					if ( changed ) {
+						if ( ! reset ) {
+							var th = this.querySelector( 'th' );
+							if ( th ) {
+								reset = document.createElement( 'button' );
+								reset.type = 'button';
+								reset.className = 'button-link cg-row-reset';
+								reset.textContent = i18n.resetRow || 'Reset';
+								reset.setAttribute( 'aria-label', ( i18n.resetRowAria || 'Reset %s to its default' ).replace( '%s', rowLabel( this ) ) );
+								th.appendChild( reset );
+							}
+						}
+						names.push( rowLabel( this ) );
+					} else if ( reset ) {
+						reset.parentNode.removeChild( reset );
 					}
-				}
+				} );
 				var badge = this.querySelector( '.cg-section__badge' );
 				if ( ! badge ) {
 					badge = document.createElement( 'span' );
 					badge.className = 'cg-section__badge';
 					this.querySelector( ':scope > summary' ).appendChild( badge );
 				}
-				badge.hidden = 0 === count;
-				badge.textContent = ( i18n.changedCount || '%d customised' ).replace( '%d', String( count ) );
+				badge.hidden = 0 === names.length;
+				var shown = names.slice( 0, 3 );
+				if ( names.length > 3 ) {
+					shown.push( ( i18n.moreCount || '+%d more' ).replace( '%d', String( names.length - 3 ) ) );
+				}
+				badge.textContent = shown.join( ', ' );
+				badge.title = names.join( ', ' );
 			} );
 		}
+		$( '#cg-tab-appearance' ).on( 'click', '.cg-row-reset', function () {
+			var row = this.closest ? this.closest( 'tr' ) : $( this ).closest( 'tr' )[ 0 ];
+			if ( ! row ) {
+				return;
+			}
+			var label = rowLabel( row );
+			bulkAction( function () {
+				resetRow( row );
+			}, ( i18n.rowReset || '%s reset to its default.' ).replace( '%s', label ) );
+			updateBadges();
+		} );
 
 		// Hover/focus a row → outline what it changes in the preview.
 		var HIGHLIGHT = {

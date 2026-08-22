@@ -572,3 +572,28 @@
 #cg-tab-appearance:has(input[name$="[corners]"][value="custom"]:checked) #cg-radius-row[hidden] {
 	display: table-row;
 }
+
+/* Customised rows: a marker on the label and a one-click Reset. */
+#cg-tab-appearance tr.cg-row--customised > th {
+	position: relative;
+	padding-inline-start: 14px;
+}
+
+#cg-tab-appearance tr.cg-row--customised > th::before {
+	content: '';
+	position: absolute;
+	inset-inline-start: 0;
+	top: calc( 20px + 0.45em ); /* form-table th padding + mid-line of the label */
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: #2271b1;
+}
+
+.cg-row-reset {
+	display: block;
+	margin-top: 2px;
+	font-size: 12px;
+	font-weight: 400;
+	text-decoration: underline;
+}

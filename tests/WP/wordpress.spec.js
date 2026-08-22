@@ -384,7 +384,8 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await expect( page.locator( '#cg-unsaved' ) ).toBeVisible();
 	await expect( page.locator( '#cg-undo' ) ).toBeVisible();
 	await expectChoice( 'cg-corners', 'pill' );
-	await expect( page.locator( 'details.cg-section .cg-section__badge:visible' ).first() ).toContainText( 'customised' );
+	await expect( page.locator( 'details.cg-section .cg-section__badge:visible' ).first() ).not.toContainText( 'customised' );
+	await expect( page.locator( 'details.cg-section .cg-section__badge:visible' ).first() ).toHaveText( /[A-Za-z]/ );
 	await page.click( '#cg-undo' );
 	await expectChoice( 'cg-corners', '' );
 	await expect( page.locator( '[data-cg-color="bg"]' ) ).toHaveValue( '' );
@@ -426,7 +427,18 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await page.waitForTimeout( 300 );
 	await expect( page.locator( 'body' ) ).not.toHaveClass( /cg-has-unsaved/ );
 	await expect( page.locator( '#cg-unsaved' ) ).toBeHidden();
-	await expect( page.locator( 'details.cg-section .cg-section__badge:visible' ).first() ).toContainText( 'customised' );
+	// The badge names the customised row ("Icon"), and the row offers a
+	// one-click Reset that clears it (and counts as an unsaved change).
+	const iconBadge = page.locator( 'details.cg-section', { has: page.locator( '#cg-play-icon' ) } ).locator( '.cg-section__badge' );
+	await expect( iconBadge ).toHaveText( 'Icon' );
+	const iconRow = page.locator( 'tr', { has: page.locator( '#cg-play-icon' ) } );
+	await expect( iconRow ).toHaveClass( /cg-row--customised/ );
+	await iconRow.locator( '.cg-row-reset' ).click();
+	await expect( page.locator( '#cg-play-icon' ) ).not.toBeChecked();
+	await expect( iconRow ).not.toHaveClass( /cg-row--customised/ );
+	await expect( iconBadge ).toBeHidden();
+	await expect( page.locator( 'body' ) ).toHaveClass( /cg-has-unsaved/ );
+	await page.check( '#cg-play-icon' );
 	// Restore the saved state for the tests that follow.
 	await page.locator( '#cg-tab-appearance details.cg-section' ).first().locator( ':scope > summary' ).click();
 	await page.uncheck( '#cg-play-icon' );

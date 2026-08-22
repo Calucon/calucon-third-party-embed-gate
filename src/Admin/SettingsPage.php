@@ -232,8 +232,13 @@ final class SettingsPage {
 					'applied'      => __( 'Style applied.', 'calucon-third-party-embed-gate' ),
 					'resetDone'    => __( 'Appearance reset to theme defaults.', 'calucon-third-party-embed-gate' ),
 					'undone'       => __( 'Undone.', 'calucon-third-party-embed-gate' ),
-					/* translators: %d: number of settings in a section that differ from their defaults (saved or not). */
-					'changedCount' => __( '%d customised', 'calucon-third-party-embed-gate' ),
+					'resetRow'     => __( 'Reset', 'calucon-third-party-embed-gate' ),
+					/* translators: %s: the setting's row label, e.g. "Icon". */
+					'resetRowAria' => __( 'Reset %s to its default', 'calucon-third-party-embed-gate' ),
+					/* translators: %s: the setting's row label, e.g. "Icon". */
+					'rowReset'     => __( '%s reset to its default.', 'calucon-third-party-embed-gate' ),
+					/* translators: %d: number of further customised settings not named in the section badge. */
+					'moreCount'    => __( '+%d more', 'calucon-third-party-embed-gate' ),
 					'leaveWarning' => __( 'You have unsaved appearance changes.', 'calucon-third-party-embed-gate' ),
 					'pass'         => __( 'readable (meets the 4.5:1 minimum)', 'calucon-third-party-embed-gate' ),
 					'fail'         => __( 'hard to read — below the 4.5:1 minimum. Pick a lighter or darker colour for this pair.', 'calucon-third-party-embed-gate' ),
@@ -1126,7 +1131,7 @@ final class SettingsPage {
 						<th scope="row"><?php esc_html_e( 'Icon', 'calucon-third-party-embed-gate' ); ?></th>
 						<td>
 							<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][play_icon]" value="0">
-							<label><input type="checkbox" id="cg-play-icon" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][play_icon]" value="1" <?php checked( $appearance['play_icon'] ); ?>> <?php esc_html_e( 'Show an icon that matches the embed (play, map pin, audio, generic)', 'calucon-third-party-embed-gate' ); ?></label>
+							<label><input type="checkbox" id="cg-play-icon" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][play_icon]" value="1" <?php checked( $appearance['play_icon'] ); ?>> <?php esc_html_e( 'Show an icon that matches what the embed is — play for videos, a pin for maps, a note for audio, and so on', 'calucon-third-party-embed-gate' ); ?></label>
 						</td>
 					</tr>
 				</table>
