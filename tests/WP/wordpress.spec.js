@@ -857,9 +857,29 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	await expect( rows.nth( 1 ).locator( 'input[type="hidden"]' ) ).toHaveValue( 'custom-widget-sdk' );
 	await expect( rows.nth( 2 ) ).toHaveAttribute( 'data-cg-blank', '1' );
 
-	// …and both appear in the main table, marked, with the usual per-provider controls.
+	// …and both appear in the main table, marked, always gated (no Gate
+	// checkbox: a custom row can name a host, never exempt it), with the
+	// usual note / button text / privacy-URL controls.
 	const mainRow = page.locator( '#cg-tab-providers table' ).first().locator( 'tbody tr', { hasText: 'Example Partner' } );
 	await expect( mainRow.locator( '.cg-tag' ) ).toHaveText( 'added by you' );
+	await expect( mainRow.locator( 'input[name$="[enabled]"]' ) ).toHaveCount( 0 );
+	await expect( mainRow ).toContainText( 'always' );
+
+	// A row claiming a built-in's hosts is refused with a notice; what it
+	// does not claim survives. YouTube keeps its host and nocookie load.
+	const thief = page.locator( '#cg-custom-providers tr[data-cg-blank]' );
+	await thief.locator( 'input[type="text"]' ).fill( 'Tube Thief' );
+	await thief.locator( 'textarea' ).first().fill( 'www.youtube.com\nwww.youtube-nocookie.com\nthief.example' );
+	await page.click( '#submit' );
+	const notice = page.locator( '.notice-warning, .notice.notice-warning', { hasText: 'Tube Thief' } );
+	await expect( notice ).toContainText( 'www.youtube.com' );
+	await expect( notice ).toContainText( 'already handles' );
+	// Input values are not row text: match the row by its name field's value.
+	const thiefRow = page.locator( '#cg-custom-providers tbody tr', { has: page.locator( 'input[type="text"][value="Tube Thief"]' ) } );
+	await expect( thiefRow.locator( 'textarea' ).first() ).toHaveValue( 'thief.example' );
+	await thiefRow.locator( 'input[type="checkbox"][name$="[remove]"]' ).check();
+	await page.click( '#submit' );
+	await expect( page.locator( '#cg-custom-providers input[type="text"][value="Tube Thief"]' ) ).toHaveCount( 0 );
 	await expect( mainRow.locator( '.cg-kind-glyph' ) ).toHaveAttribute( 'data-cg-kind', 'social' );
 	await mainRow.locator( 'input[name$="[note]"]' ).fill( 'Partner rules apply.' );
 	await mainRow.locator( 'input[name$="[privacy_url]"]' ).fill( 'https://example-partner.com/privacy' );

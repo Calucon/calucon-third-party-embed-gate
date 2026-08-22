@@ -97,7 +97,7 @@ ship a release; the canary is informational, not a required check.
 | `src/Detection/IframeRule.php` | Gates cross-origin iframes; consumes the WP blockquote pair (§9.7) |
 | `src/Detection/{ScriptRule,EmbedObjectRule,ImageRule}.php` | SDK scripts; legacy embed/object; opt-in third-party images |
 | `src/Providers/{Registry,Provider}.php` | Descriptors are data, not classes (§4.1) |
-| `src/Providers/CustomProviders.php` | Owner-defined providers from the `custom_providers` option rows → descriptors; listed **before** the built-ins in `Plugin::providers()` (precedence is deliberate, the UI warns); never a load-target rewrite |
+| `src/Providers/CustomProviders.php` | Owner-defined providers from the `custom_providers` option rows → descriptors. **Can never weaken the gate**: built-ins first, their hosts refused at save (`Options::sanitize_report` + notice) and stripped at run time (`reserved_hosts()`), `enabled` ignored for custom ids (always gated), no load-target rewrite. `CustomProvidersTest` pins corpus byte-identity under custom rows — keep it green |
 | `src/Support/{Options,ContentScan,ResourceHints,Csp}.php` | Option schema; Status-screen scan; hint scrubbing; CSP snippet |
 | `src/Admin/BlockEditor.php` + `assets/js/editor.js` | §7.5 per-block override + withdrawal block (no build step) |
 | `src/Admin/SettingsPage.php` + `assets/js/{admin-appearance,admin-tabs}.js` | §7.1 tabbed settings; Appearance colour pickers, live preview + contrast check (admin-only JS; may use jQuery/wp-color-picker). Tabs are client-side only — one form, one save; per-tab forms would let `Options::sanitize()` wipe unsent sections |

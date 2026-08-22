@@ -35,18 +35,22 @@ final class CustomProviders {
 	 *                 target: a custom provider loads exactly the URL the
 	 *                 embed carries, after the click.
 	 */
-	public static function descriptors( array $rows, ?callable $translate = null ): array {
+	public static function descriptors( array $rows, ?callable $translate = null, array $reserved_hosts = array() ): array {
 		$t = $translate ?? static function ( string $text ): string {
 			return $text;
 		};
 
 		$out = array();
 		foreach ( $rows as $row ) {
-			if ( ! is_array( $row ) || empty( $row['id'] ) || empty( $row['label'] ) ) {
+			if ( ! is_array( $row ) || empty( $row['id'] ) || empty( $row['label'] )
+				|| ! is_string( $row['id'] ) || ! preg_match( '/^custom-[a-z0-9-]{1,48}$/', $row['id'] ) || ! is_string( $row['label'] ) ) {
 				continue;
 			}
-			$hosts   = isset( $row['hosts'] ) ? array_values( (array) $row['hosts'] ) : array();
-			$scripts = isset( $row['script_hosts'] ) ? array_values( (array) $row['script_hosts'] ) : array();
+			// Belt and braces for rows saved before a built-in claimed one of
+			// their hosts: the built-in wins at runtime too (Options refuses
+			// such hosts at save time and the settings screen says so).
+			$hosts   = self::clean_hosts( $row['hosts'] ?? array(), $reserved_hosts );
+			$scripts = self::clean_hosts( $row['script_hosts'] ?? array(), $reserved_hosts );
 			if ( array() === $hosts && array() === $scripts ) {
 				continue;
 			}
@@ -64,7 +68,7 @@ final class CustomProviders {
 					'id'       => (string) $row['id'],
 					'label'    => $label,
 					'match'    => $match,
-					'kind'     => isset( $row['kind'] ) ? (string) $row['kind'] : '',
+					'kind'     => isset( $row['kind'] ) && is_string( $row['kind'] ) ? $row['kind'] : '',
 					// Same wording the generic fallback uses for an unknown
 					// host, with the owner's label in place of the host.
 					/* translators: %s: host name of the third-party embed. */
@@ -78,6 +82,47 @@ final class CustomProviders {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * Hosts of a stored row, minus anything that is not a plain host string
+	 * and minus the reserved set.
+	 *
+	 * @param mixed    $hosts          Stored host list.
+	 * @param string[] $reserved_hosts Hosts built-in providers handle.
+	 * @return string[]
+	 */
+	private static function clean_hosts( $hosts, array $reserved_hosts ): array {
+		$out = array();
+		foreach ( (array) $hosts as $host ) {
+			if ( is_string( $host ) && '' !== $host && ! in_array( $host, $reserved_hosts, true ) ) {
+				$out[] = $host;
+			}
+		}
+		return array_values( array_unique( $out ) );
+	}
+
+	/**
+	 * Every host the given descriptors handle (iframe and script) — the
+	 * reserved set custom providers may not claim.
+	 *
+	 * @param array[] $providers Descriptors (custom ones are skipped).
+	 * @return string[]
+	 */
+	public static function reserved_hosts( array $providers ): array {
+		$hosts = array();
+		foreach ( $providers as $descriptor ) {
+			if ( ! is_array( $descriptor ) || ! empty( $descriptor['custom'] ) ) {
+				continue;
+			}
+			$match = isset( $descriptor['match'] ) && is_array( $descriptor['match'] ) ? $descriptor['match'] : array();
+			foreach ( array( 'iframe_host', 'script_host' ) as $key ) {
+				if ( isset( $match[ $key ] ) ) {
+					$hosts = array_merge( $hosts, (array) $match[ $key ] );
+				}
+			}
+		}
+		return array_values( array_unique( array_filter( $hosts, 'is_string' ) ) );
 	}
 
 	/**

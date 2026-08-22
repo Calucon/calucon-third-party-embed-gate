@@ -372,10 +372,17 @@ substitution time, never at template-authoring time.
 label and kept so the per-provider override row stays attached), `label`,
 `hosts`, `script_hosts`, `kind`. `Providers\CustomProviders::descriptors()`
 turns them into descriptors with the generic note/action wording and no
-load-target rewrite; `Plugin::providers()` lists them **before** the
-built-ins, so an owner can deliberately take a host away from a built-in
-(the UI warns about the lost privacy-preserving load). Override rows for
-removed custom ids are pruned on save.
+load-target rewrite. **A custom row can never weaken the gate:** hosts a
+built-in handles are refused at save time (`Options::sanitize_report()`
+with the reserved set, surfaced as a settings notice) and stripped again at
+run time (`CustomProviders::descriptors()` receives `reserved_hosts()`),
+built-ins are listed first, and `apply_provider_overrides()` ignores
+`enabled` for custom ids — they are always gated; exemptions belong to the
+never-gate list. Rows ≤ 100, hosts ≤ 50 per list. Pinned by
+`CustomProvidersTest`: the fixture corpus is byte-identical with unrelated
+rows and with rows claiming every built-in host; hostile rows written
+straight into the option neither throw nor widen privilege. Override rows
+for removed custom ids are pruned on save.
 
 ### 4.2 Built-in set
 

@@ -91,11 +91,14 @@ Providers → *Your own providers*: a name, the embed hosts (one per line;
 pasted URLs are reduced to their host), optional script hosts, and a kind
 for the button icon. After saving, the provider appears in the table above
 with the same per-provider controls as the built-ins (gate on/off, note,
-button text, privacy-policy link). Owner-defined providers resolve **before**
-the built-ins, so a host listed there overrides a built-in claiming it — at
-the cost of that built-in's privacy-preserving load target. They never
-rewrite the load URL; for `load_host`/`load_path`, path captures, companion
-classes or hint scrubbing, register a descriptor in code:
+button text, privacy-policy link). Adding one can never change *what* is gated: unknown hosts are gated
+either way (a row only adds the name, icon and texts), hosts a built-in
+provider handles are refused at save time (with a notice) and ignored at
+run time, and owner-defined providers are always gated — there is no Gate
+checkbox for them; exempting a host is the never-gate list's explicit job.
+At most 100 rows of 50 hosts. They never rewrite the load URL; for
+`load_host`/`load_path`, path captures, companion classes or hint scrubbing,
+register a descriptor in code:
 
 Providers are **descriptor arrays**, not classes. Register via the
 `calucon_embed_gate_providers` filter:

@@ -200,17 +200,34 @@ final class Plugin {
 	 *
 	 * @return array[]
 	 */
+	/**
+	 * Built-in descriptors first, then the owner-defined ones with every
+	 * host a built-in handles stripped: a custom provider can name an
+	 * unknown host, never take a known one away from the built-in that
+	 * knows its privacy-preserving load target. Nothing here can stop a
+	 * gate — an unknown host is gated generically with or without a row.
+	 *
+	 * @return array[]
+	 */
+	private function builtin_and_custom_providers(): array {
+		$builtin = Descriptors::all( $this->translator() );
+		$rows    = isset( $this->options['custom_providers'] ) && is_array( $this->options['custom_providers'] )
+			? $this->options['custom_providers'] : array();
+		if ( array() === $rows ) {
+			return $builtin;
+		}
+		return array_merge(
+			$builtin,
+			CustomProviders::descriptors( $rows, $this->translator(), CustomProviders::reserved_hosts( $builtin ) )
+		);
+	}
+
 	private function providers(): array {
 		if ( null === $this->providers_cache ) {
 			$this->providers_cache = (array) apply_filters(
 				'calucon_embed_gate_providers',
 				Options::apply_provider_overrides(
-					// Owner-defined providers first: a host listed there takes
-					// precedence over a built-in claiming the same host.
-					array_merge(
-						CustomProviders::descriptors( $this->options['custom_providers'], $this->translator() ),
-						Descriptors::all( $this->translator() )
-					),
+					$this->builtin_and_custom_providers(),
 					$this->options
 				)
 			);

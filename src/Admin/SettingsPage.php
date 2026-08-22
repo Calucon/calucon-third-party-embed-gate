@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use CaluconEmbedGate\Cmp\Detector;
+use CaluconEmbedGate\Providers\CustomProviders;
 use CaluconEmbedGate\Support\AppearanceCss;
 use CaluconEmbedGate\Support\Csp;
 use CaluconEmbedGate\Support\Options;
@@ -274,10 +275,36 @@ final class SettingsPage {
 			Options::OPTION,
 			array(
 				'type'              => 'array',
-				'sanitize_callback' => array( Options::class, 'sanitize' ),
+				'sanitize_callback' => array( $this, 'sanitize_options' ),
 				'default'           => Options::defaults(),
 			)
 		);
+	}
+
+	/**
+	 * Sanitise a submitted option tree, refusing custom-provider hosts the
+	 * built-in (or code-registered) providers handle — and telling the owner
+	 * which ones, so the refusal never looks like data loss.
+	 *
+	 * @param mixed $raw Submitted option tree.
+	 * @return array
+	 */
+	public function sanitize_options( $raw ): array {
+		$report = Options::sanitize_report( $raw, CustomProviders::reserved_hosts( $this->providers() ) );
+		foreach ( $report['rejected_hosts'] as $label => $hosts ) {
+			add_settings_error(
+				Options::OPTION,
+				'calucon_embed_gate_reserved_host_' . md5( (string) $label ),
+				sprintf(
+					/* translators: 1: custom provider label, 2: comma-separated host names. */
+					__( '%1$s: %2$s skipped — a built-in provider already handles these hosts, with its privacy-preserving load target and texts. Adjust that provider in the table instead.', 'calucon-third-party-embed-gate' ),
+					$label,
+					implode( ', ', $hosts )
+				),
+				'warning'
+			);
+		}
+		return $report['options'];
 	}
 
 	/**
@@ -420,8 +447,12 @@ final class SettingsPage {
 								?>
 								<span class="cg-tag"><?php esc_html_e( 'added by you', 'calucon-third-party-embed-gate' ); ?></span><?php endif; ?></td>
 							<td>
-								<input type="hidden" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>[enabled]" value="0">
-								<input type="checkbox" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[enabled]" value="1" aria-label="<?php echo esc_attr( $aria_gate ); ?>" <?php checked( $enabled ); ?>>
+								<?php if ( ! empty( $descriptor['custom'] ) ) : ?>
+									<span title="<?php esc_attr_e( 'Your own providers are always gated. To let a host through, use the never-gate list under Detection.', 'calucon-third-party-embed-gate' ); ?>"><?php esc_html_e( 'always', 'calucon-third-party-embed-gate' ); ?></span>
+								<?php else : ?>
+									<input type="hidden" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>[enabled]" value="0">
+									<input type="checkbox" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[enabled]" value="1" aria-label="<?php echo esc_attr( $aria_gate ); ?>" <?php checked( $enabled ); ?>>
+								<?php endif; ?>
 							</td>
 							<td>
 								<?php if ( $has_variant ) : ?>
@@ -480,11 +511,13 @@ final class SettingsPage {
 		// Hosts the built-ins claim, to warn about precedence at a glance.
 		$builtin_hosts = array();
 		foreach ( $this->providers() as $descriptor ) {
-			if ( ! empty( $descriptor['custom'] ) || empty( $descriptor['match']['iframe_host'] ) ) {
+			if ( ! empty( $descriptor['custom'] ) ) {
 				continue;
 			}
-			foreach ( (array) $descriptor['match']['iframe_host'] as $host ) {
-				$builtin_hosts[ $host ] = isset( $descriptor['label'] ) ? (string) $descriptor['label'] : (string) $descriptor['id'];
+			foreach ( array( 'iframe_host', 'script_host' ) as $key ) {
+				foreach ( (array) ( $descriptor['match'][ $key ] ?? array() ) as $host ) {
+					$builtin_hosts[ $host ] = isset( $descriptor['label'] ) ? (string) $descriptor['label'] : (string) $descriptor['id'];
+				}
 			}
 		}
 		$kinds       = $this->kind_labels();
@@ -499,7 +532,7 @@ final class SettingsPage {
 		$blank_index = count( $rows ) - 1;
 		?>
 				<h3 id="cg-custom-providers-heading"><?php esc_html_e( 'Your own providers', 'calucon-third-party-embed-gate' ); ?></h3>
-				<p class="description"><?php esc_html_e( 'Embeds from hosts nobody listed are already gated, under their host name. Add a provider here to give such a host a proper name and a kind (for the button icon); after saving it appears in the table above, where you can set its note, button text and privacy-policy link like for any other provider. Hosts must match exactly — list www. and bare variants separately — and a host added here takes precedence over a built-in provider claiming the same host.', 'calucon-third-party-embed-gate' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Embeds from hosts nobody listed are already gated, under their host name. Add a provider here to give such a host a proper name and a kind (for the button icon); after saving it appears in the table above, where you can set its note, button text and privacy-policy link like for any other provider. Hosts must match exactly — list www. and bare variants separately. Adding a provider never changes what is gated: unknown hosts are gated either way, and hosts a built-in provider handles stay with that provider (they are skipped here). Your own providers are always gated; to let a host through, use the never-gate list under Detection.', 'calucon-third-party-embed-gate' ); ?></p>
 				<table class="widefat striped cg-custom-providers" id="cg-custom-providers" style="max-width: 60rem;" aria-labelledby="cg-custom-providers-heading">
 					<thead>
 						<tr>
@@ -527,7 +560,7 @@ final class SettingsPage {
 						/* translators: %s: provider label. */
 						$aria_remove = sprintf( __( 'Remove %s', 'calucon-third-party-embed-gate' ), $row_label );
 						$overlaps    = array();
-						foreach ( $row['hosts'] as $host ) {
+						foreach ( array_merge( $row['hosts'], $row['script_hosts'] ) as $host ) {
 							if ( isset( $builtin_hosts[ $host ] ) ) {
 								$overlaps[ $host ] = $builtin_hosts[ $host ];
 							}
@@ -545,7 +578,7 @@ final class SettingsPage {
 										<?php
 										printf(
 											/* translators: 1: host name, 2: built-in provider label. */
-											esc_html__( '%1$s is also matched by the built-in %2$s provider. Yours takes precedence, so its privacy-preserving load no longer applies to that host.', 'calucon-third-party-embed-gate' ),
+											esc_html__( '%1$s is handled by the built-in %2$s provider, which takes precedence — this entry is ignored for that host. Remove it here to clear this note.', 'calucon-third-party-embed-gate' ),
 											'<code>' . esc_html( $host ) . '</code>',
 											esc_html( $builtin_label )
 										);

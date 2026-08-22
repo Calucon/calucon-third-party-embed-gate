@@ -25,6 +25,12 @@ final class Options {
 
 	public const OPTION = 'calucon_embed_gate_options';
 
+	/** Upper bound on owner-defined provider rows (registry matching is linear). */
+	public const MAX_CUSTOM_PROVIDERS = 100;
+
+	/** Upper bound on hosts per list in one owner-defined provider row. */
+	public const MAX_CUSTOM_HOSTS = 50;
+
 	/**
 	 * @return array Complete default option tree.
 	 */
@@ -150,6 +156,35 @@ final class Options {
 	 * @return array Safe, complete option tree.
 	 */
 	public static function sanitize( $raw ): array {
+		return self::sanitize_report( $raw )['options'];
+	}
+
+	/**
+	 * sanitize() plus what it refused, for the settings screen's notices.
+	 *
+	 * @param mixed    $raw            Submitted option tree.
+	 * @param string[] $reserved_hosts Hosts the built-in (and code-registered)
+	 *                                 providers handle: a custom provider may
+	 *                                 not claim them — the built-in keeps its
+	 *                                 privacy-preserving load and its texts.
+	 * @return array{options:array,rejected_hosts:array<string,string[]>} rejected_hosts: label => hosts dropped.
+	 */
+	public static function sanitize_report( $raw, array $reserved_hosts = array() ): array {
+		$rejected = array();
+		$options  = self::sanitize_tree( $raw, $reserved_hosts, $rejected );
+		return array(
+			'options'        => $options,
+			'rejected_hosts' => $rejected,
+		);
+	}
+
+	/**
+	 * @param mixed    $raw            Submitted option tree.
+	 * @param string[] $reserved_hosts See sanitize_report().
+	 * @param array    $rejected       Out: label => reserved hosts dropped from custom rows.
+	 * @return array
+	 */
+	private static function sanitize_tree( $raw, array $reserved_hosts, array &$rejected ): array {
 		$defaults = self::defaults();
 		if ( ! is_array( $raw ) ) {
 			return $defaults;
@@ -202,7 +237,7 @@ final class Options {
 		}
 
 		if ( isset( $raw['custom_providers'] ) && is_array( $raw['custom_providers'] ) ) {
-			$clean['custom_providers'] = self::sanitize_custom_providers( $raw['custom_providers'] );
+			$clean['custom_providers'] = self::sanitize_custom_providers( $raw['custom_providers'], $reserved_hosts, $rejected );
 		}
 		// Override rows for custom providers that no longer exist are
 		// dropped — otherwise a removed provider's note would resurface if
@@ -359,7 +394,10 @@ final class Options {
 			}
 			$row = $overrides[ $id ];
 
-			if ( array_key_exists( 'enabled', $row ) ) {
+			// Owner-defined providers are always gated: a custom row can
+			// name a host, never exempt it (that is the never-gate list's
+			// job, explicitly). Built-ins keep the owner's on/off choice.
+			if ( array_key_exists( 'enabled', $row ) && empty( $descriptor['custom'] ) ) {
 				$descriptor['enabled'] = (bool) $row['enabled'];
 			}
 			if ( isset( $row['privacy_variant'] ) && false === $row['privacy_variant'] ) {
@@ -404,12 +442,21 @@ final class Options {
 	 * and kept across saves; wildcards are not accepted because the
 	 * registry matches hosts exactly.
 	 *
-	 * @param array $raw Submitted rows.
+	 * Bounded: at most self::MAX_CUSTOM_PROVIDERS rows and
+	 * self::MAX_CUSTOM_HOSTS hosts per list — the registry matches linearly
+	 * on every embed. Hosts a built-in provider handles are refused (and
+	 * reported), so adding a provider can never take a host away from the
+	 * built-in that knows its privacy-preserving load target.
+	 *
+	 * @param array    $raw            Submitted rows.
+	 * @param string[] $reserved_hosts Hosts built-in providers handle.
+	 * @param array    $rejected       Out: label => reserved hosts dropped.
 	 * @return array[]
 	 */
-	private static function sanitize_custom_providers( array $raw ): array {
+	private static function sanitize_custom_providers( array $raw, array $reserved_hosts, array &$rejected ): array {
 		$rows  = array();
 		$taken = array();
+		$raw   = array_slice( array_values( $raw ), 0, self::MAX_CUSTOM_PROVIDERS );
 		// Keep ids that already exist before generating new ones, so a new
 		// row can never steal an existing row's id.
 		foreach ( $raw as $row ) {
@@ -430,11 +477,17 @@ final class Options {
 			if ( '' === $label ) {
 				continue;
 			}
-			$no_wildcards = static function ( string $host ): bool {
+			$no_wildcards     = static function ( string $host ): bool {
 				return 0 !== strpos( $host, '*.' );
 			};
-			$hosts        = array_values( array_filter( self::sanitize_host_list( $row['hosts'] ?? '' ), $no_wildcards ) );
-			$scripts      = array_values( array_filter( self::sanitize_host_list( $row['script_hosts'] ?? '' ), $no_wildcards ) );
+			$hosts            = array_slice( array_values( array_filter( self::sanitize_host_list( $row['hosts'] ?? '' ), $no_wildcards ) ), 0, self::MAX_CUSTOM_HOSTS );
+			$scripts          = array_slice( array_values( array_filter( self::sanitize_host_list( $row['script_hosts'] ?? '' ), $no_wildcards ) ), 0, self::MAX_CUSTOM_HOSTS );
+			$taken_by_builtin = array_values( array_intersect( array_merge( $hosts, $scripts ), $reserved_hosts ) );
+			if ( array() !== $taken_by_builtin ) {
+				$rejected[ $label ] = array_values( array_unique( array_merge( $rejected[ $label ] ?? array(), $taken_by_builtin ) ) );
+				$hosts              = array_values( array_diff( $hosts, $reserved_hosts ) );
+				$scripts            = array_values( array_diff( $scripts, $reserved_hosts ) );
+			}
 			if ( array() === $hosts && array() === $scripts ) {
 				continue;
 			}

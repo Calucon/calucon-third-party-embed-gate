@@ -126,3 +126,31 @@ test( 'placeholder works with JavaScript disabled: real fallback link, still zer
 	expect( offenders ).toEqual( [] );
 	await context.close();
 } );
+
+test( 'owner-defined providers: zero third-party requests, built-ins keep their hosts, a disabled custom row still gates', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+
+	await page.goto( '/page/custom-provider' );
+	await page.waitForLoadState( 'networkidle' );
+
+	expect( offenders, 'INVARIANT 1 VIOLATED — third-party requests before any click' ).toEqual( [] );
+
+	// The unknown widget is named by the custom row — and gated although its
+	// row is "disabled" in the options (custom providers are always gated).
+	const widget = page.locator( '.cg-embed[data-cg-host="widgets.example-partner.com"]' );
+	await expect( widget ).toHaveAttribute( 'data-cg-provider', 'custom-example-partner' );
+	await expect( widget.locator( 'button' ) ).toContainText( 'Load content from Example Partner' );
+	// The row that tried to claim YouTube's hosts changed nothing.
+	const video = page.locator( '.cg-embed[data-cg-provider="youtube"]' );
+	await expect( video ).toHaveCount( 1 );
+	await expect( page.locator( '.cg-embed[data-cg-provider="custom-tube-thief"]' ) ).toHaveCount( 0 );
+	// The script-strategy custom row gates its SDK.
+	await expect( page.locator( '.cg-embed[data-cg-provider="custom-widget-sdk"]' ) ).toHaveCount( 1 );
+	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
+	await expect( page.locator( 'script[src*="widget-sdk"]' ) ).toHaveCount( 0 );
+
+	// Activation still goes to the privacy-preserving host for the built-in.
+	await page.route( '**/*', ( route ) => ( route.request().url().startsWith( 'http://127.0.0.1' ) ? route.continue() : route.fulfill( { contentType: 'text/html', body: '<p>frame</p>' } ) ) );
+	await video.locator( 'button' ).click();
+	await expect( video.locator( 'iframe' ) ).toHaveAttribute( 'src', /youtube-nocookie\.com/ );
+} );
