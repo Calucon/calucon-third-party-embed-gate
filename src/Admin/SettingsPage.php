@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use CaluconEmbedGate\Cmp\Detector;
+use CaluconEmbedGate\Support\AppearanceCss;
 use CaluconEmbedGate\Support\Csp;
 use CaluconEmbedGate\Support\Options;
 use CaluconEmbedGate\Support\ThemePalette;
@@ -167,6 +168,7 @@ final class SettingsPage {
 			CALUCON_EMBED_GATE_VERSION,
 			true
 		);
+		wp_add_inline_style( 'calucon-embed-gate-admin', AppearanceCss::kind_icon_rules( '.cg-kind-glyph' ) );
 		wp_enqueue_script(
 			'calucon-embed-gate-admin-custom-providers',
 			plugins_url( 'assets/js/admin-custom-providers.js', CALUCON_EMBED_GATE_FILE ),
@@ -412,7 +414,7 @@ final class SettingsPage {
 						$builtin_url = isset( $descriptor['privacy_url'] ) && is_string( $descriptor['privacy_url'] ) ? $descriptor['privacy_url'] : '';
 						?>
 						<tr>
-							<td><?php echo esc_html( $label ); ?>
+							<td><span class="cg-kind-glyph" data-cg-kind="<?php echo esc_attr( $descriptor['kind'] ?? '' ); ?>" title="<?php echo esc_attr( $this->kind_labels()[ $descriptor['kind'] ?? '' ] ?? '' ); ?>"></span><?php echo esc_html( $label ); ?>
 							<?php
 							if ( ! empty( $descriptor['custom'] ) ) :
 								?>
@@ -443,6 +445,26 @@ final class SettingsPage {
 	}
 
 	/**
+	 * Human names for the provider kinds (AppearanceCss::KINDS), generic first.
+	 *
+	 * @return array<string,string> kind => label.
+	 */
+	private function kind_labels(): array {
+		return array(
+			''         => __( 'Generic', 'calucon-third-party-embed-gate' ),
+			'video'    => __( 'Video', 'calucon-third-party-embed-gate' ),
+			'map'      => __( 'Map', 'calucon-third-party-embed-gate' ),
+			'audio'    => __( 'Audio / podcast', 'calucon-third-party-embed-gate' ),
+			'social'   => __( 'Social post', 'calucon-third-party-embed-gate' ),
+			'form'     => __( 'Form / survey', 'calucon-third-party-embed-gate' ),
+			'calendar' => __( 'Calendar / booking', 'calucon-third-party-embed-gate' ),
+			'document' => __( 'Document / slides', 'calucon-third-party-embed-gate' ),
+			'image'    => __( 'Image / GIF', 'calucon-third-party-embed-gate' ),
+			'3d'       => __( '3D / virtual tour', 'calucon-third-party-embed-gate' ),
+		);
+	}
+
+	/**
 	 * "Your own providers": owner-defined descriptors (Providers\CustomProviders).
 	 *
 	 * One row per saved provider plus one blank row, so adding works with
@@ -465,12 +487,7 @@ final class SettingsPage {
 				$builtin_hosts[ $host ] = isset( $descriptor['label'] ) ? (string) $descriptor['label'] : (string) $descriptor['id'];
 			}
 		}
-		$kinds       = array(
-			''      => __( 'Generic', 'calucon-third-party-embed-gate' ),
-			'video' => __( 'Video', 'calucon-third-party-embed-gate' ),
-			'map'   => __( 'Map', 'calucon-third-party-embed-gate' ),
-			'audio' => __( 'Audio', 'calucon-third-party-embed-gate' ),
-		);
+		$kinds       = $this->kind_labels();
 		$rows        = array_values( $custom );
 		$rows[]      = array(
 			'id'           => '',
@@ -537,7 +554,8 @@ final class SettingsPage {
 								<?php endforeach; ?>
 							</td>
 							<td><textarea name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[script_hosts]" rows="2" class="code" aria-label="<?php echo esc_attr( $aria_scripts ); ?>"><?php echo esc_textarea( implode( "\n", $row['script_hosts'] ) ); ?></textarea></td>
-							<td>
+							<td class="cg-kind-cell">
+								<span class="cg-kind-glyph" data-cg-kind="<?php echo esc_attr( $row['kind'] ); ?>" aria-hidden="true"></span>
 								<select name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[kind]" aria-label="<?php echo esc_attr( $aria_kind ); ?>">
 									<?php foreach ( $kinds as $value => $kind_label ) : ?>
 										<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $row['kind'], $value ); ?>><?php echo esc_html( $kind_label ); ?></option>

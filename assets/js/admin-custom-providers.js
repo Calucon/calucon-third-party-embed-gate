@@ -19,6 +19,18 @@
 		var body = table.tBodies[ 0 ];
 		wrap.hidden = false;
 
+		// The kind's icon next to its select follows the selection.
+		table.addEventListener( 'change', function ( event ) {
+			var select = event.target;
+			if ( ! select || 'SELECT' !== select.tagName ) {
+				return;
+			}
+			var glyph = select.parentNode.querySelector( '.cg-kind-glyph' );
+			if ( glyph ) {
+				glyph.setAttribute( 'data-cg-kind', select.value );
+			}
+		} );
+
 		button.addEventListener( 'click', function () {
 			var rows = body.querySelectorAll( 'tr' );
 			var blank = body.querySelector( 'tr[data-cg-blank]' ) || rows[ rows.length - 1 ];

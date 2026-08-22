@@ -837,7 +837,13 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	const added = page.locator( '#cg-custom-providers tbody tr' ).first();
 	await added.locator( 'input[type="text"]' ).fill( 'Example Partner' );
 	await added.locator( 'textarea' ).first().fill( 'https://widgets.example-partner.com/embed/9\nexample-partner.com' );
-	await added.locator( 'select' ).selectOption( 'video' );
+	// Ten kinds, each with its icon shown next to the select and in the main table.
+	await expect( added.locator( 'select option' ) ).toHaveCount( 10 );
+	await added.locator( 'select' ).selectOption( 'social' );
+	await expect( added.locator( '.cg-kind-glyph' ) ).toHaveAttribute( 'data-cg-kind', 'social' );
+	await expect( page.locator( '#cg-tab-providers table' ).first().locator( 'tbody tr', { hasText: 'YouTube' } ).locator( '.cg-kind-glyph' ) ).toHaveAttribute( 'data-cg-kind', 'video' );
+	const glyphMask = await added.locator( '.cg-kind-glyph' ).evaluate( ( el ) => getComputedStyle( el ).maskImage || getComputedStyle( el ).webkitMaskImage );
+	expect( glyphMask ).toContain( 'data:image/svg+xml' );
 	await blank.locator( 'input[type="text"]' ).fill( 'Widget SDK' );
 	await blank.locator( 'textarea' ).nth( 1 ).fill( 'cdn.widget-sdk.example' );
 	await page.click( '#submit' );
@@ -854,6 +860,7 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	// …and both appear in the main table, marked, with the usual per-provider controls.
 	const mainRow = page.locator( '#cg-tab-providers table' ).first().locator( 'tbody tr', { hasText: 'Example Partner' } );
 	await expect( mainRow.locator( '.cg-tag' ) ).toHaveText( 'added by you' );
+	await expect( mainRow.locator( '.cg-kind-glyph' ) ).toHaveAttribute( 'data-cg-kind', 'social' );
 	await mainRow.locator( 'input[name$="[note]"]' ).fill( 'Partner rules apply.' );
 	await mainRow.locator( 'input[name$="[privacy_url]"]' ).fill( 'https://example-partner.com/privacy' );
 	await page.click( '#submit' );

@@ -118,7 +118,7 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 		'fallback'    => 'https://example-videos.com/watch/{id}',
 		'controller'  => 'Example Videos Inc., City, Country',
 		'privacy_url' => 'https://example-videos.com/privacy', // Linked in the panel (Providers tab toggle) and shown by the CLI.
-		'kind'        => 'video', // 'video' | 'map' | 'audio' | '' — picks the optional button glyph.
+		'kind'        => 'video', // video | map | audio | social | form | calendar | document | image | 3d | '' — picks the optional button glyph.
 		'aspect'      => '16/9',
 	);
 	return $providers;

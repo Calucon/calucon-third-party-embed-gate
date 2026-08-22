@@ -438,7 +438,7 @@ final class Options {
 			if ( array() === $hosts && array() === $scripts ) {
 				continue;
 			}
-			$kind = isset( $row['kind'] ) && in_array( $row['kind'], array( 'video', 'map', 'audio' ), true ) ? $row['kind'] : '';
+			$kind = isset( $row['kind'] ) && in_array( $row['kind'], AppearanceCss::KINDS, true ) ? $row['kind'] : '';
 
 			$id = isset( $row['id'] ) && is_string( $row['id'] ) && preg_match( '/^custom-[a-z0-9-]{1,48}$/', $row['id'] ) ? $row['id'] : '';
 			if ( '' === $id || in_array( $id, array_column( $rows, 'id' ), true ) ) {

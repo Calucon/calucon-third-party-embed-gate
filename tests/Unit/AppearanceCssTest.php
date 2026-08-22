@@ -225,6 +225,41 @@ final class AppearanceCssTest extends TestCase {
 		self::assertSame( 8, substr_count( $css, "viewBox='0 0 16 16'" ) );
 	}
 
+	public function test_every_kind_has_a_glyph_and_reaches_the_css(): void {
+		$kinds = array();
+		foreach ( AppearanceCss::KINDS as $i => $kind ) {
+			$kinds[ 'p' . $i ] = $kind;
+		}
+		$css = AppearanceCss::build( self::appearance( array( 'play_icon' => true ) ), $kinds );
+
+		foreach ( $kinds as $id => $kind ) {
+			self::assertStringContainsString( '.cg-embed[data-cg-provider="' . $id . '"] .cg-embed__button::before{', $css, $kind );
+		}
+		// Base glyph + one per kind, each as -webkit-mask AND mask.
+		self::assertSame( 2 * ( 1 + count( AppearanceCss::KINDS ) ), substr_count( $css, "viewBox='0 0 16 16'" ) );
+		// Frames and text lines are holes: the evenodd rule is what makes them.
+		self::assertStringContainsString( "fill-rule='evenodd'", $css );
+		// Only data: URLs, ever (invariant 1/9).
+		self::assertSame( substr_count( $css, 'url(' ), substr_count( $css, 'url("data:' ) );
+	}
+
+	public function test_kind_icon_rules_cover_generic_and_every_kind(): void {
+		$css = AppearanceCss::kind_icon_rules( '.cg-kind-glyph' );
+
+		self::assertStringContainsString( '.cg-kind-glyph[data-cg-kind=""]{', $css );
+		foreach ( AppearanceCss::KINDS as $kind ) {
+			self::assertStringContainsString( '.cg-kind-glyph[data-cg-kind="' . $kind . '"]{', $css );
+		}
+		self::assertSame( 2 * ( 1 + count( AppearanceCss::KINDS ) ), substr_count( $css, "viewBox='0 0 16 16'" ) );
+	}
+
+	public function test_builtin_kinds_are_all_known(): void {
+		foreach ( \CaluconEmbedGate\Providers\Builtin\Descriptors::all() as $descriptor ) {
+			$kind = isset( $descriptor['kind'] ) ? $descriptor['kind'] : '';
+			self::assertTrue( '' === $kind || in_array( $kind, AppearanceCss::KINDS, true ), $descriptor['id'] . ' has unknown kind ' . $kind );
+		}
+	}
+
 	public function test_poster_dim_and_link_colour(): void {
 		self::assertSame(
 			'.cg-embed--poster:not(.cg-embed--active) .cg-embed__poster{filter:brightness(0.5) blur(2px);}',

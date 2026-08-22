@@ -26,18 +26,29 @@ final class AppearanceCss {
 	 * glyph in assets/css/admin-appearance.css — change both together.
 	 */
 	private const GLYPHS = array(
-		'generic' => 'M3 3h5v2H5v6h6V8h2v5H3zM9 2h5v5h-2V5.4l-4.3 4.3-1.4-1.4L10.6 4H9z',
-		'video'   => 'M4 2l10 6-10 6z',
-		'map'     => 'M8 0a5 5 0 0 0-5 5c0 3.5 5 11 5 11s5-7.5 5-11a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z',
-		'audio'   => 'M5 2v9.2A2.5 2.5 0 1 0 7 13.5V6l6-2V1z',
+		'generic'  => 'M3 3h5v2H5v6h6V8h2v5H3zM9 2h5v5h-2V5.4l-4.3 4.3-1.4-1.4L10.6 4H9z',
+		'video'    => 'M4 2l10 6-10 6z',
+		'map'      => 'M8 0a5 5 0 0 0-5 5c0 3.5 5 11 5 11s5-7.5 5-11a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z',
+		'audio'    => 'M5 2v9.2A2.5 2.5 0 1 0 7 13.5V6l6-2V1z',
+		// Glyphs below rely on the evenodd fill rule set in mask(): a
+		// subpath drawn inside another cuts a hole (frames, text lines).
+		'social'   => 'M1 2h14v9H6.5L2.5 15v-4H1z',
+		'form'     => 'M3 1h10v14H3zM5 4h6v1.5H5zM5 7.25h6v1.5H5zM5 10.5h4v1.5H5z',
+		'calendar' => 'M2 3h12v11H2zM3.5 7.5h9v5h-9zM4 1h2v1.5H4zM10 1h2v1.5h-2z',
+		'document' => 'M3 1h7l4 4v10H3zM5 8h6v1.5H5zM5 11h6v1.5H5z',
+		'image'    => 'M1 2.5h14v11H1zM2.5 4h11v8h-11zM3.5 11l3-4.5 2 2.5 1.5-1.5 2.5 3.5zM10.2 5.2a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z',
+		'3d'       => 'M8 1l6 3.4L8 7.8 2 4.4zM1.5 5.4l5.7 3.2v6.2L1.5 11.6zM14.5 5.4 8.8 8.6v6.2l5.7-3.2z',
 	);
+
+	/** Kinds a provider may declare, in the order the settings list them. Generic is ''. */
+	public const KINDS = array( 'video', 'map', 'audio', 'social', 'form', 'calendar', 'document', 'image', '3d' );
 
 	/**
 	 * CSS for the Appearance settings (§7.1): preset + colour overrides of
 	 * the §7.3 custom properties. '' when everything is at defaults.
 	 *
 	 * @param array $appearance Sanitised appearance option subtree.
-	 * @param array $kinds      Provider id => kind ('video'|'map'|'audio'|''),
+	 * @param array $kinds      Provider id => kind (one of self::KINDS or ''),
 	 *                          for the kind-aware button glyph. Unknown and
 	 *                          generic providers get the generic glyph.
 	 * @param array $palette    Theme palette slug => hex, for the fallback in
@@ -192,7 +203,7 @@ final class AppearanceCss {
 					$by_kind[ $kind ][] = '.cg-embed[data-cg-provider="' . $provider_id . '"] .cg-embed__button::before';
 				}
 			}
-			foreach ( array( 'video', 'map', 'audio' ) as $kind ) {
+			foreach ( self::KINDS as $kind ) {
 				if ( ! empty( $by_kind[ $kind ] ) ) {
 					$css .= implode( ',', $by_kind[ $kind ] ) . '{' . self::mask( $kind ) . '}';
 				}
@@ -277,7 +288,23 @@ final class AppearanceCss {
 	 * @return string
 	 */
 	private static function mask( string $kind ): string {
-		$mask = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='" . self::GLYPHS[ $kind ] . "'/%3E%3C/svg%3E\") center/contain no-repeat";
+		$mask = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='" . self::GLYPHS[ $kind ] . "'/%3E%3C/svg%3E\") center/contain no-repeat";
 		return '-webkit-mask:' . $mask . ';mask:' . $mask . ';';
+	}
+
+	/**
+	 * Mask rules for every glyph, keyed by a data attribute — the settings
+	 * screen uses them to show each kind's icon next to its name.
+	 *
+	 * @param string $selector Element selector, e.g. '.cg-kind-glyph'.
+	 * @return string CSS: {selector}[data-cg-kind="video"]{mask…} per kind ('' = generic).
+	 */
+	public static function kind_icon_rules( string $selector ): string {
+		$css = '';
+		foreach ( array_keys( self::GLYPHS ) as $kind ) {
+			$value = 'generic' === $kind ? '' : $kind;
+			$css  .= $selector . '[data-cg-kind="' . $value . '"]{' . self::mask( $kind ) . '}';
+		}
+		return $css;
 	}
 }

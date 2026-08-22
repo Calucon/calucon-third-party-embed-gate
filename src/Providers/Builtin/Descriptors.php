@@ -160,6 +160,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'google-calendar',
+				'kind'        => 'calendar',
 				'label'       => 'Google Calendar',
 				'match'       => array(
 					'iframe_host' => array( 'calendar.google.com' ),
@@ -173,6 +174,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'google-forms',
+				'kind'        => 'form',
 				'label'       => 'Google Forms',
 				'match'       => array(
 					'iframe_host' => array( 'docs.google.com' ),
@@ -186,6 +188,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'matterport',
+				'kind'        => '3d',
 				'label'       => 'Matterport',
 				'match'       => array(
 					'iframe_host' => array( 'my.matterport.com' ),
@@ -199,6 +202,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'sketchfab',
+				'kind'        => '3d',
 				'label'       => 'Sketchfab',
 				'match'       => array(
 					'iframe_host' => array( 'sketchfab.com' ),
@@ -212,6 +216,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'typeform',
+				'kind'        => 'form',
 				'label'       => 'Typeform',
 				'match'       => array(
 					'iframe_host' => array( 'form.typeform.com' ),
@@ -225,6 +230,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'calendly',
+				'kind'        => 'calendar',
 				'label'       => 'Calendly',
 				'match'       => array(
 					'iframe_host' => array( 'calendly.com' ),
@@ -238,6 +244,7 @@ final class Descriptors {
 			),
 			array(
 				'id'                 => 'strava',
+				'kind'               => 'social',
 				'label'              => 'Strava',
 				'match'              => array(
 					'script_host' => array( 'strava-embeds.com', 'www.strava-embeds.com' ),
@@ -269,6 +276,7 @@ final class Descriptors {
 			),
 			array(
 				'id'               => 'twitter',
+				'kind'             => 'social',
 				'label'            => 'X (Twitter)',
 				'match'            => array(
 					'iframe_host' => array( 'platform.twitter.com', 'platform.x.com' ),
@@ -284,6 +292,7 @@ final class Descriptors {
 			),
 			array(
 				'id'               => 'instagram',
+				'kind'             => 'social',
 				'label'            => 'Instagram',
 				'match'            => array(
 					'iframe_host' => array( 'www.instagram.com', 'instagram.com' ),
@@ -314,6 +323,7 @@ final class Descriptors {
 			),
 			array(
 				'id'                 => 'facebook',
+				'kind'               => 'social',
 				'label'              => 'Facebook',
 				'match'              => array(
 					'iframe_host' => array( 'www.facebook.com', 'web.facebook.com' ),
@@ -337,6 +347,7 @@ final class Descriptors {
 			),
 			array(
 				'id'              => 'reddit',
+				'kind'            => 'social',
 				'label'           => 'Reddit',
 				'match'           => array(
 					'iframe_host' => array( 'embed.reddit.com', 'www.redditmedia.com' ),
@@ -351,7 +362,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'giphy',
-				'kind'        => 'video',
+				'kind'        => 'image',
 				'label'       => 'GIPHY',
 				'match'       => array(
 					'iframe_host' => array( 'giphy.com' ),

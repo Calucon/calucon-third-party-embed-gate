@@ -407,8 +407,8 @@ final class OptionsTest extends TestCase {
 					array( 'id' => 'custom-gone', 'label' => 'Gone', 'hosts' => 'gone.example', 'remove' => '1' ),
 					// Existing id is kept even though the label changed.
 					array( 'id' => 'custom-old-name', 'label' => 'New Name', 'hosts' => 'old.example', 'kind' => 'map' ),
-					// Same label as an existing row: gets a distinct id.
-					array( 'label' => 'New Name', 'hosts' => 'other.example' ),
+					// Same label as an existing row: gets a distinct id; any known kind is accepted.
+					array( 'label' => 'New Name', 'hosts' => 'other.example', 'kind' => '3d' ),
 					// A forged id that is not in the allowed shape is replaced.
 					array( 'id' => 'youtube', 'label' => 'Fake', 'hosts' => 'fake.example' ),
 				),
@@ -424,7 +424,7 @@ final class OptionsTest extends TestCase {
 			array(
 				array( 'id' => 'custom-example-partner', 'label' => 'Example Partner', 'hosts' => array( 'widgets.example-partner.com' ), 'script_hosts' => array(), 'kind' => '' ),
 				array( 'id' => 'custom-old-name', 'label' => 'New Name', 'hosts' => array( 'old.example' ), 'script_hosts' => array(), 'kind' => 'map' ),
-				array( 'id' => 'custom-new-name', 'label' => 'New Name', 'hosts' => array( 'other.example' ), 'script_hosts' => array(), 'kind' => '' ),
+				array( 'id' => 'custom-new-name', 'label' => 'New Name', 'hosts' => array( 'other.example' ), 'script_hosts' => array(), 'kind' => '3d' ),
 				array( 'id' => 'custom-fake', 'label' => 'Fake', 'hosts' => array( 'fake.example' ), 'script_hosts' => array(), 'kind' => '' ),
 			),
 			$clean['custom_providers']
