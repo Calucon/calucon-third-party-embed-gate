@@ -520,9 +520,21 @@
 
 		// --- Wiring ---
 
+		// The theme's palette as swatches under every picker (theme.json or
+		// the classic editor palette, resolved server-side). Iris shows
+		// swatches without names; label them so hover and screen readers
+		// get the theme's own colour names.
+		var paletteEntries = window.caluconEmbedGateAdminPalette || [];
+		var paletteColors = [];
+		for ( var p = 0; p < paletteEntries.length; p++ ) {
+			if ( paletteEntries[ p ] && paletteEntries[ p ].color ) {
+				paletteColors.push( paletteEntries[ p ].color );
+			}
+		}
 		$( '.cg-color-field' ).each( function () {
 			var key = this.getAttribute( 'data-cg-color' );
 			$( this ).wpColorPicker( {
+				palettes: paletteColors.length ? paletteColors : true,
 				change: function ( event, ui ) {
 					setColor( key, ui.color.toString() );
 				},
@@ -530,6 +542,14 @@
 					setColor( key, '' );
 				}
 			} );
+			if ( paletteColors.length ) {
+				$( this ).closest( '.wp-picker-container' ).find( '.iris-palette' ).each( function ( i ) {
+					if ( paletteEntries[ i ] && paletteEntries[ i ].name ) {
+						this.setAttribute( 'title', paletteEntries[ i ].name );
+						this.setAttribute( 'aria-label', paletteEntries[ i ].name );
+					}
+				} );
+			}
 		} );
 
 		if ( ! stage || ! sample ) {

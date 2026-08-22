@@ -278,6 +278,17 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await page.uncheck( '#cg-preview-poster' );
 	await expect( sample.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
 
+	// Theme palette swatches: opening a picker shows the active theme's
+	// colours (theme.json on the Playground default theme), each named.
+	const bgPicker = page.locator( '#cg-color-bg' ).locator( 'xpath=ancestor::*[contains(@class,"wp-picker-container")]' );
+	await bgPicker.locator( '.wp-color-result' ).click();
+	const swatches = bgPicker.locator( '.iris-palette' );
+	expect( await swatches.count() ).toBeGreaterThan( 2 );
+	await expect( swatches.first() ).toHaveAttribute( 'title', /.+/ );
+	await swatches.first().click();
+	await expect( page.locator( '#cg-color-bg' ) ).toHaveValue( /^#[0-9a-f]{3,6}$/ );
+	await bgPicker.locator( '.wp-color-result' ).click();
+
 	// Round 4: a quick style fills in the controls AND the preview in one
 	// click; poster dimming and the phone-width preview mirror too.
 	await page.click( '.cg-quick-style[data-cg-quick-style="cinema"]' );

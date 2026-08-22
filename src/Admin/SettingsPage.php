@@ -133,6 +133,11 @@ final class SettingsPage {
 		);
 		wp_add_inline_script(
 			'calucon-embed-gate-admin',
+			'window.caluconEmbedGateAdminPalette = ' . wp_json_encode( $this->theme_palette() ) . ';',
+			'before'
+		);
+		wp_add_inline_script(
+			'calucon-embed-gate-admin',
 			'window.caluconEmbedGateAdminI18n = ' . wp_json_encode(
 				array(
 					/* translators: contrast-report line. 1: which colour pair, 2: measured ratio like "4.9:1", 3: verdict. */
@@ -147,6 +152,50 @@ final class SettingsPage {
 			) . ';',
 			'before'
 		);
+	}
+
+	/**
+	 * The active theme's colour palette, for the pickers' swatches: theme.json
+	 * (block themes; the theme's and the site's custom colours) or the classic
+	 * editor-color-palette. Hex colours only — the same rule the option
+	 * sanitiser applies — so a palette entry can never carry anything else.
+	 *
+	 * @return array<int,array{name:string,color:string}>
+	 */
+	private function theme_palette(): array {
+		$entries = array();
+		if ( function_exists( 'wp_get_global_settings' ) ) {
+			$settings = wp_get_global_settings( array( 'color', 'palette' ) );
+			foreach ( array( 'theme', 'custom' ) as $origin ) {
+				if ( ! empty( $settings[ $origin ] ) && is_array( $settings[ $origin ] ) ) {
+					$entries = array_merge( $entries, $settings[ $origin ] );
+				}
+			}
+		}
+		if ( empty( $entries ) ) {
+			$support = get_theme_support( 'editor-color-palette' );
+			if ( is_array( $support ) && isset( $support[0] ) && is_array( $support[0] ) ) {
+				$entries = $support[0];
+			}
+		}
+
+		$palette = array();
+		$seen    = array();
+		foreach ( $entries as $entry ) {
+			if ( ! is_array( $entry ) || empty( $entry['color'] ) || ! is_string( $entry['color'] ) ) {
+				continue;
+			}
+			$color = strtolower( trim( $entry['color'] ) );
+			if ( ! preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/', $color ) || isset( $seen[ $color ] ) ) {
+				continue;
+			}
+			$seen[ $color ] = true;
+			$palette[]      = array(
+				'name'  => isset( $entry['name'] ) && is_string( $entry['name'] ) ? $entry['name'] : $color,
+				'color' => $color,
+			);
+		}
+		return array_slice( $palette, 0, 24 );
 	}
 
 	/**
@@ -453,7 +502,7 @@ final class SettingsPage {
 		?>
 <div id="cg-tab-appearance" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-appearance">
 				<h2><?php esc_html_e( 'Appearance', 'calucon-third-party-embed-gate' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Style the placeholder panel without writing any CSS: pick a style, pick colours, and watch the preview below update as you go. The readability check tells you immediately if a colour combination would be hard to read.', 'calucon-third-party-embed-gate' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Style the placeholder panel without writing any CSS: pick a style, pick colours, and watch the preview update as you go. Every colour picker offers your theme\'s own palette as swatches, and the readability check tells you immediately if a colour combination would be hard to read.', 'calucon-third-party-embed-gate' ); ?></p>
 				<p>
 					<button type="button" id="cg-appearance-reset" class="button"><?php esc_html_e( 'Reset appearance to defaults', 'calucon-third-party-embed-gate' ); ?></button>
 					<span class="description"><?php esc_html_e( 'Clears every field on this tab. Nothing changes on your site until you save.', 'calucon-third-party-embed-gate' ); ?></span>
