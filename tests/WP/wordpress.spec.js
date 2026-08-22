@@ -353,6 +353,44 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	// The readability report is marked pass/fail per line.
 	expect( await page.locator( '#cg-contrast-report .cg-contrast-line--pass' ).count() ).toBeGreaterThan( 0 );
 
+	// UX polish: the sticky bar shows unsaved state; a bulk action offers
+	// Undo and Undo really restores; quick-style cards are live miniatures
+	// (real panel clones); collapsed sections count their changes.
+	await expect( page.locator( '.cg-quick-style .cg-quick-card .cg-embed' ) ).toHaveCount( 5 );
+	await page.click( '.cg-quick-style[data-cg-quick-style="pastel"]' );
+	await expect( page.locator( '#cg-unsaved' ) ).toBeVisible();
+	await expect( page.locator( '#cg-undo' ) ).toBeVisible();
+	await expect( page.locator( '#cg-corners' ) ).toHaveValue( 'pill' );
+	await expect( page.locator( 'details.cg-section .cg-section__badge:visible' ).first() ).toContainText( 'changed' );
+	await page.click( '#cg-undo' );
+	await expect( page.locator( '#cg-corners' ) ).toHaveValue( '' );
+	await expect( page.locator( '[data-cg-color="bg"]' ) ).toHaveValue( '' );
+
+	// Hover a row → its preview target is outlined.
+	await page.locator( '.cg-color[data-cg-color-key="link"]' ).locator( 'xpath=ancestor::tr' ).hover();
+	await expect( sample.locator( '.cg-embed__fallback a' ) ).toHaveClass( /cg-preview-hl/ );
+	await page.locator( '#cg-preset' ).locator( 'xpath=ancestor::tr' ).hover();
+	await expect( sample.locator( '.cg-embed__fallback a' ) ).not.toHaveClass( /cg-preview-hl/ );
+	await expect( sample ).toHaveClass( /cg-preview-hl/ );
+	await page.mouse.move( 0, 0 );
+
+	// Readability auto-fix: paint the panel text in the panel colour (1:1),
+	// then let the fix pick a passing colour.
+	const fgControl = page.locator( '.cg-color[data-cg-color-key="fg"]' );
+	await fgControl.locator( 'summary' ).click();
+	await fgControl.locator( 'input[type="radio"][value="custom"]' ).check( { force: true } );
+	// Same colour as the panel background (whatever the theme makes it).
+	await page.evaluate( () => {
+		const rgb = getComputedStyle( document.querySelector( '#cg-preview-stage .cg-embed' ) ).backgroundColor.match( /\d+/g ).slice( 0, 3 );
+		const hex = '#' + rgb.map( ( n ) => Number( n ).toString( 16 ).padStart( 2, '0' ) ).join( '' );
+		window.jQuery( '#cg-color-fg' ).wpColorPicker( 'color', hex );
+	} );
+	await page.keyboard.press( 'Escape' );
+	await expect( page.locator( '#cg-contrast-report .cg-contrast-line--fail .cg-contrast-fix' ).first() ).toBeVisible();
+	await page.locator( '#cg-contrast-report .cg-contrast-line--fail .cg-contrast-fix' ).first().click();
+	await expect( page.locator( '#cg-contrast-report .cg-contrast-line--fail' ) ).toHaveCount( 0 );
+	await page.click( '#cg-appearance-reset' );
+
 	// Round-2 controls: the withdraw sample restyles with its variant, the
 	// dark colour rows reveal behind their toggle, and the play icon class
 	// lands on the stage.

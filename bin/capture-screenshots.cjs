@@ -64,6 +64,13 @@ async function settings( page ) {
 	// The preview column is sticky on desktop; a scroll-and-stitch element
 	// capture would paste it mid-image. Unstick it for the shot only.
 	await page.addStyleTag( { content: '.cg-appearance-preview{position:static!important}' } );
+	// No hover/focus highlight or open menus in the listing image.
+	await page.mouse.move( 0, 0 );
+	await page.evaluate( () => {
+		if ( document.activeElement ) { document.activeElement.blur(); }
+		document.querySelectorAll( '.cg-preview-hl' ).forEach( ( el ) => el.classList.remove( 'cg-preview-hl' ) );
+		document.querySelectorAll( '.cg-color[open]' ).forEach( ( el ) => el.removeAttribute( 'open' ) );
+	} );
 	await page.waitForTimeout( 700 );
 	await page.locator( '#cg-tab-appearance' ).screenshot( { path: path.join( OUT, 'screenshot-2.png' ) } );
 

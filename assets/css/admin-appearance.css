@@ -377,3 +377,71 @@
 .cg-contrast-line--fail::before {
 	background: #d63638;
 }
+
+/* Sticky unsaved-changes bar at the bottom of the form. */
+.cg-unsaved {
+	position: sticky;
+	bottom: 0;
+	z-index: 30;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 1em -20px 0 -20px;
+	padding: 10px 20px;
+	border-top: 1px solid #c3c4c7;
+	background: #fff;
+	box-shadow: 0 -4px 12px rgba( 0, 0, 0, 0.08 );
+}
+
+.cg-unsaved__text {
+	flex: 1 1 auto;
+}
+
+/* Hover / focus on a row outlines what it changes in the preview. */
+.cg-preview-hl {
+	outline: 3px dashed #2271b1 !important;
+	outline-offset: 3px;
+	transition: outline-color 120ms ease;
+}
+
+/* Live miniatures: a scaled clone of the real panel inside each card. */
+.cg-quick-card {
+	display: block;
+	width: 120px;
+	height: 68px;
+	overflow: hidden;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #f6f7f7;
+	pointer-events: none;
+}
+
+.cg-quick-card__scale {
+	display: block;
+	width: 500px;
+	transform: scale( 0.236 );
+	transform-origin: 0 0;
+	padding: 4px;
+}
+
+.cg-quick-card__scale .cg-embed {
+	aspect-ratio: 16 / 9;
+}
+
+/* Change badges on collapsed sections. */
+.cg-section__badge {
+	margin-left: 8px;
+	padding: 1px 8px;
+	border-radius: 10px;
+	background: #2271b1;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.6;
+}
+
+/* The readability auto-fix button sits inline with its line. */
+.cg-contrast-fix {
+	margin-left: 6px;
+	vertical-align: baseline;
+}

@@ -452,7 +452,7 @@
 			// Start from a clean slate (reset clears the pickers AND the
 			// Theme colour selects) so a bundle means the same thing
 			// whatever was there before.
-			$( '#cg-appearance-reset' ).trigger( 'click' );
+			resetAppearance();
 			for ( var id in bundle ) {
 				if ( ! Object.prototype.hasOwnProperty.call( bundle, id ) || 'colors' === id ) {
 					continue;
@@ -486,39 +486,116 @@
 			window.setTimeout( syncFromForm, 60 );
 		}
 
-		// Each quick-style button gets a miniature of the panel it produces,
-		// drawn from the bundle's own colours — a picture beats a name.
+		// Each quick-style button carries a true miniature: a scaled clone of
+		// the real preview panel with the bundle's values applied, so the card
+		// IS what you get. Inert and aria-hidden — the name is the label.
+		function miniatureFor( bundle ) {
+			if ( ! sample ) {
+				return null;
+			}
+			var card = document.createElement( 'span' );
+			card.className = 'cg-quick-card';
+			card.setAttribute( 'aria-hidden', 'true' );
+			var scaler = document.createElement( 'span' );
+			scaler.className = 'cg-quick-card__scale';
+			var clone = sample.cloneNode( true );
+			var withIds = clone.querySelectorAll( '[id]' );
+			for ( var i = 0; i < withIds.length; i++ ) {
+				withIds[ i ].removeAttribute( 'id' );
+			}
+			clone.removeAttribute( 'id' );
+			clone.setAttribute( 'inert', '' );
+			clone.style.cssText = '';
+			var poster = clone.querySelector( '.cg-embed__poster' );
+			if ( poster ) {
+				poster.parentNode.removeChild( poster );
+				clone.classList.remove( 'cg-embed--poster' );
+			}
+			var map = { bg: '--cg-bg', fg: '--cg-fg', accent: '--cg-accent', accent_fg: '--cg-accent-fg' };
+			if ( ! bundle ) {
+				// "Theme default": the colours a cleared setting resolves to on
+				// this site — the Default radio carries them.
+				for ( var d in map ) {
+					if ( Object.prototype.hasOwnProperty.call( map, d ) ) {
+						var control = colorControl( d );
+						var radio = control ? control.querySelector( 'input[type="radio"][value=""]' ) : null;
+						var hex = radio ? radio.getAttribute( 'data-cg-hex' ) : '';
+						if ( hex ) {
+							clone.style.setProperty( map[ d ], hex );
+						}
+					}
+				}
+			}
+			if ( bundle ) {
+				var c = bundle.colors || {};
+				for ( var key in map ) {
+					if ( Object.prototype.hasOwnProperty.call( map, key ) && c[ key ] ) {
+						clone.style.setProperty( map[ key ], c[ key ] );
+					}
+				}
+				if ( 'minimal' === bundle[ 'cg-preset' ] ) {
+					clone.style.background = 'transparent';
+					clone.style.border = '1px solid ' + ( c.fg || '#333' );
+				}
+				var radius = RADII[ bundle[ 'cg-corners' ] ] || ( 'custom' === bundle[ 'cg-corners' ] ? ( bundle[ 'cg-radius' ] || 12 ) + 'px' : '' );
+				if ( radius ) {
+					clone.style.setProperty( '--cg-radius', radius );
+					clone.style.borderRadius = radius;
+				}
+				if ( bundle[ 'cg-border-width' ] ) {
+					clone.style.border = bundle[ 'cg-border-width' ] + 'px solid ' + ( c.border_color || c.fg || '#333' );
+				}
+				if ( SHADOWS[ bundle[ 'cg-shadow' ] ] ) {
+					clone.style.boxShadow = SHADOWS[ bundle[ 'cg-shadow' ] ];
+				}
+				var panelEl = clone.querySelector( '.cg-embed__panel' );
+				if ( panelEl && 'center' === bundle[ 'cg-align' ] ) {
+					panelEl.style.alignItems = 'center';
+					panelEl.style.textAlign = 'center';
+				}
+				var btn = clone.querySelector( '.cg-embed__button' );
+				if ( btn ) {
+					if ( 'pill' === bundle[ 'cg-corners' ] ) {
+						btn.style.borderRadius = '999px';
+					}
+					if ( 'outline' === bundle[ 'cg-button-style' ] ) {
+						btn.style.background = 'transparent';
+						btn.style.color = 'var( --cg-fg )';
+					}
+					if ( 'full' === bundle[ 'cg-button-width' ] ) {
+						btn.style.width = '100%';
+					}
+				}
+				if ( bundle[ 'cg-play-icon' ] ) {
+					scaler.classList.add( 'cg-preview--icon' );
+				}
+				var links = clone.querySelectorAll( '.cg-embed__fallback a, .cg-embed__privacy a' );
+				for ( var l = 0; l < links.length; l++ ) {
+					links[ l ].style.color = c.link || '';
+				}
+			}
+			scaler.appendChild( clone );
+			card.appendChild( scaler );
+			return card;
+		}
+
 		function drawQuickCards() {
 			$( '.cg-quick-style[data-cg-quick-style]' ).each( function () {
 				var bundle = QUICK_STYLES[ this.getAttribute( 'data-cg-quick-style' ) ];
 				if ( ! bundle || this.querySelector( '.cg-quick-card' ) ) {
 					return;
 				}
-				var c = bundle.colors;
-				var mock = document.createElement( 'span' );
-				mock.className = 'cg-quick-card';
-				mock.setAttribute( 'aria-hidden', 'true' );
-				mock.style.background = c.bg || ( 'minimal' === bundle[ 'cg-preset' ] ? 'transparent' : '#1b1b1b' );
-				mock.style.borderColor = c.border_color || c.fg || '#f0f0f0';
-				mock.style.borderRadius = 'square' === bundle[ 'cg-corners' ] ? '0' : ( 'pill' === bundle[ 'cg-corners' ] ? '14px' : '6px' );
-				var line = document.createElement( 'span' );
-				line.className = 'cg-quick-card__line';
-				line.style.background = c.fg || '#f0f0f0';
-				var btn = document.createElement( 'span' );
-				btn.className = 'cg-quick-card__btn';
-				btn.style.background = 'outline' === bundle[ 'cg-button-style' ] ? 'transparent' : ( c.accent || '#5c9e00' );
-				btn.style.borderColor = c.accent || '#5c9e00';
-				btn.style.borderRadius = 'pill' === bundle[ 'cg-corners' ] ? '999px' : '3px';
-				mock.appendChild( line );
-				mock.appendChild( btn );
-				this.insertBefore( mock, this.firstChild );
+				var card = miniatureFor( bundle );
+				if ( card ) {
+					this.insertBefore( card, this.firstChild );
+				}
 			} );
 			var reset = document.getElementById( 'cg-appearance-reset' );
 			if ( reset && ! reset.querySelector( '.cg-quick-card' ) ) {
-				var blank = document.createElement( 'span' );
-				blank.className = 'cg-quick-card cg-quick-card--default';
-				blank.setAttribute( 'aria-hidden', 'true' );
-				reset.insertBefore( blank, reset.firstChild );
+				var plain = miniatureFor( null );
+				if ( plain ) {
+					reset.insertBefore( plain, reset.firstChild );
+				}
 			}
 		}
 
@@ -600,21 +677,82 @@
 			return ( hi + 0.05 ) / ( lo + 0.05 );
 		}
 
+		// Each pair names the colour key that paints its text, so a failing
+		// line can offer a fix. The withdraw control only has its own text
+		// colour when filled (outline/link inherit the page).
 		function pairs() {
 			var out = [];
 			if ( note ) {
-				out.push( { label: i18n.panelText, el: note } );
+				out.push( { label: i18n.panelText, el: note, key: 'fg' } );
 			}
 			if ( button ) {
-				out.push( { label: i18n.buttonText, el: button } );
+				var outline = 'outline' === ( document.getElementById( 'cg-button-style' ) || { value: '' } ).value;
+				out.push( { label: i18n.buttonText, el: button, key: outline ? 'fg' : 'accent_fg' } );
 			}
 			if ( link ) {
-				out.push( { label: i18n.linkText, el: link } );
+				out.push( { label: i18n.linkText, el: link, key: 'link' } );
 			}
 			if ( withdraw ) {
-				out.push( { label: i18n.withdrawText, el: withdraw } );
+				var style = ( document.getElementById( 'cg-withdraw-style' ) || { value: '' } ).value;
+				out.push( { label: i18n.withdrawText, el: withdraw, key: '' === style ? 'accent_fg' : null } );
 			}
 			return out;
+		}
+
+		// The fix: among the theme's colours (plus black and white) pick the
+		// one that passes 4.5:1 against the pair's real backdrop and is
+		// closest to the current colour — a theme colour becomes a reference,
+		// black/white a custom hex.
+		function hexToRgb( hex ) {
+			var h = hex.replace( '#', '' );
+			if ( 3 === h.length ) {
+				h = h[ 0 ] + h[ 0 ] + h[ 1 ] + h[ 1 ] + h[ 2 ] + h[ 2 ];
+			}
+			var n = parseInt( h, 16 );
+			return { r: ( n >> 16 ) & 255, g: ( n >> 8 ) & 255, b: n & 255, a: 1 };
+		}
+		function fixPair( pair, bg ) {
+			var key = pair.key;
+			if ( darkPreviewActive() && VARS[ key ] ) {
+				key = 'dark_' + key;
+			}
+			var control = colorControl( key );
+			if ( ! control ) {
+				return;
+			}
+			var current = parseColor( getComputedStyle( pair.el ).color ) || { r: 0, g: 0, b: 0, a: 1 };
+			var candidates = [];
+			var radios = control.querySelectorAll( 'input[type="radio"][data-cg-hex]' );
+			for ( var i = 0; i < radios.length; i++ ) {
+				var hex = radios[ i ].getAttribute( 'data-cg-hex' );
+				if ( hex && 'custom' !== radios[ i ].value ) {
+					candidates.push( { value: radios[ i ].value, hex: hex } );
+				}
+			}
+			candidates.push( { value: 'custom', hex: '#000000' } );
+			candidates.push( { value: 'custom', hex: '#ffffff' } );
+			var best = null;
+			for ( var c = 0; c < candidates.length; c++ ) {
+				var rgb = hexToRgb( candidates[ c ].hex );
+				if ( ratio( rgb, bg ) < 4.5 ) {
+					continue;
+				}
+				var d = Math.pow( rgb.r - current.r, 2 ) + Math.pow( rgb.g - current.g, 2 ) + Math.pow( rgb.b - current.b, 2 );
+				if ( ! best || d < best.d ) {
+					best = { d: d, value: candidates[ c ].value, hex: candidates[ c ].hex };
+				}
+			}
+			if ( ! best ) {
+				return;
+			}
+			if ( 'custom' === best.value ) {
+				checkSwatch( key, 'custom' );
+				$( pickerField( key ) ).wpColorPicker( 'color', best.hex );
+			} else {
+				checkSwatch( key, best.value );
+			}
+			colorChanged( key );
+			notify( i18n.fixedText );
 		}
 
 		function refresh() {
@@ -644,8 +782,184 @@
 						.replace( '%2$s', r.toFixed( 1 ) + ':1' )
 						.replace( '%3$s', ( ok ? i18n.pass : i18n.fail ) || '' )
 				) );
+				if ( ! ok && pair.key ) {
+					var fix = document.createElement( 'button' );
+					fix.type = 'button';
+					fix.className = 'button button-small cg-contrast-fix';
+					fix.textContent = i18n.fixText || 'Make readable';
+					( function ( thePair, theBg ) {
+						fix.addEventListener( 'click', function () {
+							fixPair( thePair, theBg );
+						} );
+					}( pair, bg ) );
+					line.appendChild( document.createTextNode( ' ' ) );
+					line.appendChild( fix );
+				}
 				report.appendChild( line );
 			} );
+		}
+
+		// --- Unsaved-changes bar, Undo, change badges, hover highlight ---
+
+		var form = stage ? stage.closest( 'form' ) : null;
+		var unsavedBar = document.getElementById( 'cg-unsaved' );
+		var undoButton = document.getElementById( 'cg-undo' );
+		var baseline = '';
+		var undoSnapshot = null;
+		var undoTimer = null;
+		var submitting = false;
+
+		function snapshot() {
+			return form ? $( form ).serialize() : '';
+		}
+		function restoreSnapshot( serialized ) {
+			var values = {};
+			serialized.split( '&' ).forEach( function ( pair ) {
+				if ( ! pair ) {
+					return;
+				}
+				var parts = pair.split( '=' );
+				var name = decodeURIComponent( parts[ 0 ].replace( /\+/g, ' ' ) );
+				var value = decodeURIComponent( ( parts[ 1 ] || '' ).replace( /\+/g, ' ' ) );
+				values[ name ] = value;
+			} );
+			var fields = form.querySelectorAll( 'input, select, textarea' );
+			for ( var i = 0; i < fields.length; i++ ) {
+				var field = fields[ i ];
+				if ( ! field.name || 'submit' === field.type || 'hidden' === field.type && /nonce|_wp_http_referer|option_page|action/.test( field.name ) ) {
+					continue;
+				}
+				if ( 'checkbox' === field.type ) {
+					field.checked = values[ field.name ] === field.value;
+				} else if ( 'radio' === field.type ) {
+					field.checked = values[ field.name ] === field.value;
+				} else if ( 'hidden' !== field.type ) {
+					field.value = Object.prototype.hasOwnProperty.call( values, field.name ) ? values[ field.name ] : '';
+				}
+			}
+			$( '.cg-color-field' ).each( function () {
+				$( this ).wpColorPicker( 'color', this.value || '' );
+				if ( ! this.value ) {
+					$( this ).closest( '.wp-picker-container' ).find( '.wp-picker-clear' ).trigger( 'click' );
+				}
+			} );
+			$( '.cg-color' ).each( function () {
+				reflectSwatch( this.getAttribute( 'data-cg-color-key' ) );
+			} );
+			syncFromForm();
+			window.setTimeout( syncFromForm, 60 );
+		}
+
+		function updateDirty() {
+			if ( ! unsavedBar ) {
+				return;
+			}
+			var dirty = snapshot() !== baseline;
+			unsavedBar.hidden = ! dirty && ! undoSnapshot;
+			document.body.classList.toggle( 'cg-has-unsaved', dirty );
+			updateBadges();
+		}
+
+		// A short message in the bar (status region) with an Undo for the
+		// bulk actions that overwrite everything at once.
+		function notify( text, withUndo ) {
+			if ( ! unsavedBar ) {
+				return;
+			}
+			var label = unsavedBar.querySelector( '.cg-unsaved__text' );
+			if ( label ) {
+				label.textContent = text;
+			}
+			if ( undoButton ) {
+				undoButton.hidden = ! withUndo;
+			}
+			unsavedBar.hidden = false;
+			window.clearTimeout( undoTimer );
+			undoTimer = window.setTimeout( function () {
+				undoSnapshot = withUndo ? null : undoSnapshot;
+				if ( undoButton ) {
+					undoButton.hidden = true;
+				}
+				if ( label ) {
+					label.textContent = i18n.leaveWarning ? unsavedBar.getAttribute( 'data-cg-default-text' ) || '' : '';
+				}
+				updateDirty();
+			}, 10000 );
+		}
+
+		function bulkAction( run, message ) {
+			undoSnapshot = snapshot();
+			run();
+			notify( message, true );
+			updateDirty();
+		}
+
+		// Change badges: how many controls in a collapsed section differ
+		// from their defaults, so customisations are easy to find again.
+		function controlChanged( el ) {
+			if ( 'SELECT' === el.tagName ) {
+				return el.selectedIndex > 0;
+			}
+			if ( 'checkbox' === el.type ) {
+				return el.checked;
+			}
+			if ( 'radio' === el.type ) {
+				return el.checked && '' !== el.value;
+			}
+			if ( 'number' === el.type ) {
+				return 'cg-radius' === el.id ? '12' !== el.value && '' !== el.value : '' !== el.value;
+			}
+			return false;
+		}
+		function updateBadges() {
+			$( '#cg-tab-appearance details.cg-section' ).each( function () {
+				var count = 0;
+				var fields = this.querySelectorAll( 'select, input[type="checkbox"], input[type="radio"], input[type="number"]' );
+				for ( var i = 0; i < fields.length; i++ ) {
+					if ( controlChanged( fields[ i ] ) ) {
+						count++;
+					}
+				}
+				var badge = this.querySelector( '.cg-section__badge' );
+				if ( ! badge ) {
+					badge = document.createElement( 'span' );
+					badge.className = 'cg-section__badge';
+					this.querySelector( ':scope > summary' ).appendChild( badge );
+				}
+				badge.hidden = 0 === count;
+				badge.textContent = ( i18n.changedCount || '%d changed' ).replace( '%d', String( count ) );
+			} );
+		}
+
+		// Hover/focus a row → outline what it changes in the preview.
+		var HIGHLIGHT = {
+			bg: '.cg-embed', fg: '.cg-embed__note', accent: '.cg-embed__button', accent_fg: '.cg-embed__button',
+			link: '.cg-embed__fallback a, .cg-embed__privacy a', border_color: '.cg-embed', dark_bg: '.cg-embed',
+			dark_fg: '.cg-embed__note', dark_accent: '.cg-embed__button', dark_accent_fg: '.cg-embed__button',
+			preset: '.cg-embed', corners: '.cg-embed', radius: '.cg-embed', border_width: '.cg-embed', shadow: '.cg-embed',
+			density: '.cg-embed__panel', align: '.cg-embed__panel', note_size: '.cg-embed__note',
+			button_style: '.cg-embed__button', button_size: '.cg-embed__button', button_width: '.cg-embed__button',
+			hover: '.cg-embed__button', play_icon: '.cg-embed__button', poster_panel: '.cg-embed__panel', poster_dim: '.cg-embed__poster',
+			withdraw_style: '#cg-preview-withdraw'
+		};
+		function rowKey( row ) {
+			var field = row.querySelector( '[name*="[appearance]["]' );
+			if ( ! field ) {
+				return null;
+			}
+			var m = /\[appearance\]\[([a-z_]+?)(?:_custom)?\]/.exec( field.name );
+			return m ? m[ 1 ] : null;
+		}
+		function setHighlight( row, on ) {
+			var key = rowKey( row );
+			var selector = key && HIGHLIGHT[ key ];
+			if ( ! selector || ! stage ) {
+				return;
+			}
+			var targets = stage.querySelectorAll( selector );
+			for ( var i = 0; i < targets.length; i++ ) {
+				targets[ i ].classList.toggle( 'cg-preview-hl', on );
+			}
 		}
 
 		// --- Wiring ---
@@ -778,10 +1092,42 @@
 				closeColorMenus( null );
 			}
 		} );
-		$( '.cg-quick-style' ).on( 'click', function () {
-			applyQuickStyle( this.getAttribute( 'data-cg-quick-style' ) );
+		$( '.cg-quick-style[data-cg-quick-style]' ).on( 'click', function () {
+			var name = this.getAttribute( 'data-cg-quick-style' );
+			bulkAction( function () {
+				applyQuickStyle( name );
+			}, i18n.applied || 'Style applied.' );
 		} );
-		$( '#cg-appearance-reset' ).on( 'click', function () {
+		if ( undoButton ) {
+			undoButton.addEventListener( 'click', function () {
+				if ( undoSnapshot ) {
+					var snap = undoSnapshot;
+					undoSnapshot = null;
+					restoreSnapshot( snap );
+					notify( i18n.undone || 'Undone.', false );
+				}
+			} );
+		}
+		if ( form ) {
+			$( form ).on( 'change input', function () {
+				updateDirty();
+			} );
+			$( form ).on( 'submit', function () {
+				submitting = true;
+			} );
+			window.addEventListener( 'beforeunload', function ( event ) {
+				if ( ! submitting && snapshot() !== baseline ) {
+					event.preventDefault();
+					event.returnValue = i18n.leaveWarning || '';
+				}
+			} );
+		}
+		$( '#cg-tab-appearance' ).on( 'mouseenter focusin', 'tr', function () {
+			setHighlight( this, true );
+		} ).on( 'mouseleave focusout', 'tr', function () {
+			setHighlight( this, false );
+		} );
+		function resetAppearance() {
 			// Back to "inherit everything": selects to their first option,
 			// numbers to their defaults, checkboxes off, every colour cleared
 			// through the picker's own Clear so its swatch resets too.
@@ -801,6 +1147,9 @@
 			palette = { base: {}, dark: {} };
 			syncFromForm();
 			window.setTimeout( syncFromForm, 60 );
+		}
+		$( '#cg-appearance-reset' ).on( 'click', function () {
+			bulkAction( resetAppearance, i18n.resetDone || 'Appearance reset to theme defaults.' );
 		} );
 		$( '#cg-dark-enabled' ).on( 'change', function () {
 			var rows = document.querySelectorAll( '.cg-dark-row' );
@@ -858,5 +1207,11 @@
 		} );
 		drawQuickCards();
 		syncFromForm();
+		if ( unsavedBar ) {
+			var defaultText = unsavedBar.querySelector( '.cg-unsaved__text' );
+			unsavedBar.setAttribute( 'data-cg-default-text', defaultText ? defaultText.textContent : '' );
+		}
+		baseline = snapshot();
+		updateBadges();
 	} );
 }( window.jQuery ) );

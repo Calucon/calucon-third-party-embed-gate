@@ -147,6 +147,14 @@ final class SettingsPage {
 					'buttonText'   => __( 'Button text on the button background', 'calucon-third-party-embed-gate' ),
 					'linkText'     => __( 'Fallback link on the panel background', 'calucon-third-party-embed-gate' ),
 					'withdrawText' => __( 'Withdraw button text on its background', 'calucon-third-party-embed-gate' ),
+					'fixText'      => __( 'Make readable', 'calucon-third-party-embed-gate' ),
+					'fixedText'    => __( 'Colour adjusted for readability.', 'calucon-third-party-embed-gate' ),
+					'applied'      => __( 'Style applied.', 'calucon-third-party-embed-gate' ),
+					'resetDone'    => __( 'Appearance reset to theme defaults.', 'calucon-third-party-embed-gate' ),
+					'undone'       => __( 'Undone.', 'calucon-third-party-embed-gate' ),
+					/* translators: %d: number of settings changed from their defaults in a section. */
+					'changedCount' => __( '%d changed', 'calucon-third-party-embed-gate' ),
+					'leaveWarning' => __( 'You have unsaved appearance changes.', 'calucon-third-party-embed-gate' ),
 					'pass'         => __( 'readable (meets the 4.5:1 minimum)', 'calucon-third-party-embed-gate' ),
 					'fail'         => __( 'hard to read — below the 4.5:1 minimum. Pick a lighter or darker colour for this pair.', 'calucon-third-party-embed-gate' ),
 				)
@@ -241,6 +249,18 @@ final class SettingsPage {
 				<?php $this->render_consent_tab( $options ); ?>
 
 				<?php submit_button(); ?>
+
+				<?php
+				// Sticky status bar (admin-appearance.js): shown while the form
+				// holds unsaved changes, with Save and a short-lived Undo after a
+				// quick style or reset. Hidden markup without JavaScript — the
+				// normal Save button above still works.
+				?>
+				<div id="cg-unsaved" class="cg-unsaved" role="status" aria-live="polite" hidden>
+					<span class="cg-unsaved__text"><?php esc_html_e( 'You have unsaved changes.', 'calucon-third-party-embed-gate' ); ?></span>
+					<button type="button" id="cg-undo" class="button" hidden><?php esc_html_e( 'Undo', 'calucon-third-party-embed-gate' ); ?></button>
+					<button type="submit" class="button button-primary"><?php esc_html_e( 'Save changes', 'calucon-third-party-embed-gate' ); ?></button>
+				</div>
 			</form>
 
 			<?php
