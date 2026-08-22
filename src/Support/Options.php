@@ -261,11 +261,26 @@ final class Options {
 				}
 			}
 			foreach ( array( 'bg', 'fg', 'accent', 'accent_fg', 'border_color', 'link', 'dark_bg', 'dark_fg', 'dark_accent', 'dark_accent_fg' ) as $color_key ) {
+				// A theme-colour reference wins over the picker: the settings
+				// form submits both ("<key>_preset" is the Theme colour select),
+				// and a stored value is either a hex or "preset:<slug>". The slug
+				// grammar is the only thing ever interpolated into a
+				// custom-property name; the hex grammar is the only thing ever
+				// emitted as a colour.
+				$preset = isset( $a[ $color_key . '_preset' ] ) && is_string( $a[ $color_key . '_preset' ] )
+					? strtolower( trim( $a[ $color_key . '_preset' ] ) )
+					: '';
+				if ( '' !== $preset && preg_match( '/^[a-z0-9-]{1,64}$/', $preset ) ) {
+					$clean['appearance'][ $color_key ] = 'preset:' . $preset;
+					continue;
+				}
 				if ( isset( $a[ $color_key ] ) && is_string( $a[ $color_key ] ) ) {
 					$color = strtolower( trim( $a[ $color_key ] ) );
-					// Hex colours only: anything else could smuggle CSS out
-					// of the custom-property value.
 					if ( preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/', $color ) ) {
+						$clean['appearance'][ $color_key ] = $color;
+					} elseif ( preg_match( '/^preset:[a-z0-9-]{1,64}$/', $color ) ) {
+						// Re-sanitising an already-stored tree (Plugin reads
+						// through sanitize()): keep a stored reference.
 						$clean['appearance'][ $color_key ] = $color;
 					}
 				}

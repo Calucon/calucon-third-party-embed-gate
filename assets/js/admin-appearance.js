@@ -37,6 +37,22 @@
 		var panel = sample ? sample.querySelector( '.cg-embed__panel' ) : null;
 		var withdraw = document.getElementById( 'cg-preview-withdraw' );
 
+		// A colour control is a pair: the Theme colour select (a palette slug,
+		// resolved to its current hex through the option's data-cg-hex) and
+		// the picker (a custom hex). The select wins, matching the sanitiser.
+		function presetSelect( key ) {
+			return document.querySelector( '.cg-theme-color[data-cg-color-preset="' + key + '"]' );
+		}
+		function effectiveColor( key ) {
+			var select = presetSelect( key );
+			if ( select && select.value ) {
+				var opt = select.options[ select.selectedIndex ];
+				return ( opt && opt.getAttribute( 'data-cg-hex' ) ) || '';
+			}
+			var field = document.querySelector( '.cg-color-field[data-cg-color="' + key + '"]' );
+			return field ? field.value : '';
+		}
+
 		// One palette store feeds the preview: the base colours, overlaid by
 		// the dark set when both the dark option and the dark-preview toggle
 		// are on — mirroring the @media (prefers-color-scheme: dark) emission.
@@ -74,12 +90,16 @@
 		}
 
 		function setColor( key, value ) {
+			var select = presetSelect( key );
+			if ( select && value && select.value ) {
+				select.value = '';
+			}
 			if ( 'border_color' === key ) {
 				applyBorder();
 				return;
 			}
 			if ( 'link' === key ) {
-				applyLinkColor( value );
+				applyLinkColor( effectiveColor( 'link' ) );
 				return;
 			}
 			if ( 0 === key.indexOf( 'dark_' ) ) {
@@ -142,9 +162,8 @@
 				return;
 			}
 			var widthInput = document.getElementById( 'cg-border-width' );
-			var colorInput = document.getElementById( 'cg-color-border-color' );
 			var width = widthInput ? widthInput.value : '';
-			var color = colorInput && colorInput.value ? colorInput.value : '';
+			var color = effectiveColor( 'border_color' );
 			if ( '' === width ) {
 				sample.style.border = '';
 				sample.style.borderColor = color;
@@ -365,7 +384,8 @@
 			if ( ! bundle ) {
 				return;
 			}
-			// Start from a clean slate so a bundle means the same thing
+			// Start from a clean slate (reset clears the pickers AND the
+			// Theme colour selects) so a bundle means the same thing
 			// whatever was there before.
 			$( '#cg-appearance-reset' ).trigger( 'click' );
 			for ( var id in bundle ) {
@@ -614,6 +634,26 @@
 		$( '#cg-preview-narrow' ).on( 'change', function () {
 			applyNarrow( this.checked );
 		} );
+		$( '.cg-theme-color' ).on( 'change', function () {
+			var key = this.getAttribute( 'data-cg-color-preset' );
+			var field = $( '.cg-color-field[data-cg-color="' + key + '"]' );
+			if ( this.value && field.length ) {
+				// Following the theme: the picker's custom value no longer applies.
+				field.closest( '.wp-picker-container' ).find( '.wp-picker-clear' ).trigger( 'click' );
+				if ( 0 === key.indexOf( 'dark_' ) ) {
+					palette.dark[ key.slice( 5 ) ] = effectiveColor( key );
+				} else if ( VARS[ key ] ) {
+					palette.base[ key ] = effectiveColor( key );
+				}
+			}
+			if ( 'border_color' === key ) {
+				applyBorder();
+			} else if ( 'link' === key ) {
+				applyLinkColor( effectiveColor( 'link' ) );
+			} else {
+				applyPalette();
+			}
+		} );
 		$( '.cg-quick-style' ).on( 'click', function () {
 			applyQuickStyle( this.getAttribute( 'data-cg-quick-style' ) );
 		} );
@@ -630,6 +670,7 @@
 			$( '#cg-tab-appearance .wp-picker-clear' ).each( function () {
 				this.click();
 			} );
+			$( '.cg-theme-color' ).val( '' );
 			$( '.cg-dark-row' ).prop( 'hidden', true );
 			palette = { base: {}, dark: {} };
 			syncFromForm();
@@ -657,13 +698,14 @@
 		function syncFromForm() {
 		$( '.cg-color-field' ).each( function () {
 			var key = this.getAttribute( 'data-cg-color' );
-			if ( ! this.value || 'border_color' === key ) {
+			var value = effectiveColor( key );
+			if ( ! value || 'border_color' === key || 'link' === key ) {
 				return;
 			}
 			if ( 0 === key.indexOf( 'dark_' ) ) {
-				palette.dark[ key.slice( 5 ) ] = this.value;
+				palette.dark[ key.slice( 5 ) ] = value;
 			} else if ( VARS[ key ] ) {
-				palette.base[ key ] = this.value;
+				palette.base[ key ] = value;
 			}
 		} );
 		applyPalette();
@@ -681,7 +723,7 @@
 		applyHover( ( document.getElementById( 'cg-hover' ) || { value: '' } ).value );
 		applyPosterPanel( ( document.getElementById( 'cg-poster-panel' ) || { value: '' } ).value );
 		applyPosterDim( ( document.getElementById( 'cg-poster-dim' ) || { value: '' } ).value );
-		applyLinkColor( ( document.querySelector( '[data-cg-color="link"]' ) || { value: '' } ).value );
+		applyLinkColor( effectiveColor( 'link' ) );
 		applyPreset( ( document.getElementById( 'cg-preset' ) || { value: '' } ).value );
 		}
 		syncFromForm();

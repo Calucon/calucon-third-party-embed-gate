@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use CaluconEmbedGate\Support\AppearanceCss;
+use CaluconEmbedGate\Support\ThemePalette;
 
 /**
  * Hooks wp_enqueue_scripts and owns the gate.js/gate.css/cmp-bridge.js handles.
@@ -98,7 +99,7 @@ final class Assets {
 		}
 
 		$kinds      = null !== $this->kinds_source ? (array) call_user_func( $this->kinds_source ) : array();
-		$appearance = AppearanceCss::build( $this->options['appearance'], $kinds );
+		$appearance = AppearanceCss::build( $this->options['appearance'], $kinds, ThemePalette::map() );
 		if ( '' !== $appearance ) {
 			wp_add_inline_style( 'calucon-embed-gate', $appearance );
 		}

@@ -299,4 +299,47 @@ final class AppearanceCssTest extends TestCase {
 			AppearanceCss::build( self::appearance( array( 'poster_panel' => 'bar' ) ) )
 		);
 	}
+
+	public function test_theme_colour_references_emit_preset_vars_with_hex_fallback(): void {
+		$palette = array( 'base' => '#f9f9f9', 'contrast' => '#111111' );
+
+		self::assertSame(
+			'.cg-embed,.cg-withdraw{--cg-bg:var(--wp--preset--color--base,#f9f9f9);--cg-fg:#222222;}',
+			AppearanceCss::build( self::appearance( array( 'bg' => 'preset:base', 'fg' => '#222222' ) ), array(), $palette )
+		);
+		// Slug the theme no longer has: the var still follows the theme if it
+		// ever returns, with no fallback to invent.
+		self::assertSame(
+			'.cg-embed,.cg-withdraw{--cg-accent:var(--wp--preset--color--accent-9);}',
+			AppearanceCss::build( self::appearance( array( 'accent' => 'preset:accent-9' ) ), array(), $palette )
+		);
+		// Every colour sink resolves the same way: border, link, dark set.
+		$css = AppearanceCss::build(
+			self::appearance(
+				array(
+					'border_width' => '2',
+					'border_color' => 'preset:contrast',
+					'link'         => 'preset:contrast',
+					'dark'         => true,
+					'dark_bg'      => 'preset:contrast',
+				)
+			),
+			array(),
+			$palette
+		);
+		self::assertStringContainsString( 'border:2px solid var(--wp--preset--color--contrast,#111111);', $css );
+		self::assertStringContainsString( 'a{color:var(--wp--preset--color--contrast,#111111);}', $css );
+		self::assertStringContainsString( '@media (prefers-color-scheme:dark){.cg-embed,.cg-withdraw{--cg-bg:var(--wp--preset--color--contrast,#111111);}}', $css );
+	}
+
+	public function test_colour_resolver_never_emits_anything_but_hex_or_a_slug_var(): void {
+		self::assertSame( '#abc', AppearanceCss::color( '#abc' ) );
+		self::assertSame( 'var(--wp--preset--color--base)', AppearanceCss::color( 'preset:base' ) );
+		self::assertSame( 'var(--wp--preset--color--base,#fff)', AppearanceCss::color( 'preset:base', array( 'base' => '#fff' ) ) );
+		// A palette entry that is not a hex is ignored as a fallback.
+		self::assertSame( 'var(--wp--preset--color--base)', AppearanceCss::color( 'preset:base', array( 'base' => 'url(x)' ) ) );
+		foreach ( array( 'red', 'preset:Base', 'preset:a b', 'expression(1)', 'preset:' ) as $bad ) {
+			self::assertSame( 'inherit', AppearanceCss::color( $bad ), $bad );
+		}
+	}
 }

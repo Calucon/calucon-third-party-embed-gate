@@ -289,6 +289,21 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await expect( page.locator( '#cg-color-bg' ) ).toHaveValue( /^#[0-9a-f]{3,6}$/ );
 	await bgPicker.locator( '.wp-color-result' ).click();
 
+	// Theme colour by name: the select stores a reference, the preview shows
+	// that palette colour, and the picker is cleared (the select wins).
+	const bgSelect = page.locator( '.cg-theme-color[data-cg-color-preset="bg"]' );
+	expect( await bgSelect.locator( 'option' ).count() ).toBeGreaterThan( 2 );
+	const secondSlug = await bgSelect.locator( 'option' ).nth( 1 ).getAttribute( 'value' );
+	const secondHex = await bgSelect.locator( 'option' ).nth( 1 ).getAttribute( 'data-cg-hex' );
+	await bgSelect.selectOption( secondSlug );
+	await expect( page.locator( '#cg-color-bg' ) ).toHaveValue( '' );
+	const rgb = secondHex.length === 7
+		? `rgb(${ parseInt( secondHex.slice( 1, 3 ), 16 ) }, ${ parseInt( secondHex.slice( 3, 5 ), 16 ) }, ${ parseInt( secondHex.slice( 5, 7 ), 16 ) })`
+		: null;
+	if ( rgb ) {
+		await expect( sample ).toHaveCSS( 'background-color', rgb );
+	}
+
 	// Round 4: a quick style fills in the controls AND the preview in one
 	// click; poster dimming and the phone-width preview mirror too.
 	await page.click( '.cg-quick-style[data-cg-quick-style="cinema"]' );

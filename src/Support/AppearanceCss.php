@@ -40,9 +40,11 @@ final class AppearanceCss {
 	 * @param array $kinds      Provider id => kind ('video'|'map'|'audio'|''),
 	 *                          for the kind-aware button glyph. Unknown and
 	 *                          generic providers get the generic glyph.
+	 * @param array $palette    Theme palette slug => hex, for the fallback in
+	 *                          emitted var(--wp--preset--color--…) references.
 	 * @return string
 	 */
-	public static function build( array $appearance, array $kinds = array() ): string {
+	public static function build( array $appearance, array $kinds = array(), array $palette = array() ): string {
 		// Tolerate pre-0.10 subtrees (missing keys) so the builder stays
 		// callable with any sanitised snapshot, old or new.
 		$a    = $appearance + array(
@@ -75,7 +77,7 @@ final class AppearanceCss {
 			'accent_fg' => '--cg-accent-fg',
 		) as $option_key => $property ) {
 			if ( '' !== $a[ $option_key ] ) {
-				$vars .= $property . ':' . $a[ $option_key ] . ';';
+				$vars .= $property . ':' . self::color( $a[ $option_key ], $palette ) . ';';
 			}
 		}
 
@@ -121,14 +123,14 @@ final class AppearanceCss {
 		// preset decide" — the pre-0.10 behaviour, byte for byte.
 		if ( '' !== (string) $a['border_width'] ) {
 			$width = (int) $a['border_width'];
-			$color = '' !== $a['border_color'] ? $a['border_color'] : 'var(--cg-fg)';
+			$color = '' !== $a['border_color'] ? self::color( $a['border_color'], $palette ) : 'var(--cg-fg)';
 			$css  .= '.cg-embed:not(.cg-embed--active){border:'
 				. ( 0 === $width ? 'none' : $width . 'px solid ' . $color )
 				. ';}';
 		} elseif ( '' !== $a['border_color'] ) {
 			// Colour without a width recolours whatever border the preset
 			// draws (minimal, card); with no preset border it does nothing.
-			$css .= '.cg-embed:not(.cg-embed--active){border-color:' . $a['border_color'] . ';}';
+			$css .= '.cg-embed:not(.cg-embed--active){border-color:' . self::color( $a['border_color'], $palette ) . ';}';
 		}
 
 		$shadows = array(
@@ -220,7 +222,7 @@ final class AppearanceCss {
 			$css .= '.cg-embed--poster:not(.cg-embed--active) .cg-embed__poster{filter:' . $dims[ $a['poster_dim'] ] . ';}';
 		}
 		if ( '' !== $a['link'] ) {
-			$css .= '.cg-embed .cg-embed__fallback a,.cg-embed .cg-embed__privacy a{color:' . $a['link'] . ';}';
+			$css .= '.cg-embed .cg-embed__fallback a,.cg-embed .cg-embed__privacy a{color:' . self::color( $a['link'], $palette ) . ';}';
 		}
 
 		if ( $a['dark'] ) {
@@ -232,7 +234,7 @@ final class AppearanceCss {
 				'dark_accent_fg' => '--cg-accent-fg',
 			) as $option_key => $property ) {
 				if ( '' !== $a[ $option_key ] ) {
-					$dark_vars .= $property . ':' . $a[ $option_key ] . ';';
+					$dark_vars .= $property . ':' . self::color( $a[ $option_key ], $palette ) . ';';
 				}
 			}
 			if ( '' !== $dark_vars ) {
@@ -241,6 +243,31 @@ final class AppearanceCss {
 		}
 
 		return $css;
+	}
+
+	/**
+	 * A stored colour as CSS: a hex verbatim, or a theme reference
+	 * "preset:<slug>" as var(--wp--preset--color--<slug>[, #fallback]) so the
+	 * panel follows the theme's palette, with the current hex as the safety
+	 * net should the slug disappear. Both grammars were enforced by
+	 * Options::sanitize(); anything else is defensively dropped to inherit.
+	 *
+	 * @param string $value   Stored colour value.
+	 * @param array  $palette slug => hex.
+	 * @return string
+	 */
+	public static function color( string $value, array $palette = array() ): string {
+		if ( preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i', $value ) ) {
+			return $value;
+		}
+		if ( preg_match( '/^preset:([a-z0-9-]{1,64})$/', $value, $m ) ) {
+			$slug     = $m[1];
+			$fallback = isset( $palette[ $slug ] ) && preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i', (string) $palette[ $slug ] )
+				? ',' . $palette[ $slug ]
+				: '';
+			return 'var(--wp--preset--color--' . $slug . $fallback . ')';
+		}
+		return 'inherit';
 	}
 
 	/**

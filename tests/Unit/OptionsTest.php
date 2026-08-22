@@ -318,6 +318,29 @@ final class OptionsTest extends TestCase {
 		self::assertSame( 'https://policies.google.com/privacy', $by_id['youtube']['privacy_url'], 'rejected override leaves the built-in' );
 	}
 
+	public function test_theme_colour_reference_beats_the_picker_and_is_slug_guarded(): void {
+		$clean = Options::sanitize(
+			array(
+				'appearance' => array(
+					'bg'               => '#112233',
+					'bg_preset'        => 'Base',          // select wins; slug lowercased
+					'fg'               => '#ffffff',
+					'fg_preset'        => '',              // custom hex kept
+					'accent'           => '',
+					'accent_preset'    => 'accent-2) ;x',  // not a slug → rejected, nothing stored
+					'link'             => 'preset:contrast', // already-stored reference survives re-sanitising
+					'dark_bg'          => '',
+					'dark_bg_preset'   => 'contrast-2',
+				),
+			)
+		);
+		self::assertSame( 'preset:base', $clean['appearance']['bg'] );
+		self::assertSame( '#ffffff', $clean['appearance']['fg'] );
+		self::assertSame( '', $clean['appearance']['accent'] );
+		self::assertSame( 'preset:contrast', $clean['appearance']['link'] );
+		self::assertSame( 'preset:contrast-2', $clean['appearance']['dark_bg'] );
+	}
+
 	public function test_privacy_link_toggle_defaults_on_and_becomes_boolean(): void {
 		self::assertTrue( Options::sanitize( array() )['display']['privacy_link'] );
 		self::assertFalse( Options::sanitize( array( 'display' => array( 'privacy_link' => '0' ) ) )['display']['privacy_link'] );

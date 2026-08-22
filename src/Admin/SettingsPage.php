@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use CaluconEmbedGate\Cmp\Detector;
 use CaluconEmbedGate\Support\Csp;
 use CaluconEmbedGate\Support\Options;
+use CaluconEmbedGate\Support\ThemePalette;
 
 /**
  * Settings > Calucon Third-Party Embed Gate.
@@ -155,47 +156,13 @@ final class SettingsPage {
 	}
 
 	/**
-	 * The active theme's colour palette, for the pickers' swatches: theme.json
-	 * (block themes; the theme's and the site's custom colours) or the classic
-	 * editor-color-palette. Hex colours only — the same rule the option
-	 * sanitiser applies — so a palette entry can never carry anything else.
+	 * The active theme's palette for the pickers' swatches and the Theme
+	 * colour selects. See Support\ThemePalette.
 	 *
-	 * @return array<int,array{name:string,color:string}>
+	 * @return array<int,array{name:string,slug:string,color:string}>
 	 */
 	private function theme_palette(): array {
-		$entries = array();
-		if ( function_exists( 'wp_get_global_settings' ) ) {
-			$settings = wp_get_global_settings( array( 'color', 'palette' ) );
-			foreach ( array( 'theme', 'custom' ) as $origin ) {
-				if ( ! empty( $settings[ $origin ] ) && is_array( $settings[ $origin ] ) ) {
-					$entries = array_merge( $entries, $settings[ $origin ] );
-				}
-			}
-		}
-		if ( empty( $entries ) ) {
-			$support = get_theme_support( 'editor-color-palette' );
-			if ( is_array( $support ) && isset( $support[0] ) && is_array( $support[0] ) ) {
-				$entries = $support[0];
-			}
-		}
-
-		$palette = array();
-		$seen    = array();
-		foreach ( $entries as $entry ) {
-			if ( ! is_array( $entry ) || empty( $entry['color'] ) || ! is_string( $entry['color'] ) ) {
-				continue;
-			}
-			$color = strtolower( trim( $entry['color'] ) );
-			if ( ! preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/', $color ) || isset( $seen[ $color ] ) ) {
-				continue;
-			}
-			$seen[ $color ] = true;
-			$palette[]      = array(
-				'name'  => isset( $entry['name'] ) && is_string( $entry['name'] ) ? $entry['name'] : $color,
-				'color' => $color,
-			);
-		}
-		return array_slice( $palette, 0, 24 );
+		return ThemePalette::entries();
 	}
 
 	/**
@@ -476,12 +443,31 @@ final class SettingsPage {
 	 * @return void
 	 */
 	private function color_row( string $key, string $label, array $appearance, string $description = '', string $row_attrs = '' ): void {
-		$id = 'cg-color-' . str_replace( '_', '-', $key );
+		$id        = 'cg-color-' . str_replace( '_', '-', $key );
+		$select_id = 'cg-theme-color-' . str_replace( '_', '-', $key );
+		$stored    = (string) $appearance[ $key ];
+		$preset    = 0 === strpos( $stored, 'preset:' ) ? substr( $stored, 7 ) : '';
+		$hex       = '' === $preset ? $stored : '';
+		$palette   = $this->theme_palette();
+		$known     = false;
 		?>
 					<tr <?php echo $row_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- literal attribute strings from this class. ?>>
 						<th scope="row"><label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $label ); ?></label></th>
 						<td>
-							<input type="text" id="<?php echo esc_attr( $id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $key . ']' ); ?>" value="<?php echo esc_attr( $appearance[ $key ] ); ?>">
+							<?php if ( ! empty( $palette ) ) : ?>
+								<label class="screen-reader-text" for="<?php echo esc_attr( $select_id ); ?>"><?php echo esc_html( $label ); ?> — <?php esc_html_e( 'theme colour', 'calucon-third-party-embed-gate' ); ?></label>
+								<select id="<?php echo esc_attr( $select_id ); ?>" class="cg-theme-color" data-cg-color-preset="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $key . '_preset]' ); ?>">
+									<option value=""><?php esc_html_e( 'Custom colour / inherit', 'calucon-third-party-embed-gate' ); ?></option>
+									<?php foreach ( $palette as $entry ) : ?>
+										<?php $known = $known || $entry['slug'] === $preset; ?>
+										<option value="<?php echo esc_attr( $entry['slug'] ); ?>" data-cg-hex="<?php echo esc_attr( $entry['color'] ); ?>" <?php selected( $entry['slug'], $preset ); ?>><?php echo esc_html( $entry['name'] ); ?></option>
+									<?php endforeach; ?>
+									<?php if ( '' !== $preset && ! $known ) : ?>
+										<option value="<?php echo esc_attr( $preset ); ?>" selected><?php echo esc_html( sprintf( /* translators: %s: theme colour slug no longer in the theme's palette. */ __( '%s (not in the current theme)', 'calucon-third-party-embed-gate' ), $preset ) ); ?></option>
+									<?php endif; ?>
+								</select>
+							<?php endif; ?>
+							<input type="text" id="<?php echo esc_attr( $id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $key . ']' ); ?>" value="<?php echo esc_attr( $hex ); ?>">
 							<?php if ( '' !== $description ) : ?>
 								<p class="description"><?php echo esc_html( $description ); ?></p>
 							<?php endif; ?>
@@ -502,7 +488,7 @@ final class SettingsPage {
 		?>
 <div id="cg-tab-appearance" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-appearance">
 				<h2><?php esc_html_e( 'Appearance', 'calucon-third-party-embed-gate' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Style the placeholder panel without writing any CSS: pick a style, pick colours, and watch the preview update as you go. Every colour picker offers your theme\'s own palette as swatches, and the readability check tells you immediately if a colour combination would be hard to read.', 'calucon-third-party-embed-gate' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Style the placeholder panel without writing any CSS: pick a style, pick colours, and watch the preview update as you go. For every colour you can either follow one of your theme\'s own palette colours by name — the panel then changes with the theme — or set a custom colour; the readability check tells you immediately if a combination would be hard to read.', 'calucon-third-party-embed-gate' ); ?></p>
 				<p>
 					<button type="button" id="cg-appearance-reset" class="button"><?php esc_html_e( 'Reset appearance to defaults', 'calucon-third-party-embed-gate' ); ?></button>
 					<span class="description"><?php esc_html_e( 'Clears every field on this tab. Nothing changes on your site until you save.', 'calucon-third-party-embed-gate' ); ?></span>
