@@ -566,6 +566,31 @@ test( 'editor: the per-block gate control appears in the block inspector', async
 	expect( attrs.caluconEmbedGateNote ).toBe( 'Custom notice.' );
 } );
 
+test( 'admin: Plugins screen links to Settings; a tab hash does not scroll the tab bar away', async ( { page } ) => {
+	await page.goto( '/wp-login.php' );
+	await page.fill( '#user_login', 'admin' );
+	await page.fill( '#user_pass', 'password' );
+	await page.click( '#wp-submit' );
+	await page.waitForURL( /wp-admin/ );
+
+	// "Settings" next to Deactivate on the Plugins screen.
+	await page.goto( '/wp-admin/plugins.php' );
+	const row = page.locator( 'tr[data-slug="calucon-third-party-embed-gate"], tr[data-plugin*="calucon-third-party-embed-gate"]' ).first();
+	await expect( row.locator( '.row-actions a', { hasText: 'Settings' } ) ).toHaveAttribute( 'href', /options-general\.php\?page=calucon-embed-gate/ );
+	// Support link in the row meta (convention), never among the actions.
+	await expect( row.locator( '.plugin-version-author-uri a', { hasText: 'Support development' } ) ).toHaveAttribute( 'href', 'https://ko-fi.com/calucon' );
+	await expect( row.locator( '.row-actions a', { hasText: 'Support' } ) ).toHaveCount( 0 );
+
+	// The post-save redirect carries the tab as a hash that is also the
+	// panel's id; the page must still show the tab bar at the top.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-appearance' );
+	await page.waitForLoadState( 'load' );
+	await expect( page.locator( '#cg-tabbtn-appearance' ) ).toHaveAttribute( 'aria-selected', 'true' );
+	await page.waitForTimeout( 300 );
+	expect( await page.evaluate( () => window.scrollY ) ).toBe( 0 );
+	await expect( page.locator( '.cg-tabs' ) ).toBeInViewport();
+} );
+
 test( 'resource hints to gated providers are removed; harmless hints survive', async ( { page } ) => {
 	// The seed's mu-plugin emulates a performance plugin: one preconnect to
 	// a gated provider and one to a safe CDN via the wp_resource_hints

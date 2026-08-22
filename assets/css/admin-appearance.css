@@ -467,3 +467,11 @@
 .cg-choice .cg-color__option input:checked ~ .cg-choice__icon {
 	color: #2271b1;
 }
+
+/* The tab hash doubles as the panel's id: a fragment jump to a panel must
+   resolve to the top of the page (tab bar in view), not to the panel. A
+   viewport-sized scroll margin does exactly that; anchors INSIDE a panel
+   (#cg-status) keep their own, normal scrolling. */
+.cg-tab-panel {
+	scroll-margin-top: 100vh;
+}

@@ -63,6 +63,41 @@ final class SettingsPage {
 		add_action( 'admin_init', array( $this, 'register_setting' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_filter( 'admin_footer_text', array( $this, 'footer_support_link' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( CALUCON_EMBED_GATE_FILE ), array( $this, 'action_links' ) );
+		add_filter( 'plugin_row_meta', array( $this, 'row_meta' ), 10, 2 );
+	}
+
+	/**
+	 * A "Support development" link in the plugin's row meta — where
+	 * WordPress convention puts donate/support links, next to "View
+	 * details" — not among the action links. A plain link: nothing loads
+	 * until the owner clicks it (the plugin's no-outbound rule applies to
+	 * its admin UI too).
+	 *
+	 * @param array  $links Row meta links.
+	 * @param string $file  Plugin basename the row is for.
+	 * @return array
+	 */
+	public function row_meta( $links, $file ): array {
+		if ( plugin_basename( CALUCON_EMBED_GATE_FILE ) === $file ) {
+			$links[] = '<a href="https://ko-fi.com/calucon" target="_blank" rel="noopener noreferrer">'
+				. esc_html__( 'Support development', 'calucon-third-party-embed-gate' ) . '</a>';
+		}
+		return (array) $links;
+	}
+
+	/**
+	 * "Settings" next to Deactivate on the Plugins screen — the standard
+	 * shortcut to a plugin's settings page.
+	 *
+	 * @param array $links Existing action links.
+	 * @return array
+	 */
+	public function action_links( $links ): array {
+		$settings = '<a href="' . esc_url( admin_url( 'options-general.php?page=calucon-embed-gate' ) ) . '">'
+			. esc_html__( 'Settings', 'calucon-third-party-embed-gate' ) . '</a>';
+		array_unshift( $links, $settings );
+		return (array) $links;
 	}
 
 	/**
