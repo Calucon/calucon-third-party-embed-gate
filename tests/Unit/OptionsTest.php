@@ -289,6 +289,35 @@ final class OptionsTest extends TestCase {
 		self::assertSame( '', $worse['appearance']['link'] );
 	}
 
+	public function test_provider_privacy_url_override_is_https_only_and_applied(): void {
+		$clean = Options::sanitize(
+			array(
+				'providers' => array(
+					'vimeo'   => array( 'privacy_url' => ' https://vimeo.com/de/privacy ' ),
+					'youtube' => array( 'privacy_url' => 'javascript:alert(1)' ),
+					'spotify' => array( 'privacy_url' => 'http://www.spotify.com/de/legal/privacy-policy/' ),
+					'reddit'  => array( 'privacy_url' => 'https://x y' ),
+				),
+			)
+		);
+		self::assertSame( 'https://vimeo.com/de/privacy', $clean['providers']['vimeo']['privacy_url'] );
+		// A row with nothing valid in it is dropped altogether.
+		self::assertTrue( empty( $clean['providers']['youtube']['privacy_url'] ), 'non-https scheme rejected' );
+		self::assertTrue( empty( $clean['providers']['spotify']['privacy_url'] ), 'plain http rejected' );
+		self::assertTrue( empty( $clean['providers']['reddit']['privacy_url'] ), 'malformed URL rejected' );
+
+		$providers = Options::apply_provider_overrides(
+			\CaluconEmbedGate\Providers\Builtin\Descriptors::all(),
+			$clean
+		);
+		$by_id = array();
+		foreach ( $providers as $descriptor ) {
+			$by_id[ $descriptor['id'] ] = $descriptor;
+		}
+		self::assertSame( 'https://vimeo.com/de/privacy', $by_id['vimeo']['privacy_url'] );
+		self::assertSame( 'https://policies.google.com/privacy', $by_id['youtube']['privacy_url'], 'rejected override leaves the built-in' );
+	}
+
 	public function test_privacy_link_toggle_defaults_on_and_becomes_boolean(): void {
 		self::assertTrue( Options::sanitize( array() )['display']['privacy_link'] );
 		self::assertFalse( Options::sanitize( array( 'display' => array( 'privacy_link' => '0' ) ) )['display']['privacy_link'] );

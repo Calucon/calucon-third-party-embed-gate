@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Link-rot canary for the built-in provider privacy-policy URLs.
+#
+# Runs in CI on a schedule — NEVER from the plugin (invariant 9: the plugin
+# makes no outbound requests). Fails on any non-2xx final response, and
+# reports redirects that leave the provider's domain so a moved policy is
+# noticed before site visitors click a stale link.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+
+fail=0
+while IFS= read -r url; do
+	[ -z "$url" ] && continue
+	final=$(curl -sS -o /dev/null -L --max-redirs 5 --max-time 20 -A "calucon-embed-gate-link-canary" -w '%{http_code} %{url_effective}' "$url" 2>/dev/null) || final="000 $url"
+	code=${final%% *}; effective=${final#* }
+	from_host=$(printf '%s' "$url" | sed -E 's#^https?://([^/]+).*#\1#'); to_host=$(printf '%s' "$effective" | sed -E 's#^https?://([^/]+).*#\1#')
+	if [[ "$code" != 2* ]]; then
+		echo "FAIL $code  $url -> $effective"; fail=1
+	elif [[ "$from_host" != "$to_host" ]]; then
+		echo "MOVED     $url -> $effective (update Descriptors.php)"
+	else
+		echo "ok   $code  $url"
+	fi
+done < <(grep -oP "'privacy_url'\s*=>\s*'\K[^']+" src/Providers/Builtin/Descriptors.php | sort -u)
+exit $fail

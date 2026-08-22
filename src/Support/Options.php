@@ -34,6 +34,7 @@ final class Options {
 				//     'privacy_variant' => true,   load via nocookie/dnt target
 				//     'note'            => '',     override panel note text
 				//     'action'          => '',     override button text
+				//     'privacy_url'     => '',     override the linked privacy policy (https only)
 				// ),
 			),
 			'detection'  => array(
@@ -172,6 +173,17 @@ final class Options {
 						if ( '' !== $text ) {
 							$entry[ $text_key ] = $text;
 						}
+					}
+				}
+				// Privacy-policy URL override: a localised or moved policy
+				// page. https only — the renderer's scheme guard is the second
+				// layer, this is the first — and bounded in length.
+				if ( isset( $row['privacy_url'] ) && is_string( $row['privacy_url'] ) ) {
+					$url = trim( $row['privacy_url'] );
+					if ( strlen( $url ) <= 500
+						&& preg_match( '~^https://\S+$~i', $url )
+						&& false !== filter_var( $url, FILTER_VALIDATE_URL ) ) {
+						$entry['privacy_url'] = $url;
 					}
 				}
 				if ( array() !== $entry ) {
@@ -326,7 +338,7 @@ final class Options {
 				$descriptor['load_path']  = null;
 				$descriptor['load_query'] = array();
 			}
-			foreach ( array( 'note', 'action' ) as $text_key ) {
+			foreach ( array( 'note', 'action', 'privacy_url' ) as $text_key ) {
 				if ( isset( $row[ $text_key ] ) && '' !== $row[ $text_key ] ) {
 					$descriptor[ $text_key ] = $row[ $text_key ];
 				}

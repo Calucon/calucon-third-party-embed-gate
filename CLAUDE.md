@@ -63,6 +63,10 @@ translate.wordpress.org can extract them; keep it in the build-zip whitelist.
 note/action overrides and the per-block `caluconEmbedGateAction`/`Note`
 attributes — with WPML and Polylang; it is whitelisted in `bin/build-zip.sh`
 and pinned against `editor.js`'s `GATED_BLOCKS` by `WpmlConfigTest`.
+`bin/check-privacy-links.sh` + `.github/workflows/privacy-link-canary.yml`
+HEAD every built-in `privacy_url` weekly **from CI only** — the plugin itself
+never may (invariant 9). A MOVED/FAIL line means: update the descriptor and
+ship a release; the canary is informational, not a required check.
 
 ## Invariants (PLAN.md §1) — if a change would break one of these, stop and ask
 

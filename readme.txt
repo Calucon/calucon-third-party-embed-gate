@@ -121,6 +121,7 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 * New: quick styles — four one-click starting points (Dark cinema, Light minimal, Brand card, Soft pastel) that fill in every Appearance control for you to tweak.
 * New: the button icon is now chosen by what the embed is — play for videos, a pin for maps, a note for audio, a generic symbol otherwise; poster dimming; a separate link colour; a phone-width preview toggle.
 * New: multilingual sites — the custom notice and button texts (settings and per block) are registered for WPML and Polylang via a shipped wpml-config.xml.
+* New: per-provider privacy policy URL override on the Providers tab, for a localised or moved policy page (https only).
 * Fixed: right-to-left sites (icon and status spacing now follow the text direction) and Windows High Contrast mode (panel, buttons and icon keep visible borders).
 * Fixed: the error state after a failed load could link the wrong destination when the panel showed more than one link.
 

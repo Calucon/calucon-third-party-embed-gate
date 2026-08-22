@@ -58,6 +58,9 @@ async function settings( page ) {
 	await page.evaluate( () => window.jQuery( '#cg-color-border-color' ).wpColorPicker( 'color', '#5c9e00' ) );
 	await page.check( '#cg-play-icon' );
 	await page.selectOption( '#cg-withdraw-style', 'outline' );
+	// The preview column is sticky on desktop; a scroll-and-stitch element
+	// capture would paste it mid-image. Unstick it for the shot only.
+	await page.addStyleTag( { content: '.cg-appearance-preview{position:static!important}' } );
 	await page.waitForTimeout( 700 );
 	await page.locator( '#cg-tab-appearance' ).screenshot( { path: path.join( OUT, 'screenshot-2.png' ) } );
 

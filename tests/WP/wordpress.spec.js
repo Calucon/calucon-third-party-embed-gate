@@ -315,6 +315,9 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	// lives on the Providers tab.
 	await page.click( '#cg-tabbtn-providers' );
 	await expect( page.locator( 'input[name="calucon_embed_gate_options[display][privacy_link]"][type="checkbox"]' ) ).toBeVisible();
+	// Per-provider policy URL override: the built-in link sits in the
+	// placeholder so the owner sees what they are replacing.
+	await expect( page.locator( 'input[name="calucon_embed_gate_options[providers][vimeo][privacy_url]"]' ) ).toHaveAttribute( 'placeholder', 'https://vimeo.com/privacy' );
 	await page.click( '#cg-tabbtn-appearance' );
 
 	// The preview's fallback link is defused — clicking it must not

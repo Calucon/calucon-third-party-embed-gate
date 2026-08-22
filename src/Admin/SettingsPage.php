@@ -254,7 +254,7 @@ final class SettingsPage {
 		?>
 <div id="cg-tab-providers" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-providers">
 				<h2><?php esc_html_e( 'Providers', 'calucon-third-party-embed-gate' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Disabling a provider stops gating its embeds — they load exactly as WordPress renders them. Unknown third-party iframes and scripts are always gated by the generic entries.', 'calucon-third-party-embed-gate' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Disabling a provider stops gating its embeds — they load exactly as WordPress renders them. Unknown third-party iframes and scripts are always gated by the generic entries. The privacy policy URL column shows the built-in link greyed out; enter your own (https) to point at a localised or moved policy page.', 'calucon-third-party-embed-gate' ); ?></p>
 				<p>
 					<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[display][privacy_link]" value="0">
 					<label><input type="checkbox" name="<?php echo esc_attr( Options::OPTION ); ?>[display][privacy_link]" value="1" <?php checked( $display['privacy_link'] ); ?>> <?php esc_html_e( 'Link each provider\'s privacy policy in the placeholder panel, so visitors can read it before loading anything. Applies to the providers listed below; unknown embeds have no known policy to link.', 'calucon-third-party-embed-gate' ); ?></label>
@@ -267,6 +267,7 @@ final class SettingsPage {
 							<th scope="col"><?php esc_html_e( 'Privacy-preserving load', 'calucon-third-party-embed-gate' ); ?></th>
 							<th scope="col"><?php esc_html_e( 'Custom note (optional)', 'calucon-third-party-embed-gate' ); ?></th>
 							<th scope="col"><?php esc_html_e( 'Custom button text (optional)', 'calucon-third-party-embed-gate' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Privacy policy URL (optional)', 'calucon-third-party-embed-gate' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -294,6 +295,9 @@ final class SettingsPage {
 						$aria_note = sprintf( __( 'Custom note for %s', 'calucon-third-party-embed-gate' ), $label );
 						/* translators: %s: provider label. */
 						$aria_action = sprintf( __( 'Custom button text for %s', 'calucon-third-party-embed-gate' ), $label );
+						/* translators: %s: provider label. */
+						$aria_policy = sprintf( __( 'Privacy policy URL for %s', 'calucon-third-party-embed-gate' ), $label );
+						$builtin_url = isset( $descriptor['privacy_url'] ) && is_string( $descriptor['privacy_url'] ) ? $descriptor['privacy_url'] : '';
 						?>
 						<tr>
 							<td><?php echo esc_html( $label ); ?></td>
@@ -311,6 +315,7 @@ final class SettingsPage {
 							</td>
 							<td><input type="text" class="regular-text" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[note]" aria-label="<?php echo esc_attr( $aria_note ); ?>" value="<?php echo esc_attr( isset( $row['note'] ) ? $row['note'] : '' ); ?>"></td>
 							<td><input type="text" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[action]" aria-label="<?php echo esc_attr( $aria_action ); ?>" value="<?php echo esc_attr( isset( $row['action'] ) ? $row['action'] : '' ); ?>"></td>
+							<td><input type="url" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[privacy_url]" aria-label="<?php echo esc_attr( $aria_policy ); ?>" value="<?php echo esc_attr( isset( $row['privacy_url'] ) ? $row['privacy_url'] : '' ); ?>" placeholder="<?php echo esc_attr( $builtin_url ); ?>" pattern="https://.*" inputmode="url"></td>
 						</tr>
 					<?php endforeach; ?>
 					</tbody>
@@ -453,6 +458,8 @@ final class SettingsPage {
 					<button type="button" id="cg-appearance-reset" class="button"><?php esc_html_e( 'Reset appearance to defaults', 'calucon-third-party-embed-gate' ); ?></button>
 					<span class="description"><?php esc_html_e( 'Clears every field on this tab. Nothing changes on your site until you save.', 'calucon-third-party-embed-gate' ); ?></span>
 				</p>
+				<div class="cg-appearance-layout">
+				<div class="cg-appearance-controls">
 				<fieldset class="cg-quick-styles">
 					<legend><?php esc_html_e( 'Quick styles', 'calucon-third-party-embed-gate' ); ?></legend>
 					<p class="description"><?php esc_html_e( 'Each one fills in every control below as a starting point — then change whatever you like. Nothing is saved until you click Save.', 'calucon-third-party-embed-gate' ); ?></p>
@@ -690,8 +697,11 @@ final class SettingsPage {
 					?>
 				</table>
 				<p class="description"><?php esc_html_e( 'A cleared colour inherits your theme\'s palette — that is the default, and usually the best choice. The preview cannot use your theme\'s palette here in the admin, so with cleared colours it shows the plugin\'s built-in look; on your site the panel follows the theme.', 'calucon-third-party-embed-gate' ); ?></p>
-
+				</div>
+				<div class="cg-appearance-preview">
 				<?php $this->render_preview(); ?>
+				</div>
+				</div>
 				</div>
 <?php // phpcs:ignore Generic.WhiteSpace.ScopeIndent.Incorrect -- the close tag sits at column 0 so the method emits the moved block byte-identically, with no stray indentation.
 	}

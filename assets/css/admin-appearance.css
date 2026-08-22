@@ -102,3 +102,32 @@
 .cg-quick-styles .button {
 	margin: 0 0.25em 0.25em 0;
 }
+
+/* Desktop: options on the left, the preview in a sticky column on the
+   right, so changing a control never means scrolling down to see it. The
+   stage sample is ~500px wide; the column gives it room without squeezing
+   the form. Below the breakpoint the preview simply follows the controls. */
+@media ( min-width: 1280px ) {
+	.cg-appearance-layout {
+		display: flex;
+		gap: 2rem;
+		align-items: flex-start;
+	}
+
+	.cg-appearance-controls {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.cg-appearance-preview {
+		flex: 0 0 580px;
+		position: sticky;
+		top: calc( 32px + 1rem ); /* Below the fixed admin bar. */
+		max-height: calc( 100vh - 32px - 2rem );
+		overflow: auto;
+	}
+
+	.cg-appearance-preview h3 {
+		margin-top: 0;
+	}
+}
