@@ -430,13 +430,28 @@
 	}
 
 	function activateScript( container, payload, focus ) {
+		var providerId = container.getAttribute( 'data-cg-provider' ) || '';
+		var host = container.getAttribute( 'data-cg-host' ) || '';
+
+		// An inline loader that IS the embed (a Crowdsignal survey): run it,
+		// then load this provider's silent companions too.
+		if ( typeof payload.inline === 'string' ) {
+			removePanel( container );
+			if ( focus ) {
+				container.setAttribute( 'tabindex', '-1' );
+				container.focus();
+			}
+			runInline( payload.inline );
+			activateSilentSiblings( providerId );
+			runReadyHook( providerId );
+			return;
+		}
+
 		var src = typeof payload.src === 'string' ? payload.src : '';
 		if ( ! /^(https?:)?\/\//i.test( src ) ) {
 			showError( container );
 			return;
 		}
-		var providerId = container.getAttribute( 'data-cg-provider' ) || '';
-		var host = container.getAttribute( 'data-cg-host' ) || '';
 
 		removePanel( container );
 		setStatus( container, i18n( 'loading', 'Loading embedded content…' ) );
@@ -460,6 +475,7 @@
 				: [];
 			for ( var i = 0; i < all.length; i++ ) {
 				if ( all[ i ] !== container
+					&& ! hasClass( all[ i ], 'cg-embed--silent' ) // companions load next, they are not redundant panels
 					&& all[ i ].getAttribute( 'data-cg-provider' ) === providerId
 					&& ( all[ i ].getAttribute( 'data-cg-host' ) || '' ) === host
 					&& all[ i ].parentNode ) {
@@ -467,6 +483,7 @@
 				}
 			}
 			setStatus( container, '' );
+			activateSilentSiblings( providerId );
 			runReadyHook( providerId );
 		}, function () {
 			container.removeAttribute( 'data-cg-activated' );
@@ -474,6 +491,53 @@
 		} );
 	}
 
+	function hasClass( el, name ) {
+		return ( ' ' + ( el.className || '' ) + ' ' ).indexOf( ' ' + name + ' ' ) !== -1;
+	}
+	// Re-run the page's own inline loader (Scribd, Crowdsignal) — the
+	// same text the browser would have executed on load, just after consent.
+	function runInline( code ) {
+		var el = document.createElement( 'script' );
+		el.text = code;
+		( document.head || document.body ).appendChild( el );
+	}
+	function addStylesheet( href ) {
+		var el = document.createElement( 'link' );
+		el.rel = 'stylesheet';
+		el.href = href;
+		( document.head || document.body ).appendChild( el );
+	}
+	function activateSilent( container, payload ) {
+		container.setAttribute( 'data-cg-activated', '1' );
+		if ( typeof payload.inline === 'string' ) {
+			runInline( payload.inline );
+			return;
+		}
+		var src = typeof payload.src === 'string' ? payload.src : '';
+		if ( ! /^(https?:)?\/\//i.test( src ) ) {
+			container.removeAttribute( 'data-cg-activated' );
+			return;
+		}
+		if ( payload.tag === 'link' ) {
+			addStylesheet( src );
+			return;
+		}
+		loadScriptOnce( src, function () {}, function () {
+			container.removeAttribute( 'data-cg-activated' );
+		} );
+	}
+	function activateSilentSiblings( providerId ) {
+		if ( ! providerId || ! document.querySelectorAll ) {
+			return;
+		}
+		var all = document.querySelectorAll( '.cg-embed--silent[data-cg-payload]' );
+		for ( var i = 0; i < all.length; i++ ) {
+			if ( all[ i ].getAttribute( 'data-cg-provider' ) === providerId
+				&& all[ i ].getAttribute( 'data-cg-activated' ) !== '1' ) {
+				activate( all[ i ], {} );
+			}
+		}
+	}
 	function activate( container, options ) {
 		options = options || {};
 		if ( container.getAttribute( 'data-cg-activated' ) === '1' ) {
@@ -505,6 +569,13 @@
 			container.setAttribute( 'data-cg-bridged', '1' );
 		}
 
+		// A silent companion loader (§3.5): no panel to remove, nothing to
+		// announce — just the script, once its provider's panel is loading.
+		if ( hasClass( container, 'cg-embed--silent' ) ) {
+			activateSilent( container, payload );
+			return;
+		}
+
 		if ( payload.strategy === 'script' ) {
 			activateScript( container, payload, !! options.focus );
 			return;
@@ -528,6 +599,9 @@
 			showError( container );
 		};
 		container.appendChild( frame );
+		// The same click also loads this provider's silent companion
+		// loaders (VideoPress's resize script next to its player).
+		activateSilentSiblings( container.getAttribute( 'data-cg-provider' ) || '' );
 
 		// Focus the container, not the inserted node: if a provider script
 		// later replaces the node, focus would silently fall back to <body>

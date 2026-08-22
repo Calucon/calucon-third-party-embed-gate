@@ -81,6 +81,7 @@ final class Registry {
 				continue;
 			}
 
+			$captures = array();
 			if ( ! empty( $match['iframe_path'] ) ) {
 				// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2); wp_parse_url() is unavailable in the no-WordPress fixture suite.
 				$path = (string) parse_url( $url, PHP_URL_PATH );
@@ -88,17 +89,50 @@ final class Registry {
 					continue;
 				}
 				$captures = array_filter( $m, 'is_string', ARRAY_FILTER_USE_KEY );
-				foreach ( array( 'load_path', 'fallback' ) as $key ) {
-					if ( ! empty( $descriptor[ $key ] ) ) {
-						$descriptor[ $key ] = Provider::interpolate( $descriptor[ $key ], $captures );
-					}
+			}
+			// Some players carry the content id in the query string, not the
+			// path (Dailymotion's ?video=ID). iframe_query adds captures from
+			// there; it never decides the match — the host (and path) do.
+			if ( ! empty( $match['iframe_query'] ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2).
+				$query = (string) parse_url( $url, PHP_URL_QUERY );
+				if ( preg_match( $match['iframe_query'], $query, $q ) ) {
+					$captures += array_filter( $q, 'is_string', ARRAY_FILTER_USE_KEY );
 				}
 			}
+			$descriptor = self::interpolated( $descriptor, $captures );
 
 			return $this->filtered( $descriptor, $url, $host );
 		}
 
 		return $this->filtered( $this->generic_fallback( $url, $host ), $url, $host );
+	}
+
+	/**
+	 * Interpolate the captures into the URL templates. A template whose
+	 * placeholder found no capture is dropped rather than shipped with a
+	 * literal "{id}": the fallback then points at the embed URL itself (a
+	 * working page) and no load-target rewrite happens.
+	 *
+	 * @param array $descriptor Matched descriptor.
+	 * @param array $captures   name => value.
+	 * @return array
+	 */
+	private static function interpolated( array $descriptor, array $captures ): array {
+		foreach ( array( 'load_path', 'fallback' ) as $key ) {
+			if ( empty( $descriptor[ $key ] ) || ! is_string( $descriptor[ $key ] ) ) {
+				continue;
+			}
+			$value = Provider::interpolate( $descriptor[ $key ], $captures );
+			if ( preg_match( '/\{[a-z0-9_]+\}/i', $value ) ) {
+				if ( 'load_path' === $key ) {
+					$descriptor['load_host'] = null;
+				}
+				$value = '';
+			}
+			$descriptor[ $key ] = $value;
+		}
+		return $descriptor;
 	}
 
 	/**
@@ -110,11 +144,22 @@ final class Registry {
 	 */
 	public function resolve_for_script_url( string $url, string $host ): array {
 		foreach ( $this->providers as $descriptor ) {
-			$hosts = isset( $descriptor['match']['script_host'] )
-				? (array) $descriptor['match']['script_host'] : array();
+			$match = $descriptor['match'];
+			$hosts = isset( $match['script_host'] ) ? (array) $match['script_host'] : array();
 
 			if ( in_array( $host, $hosts, true ) ) {
-				return $this->filtered( $descriptor, $url, $host );
+				// script_path captures (Crowdsignal's /p/{id}.js) feed the
+				// fallback template the same way iframe_path does; a template
+				// left with a placeholder is dropped, never shipped literally.
+				$captures = array();
+				if ( ! empty( $match['script_path'] ) ) {
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2).
+					$path = (string) parse_url( $url, PHP_URL_PATH );
+					if ( preg_match( $match['script_path'], $path, $m ) ) {
+						$captures = array_filter( $m, 'is_string', ARRAY_FILTER_USE_KEY );
+					}
+				}
+				return $this->filtered( self::interpolated( $descriptor, $captures ), $url, $host );
 			}
 		}
 
@@ -137,6 +182,51 @@ final class Registry {
 		);
 
 		return $this->filtered( $generic, $url, $host );
+	}
+
+	/**
+	 * The provider whose script host an INLINE script refers to — Scribd's
+	 * and Crowdsignal's oEmbed output inject their loader from inline code,
+	 * which is a request before any click unless it is gated too. Unknown
+	 * inline scripts are never gated: that is not an embed.
+	 *
+	 * @param string $code Script body.
+	 * @return array|null Descriptor, or null when no known script host appears.
+	 */
+	public function resolve_for_inline_script( string $code ): ?array {
+		if ( false === strpos( $code, '//' ) ) {
+			return null;
+		}
+		foreach ( $this->providers as $descriptor ) {
+			$hosts = isset( $descriptor['match']['script_host'] ) ? (array) $descriptor['match']['script_host'] : array();
+			foreach ( $hosts as $host ) {
+				if ( false !== stripos( $code, '//' . $host . '/' ) ) {
+					return $this->filtered( $descriptor, 'https://' . $host . '/', $host );
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * The provider a third-party asset host (a stylesheet's) belongs to —
+	 * any of its iframe or script hosts. Null for unknown hosts.
+	 *
+	 * @param string $host Normalised host.
+	 * @return array|null
+	 */
+	public function resolve_for_asset_host( string $host ): ?array {
+		foreach ( $this->providers as $descriptor ) {
+			$match = $descriptor['match'];
+			$hosts = array_merge(
+				isset( $match['iframe_host'] ) ? (array) $match['iframe_host'] : array(),
+				isset( $match['script_host'] ) ? (array) $match['script_host'] : array()
+			);
+			if ( in_array( $host, $hosts, true ) ) {
+				return $this->filtered( $descriptor, 'https://' . $host . '/', $host );
+			}
+		}
+		return null;
 	}
 
 	/**

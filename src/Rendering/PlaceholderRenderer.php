@@ -194,7 +194,18 @@ final class PlaceholderRenderer {
 			}
 		}
 
-		$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host, $poster, $privacy_url, $privacy_label );
+		if ( ! empty( $ctx['silent'] ) ) {
+			// A companion loader script: no panel, no accessible name — the
+			// visible panel of the same provider stands for both. Hidden
+			// from everything until gate.js injects the script after that
+			// panel's activation (same consent, same click).
+			$html = '<span class="cg-embed cg-embed--silent" hidden'
+				. ' data-cg-provider="' . $this->esc( $provider['id'] ) . '"'
+				. ( '' !== $host ? ' data-cg-host="' . $this->esc( $host ) . '"' : '' )
+				. ' data-cg-payload="' . $this->esc_json( $payload ) . '"></span>';
+		} else {
+			$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host, $poster, $privacy_url, $privacy_label );
+		}
 
 		if ( '' === $html ) {
 			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $host, $poster, $privacy_url, $privacy_label );
@@ -367,13 +378,15 @@ final class PlaceholderRenderer {
 	private function build_payload( array $provider, string $src, array $attributes, array $options = array() ): array {
 		$attrs = array();
 
-		$tag = isset( $options['tag'] ) && in_array( $options['tag'], array( 'embed', 'object', 'img' ), true )
+		$tag = isset( $options['tag'] ) && in_array( $options['tag'], array( 'embed', 'object', 'img', 'link' ), true )
 			? $options['tag']
 			: 'iframe';
 		if ( 'iframe' === $tag ) {
 			$safelist = self::ATTRIBUTE_SAFELIST;
 		} elseif ( 'img' === $tag ) {
 			$safelist = self::ATTRIBUTE_SAFELIST_IMG;
+		} elseif ( 'link' === $tag ) {
+			$safelist = array(); // A stylesheet companion: rel and href only, both fixed.
 		} else {
 			$safelist = self::ATTRIBUTE_SAFELIST_MEDIA;
 		}
@@ -426,6 +439,14 @@ final class PlaceholderRenderer {
 
 		if ( 'iframe' !== $provider['strategy'] ) {
 			$payload['strategy'] = $provider['strategy'];
+		}
+
+		// An inline loader: gate.js re-runs the page's own script text after
+		// consent instead of loading a URL (there is none). The src passed in
+		// is only the provider origin, for the host attribute and fallback.
+		if ( isset( $options['inline'] ) && is_string( $options['inline'] ) ) {
+			unset( $payload['src'] );
+			$payload['inline'] = $options['inline'];
 		}
 
 		if ( null !== $this->filter_payload ) {

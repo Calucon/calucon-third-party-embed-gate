@@ -289,6 +289,24 @@ if ( '/page/custom-provider' === $uri ) {
 	return true;
 }
 
+if ( '/page/companions' === $uri ) {
+	// Silent companions (§3.5): Scribd's inline injector next to its
+	// iframe, and Wolfram's stylesheets + embedder script + inline call.
+	$content = implode(
+		"\n",
+		array(
+			'<iframe class="scribd_iframe_embed" src="https://www.scribd.com/embeds/110799637/content" width="100%" height="500" frameborder="0"></iframe>',
+			'<script>(function(){var s=document.createElement("script");s.src="https://www.scribd.com/javascripts/embed_code/inject.js";document.head.appendChild(s);})()</script>',
+			'<div id="nb1"><link rel="stylesheet" href="https://www.wolframcloud.com/dist/a.css"><link rel="stylesheet" href="https://www.wolframcloud.com/dist/b.css"></div>',
+			'<script src="https://www.wolframcloud.com/obj/redirect/notebook-embedder-oembed-lib"></script>',
+			'<script>window.cgWolframInlineRan = true;var u = "https://www.wolframcloud.com/obj/x/Public/Example.nb";</script>',
+		)
+	);
+
+	cg_e2e_page( $content );
+	return true;
+}
+
 if ( '/page/collision' === $uri ) {
 	// Two UNKNOWN third-party widgets (both resolve to the generic-script
 	// provider) plus one unknown iframe: activating one widget must not

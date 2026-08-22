@@ -374,6 +374,326 @@ final class Descriptors {
 				'action'      => $t( 'Load image from GIPHY' ),
 				'strategy'    => 'iframe',
 			),
+
+			// --- WordPress core oEmbed providers (0.11.0) ------------------
+			// Each built from the live oEmbed output core would paste into
+			// post content; see tests/Fixtures/<id>-{pretty,minified}.
+			array(
+				'id'               => 'dailymotion',
+				'kind'             => 'video',
+				'label'            => 'Dailymotion',
+				'match'            => array(
+					// geo.dailymotion.com is today's player (id in the query);
+					// www.dailymotion.com/embed/video/{id} is the legacy shape
+					// still sitting in older post content.
+					'iframe_host'  => array( 'geo.dailymotion.com', 'www.dailymotion.com', 'dailymotion.com' ),
+					'iframe_path'  => '#^/(?:player(?:/[a-z0-9]+)?\\.html|embed/video/(?P<id>[a-z0-9]+)|embed/playlist/[a-z0-9]+)$#i',
+					'iframe_query' => '/(?:^|&)video=(?P<id>[a-z0-9]+)/i',
+				),
+				'fallback'         => 'https://www.dailymotion.com/video/{id}',
+				'scrub_hint_hosts' => array( 's1.dmcdn.net', 's2.dmcdn.net' ),
+				'privacy_url'      => 'https://legal.dailymotion.com/en/privacy-policy/',
+				'controller'       => 'Dailymotion SA, Issy-les-Moulineaux, France',
+				'note'             => $t( 'Loading this video contacts Dailymotion, which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'           => $t( 'Load video from Dailymotion' ),
+				'aspect'           => '16:9',
+				'iframe_allow'     => 'fullscreen; picture-in-picture; web-share',
+				'strategy'         => 'iframe',
+			),
+			array(
+				'id'               => 'ted',
+				'kind'             => 'video',
+				'label'            => 'TED',
+				'match'            => array(
+					'iframe_host' => array( 'embed.ted.com', 'embed-ssl.ted.com' ),
+					// /talks/{slug}, /talks/lang/{lang}/{slug}, /embed/{slug}.
+					'iframe_path' => '#^/(?:talks|embed)/(?:lang/[a-z-]+/)?(?P<id>[a-z0-9_]+)#i',
+				),
+				'fallback'         => 'https://www.ted.com/talks/{id}',
+				'scrub_hint_hosts' => array( 'pi.tedcdn.com', 'pe.tedcdn.com' ),
+				'privacy_url'      => 'https://www.ted.com/about/our-organization/our-policies-terms/privacy-policy',
+				'controller'       => 'TED Conferences, LLC, New York, USA',
+				'note'             => $t( 'Loading this video contacts TED, which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'           => $t( 'Load video from TED' ),
+				'aspect'           => '16:9',
+				'iframe_allow'     => 'fullscreen; encrypted-media; picture-in-picture',
+				'strategy'         => 'iframe',
+			),
+			array(
+				'id'               => 'videopress',
+				'kind'             => 'video',
+				'label'            => 'VideoPress',
+				'match'            => array(
+					// Also what WordPress.tv embeds resolve to: the same
+					// player, no wordpress.tv host in the markup.
+					'iframe_host' => array( 'video.wordpress.com', 'videopress.com' ),
+					'iframe_path' => '#^/embed/(?P<id>[A-Za-z0-9]{6,12})#',
+					// The companion loader core pastes after the iframe.
+					'script_host' => array( 'v0.wordpress.com' ),
+				),
+				'fallback'         => 'https://videopress.com/v/{id}',
+				'scrub_hint_hosts' => array( 'videos.files.wordpress.com' ),
+				'privacy_url'      => 'https://automattic.com/privacy/',
+				'controller'       => 'Aut O\'Mattic A8C Ireland Ltd., Dublin, Ireland',
+				'note'             => $t( 'Loading this video contacts VideoPress (Automattic), which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'           => $t( 'Load video from VideoPress' ),
+				'aspect'           => '16:9',
+				'iframe_allow'     => 'clipboard-write; presentation',
+				'strategy'         => 'iframe',
+			),
+			array(
+				'id'               => 'mixcloud',
+				'kind'             => 'audio',
+				'label'            => 'Mixcloud',
+				'match'            => array(
+					// The widget URL redirects www → player-widget; the show
+					// itself is in the ?feed= query, so the widget page (a
+					// standalone player) serves as the no-JS link.
+					'iframe_host' => array( 'www.mixcloud.com', 'player-widget.mixcloud.com' ),
+					'iframe_path' => '#^/(?:widget/iframe/?)?$#',
+				),
+				'scrub_hint_hosts' => array( 'thumbnailer.mixcloud.com' ),
+				'privacy_url'      => 'https://www.mixcloud.com/privacy/',
+				'controller'       => 'Mixcloud Limited, London, UK',
+				'note'             => $t( 'Loading this player contacts Mixcloud, which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'           => $t( 'Load player from Mixcloud' ),
+				'iframe_allow'     => 'encrypted-media; fullscreen; idle-detection; speaker-selection; web-share',
+				'strategy'         => 'iframe',
+			),
+			array(
+				'id'               => 'pocket-casts',
+				'kind'             => 'audio',
+				'label'            => 'Pocket Casts',
+				'match'            => array(
+					'iframe_host' => array( 'pca.st' ),
+					'iframe_path' => '#^/embed/(?P<id>[A-Za-z0-9]+)#',
+				),
+				'fallback'         => 'https://pca.st/{id}',
+				'scrub_hint_hosts' => array( 'static.pocketcasts.com' ),
+				'privacy_url'      => 'https://support.pocketcasts.com/knowledge-base/privacy-policy/',
+				'controller'       => 'Automattic Inc., San Francisco, USA',
+				'note'             => $t( 'Loading this player contacts Pocket Casts (Automattic), which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'           => $t( 'Load player from Pocket Casts' ),
+				'strategy'         => 'iframe',
+			),
+			array(
+				'id'               => 'pinterest',
+				'kind'             => 'social',
+				'label'            => 'Pinterest',
+				'match'            => array(
+					// Core's oEmbed output is an iframe with the pin id in the
+					// query; the widget-builder form is pinit.js on the same host.
+					'iframe_host'  => array( 'assets.pinterest.com' ),
+					'iframe_path'  => '#^/ext/embed\\.html$#',
+					'iframe_query' => '/(?:^|&)id=(?P<id>[0-9]+)/',
+					'script_host'  => array( 'assets.pinterest.com' ),
+				),
+				'fallback'         => 'https://www.pinterest.com/pin/{id}/',
+				'scrub_hint_hosts' => array( 'i.pinimg.com', 'widgets.pinterest.com', 'log.pinterest.com' ),
+				'privacy_url'      => 'https://policy.pinterest.com/en/privacy-policy',
+				'controller'       => 'Pinterest Europe Ltd., Dublin, Ireland',
+				'note'             => $t( 'Loading this pin contacts Pinterest, which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'           => $t( 'Load pin from Pinterest' ),
+				'strategy'         => 'iframe',
+			),
+			array(
+				'id'               => 'imgur',
+				'kind'             => 'image',
+				'label'            => 'Imgur',
+				'match'            => array(
+					'iframe_host' => array( 'imgur.com' ),
+					'script_host' => array( 's.imgur.com' ),
+				),
+				'privacy_url'      => 'https://imgur.com/privacy',
+				'controller'       => 'Imgur, Inc., Santa Monica, USA',
+				'note'             => $t( 'Loading this post contacts Imgur, which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'           => $t( 'Load post from Imgur' ),
+				'strategy'         => 'script',
+				'companion_class'  => array( 'imgur-embed-pub' ),
+				'scrub_hint_hosts' => array( 'i.imgur.com' ),
+			),
+			array(
+				'id'               => 'tumblr',
+				'kind'             => 'social',
+				'label'            => 'Tumblr',
+				'match'            => array(
+					'iframe_host' => array( 'embed.tumblr.com' ),
+					'script_host' => array( 'assets.tumblr.com' ),
+				),
+				'privacy_url'      => 'https://www.tumblr.com/privacy',
+				'controller'       => 'Aut O\'Mattic A8C Ireland Ltd., Dublin, Ireland',
+				'note'             => $t( 'Loading this post contacts Tumblr (Automattic), which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'           => $t( 'Load post from Tumblr' ),
+				'strategy'         => 'script',
+				// The companion's child link is the human page; its data-href
+				// is the embed frame, never a destination.
+				'companion_class'  => array( 'tumblr-post' ),
+				'scrub_hint_hosts' => array( '64.media.tumblr.com', 'static.tumblr.com' ),
+			),
+			array(
+				'id'                 => 'bluesky',
+				'kind'               => 'social',
+				'label'              => 'Bluesky',
+				'match'              => array(
+					'iframe_host' => array( 'embed.bsky.app' ),
+					'script_host' => array( 'embed.bsky.app' ),
+				),
+				'privacy_url'        => 'https://bsky.social/about/support/privacy-policy',
+				'controller'         => 'Bluesky Social, PBC, USA',
+				'note'               => $t( 'Loading this post contacts Bluesky, which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'             => $t( 'Load post from Bluesky' ),
+				'strategy'           => 'script',
+				'companion_class'    => array( 'bluesky-embed' ),
+				// at://did/app.bsky.feed.post/rkey → the post page, without the
+				// ?ref_src=embed tag the companion's own link carries.
+				'companion_fallback' => static function ( array $attributes ): ?string {
+					$uri = isset( $attributes['data-bluesky-uri'] ) ? (string) $attributes['data-bluesky-uri'] : '';
+					if ( preg_match( '#^at://([a-z0-9:.%_-]+)/app\\.bsky\\.feed\\.post/([a-z0-9]+)$#i', $uri, $m ) ) {
+						return 'https://bsky.app/profile/' . $m[1] . '/post/' . $m[2];
+					}
+					return null;
+				},
+				'scrub_hint_hosts'   => array( 'cdn.bsky.app', 'video.bsky.app' ),
+			),
+			array(
+				'id'                 => 'crowdsignal',
+				'kind'               => 'form',
+				'label'              => 'Crowdsignal',
+				'match'              => array(
+					// Polls: an external script on the legacy polldaddy host
+					// (id in its path) plus a <noscript> iframe on poll.fm.
+					// Surveys use an inline loader the script rule cannot see
+					// (documented limitation).
+					'iframe_host' => array( 'poll.fm' ),
+					'script_host' => array( 'secure.polldaddy.com', 'app.crowdsignal.com' ),
+					'script_path' => '#^/p/(?P<id>[0-9]+)\\.js$#',
+				),
+				'fallback'           => 'https://poll.fm/{id}',
+				'privacy_url'        => 'https://automattic.com/privacy/',
+				'controller'         => 'Aut O\'Mattic A8C Ireland Ltd., Dublin, Ireland',
+				'note'               => $t( 'Loading this poll contacts Crowdsignal (Automattic), which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'             => $t( 'Load poll from Crowdsignal' ),
+				'strategy'           => 'script',
+				// Surveys: an inline loader next to <div class="pd-embed"
+				// data-settings='{"domain":…,"id":…}'> — the human page is
+				// https://{domain}/{id}.
+				'companion_class'    => array( 'pd-embed' ),
+				'companion_fallback' => static function ( array $attributes ): ?string {
+					$settings = isset( $attributes['data-settings'] ) && is_string( $attributes['data-settings'] )
+						? json_decode( html_entity_decode( $attributes['data-settings'], ENT_QUOTES | ENT_HTML5, 'UTF-8' ), true ) : null;
+					if ( is_array( $settings ) && isset( $settings['domain'], $settings['id'] )
+						&& preg_match( '/^[a-z0-9-]+\\.(?:survey\\.fm|crowdsignal\\.net)$/i', (string) $settings['domain'] )
+						&& preg_match( '/^[a-z0-9-]+$/i', (string) $settings['id'] ) ) {
+						return 'https://' . $settings['domain'] . '/' . $settings['id'];
+					}
+					return null;
+				},
+				'scrub_hint_hosts'   => array( 'static.polldaddy.com', 'polls.polldaddy.com', 'i0.poll.fm' ),
+			),
+			array(
+				'id'               => 'scribd',
+				'kind'             => 'document',
+				'label'            => 'Scribd',
+				'match'            => array(
+					'iframe_host' => array( 'www.scribd.com', 'scribd.com' ),
+					'iframe_path' => '#^/embeds/(?P<id>[0-9]+)/content#',
+					// The inline injector core pastes after the iframe loads
+					// embed_code/inject.js from the same host.
+					'script_host' => array( 'www.scribd.com' ),
+				),
+				'fallback'         => 'https://www.scribd.com/document/{id}',
+				'scrub_hint_hosts' => array( 'imgv2-1-f.scribdassets.com', 'imgv2-2-f.scribdassets.com' ),
+				'privacy_url'      => 'https://support.scribd.com/hc/en-us/articles/210129366-Privacy-Policy',
+				'controller'       => 'Scribd, Inc., San Francisco, USA',
+				'note'             => $t( 'Loading this document contacts Scribd, which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'           => $t( 'Load document from Scribd' ),
+				'strategy'         => 'iframe',
+			),
+			array(
+				'id'           => 'speakerdeck',
+				'kind'         => 'document',
+				'label'        => 'Speaker Deck',
+				'match'        => array(
+					'iframe_host' => array( 'speakerdeck.com' ),
+					'iframe_path' => '#^/player/[0-9a-f]{32}#',
+					'script_host' => array( 'speakerdeck.com' ),
+				),
+				// The player id is opaque: the player page itself (a working
+				// standalone page) serves as the no-JS link.
+				'privacy_url'  => 'https://speakerdeck.com/privacy',
+				'controller'   => 'Speaker Deck, LLC, USA',
+				'note'         => $t( 'Loading this presentation contacts Speaker Deck, which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'       => $t( 'Load presentation from Speaker Deck' ),
+				'aspect'       => '16:9',
+				'iframe_allow' => 'fullscreen',
+				'strategy'     => 'iframe',
+			),
+			array(
+				'id'           => 'issuu',
+				'kind'         => 'document',
+				'label'        => 'Issuu',
+				'match'        => array(
+					'iframe_host'  => array( 'e.issuu.com' ),
+					'iframe_path'  => '#^/embed\\.html$#',
+					'iframe_query' => '/(?:^|&)u=(?P<u>[a-z0-9_.-]+)&d=(?P<d>[a-z0-9_.-]+)/i',
+				),
+				'fallback'     => 'https://issuu.com/{u}/docs/{d}',
+				'privacy_url'  => 'https://issuu.com/legal/privacy',
+				'controller'   => 'Bending Spoons S.p.A., Milan, Italy',
+				'note'         => $t( 'Loading this publication contacts Issuu, which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'       => $t( 'Load publication from Issuu' ),
+				'iframe_allow' => 'clipboard-write; fullscreen',
+				'strategy'     => 'iframe',
+			),
+			array(
+				'id'          => 'kickstarter',
+				'label'       => 'Kickstarter',
+				'match'       => array(
+					'iframe_host' => array( 'www.kickstarter.com', 'kickstarter.com' ),
+					'iframe_path' => '#^/projects/(?P<creator>[a-z0-9_-]+)/(?P<slug>[a-z0-9_-]+)/widget/(?:video|card)\\.html#i',
+				),
+				'fallback'    => 'https://www.kickstarter.com/projects/{creator}/{slug}',
+				'privacy_url' => 'https://www.kickstarter.com/privacy',
+				'controller'  => 'Kickstarter, PBC, Brooklyn, USA',
+				'note'        => $t( 'Loading this project contacts Kickstarter, which receives your IP address and which page you are on, and may set cookies.' ),
+				'action'      => $t( 'Load project from Kickstarter' ),
+				'strategy'    => 'iframe',
+			),
+			array(
+				'id'          => 'wolfram-cloud',
+				'kind'        => 'document',
+				'label'       => 'Wolfram Cloud',
+				'match'       => array(
+					// Two shapes: an iframe on the notebook URL, or (core's
+					// default endpoint) the embedder script + an inline embed()
+					// call + three stylesheets, all from this host.
+					'iframe_host' => array( 'www.wolframcloud.com', 'wolframcloud.com' ),
+					'iframe_path' => '#^/obj/#',
+					'script_host' => array( 'www.wolframcloud.com' ),
+				),
+				'privacy_url' => 'https://www.wolfram.com/legal/privacy/wolfram/',
+				'controller'  => 'Wolfram Research, Inc., Champaign, USA',
+				'note'        => $t( 'Loading this notebook contacts Wolfram, which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'      => $t( 'Load notebook from Wolfram Cloud' ),
+				'strategy'    => 'iframe',
+			),
+			array(
+				'id'           => 'amazon-kindle',
+				'kind'         => 'document',
+				'label'        => 'Amazon Kindle',
+				'match'        => array(
+					'iframe_host' => array( 'read.amazon.com', 'read.amazon.co.uk', 'read.amazon.com.au', 'read.amazon.in', 'read.amazon.cn' ),
+					'iframe_path' => '#^/kp/(?:card|embed)#',
+				),
+				// The preview card is a standalone page and the marketplace
+				// differs per host: the card URL itself is the no-JS link.
+				'privacy_url'  => 'https://www.amazon.com/privacy',
+				'controller'   => 'Amazon.com, Inc., Seattle, USA',
+				'note'         => $t( 'Loading this preview contacts Amazon, which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'       => $t( 'Load preview from Amazon Kindle' ),
+				'iframe_allow' => 'clipboard-write; fullscreen',
+				'strategy'     => 'iframe',
+			),
 		);
 	}
 }

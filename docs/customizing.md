@@ -133,6 +133,15 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 			// Optional: named captures interpolated (URL-encoded) into
 			// load_path / fallback as {id}-style tokens.
 			'iframe_path' => '#^/embed/(?<id>[A-Za-z0-9_-]+)#',
+			// Optional: captures from the query string (Dailymotion keeps the
+			// id in ?video=). Never decides the match; a template whose
+			// placeholder finds no capture is dropped, never shipped literally.
+			'iframe_query' => '/(?:^|&)video=(?<id>[A-Za-z0-9]+)/',
+			// Script-strategy providers: 'script_host' (+ optional 'script_path'
+			// with captures, e.g. Crowdsignal's /p/{id}.js) and 'companion_class'.
+			// A script, inline loader or stylesheet from these hosts that sits
+			// next to a panel of the same provider becomes a SILENT companion:
+			// gated without a panel, loaded by gate.js after that panel's click.
 		),
 		// Optional privacy-preserving load target used after the click.
 		'load_host'   => 'embed-nocookie.example-videos.com',
@@ -149,6 +158,12 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 	return $providers;
 } );
 ```
+
+Inline scripts are gated only when they inject a known provider's loader
+(Scribd, Crowdsignal surveys) — the script body is carried in the payload and
+re-run after consent. Stylesheets in content are gated only as companions of
+a gated provider (Wolfram Cloud); a theme's own third-party stylesheets are
+outside an embed gate's scope (the Compatibility screen reports them).
 
 All keys and defaults: `src/Providers/Provider.php` (`normalize()`); the 21
 built-in descriptors in `src/Providers/Builtin/Descriptors.php` are working

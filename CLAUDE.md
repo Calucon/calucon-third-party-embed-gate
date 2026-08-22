@@ -95,7 +95,7 @@ ship a release; the canary is informational, not a required check.
 | `src/Detection/HtmlScanner.php` | Attribute-tolerant tag reader (§3.2) |
 | `src/Detection/HostMatcher.php` | "is this ours?" (§3.4) |
 | `src/Detection/IframeRule.php` | Gates cross-origin iframes; consumes the WP blockquote pair (§9.7) |
-| `src/Detection/{ScriptRule,EmbedObjectRule,ImageRule}.php` | SDK scripts; legacy embed/object; opt-in third-party images |
+| `src/Detection/{ScriptRule,EmbedObjectRule,ImageRule,StylesheetRule}.php` | SDK scripts (+ inline loaders naming a provider host); legacy embed/object; opt-in third-party images; provider stylesheets as silent companions. **Silent companions** (§3.5): a loader/inline script/stylesheet next to a panel of the same provider is gated without a panel (`span.cg-embed--silent`) and loaded by gate.js after that panel's click — never give it a second panel |
 | `src/Providers/{Registry,Provider}.php` | Descriptors are data, not classes (§4.1) |
 | `src/Providers/CustomProviders.php` | Owner-defined providers from the `custom_providers` option rows → descriptors. **Can never weaken the gate**: built-ins first, their hosts refused at save (`Options::sanitize_report` + notice) and stripped at run time (`reserved_hosts()`), `enabled` ignored for custom ids (always gated), no load-target rewrite. `CustomProvidersTest` pins corpus byte-identity under custom rows — keep it green |
 | `src/Support/{Options,ContentScan,ResourceHints,Csp}.php` | Option schema; Status-screen scan; hint scrubbing; CSP snippet |

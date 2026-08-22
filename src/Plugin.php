@@ -27,6 +27,7 @@ use CaluconEmbedGate\Detection\HtmlScanner;
 use CaluconEmbedGate\Detection\IframeRule;
 use CaluconEmbedGate\Detection\ImageRule;
 use CaluconEmbedGate\Detection\ScriptRule;
+use CaluconEmbedGate\Detection\StylesheetRule;
 use CaluconEmbedGate\Integration\Assets;
 use CaluconEmbedGate\Integration\Comments;
 use CaluconEmbedGate\Integration\Descriptions;
@@ -355,6 +356,7 @@ final class Plugin {
 			new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new ImageRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
+			new StylesheetRule( $scanner, $hosts, $registry, $renderer ),
 			$registry,
 			$hosts,
 			new EmbedStripper( $scanner, $hosts, $registry, $translate ),
@@ -472,6 +474,9 @@ final class Plugin {
 		}
 		if ( $this->options['detection']['scripts'] ) {
 			$html = $pipeline->script_rule->apply( $html, $ctx );
+			// Provider stylesheets pasted next to a gated script (§3.5):
+			// companions of the panel the script rule just rendered.
+			$html = $pipeline->stylesheet_rule->apply( $html, $ctx );
 		}
 		if ( $this->options['detection']['images'] ) {
 			$html = $pipeline->image_rule->apply( $html, $ctx );

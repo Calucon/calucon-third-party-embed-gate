@@ -331,6 +331,23 @@ Ship as separate, individually-toggleable rules:
 
 ## 4. Providers
 
+**Silent companions (0.11.0).** Real oEmbed output brings more than the
+embed: VideoPress pastes a resize loader after its iframe, Scribd an inline
+script that injects `inject.js`, Wolfram Cloud three stylesheets plus an
+inline `embed()` call, Pinterest's widget builder `pinit.js`. Each is a
+request before any click. They are gated as **silent companions** — a
+hidden `span.cg-embed--silent` carrying the payload, no panel — whenever a
+panel of the same provider exists in the fragment (the iframe rule runs
+first; external scripts before inline ones), and `gate.js` loads them
+right after that panel is activated, under the same consent. A loader
+without a panel to attach to keeps its own panel (it is the embed, as for
+a Crowdsignal survey). Inline scripts are gated only when they name a
+known provider's script host (`Registry::resolve_for_inline_script()`);
+stylesheets only as companions (`StylesheetRule`). Content ids in the
+query string are captured via `match.iframe_query` / `match.script_path`;
+a template left with a placeholder is dropped, never shipped literally
+(`Registry::interpolated()`).
+
 ### 4.1 Descriptor
 
 A provider is data, not a class hierarchy. Registration should be a filter

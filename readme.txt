@@ -136,6 +136,7 @@ The panel's markup and look are unchanged unless you opt in: a provider privacy-
 == Changelog ==
 
 = 0.11.0 =
+* Fixed: Scribd embeds (an inline script that fetches Scribd's loader), VideoPress embeds (a resize loader) and Wolfram Cloud notebooks (stylesheets and an inline call) requested their provider before the click; these companions are now gated with their panel and load only after it.
 * New: built-in providers for the rest of WordPress core's embed types — Dailymotion, TED, VideoPress and WordPress.tv, Mixcloud, Pocket Casts, Scribd, Speaker Deck, Issuu, Kickstarter, Wolfram Cloud and Amazon Kindle (players and documents), plus Imgur, Tumblr, Pinterest, Bluesky and Crowdsignal (script embeds, now with a real fallback link to the post instead of the script host). All of these were gated before under their host names; they now get a name, an icon, a privacy-policy link and a Providers-tab row.
 
 = 0.10.0 =

@@ -25,6 +25,7 @@ use CaluconEmbedGate\Detection\HtmlScanner;
 use CaluconEmbedGate\Detection\IframeRule;
 use CaluconEmbedGate\Detection\ImageRule;
 use CaluconEmbedGate\Detection\ScriptRule;
+use CaluconEmbedGate\Detection\StylesheetRule;
 use CaluconEmbedGate\Providers\Registry;
 use CaluconEmbedGate\Rendering\PlaceholderRenderer;
 
@@ -45,6 +46,9 @@ final class Pipeline {
 
 	/** @var ImageRule */
 	public ImageRule $image_rule;
+
+	/** @var StylesheetRule */
+	public StylesheetRule $stylesheet_rule;
 
 	/** @var Registry */
 	public Registry $registry;
@@ -69,6 +73,7 @@ final class Pipeline {
 	 * @param EmbedObjectRule     $embed_object_rule Legacy embed/object gate.
 	 * @param ScriptRule          $script_rule       SDK-script gate.
 	 * @param ImageRule           $image_rule        Opt-in third-party image gate.
+	 * @param StylesheetRule      $stylesheet_rule   Provider stylesheets as silent companions.
 	 * @param Registry            $registry          Provider descriptors.
 	 * @param HostMatcher         $host_matcher      "Is this ours?".
 	 * @param EmbedStripper       $stripper          Excerpt/feed removal.
@@ -81,6 +86,7 @@ final class Pipeline {
 		EmbedObjectRule $embed_object_rule,
 		ScriptRule $script_rule,
 		ImageRule $image_rule,
+		StylesheetRule $stylesheet_rule,
 		Registry $registry,
 		HostMatcher $host_matcher,
 		EmbedStripper $stripper,
@@ -92,6 +98,7 @@ final class Pipeline {
 		$this->embed_object_rule = $embed_object_rule;
 		$this->script_rule       = $script_rule;
 		$this->image_rule        = $image_rule;
+		$this->stylesheet_rule   = $stylesheet_rule;
 		$this->registry          = $registry;
 		$this->host_matcher      = $host_matcher;
 		$this->stripper          = $stripper;

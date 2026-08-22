@@ -281,3 +281,10 @@
 		outline: 2px solid Highlight;
 	}
 }
+
+/* A silent companion loader (PLAN.md §3.5): a script that accompanies an
+   iframe of the same provider is gated without a panel of its own. Never
+   painted, whatever a theme does to .cg-embed. */
+.cg-embed--silent {
+	display: none !important;
+}

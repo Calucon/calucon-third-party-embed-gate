@@ -80,12 +80,18 @@ final class ScriptRule {
 			return $html;
 		}
 
+		$inline = array();
 		foreach ( array_reverse( $matches ) as $match ) {
 			$attributes = $match['attributes'];
 
-			// Inline scripts have no src and cause no request; scripts the
-			// site serves itself are the owner's own decision.
+			// Inline scripts cause no request by themselves — unless they
+			// inject a known provider's loader (Scribd, Crowdsignal surveys).
+			// Those are handled in a second pass, after every external script
+			// of the same provider has its panel, so the inline loader can
+			// attach to it silently. Scripts the site serves itself are the
+			// owner's own decision.
 			if ( ! isset( $attributes['src'] ) || ! is_string( $attributes['src'] ) ) {
+				$inline[] = $match;
 				continue;
 			}
 			$src = trim( $attributes['src'] );
@@ -108,10 +114,19 @@ final class ScriptRule {
 			if ( empty( $ctx['force_gate'] ) && false === $provider['enabled'] ) {
 				continue;
 			}
+			// A loader script that accompanies an iframe of the SAME provider
+			// (VideoPress pastes one after its player) is part of that embed,
+			// not a second one: gate it silently — no panel of its own — and
+			// gate.js injects it once the visible panel is activated. Only
+			// when that panel exists in this fragment (the iframe rule ran
+			// first); a lone loader keeps its own panel and fallback link.
+			$silent = 'iframe' === $provider['strategy']
+				&& false !== strpos( $html, 'data-cg-provider="' . $provider['id'] . '"' );
+
 			$provider['strategy'] = 'script';
 			$provider['fallback'] = $this->resolve_fallback( $provider, $html, $match['start'], $match['end'], $host );
 
-			$placeholder = $this->renderer->render( $provider, $src, array(), $ctx );
+			$placeholder = $this->renderer->render( $provider, $src, array(), $silent ? $ctx + array( 'silent' => true ) : $ctx );
 
 			$html = substr( $html, 0, $match['start'] ) . $placeholder . substr( $html, $match['end'] );
 
@@ -120,6 +135,75 @@ final class ScriptRule {
 			}
 		}
 
+		return $this->apply_inline( $html, $inline, $ctx );
+	}
+
+	/**
+	 * Second pass: inline scripts that inject a known provider's loader.
+	 * The offsets still hold because the first pass replaced later matches
+	 * first and we walk these from the end as well — but an earlier
+	 * replacement could have shifted nothing before it, so re-scan to be
+	 * safe: the scanner is cheap and the list is short.
+	 *
+	 * @param string  $html    Fragment after the external-script pass.
+	 * @param array[] $pending Inline matches from the first pass (ignored; re-scanned).
+	 * @param array   $ctx     Integration context.
+	 * @return string
+	 */
+	private function apply_inline( string $html, array $pending, array $ctx ): string {
+		if ( array() === $pending || false === stripos( $html, '<script' ) ) {
+			return $html;
+		}
+		foreach ( array_reverse( $this->scanner->find_tags( $html, 'script' ) ) as $match ) {
+			if ( isset( $match['attributes']['src'] ) ) {
+				continue;
+			}
+			$span = substr( $html, $match['start'], $match['end'] - $match['start'] );
+			if ( ! preg_match( '#^<script\b[^>]*>(.*)</script\s*>$#is', $span, $m ) ) {
+				continue;
+			}
+			$code = $m[1];
+			if ( '' === trim( $code ) ) {
+				continue;
+			}
+			$provider = $this->providers->resolve_for_inline_script( $code );
+			if ( null === $provider ) {
+				continue;
+			}
+			if ( empty( $ctx['force_gate'] ) && false === $provider['enabled'] ) {
+				continue;
+			}
+			$host = '';
+			foreach ( (array) $provider['match']['script_host'] as $candidate ) {
+				if ( false !== stripos( $code, '//' . $candidate . '/' ) ) {
+					$host = (string) $candidate;
+					break;
+				}
+			}
+			if ( empty( $ctx['force_gate'] ) && null !== $this->should_gate
+				&& ! call_user_func( $this->should_gate, true, 'https://' . $host . '/', $ctx ) ) {
+				continue;
+			}
+
+			$silent = false !== strpos( $html, 'data-cg-provider="' . $provider['id'] . '"' );
+
+			$provider['strategy'] = 'script';
+			$provider['fallback'] = $this->resolve_fallback( $provider, $html, $match['start'], $match['end'], $host );
+
+			$placeholder = $this->renderer->render(
+				$provider,
+				'https://' . $host . '/',
+				array(),
+				$silent ? $ctx + array( 'silent' => true ) : $ctx,
+				array( 'inline' => $code )
+			);
+
+			$html = substr( $html, 0, $match['start'] ) . $placeholder . substr( $html, $match['end'] );
+
+			if ( null !== $this->on_gated ) {
+				call_user_func( $this->on_gated, $provider, $ctx );
+			}
+		}
 		return $html;
 	}
 
