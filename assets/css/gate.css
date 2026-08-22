@@ -66,6 +66,12 @@
    is always site-origin — the integration layer refuses anything else. */
 .cg-embed--poster:not( .cg-embed--active ) {
 	display: grid;
+	/* One cell bounded to the container: an auto-sized row would take the
+	   image's intrinsic scaled height, which never quite equals the
+	   aspect-ratio box above — and overflow: auto turns that stray pixel
+	   (or a poster with a different ratio) into a dead scrollbar. */
+	grid-template-rows: minmax( 0, 1fr );
+	grid-template-columns: minmax( 0, 1fr );
 }
 
 .cg-embed--poster:not( .cg-embed--active ) > * {
@@ -76,6 +82,8 @@
 	display: block;
 	width: 100%;
 	height: 100%;
+	min-width: 0;
+	min-height: 0;
 	object-fit: cover;
 	border-radius: var( --cg-radius );
 }

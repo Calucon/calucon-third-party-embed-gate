@@ -81,6 +81,23 @@ if ( '/assets/poster.svg' === $uri ) {
 	return true;
 }
 
+if ( '/assets/poster-tall.svg' === $uri ) {
+	// A 4:3 poster for a 16:9 embed — the ratios an owner actually has.
+	header( 'Content-Type: image/svg+xml' );
+	echo '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480"><rect width="640" height="480" fill="#8a6d3b"/></svg>';
+	return true;
+}
+
+if ( '/page/poster-mismatch' === $uri ) {
+	// Poster ratio differs from the embed's reserved box: the image must be
+	// cropped into the box (object-fit), never overflow it — overflow: auto
+	// would show a dead scrollbar.
+	$content = '<iframe title="Video" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>';
+
+	cg_e2e_page( $content, '', '', array( 'poster' => '/assets/poster-tall.svg' ) );
+	return true;
+}
+
 if ( '/page/gated' === $uri ) {
 	// Raw content as WordPress would render it, before gating: one embed per
 	// authoring style from the fixture corpus, plus a same-origin iframe that

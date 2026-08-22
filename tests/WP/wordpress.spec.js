@@ -117,6 +117,10 @@ test( 'poster block attribute renders a site-origin poster, gone after activatio
 	expect( offenders, 'a poster must never contact a third party' ).toEqual( [] );
 
 	const container = page.locator( '.cg-embed--poster' );
+	// The poster must fit its reserved box: overflow: auto would otherwise
+	// show a dead scrollbar (Simon's report).
+	const overflow = await container.evaluate( ( el ) => ( { sh: el.scrollHeight, ch: el.clientHeight } ) );
+	expect( overflow.sh ).toBeLessThanOrEqual( overflow.ch );
 	await expect( container ).toHaveCount( 1 );
 	const poster = container.locator( 'img.cg-embed__poster' );
 	await expect( poster ).toHaveAttribute( 'alt', '' );
