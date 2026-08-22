@@ -14,7 +14,7 @@ msgid "%1$s: %2$s — %3$s"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:191
-msgid "%d changed"
+msgid "%d customised"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:676

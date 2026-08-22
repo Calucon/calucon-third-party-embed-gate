@@ -187,8 +187,8 @@ final class SettingsPage {
 					'applied'      => __( 'Style applied.', 'calucon-third-party-embed-gate' ),
 					'resetDone'    => __( 'Appearance reset to theme defaults.', 'calucon-third-party-embed-gate' ),
 					'undone'       => __( 'Undone.', 'calucon-third-party-embed-gate' ),
-					/* translators: %d: number of settings changed from their defaults in a section. */
-					'changedCount' => __( '%d changed', 'calucon-third-party-embed-gate' ),
+					/* translators: %d: number of settings in a section that differ from their defaults (saved or not). */
+					'changedCount' => __( '%d customised', 'calucon-third-party-embed-gate' ),
 					'leaveWarning' => __( 'You have unsaved appearance changes.', 'calucon-third-party-embed-gate' ),
 					'pass'         => __( 'readable (meets the 4.5:1 minimum)', 'calucon-third-party-embed-gate' ),
 					'fail'         => __( 'hard to read — below the 4.5:1 minimum. Pick a lighter or darker colour for this pair.', 'calucon-third-party-embed-gate' ),
@@ -1064,22 +1064,20 @@ final class SettingsPage {
 			<?php echo $sample; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- placeholder HTML escaped by the renderer, same output as the front end. ?>
 			<p class="cg-preview-withdraw-wrap"><button type="button" class="cg-withdraw" id="cg-preview-withdraw"><?php esc_html_e( 'Withdraw embed consents', 'calucon-third-party-embed-gate' ); ?></button></p>
 		</div>
-		<p>
+		<div class="cg-preview-toggles">
 			<label>
 				<input type="checkbox" id="cg-preview-dark">
 				<?php esc_html_e( 'Preview on a dark page background', 'calucon-third-party-embed-gate' ); ?>
 			</label>
-			&nbsp;
 			<label>
 				<input type="checkbox" id="cg-preview-poster">
 				<?php esc_html_e( 'Preview with a poster image', 'calucon-third-party-embed-gate' ); ?>
 			</label>
-			&nbsp;
 			<label>
 				<input type="checkbox" id="cg-preview-narrow">
 				<?php esc_html_e( 'Preview at phone width', 'calucon-third-party-embed-gate' ); ?>
 			</label>
-		</p>
+		</div>
 		<p class="description"><?php esc_html_e( 'Readability (WCAG 4.5:1):', 'calucon-third-party-embed-gate' ); ?></p>
 		<div id="cg-contrast-report" class="cg-contrast-report" role="status" aria-live="polite"></div>
 		<?php

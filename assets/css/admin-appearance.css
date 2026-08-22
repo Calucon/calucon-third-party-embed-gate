@@ -475,3 +475,11 @@
 .cg-tab-panel {
 	scroll-margin-top: 100vh;
 }
+
+/* Preview toggles, one per line. */
+.cg-preview-toggles {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: 10px 0;
+}

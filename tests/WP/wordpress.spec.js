@@ -383,7 +383,7 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await expect( page.locator( '#cg-unsaved' ) ).toBeVisible();
 	await expect( page.locator( '#cg-undo' ) ).toBeVisible();
 	await expectChoice( 'cg-corners', 'pill' );
-	await expect( page.locator( 'details.cg-section .cg-section__badge:visible' ).first() ).toContainText( 'changed' );
+	await expect( page.locator( 'details.cg-section .cg-section__badge:visible' ).first() ).toContainText( 'customised' );
 	await page.click( '#cg-undo' );
 	await expectChoice( 'cg-corners', '' );
 	await expect( page.locator( '[data-cg-color="bg"]' ) ).toHaveValue( '' );
@@ -412,6 +412,35 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await page.locator( '#cg-contrast-report .cg-contrast-line--fail .cg-contrast-fix' ).first().click();
 	await expect( page.locator( '#cg-contrast-report .cg-contrast-line--fail' ) ).toHaveCount( 0 );
 	await page.click( '#cg-appearance-reset' );
+
+	// Regression (Simon): tick the icon, save through the bar, come back —
+	// a saved change is "customised", not "unsaved": no bar, no leave
+	// warning, even after interacting with the page.
+	await page.check( '#cg-play-icon' );
+	await page.locator( '#cg-unsaved button[type="submit"]' ).click();
+	await page.waitForURL( /options-general\.php/ );
+	await page.waitForLoadState( 'load' );
+	await expect( page.locator( '#cg-play-icon' ) ).toBeChecked();
+	await page.locator( '#cg-tab-appearance details.cg-section' ).first().locator( ':scope > summary' ).click();
+	await page.waitForTimeout( 300 );
+	await expect( page.locator( 'body' ) ).not.toHaveClass( /cg-has-unsaved/ );
+	await expect( page.locator( '#cg-unsaved' ) ).toBeHidden();
+	await expect( page.locator( 'details.cg-section .cg-section__badge:visible' ).first() ).toContainText( 'customised' );
+	// Restore the saved state for the tests that follow.
+	await page.locator( '#cg-tab-appearance details.cg-section' ).first().locator( ':scope > summary' ).click();
+	await page.uncheck( '#cg-play-icon' );
+	await page.locator( '#cg-unsaved button[type="submit"]' ).click();
+	await page.waitForURL( /options-general\.php/ );
+	await page.waitForLoadState( 'load' );
+	await expect( page.locator( '#cg-play-icon' ) ).not.toBeChecked();
+	// The reload collapsed the untouched sections again; the steps below
+	// need every control reachable.
+	for ( let i = 0; i < 6; i++ ) {
+		const section = page.locator( '#cg-tab-appearance details.cg-section' ).nth( i );
+		if ( ! ( await section.getAttribute( 'open' ) ) ) {
+			await section.locator( ':scope > summary' ).click();
+		}
+	}
 
 	// Round-2 controls: the withdraw sample restyles with its variant, the
 	// dark colour rows reveal behind their toggle, and the play icon class

@@ -978,7 +978,7 @@
 					this.querySelector( ':scope > summary' ).appendChild( badge );
 				}
 				badge.hidden = 0 === count;
-				badge.textContent = ( i18n.changedCount || '%d changed' ).replace( '%d', String( count ) );
+				badge.textContent = ( i18n.changedCount || '%d customised' ).replace( '%d', String( count ) );
 			} );
 		}
 
@@ -1178,7 +1178,15 @@
 		}
 		if ( form ) {
 			$( form ).on( 'mousedown keydown touchstart', function () {
+				if ( ! interacted ) {
+					// The first real interaction: everything the page did on
+					// its own (picker normalisation, preview sync) is done, and
+					// the edit this event precedes has not happened yet — the
+					// exact "as loaded" state to compare against.
+					baseline = snapshot();
+				}
 				interacted = true;
+				updateDirty();
 			} );
 			$( form ).on( 'change input', function () {
 				updateDirty();
