@@ -441,11 +441,11 @@ final class SettingsPage {
 						$builtin_url = isset( $descriptor['privacy_url'] ) && is_string( $descriptor['privacy_url'] ) ? $descriptor['privacy_url'] : '';
 						?>
 						<tr>
-							<td><span class="cg-kind-glyph" data-cg-kind="<?php echo esc_attr( $descriptor['kind'] ?? '' ); ?>" title="<?php echo esc_attr( $this->kind_labels()[ $descriptor['kind'] ?? '' ] ?? '' ); ?>"></span><?php echo esc_html( $label ); ?>
+							<td><span class="cg-provider-name"><span class="cg-kind-glyph" data-cg-kind="<?php echo esc_attr( $descriptor['kind'] ?? '' ); ?>" title="<?php echo esc_attr( $this->kind_labels()[ $descriptor['kind'] ?? '' ] ?? '' ); ?>"></span><span><?php echo esc_html( $label ); ?>
 							<?php
 							if ( ! empty( $descriptor['custom'] ) ) :
 								?>
-								<span class="cg-tag"><?php esc_html_e( 'added by you', 'calucon-third-party-embed-gate' ); ?></span><?php endif; ?></td>
+								<span class="cg-tag"><?php esc_html_e( 'added by you', 'calucon-third-party-embed-gate' ); ?></span><?php endif; ?></span></span></td>
 							<td>
 								<?php if ( ! empty( $descriptor['custom'] ) ) : ?>
 									<span title="<?php esc_attr_e( 'Your own providers are always gated. To let a host through, use the never-gate list under Detection.', 'calucon-third-party-embed-gate' ); ?>"><?php esc_html_e( 'always', 'calucon-third-party-embed-gate' ); ?></span>

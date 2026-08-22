@@ -568,14 +568,27 @@
 	margin: 4px 0 0;
 }
 
+/* Icon + name as one unit: the name may wrap, but never under the icon. */
+.cg-provider-name {
+	display: inline-flex;
+	align-items: flex-start;
+	gap: 8px;
+}
+
 .cg-kind-glyph {
 	display: inline-block;
+	flex: none;
 	width: 16px;
 	height: 16px;
 	margin-inline-end: 8px;
 	vertical-align: -3px;
 	background: currentColor;
 	opacity: 0.75;
+}
+
+.cg-provider-name > .cg-kind-glyph {
+	margin-inline-end: 0;
+	margin-top: 2px;
 }
 
 .cg-kind-cell {
