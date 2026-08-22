@@ -330,6 +330,51 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	await expect( page.locator( '#cg-status' ) ).toBeVisible();
 } );
 
+test( 'editor: the per-block gate control appears in the block inspector', async ( { page } ) => {
+	// editor.js had no coverage on real WordPress: a Gutenberg API change
+	// (the inspector moved stores and gained tabs in 7.x) could silently
+	// drop the §7.5 control. Drive a real editing session.
+	await page.goto( '/wp-login.php' );
+	await page.fill( '#user_login', 'admin' );
+	await page.fill( '#user_pass', 'password' );
+	await page.click( '#wp-submit' );
+	await page.waitForURL( /wp-admin/ );
+
+	await page.goto( '/wp-admin/post-new.php' );
+	await page.waitForFunction( () => window.wp && window.wp.data && window.wp.blocks && window.wp.hooks );
+	expect( await page.evaluate( () => window.wp.hooks.hasFilter( 'editor.BlockEdit', 'calucon-embed-gate/inspector' ) ) ).toBe( true );
+
+	await page.evaluate( () => {
+		try {
+			window.wp.data.dispatch( 'core/preferences' ).set( 'core/edit-post', 'welcomeGuide', false );
+		} catch ( e ) {}
+		const block = window.wp.blocks.createBlock( 'core/html', { content: '<iframe src="https://www.youtube.com/embed/y_pjE_p1HwE" title="T"></iframe>' } );
+		window.wp.data.dispatch( 'core/block-editor' ).insertBlocks( block );
+		window.wp.data.dispatch( 'core/block-editor' ).selectBlock( block.clientId );
+	} );
+
+	const sidebar = page.locator( '.interface-interface-skeleton__sidebar' );
+	await sidebar.getByRole( 'tab', { name: 'Block' } ).click();
+	const settingsTab = sidebar.getByRole( 'tab', { name: 'Settings' } );
+	if ( await settingsTab.count() ) {
+		await settingsTab.click();
+	}
+	const panel = page.getByRole( 'button', { name: 'Calucon Third-Party Embed Gate' } ).first();
+	await expect( panel ).toBeVisible();
+	if ( 'false' === await panel.getAttribute( 'aria-expanded' ) ) {
+		await panel.click();
+	}
+	// The override select (site default / always / never) and the poster
+	// picker are the whole §7.5 control.
+	const gateSelect = sidebar.locator( 'select' ).filter( { hasText: 'Site default' } ).first();
+	await expect( gateSelect ).toBeVisible();
+	await gateSelect.selectOption( 'always' );
+	expect( await page.evaluate( () => window.wp.data.select( 'core/block-editor' ).getSelectedBlock().attributes.caluconEmbedGate ) ).toBe( 'always' );
+	// The poster picker is offered while the block is gated (it hides for
+	// "never" — nothing to poster).
+	await expect( sidebar.getByRole( 'button', { name: /poster/i } ) ).toBeVisible();
+} );
+
 test( 'resource hints to gated providers are removed; harmless hints survive', async ( { page } ) => {
 	// The seed's mu-plugin emulates a performance plugin: one preconnect to
 	// a gated provider and one to a safe CDN via the wp_resource_hints

@@ -424,6 +424,23 @@ final class SettingsPage {
 							<p class="description"><?php esc_html_e( 'Used with the “Custom radius” corner option. 0 is square; 48 is very round.', 'calucon-third-party-embed-gate' ); ?></p>
 						</td>
 					</tr>
+					<?php
+					$color_fields = array(
+						'bg'        => __( 'Panel background', 'calucon-third-party-embed-gate' ),
+						'fg'        => __( 'Panel text', 'calucon-third-party-embed-gate' ),
+						'accent'    => __( 'Button background', 'calucon-third-party-embed-gate' ),
+						'accent_fg' => __( 'Button text', 'calucon-third-party-embed-gate' ),
+					);
+					foreach ( $color_fields as $color_key => $color_label ) :
+						$color_id = 'cg-color-' . str_replace( '_', '-', $color_key );
+						?>
+						<tr>
+							<th scope="row"><label for="<?php echo esc_attr( $color_id ); ?>"><?php echo esc_html( $color_label ); ?></label></th>
+							<td>
+								<input type="text" id="<?php echo esc_attr( $color_id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $color_key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $color_key . ']' ); ?>" value="<?php echo esc_attr( $appearance[ $color_key ] ); ?>">
+							</td>
+						</tr>
+					<?php endforeach; ?>
 					<tr>
 						<th scope="row"><label for="cg-border-width"><?php esc_html_e( 'Border width (px)', 'calucon-third-party-embed-gate' ); ?></label></th>
 						<td>
@@ -527,23 +544,6 @@ final class SettingsPage {
 							<th scope="row"><label for="<?php echo esc_attr( $dark_id ); ?>"><?php echo esc_html( $dark_label ); ?></label></th>
 							<td>
 								<input type="text" id="<?php echo esc_attr( $dark_id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $dark_key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $dark_key . ']' ); ?>" value="<?php echo esc_attr( $appearance[ $dark_key ] ); ?>">
-							</td>
-						</tr>
-					<?php endforeach; ?>
-					<?php
-					$color_fields = array(
-						'bg'        => __( 'Panel background', 'calucon-third-party-embed-gate' ),
-						'fg'        => __( 'Panel text', 'calucon-third-party-embed-gate' ),
-						'accent'    => __( 'Button background', 'calucon-third-party-embed-gate' ),
-						'accent_fg' => __( 'Button text', 'calucon-third-party-embed-gate' ),
-					);
-					foreach ( $color_fields as $color_key => $color_label ) :
-						$color_id = 'cg-color-' . str_replace( '_', '-', $color_key );
-						?>
-						<tr>
-							<th scope="row"><label for="<?php echo esc_attr( $color_id ); ?>"><?php echo esc_html( $color_label ); ?></label></th>
-							<td>
-								<input type="text" id="<?php echo esc_attr( $color_id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $color_key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $color_key . ']' ); ?>" value="<?php echo esc_attr( $appearance[ $color_key ] ); ?>">
 							</td>
 						</tr>
 					<?php endforeach; ?>

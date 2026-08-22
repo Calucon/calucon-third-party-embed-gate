@@ -6,10 +6,10 @@
  *   bash tests/wp/serve-playground.sh &      # or npm run test:wp backend
  *   node bin/capture-screenshots.cjs
  *
- * Writes .wordpress-org/screenshot-{1..4}.png, matching the readme's
- * == Screenshots == captions in order. The fifth caption (block-editor
- * control) is captured better from a real editing session and is left to add
- * by hand. Not part of CI — this is a one-off asset generator.
+ * Writes .wordpress-org/screenshot-{1..5}.png, matching the readme's
+ * == Screenshots == captions in order (the fifth drives a real editing
+ * session for the block-inspector control). Not part of CI — this is a
+ * one-off asset generator.
  */
 const { chromium } = require( '@playwright/test' );
 const path = require( 'path' );
@@ -28,6 +28,9 @@ async function login( page ) {
 async function settings( page ) {
 	await page.goto( BASE + '/wp-admin/options-general.php?page=calucon-embed-gate', { waitUntil: 'networkidle' } );
 	await page.waitForSelector( '.cg-tabs' );
+	// The fixed admin bar rides along while Playwright scrolls to stitch an
+	// element taller than the viewport and ends up pasted mid-image.
+	await page.addStyleTag( { content: '#wpadminbar{display:none!important}html.wp-toolbar{padding-top:0!important}' } );
 }
 
 ( async () => {
@@ -47,6 +50,14 @@ async function settings( page ) {
 	// 2 — Appearance: pickers + live preview + contrast report.
 	await settings( page );
 	await page.click( '#cg-tabbtn-appearance' );
+	// Show the 0.10 controls doing something in the live preview instead of
+	// an all-default form: nothing is saved, the preview mirrors the form.
+	await page.selectOption( '#cg-corners', 'custom' );
+	await page.fill( '#cg-radius', '16' );
+	await page.fill( '#cg-border-width', '2' );
+	await page.evaluate( () => window.jQuery( '#cg-color-border-color' ).wpColorPicker( 'color', '#5c9e00' ) );
+	await page.check( '#cg-play-icon' );
+	await page.selectOption( '#cg-withdraw-style', 'outline' );
 	await page.waitForTimeout( 700 );
 	await page.locator( '#cg-tab-appearance' ).screenshot( { path: path.join( OUT, 'screenshot-2.png' ) } );
 
@@ -65,8 +76,54 @@ async function settings( page ) {
 		clip: { x: box.x, y: box.y, width: box.width, height: Math.min( box.height, 900 ) },
 	} );
 
+	// 5 — the per-block control in the block editor. A core/html block with
+	// an iframe needs no oEmbed fetch (Playground has no network), and it is
+	// one of the gated block types, so the inspector panel attaches to it.
+	await page.goto( BASE + '/wp-admin/post-new.php', { waitUntil: 'networkidle' } );
+	await page.waitForFunction( () => window.wp && window.wp.data && window.wp.blocks && window.wp.data.select( 'core/block-editor' ) );
+	await page.evaluate( () => {
+		try {
+			window.wp.data.dispatch( 'core/preferences' ).set( 'core/edit-post', 'welcomeGuide', false );
+		} catch ( e ) {}
+		try {
+			var editPost = window.wp.data.select( 'core/edit-post' );
+			if ( editPost && editPost.isFeatureActive && editPost.isFeatureActive( 'welcomeGuide' ) ) {
+				window.wp.data.dispatch( 'core/edit-post' ).toggleFeature( 'welcomeGuide' );
+			}
+		} catch ( e ) {}
+		var block = window.wp.blocks.createBlock( 'core/html', {
+			content: '<iframe width="560" height="315" src="https://www.youtube.com/embed/y_pjE_p1HwE" title="Kolkja Cycling" frameborder="0" allowfullscreen></iframe>'
+		} );
+		window.wp.data.dispatch( 'core/block-editor' ).insertBlocks( block );
+		window.wp.data.dispatch( 'core/block-editor' ).selectBlock( block.clientId );
+	} );
+	await page.waitForTimeout( 1500 );
+	// The store action that opens the block inspector has moved between
+	// WordPress versions; the sidebar's own "Block" tab is stable UI.
+	const blockTab = page.locator( '.interface-interface-skeleton__sidebar' ).getByRole( 'tab', { name: 'Block' } );
+	if ( await blockTab.count() ) {
+		await blockTab.click();
+	} else {
+		await page.locator( '.interface-interface-skeleton__sidebar' ).getByRole( 'button', { name: 'Block', exact: true } ).click();
+	}
+	await page.waitForTimeout( 800 );
+	// WordPress 7.x opens the inspector on a "List View" tab for some blocks;
+	// inspector panels live under "Settings".
+	const settingsTab = page.locator( '.interface-interface-skeleton__sidebar' ).getByRole( 'tab', { name: 'Settings' } );
+	if ( await settingsTab.count() ) {
+		await settingsTab.click();
+		await page.waitForTimeout( 500 );
+	}
+	const panelToggle = page.getByRole( 'button', { name: 'Calucon Third-Party Embed Gate' } ).first();
+	await panelToggle.waitFor( { timeout: 15000 } );
+	if ( 'false' === await panelToggle.getAttribute( 'aria-expanded' ) ) {
+		await panelToggle.click();
+	}
+	await page.waitForTimeout( 600 );
+	await page.locator( '.interface-interface-skeleton__sidebar' ).screenshot( { path: path.join( OUT, 'screenshot-5.png' ) } );
+
 	await browser.close();
-	console.log( 'Wrote screenshot-1..4.png to .wordpress-org/' );
+	console.log( 'Wrote screenshot-1..5.png to .wordpress-org/' );
 } )().catch( ( e ) => {
 	console.error( e );
 	process.exit( 1 );
