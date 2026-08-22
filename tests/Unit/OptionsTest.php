@@ -344,8 +344,8 @@ final class OptionsTest extends TestCase {
 		self::assertSame( 'preset:contrast-2', $clean['appearance']['dark_bg'] );
 	}
 
-	public function test_privacy_link_toggle_defaults_on_and_becomes_boolean(): void {
-		self::assertTrue( Options::sanitize( array() )['display']['privacy_link'] );
+	public function test_privacy_link_toggle_defaults_off_and_becomes_boolean(): void {
+		self::assertFalse( Options::sanitize( array() )['display']['privacy_link'] );
 		self::assertFalse( Options::sanitize( array( 'display' => array( 'privacy_link' => '0' ) ) )['display']['privacy_link'] );
 		self::assertTrue( Options::sanitize( array( 'display' => array( 'privacy_link' => '1' ) ) )['display']['privacy_link'] );
 	}
@@ -474,7 +474,7 @@ final class OptionsTest extends TestCase {
 		// New keys at their defaults.
 		$defaults = Options::defaults();
 		self::assertSame( array(), $clean['custom_providers'] );
-		self::assertTrue( $clean['display']['privacy_link'] );
+		self::assertFalse( $clean['display']['privacy_link'], 'the privacy link stays off for upgraded sites' );
 		foreach ( $defaults['appearance'] as $key => $default ) {
 			if ( ! isset( $stored['appearance'][ $key ] ) ) {
 				self::assertSame( $default, $clean['appearance'][ $key ], "appearance.$key" );

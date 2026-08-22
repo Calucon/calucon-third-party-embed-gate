@@ -70,10 +70,10 @@ final class Options {
 			'display'          => array(
 				// The provider's privacy-policy link inside the panel, shown
 				// before any click for providers that declare a privacy_url
-				// (generic/unknown embeds have none). On by default: the
-				// readme promises it, and informing before the click is the
-				// point of the panel.
-				'privacy_link' => true,
+				// (generic/unknown embeds have none). Off by default (Simon's
+				// call for 0.10.0): the panel keeps its pre-0.10 shape unless
+				// the owner opts in on the Providers tab.
+				'privacy_link' => false,
 			),
 			'appearance'       => array(
 				// Preset styles (§7.1). 'default' is the shipped look;

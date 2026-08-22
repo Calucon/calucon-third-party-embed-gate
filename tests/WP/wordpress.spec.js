@@ -477,6 +477,7 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	// lives on the Providers tab.
 	await page.click( '#cg-tabbtn-providers' );
 	await expect( page.locator( 'input[name="calucon_embed_gate_options[display][privacy_link]"][type="checkbox"]' ) ).toBeVisible();
+	await expect( page.locator( 'input[name="calucon_embed_gate_options[display][privacy_link]"][type="checkbox"]' ) ).not.toBeChecked();
 	// Per-provider policy URL override: the built-in link sits in the
 	// placeholder so the owner sees what they are replacing.
 	await expect( page.locator( 'input[name="calucon_embed_gate_options[providers][vimeo][privacy_url]"]' ) ).toHaveAttribute( 'placeholder', 'https://vimeo.com/privacy' );
@@ -912,6 +913,7 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	await expect( mainRow.locator( '.cg-kind-glyph' ) ).toHaveAttribute( 'data-cg-kind', 'social' );
 	await mainRow.locator( 'input[name$="[note]"]' ).fill( 'Partner rules apply.' );
 	await mainRow.locator( 'input[name$="[privacy_url]"]' ).fill( 'https://example-partner.com/privacy' );
+	await page.check( 'input[name$="[display][privacy_link]"][type="checkbox"]' ); // the link is off by default
 	await page.click( '#submit' );
 	await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
 
@@ -930,6 +932,7 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
 	await page.locator( '#cg-custom-providers input[type="checkbox"][name$="[remove]"]' ).first().check();
 	await page.locator( '#cg-custom-providers input[type="checkbox"][name$="[remove]"]' ).last().check();
+	await page.uncheck( 'input[name$="[display][privacy_link]"][type="checkbox"]' );
 	await page.click( '#submit' );
 	await expect( page.locator( '#cg-custom-providers tbody tr' ) ).toHaveCount( 1 );
 	await expect( page.locator( '#cg-tab-providers .cg-tag' ) ).toHaveCount( 0 );
@@ -970,9 +973,9 @@ test( 'front end: appearance settings reach the page — colours, theme-palette 
 	await page.locator( '#cg-withdraw-style > summary' ).click();
 	await page.locator( '#cg-withdraw-style input[value="outline"]' ).check();
 	await page.keyboard.press( 'Escape' );
-	// And the privacy link off, on the Providers tab (same form).
+	// And the privacy link ON (off by default), on the Providers tab (same form).
 	await page.click( '#cg-tabbtn-providers' );
-	await page.uncheck( 'input[name$="[display][privacy_link]"][type="checkbox"]' );
+	await page.check( 'input[name$="[display][privacy_link]"][type="checkbox"]' );
 	await page.click( '#submit' );
 	await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
 
@@ -989,7 +992,7 @@ test( 'front end: appearance settings reach the page — colours, theme-palette 
 		const video = page.locator( '.cg-embed[data-cg-provider="youtube"]' ).first();
 		await expect( video ).toHaveCSS( 'background-color', 'rgb(16, 20, 24)' );
 		expect( await video.locator( '.cg-embed__button' ).evaluate( ( el ) => getComputedStyle( el, '::before' ).maskImage || getComputedStyle( el, '::before' ).webkitMaskImage ) ).toContain( 'data:image/svg+xml' );
-		await expect( page.locator( '.cg-embed__privacy' ) ).toHaveCount( 0 );
+		await expect( page.locator( '.cg-embed[data-cg-provider="youtube"] .cg-embed__privacy a' ).first() ).toHaveAttribute( 'href', /youtube\.com|google\.com/ );
 		await page.emulateMedia( { colorScheme: 'dark' } );
 		await expect( video ).toHaveCSS( 'background-color', 'rgb(0, 0, 0)' );
 		await page.emulateMedia( { colorScheme: 'light' } );
@@ -1000,12 +1003,12 @@ test( 'front end: appearance settings reach the page — colours, theme-palette 
 		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-appearance' );
 		await page.click( '#cg-appearance-reset' );
 		await page.click( '#cg-tabbtn-providers' );
-		await page.check( 'input[name$="[display][privacy_link]"][type="checkbox"]' );
+		await page.uncheck( 'input[name$="[display][privacy_link]"][type="checkbox"]' );
 		await page.click( '#submit' );
 		await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
 	}
 	await page.goto( '/gated-classic/' );
-	await expect( page.locator( '.cg-embed__privacy' ).first() ).toBeVisible();
+	await expect( page.locator( '.cg-embed__privacy' ) ).toHaveCount( 0 );
 } );
 
 test( 'front end: per-embed block texts are stripped of markup and capped', async ( { page } ) => {

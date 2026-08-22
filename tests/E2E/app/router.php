@@ -406,7 +406,7 @@ function cg_e2e_page( string $content, string $extra_css = '', string $config_js
 	$gated = PipelineFactory::gate(
 		$content,
 		array( '127.0.0.1', 'localhost' ),
-		array_merge( array( 'integration' => 'e2e' ), $extra_ctx ),
+		array_merge( array( 'integration' => 'e2e', 'privacy_link' => true ), $extra_ctx ),
 		$providers
 	);
 

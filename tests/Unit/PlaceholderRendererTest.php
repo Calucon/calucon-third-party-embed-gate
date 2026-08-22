@@ -145,7 +145,7 @@ final class PlaceholderRendererTest extends TestCase {
 			)
 		);
 
-		$html = ( new PlaceholderRenderer() )->render( $provider, 'https://player.vimeo.com/video/1', array( 'title' => 'T' ) );
+		$html = ( new PlaceholderRenderer( null, null, null, null, array(), true ) )->render( $provider, 'https://player.vimeo.com/video/1', array( 'title' => 'T' ) );
 
 		self::assertStringContainsString( '<p class="cg-embed__privacy"><a href="https://vimeo.com/privacy" rel="noopener nofollow">Vimeo privacy policy</a></p>', $html );
 	}
@@ -154,7 +154,8 @@ final class PlaceholderRendererTest extends TestCase {
 		// Generic providers carry no privacy_url — nothing to link.
 		self::assertStringNotContainsString( 'cg-embed__privacy', $this->render( array( 'title' => 'T' ) ) );
 
-		// The display.privacy_link option turns it off entirely.
+		// Off unless the display.privacy_link option turns it on (the default
+		// constructor argument mirrors the option default).
 		$provider = Provider::normalize(
 			array(
 				'id'          => 'vimeo',
@@ -168,6 +169,7 @@ final class PlaceholderRendererTest extends TestCase {
 		$off      = new PlaceholderRenderer( null, null, null, null, array(), false );
 
 		self::assertStringNotContainsString( 'cg-embed__privacy', $off->render( $provider, 'https://player.vimeo.com/video/1', array( 'title' => 'T' ) ) );
+		self::assertStringNotContainsString( 'cg-embed__privacy', ( new PlaceholderRenderer() )->render( $provider, 'https://player.vimeo.com/video/1', array( 'title' => 'T' ) ), 'default = off' );
 	}
 
 	public function test_privacy_link_url_is_scheme_guarded(): void {
@@ -184,7 +186,7 @@ final class PlaceholderRendererTest extends TestCase {
 			)
 		);
 
-		$html = ( new PlaceholderRenderer() )->render( $provider, 'https://player.vimeo.com/video/1', array( 'title' => 'T' ) );
+		$html = ( new PlaceholderRenderer( null, null, null, null, array(), true ) )->render( $provider, 'https://player.vimeo.com/video/1', array( 'title' => 'T' ) );
 
 		self::assertStringNotContainsString( 'cg-embed__privacy', $html );
 		self::assertStringNotContainsStringIgnoringCase( 'javascript:', $html );

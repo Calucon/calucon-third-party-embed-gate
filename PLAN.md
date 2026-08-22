@@ -438,7 +438,7 @@ public API and version it.
 ```
 
 `cg-embed__privacy` (0.10.0) is present only for providers that declare a
-`privacy_url` and while `display.privacy_link` is on; the template exposes
+`privacy_url` and only while `display.privacy_link` is on (off by default); the template exposes
 it as `$privacy_url` / `$privacy_label`. Scripts must find the fallback
 link **by its class**, never as "the last link in the panel" — the privacy
 link now follows it (gate.js `removePanel` was fixed for exactly this).

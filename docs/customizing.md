@@ -72,7 +72,7 @@ Shape (see `src/Support/Options.php` for the authoritative schema):
 - `providers.{id}`: `enabled` (bool; ignored for `custom-*` ids, which are
   always gated), `privacy_variant` (bool), `note`, `action` (strings),
   `privacy_url` (https only; overrides the built-in policy link)
-- `display`: `privacy_link` (bool, default true — the provider's
+- `display`: `privacy_link` (bool, default false — the provider's
   privacy-policy link inside every panel)
 - `detection`: `iframes`, `scripts`, `images` (bool; images off by
   default), `own_hosts`, `never_gate`, `always_gate` (host lists, `*.`

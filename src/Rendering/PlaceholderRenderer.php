@@ -113,7 +113,7 @@ final class PlaceholderRenderer {
 		?callable $filter_payload = null,
 		?TemplateLoader $templates = null,
 		array $bridges = array(),
-		bool $show_privacy_link = true
+		bool $show_privacy_link = false
 	) {
 		$this->translate         = $translate ?? static function ( string $text ): string {
 			return $text;

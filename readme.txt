@@ -43,7 +43,7 @@ Calucon Third-Party Embed Gate is a technical measure. It is not a consent manag
 
 **Customisation**
 
-* Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): your own providers (name + hosts, no code), per-provider on/off, privacy-variant on/off, custom note and button text, a provider privacy-policy link in every panel (can be turned off); own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets, corner styles with a custom radius, border width and colour, shadow, spacing, button size/style/width/hover, an optional kind-aware button icon, notice size, panel alignment, link colour, poster placement and dimming, withdraw-button styles and optional dark-mode colours — sectioned, with quick styles, colour pickers, a live preview (dark page, poster, phone width), a one-click reset and an automatic readability check, no CSS needed; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a read-only Status scan of recent content.
+* Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): your own providers (name + hosts, no code), per-provider on/off, privacy-variant on/off, custom note and button text, an optional provider privacy-policy link in every panel (off by default; one checkbox turns it on); own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets, corner styles with a custom radius, border width and colour, shadow, spacing, button size/style/width/hover, an optional kind-aware button icon, notice size, panel alignment, link colour, poster placement and dimming, withdraw-button styles and optional dark-mode colours — sectioned, with quick styles, colour pickers, a live preview (dark page, poster, phone width), a one-click reset and an automatic readability check, no CSS needed; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a read-only Status scan of recent content.
 * Theme override: copy `templates/placeholder.php` to `{your-theme}/calucon-embed-gate/placeholder.php`.
 * CSS custom properties on `.cg-embed` (`--cg-bg`, `--cg-fg`, `--cg-accent`, …) for restyling without specificity wars.
 * WP-CLI: `wp calucon-embed-gate scan` (is every embed gated? `--format=json` for CI and automation) and `wp calucon-embed-gate providers`; the shipped `docs/customizing.md` is a self-contained customization reference for developers and AI agents.
@@ -99,9 +99,9 @@ Privately, please — through GitHub's private vulnerability reporting on the pl
 
 Yes, without code: Providers → *Your own providers* takes a name, the embed hosts (one per line) and, optionally, script hosts and a kind for the button icon. After saving it appears in the provider table with its own notice, button text and privacy-policy link. Unknown hosts are gated either way — a provider of your own only gives such a host a proper name and texts. Hosts the built-in providers handle stay with them, and your own providers are always gated; the never-gate list under Detection is the place to exempt a host.
 
-= Why does every placeholder link the provider's privacy policy? =
+= Can placeholders link the provider's privacy policy? =
 
-So a visitor can read what loading the content means before asking for it. The link points at the provider's own policy page (you can set a different URL per provider, for example a localised page) and can be turned off on the Providers tab. The link is plain markup — nothing is fetched from the provider by showing it.
+Yes: one checkbox on the Providers tab adds a link to the provider's own policy page in every placeholder, so a visitor can read what loading the content means before asking for it. It is off by default. You can set a different URL per provider (for example a localised page). The link is plain markup — nothing is fetched from the provider by showing it.
 
 = Do I need the Content-Security-Policy section? =
 
@@ -115,7 +115,7 @@ Yes. The Appearance tab has quick styles, colours that can follow your theme's p
 
 This plugin makes no request to any external service, on any page, at any time. It contacts no API, loads no remote script, font, image or update check, and sends no telemetry. Its entire purpose is the opposite direction: it prevents your pages from contacting embed providers.
 
-Third-party content enters the picture only after a visitor explicitly clicks the "Load" button on an embed placeholder. At that moment the visitor's browser loads that one embed from its provider (for example YouTube, Vimeo, or Google Maps) — exactly as it would have without this plugin, except that it now happens on the visitor's request instead of automatically. Each placeholder names the provider and, for known providers, links its privacy policy before the click (the link can be turned off), and the provider hostnames in the plugin's source code exist solely so it can recognise and gate that content. No data is sent anywhere by the plugin itself.
+Third-party content enters the picture only after a visitor explicitly clicks the "Load" button on an embed placeholder. At that moment the visitor's browser loads that one embed from its provider (for example YouTube, Vimeo, or Google Maps) — exactly as it would have without this plugin, except that it now happens on the visitor's request instead of automatically. Each placeholder names the provider and — when the optional link is turned on under Providers — links the known provider's privacy policy before the click, and the provider hostnames in the plugin's source code exist solely so it can recognise and gate that content. No data is sent anywhere by the plugin itself.
 
 == Screenshots ==
 
@@ -128,12 +128,12 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 == Upgrade Notice ==
 
 = 0.10.0 =
-Placeholders now link the provider's privacy policy by default (turn it off under Providers if you prefer); the panel's look is unchanged unless you use the new Appearance controls. If a page cache serves your site, clear it once after updating so placeholders pick up the new markup. Adds your own providers, a CSP helper and a much larger Appearance tab.
+The panel's markup and look are unchanged unless you opt in: a provider privacy-policy link (Providers tab) and the new Appearance controls are all off by default. If a page cache serves your site, clear it once after updating so placeholders pick up the new markup. Adds your own providers, a CSP helper and a much larger Appearance tab.
 
 == Changelog ==
 
 = 0.10.0 =
-* New: each placeholder now links the provider's privacy policy before the click (for the built-in providers that declare one; unknown embeds have no known policy). A checkbox on the Providers tab turns the link off.
+* New: an optional privacy-policy link in each placeholder, pointing at the provider's own policy page (for the built-in providers that declare one; unknown embeds have no known policy). Off by default — a checkbox on the Providers tab turns it on.
 * New: fine-grained appearance controls without CSS — custom corner radius, border width and colour, shadow strength, panel spacing, button size, an optional bundled play glyph on the button, notice text size and panel alignment, all mirrored in the live preview.
 * New: the "Withdraw embed consents" control is now styled to match the panels (same colours and corners) with filled, outline and text-link variants.
 * New: optional dark-mode colours, applied only when the visitor prefers a dark colour scheme.
