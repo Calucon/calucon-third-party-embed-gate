@@ -12,6 +12,8 @@
 
 namespace CaluconEmbedGate\Support;
 
+use CaluconEmbedGate\Providers\CustomProviders;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -28,7 +30,7 @@ final class Options {
 	 */
 	public static function defaults(): array {
 		return array(
-			'providers'  => array(
+			'providers'        => array(
 				// '<provider id>' => array(
 				//     'enabled'         => true,   gate embeds of this provider
 				//     'privacy_variant' => true,   load via nocookie/dnt target
@@ -37,7 +39,14 @@ final class Options {
 				//     'privacy_url'     => '',     override the linked privacy policy (https only)
 				// ),
 			),
-			'detection'  => array(
+			// Owner-defined providers (Providers tab). Each row: a stable id
+			// (custom-<slug>, generated once from the label and kept so the
+			// per-provider override row above stays attached), the label,
+			// iframe hosts, script hosts, and a kind for the button glyph.
+			// Never a load-target rewrite: a custom provider loads the URL
+			// the embed carries. See Providers\CustomProviders.
+			'custom_providers' => array(),
+			'detection'        => array(
 				'iframes'         => true,
 				'scripts'         => true,
 				// Third-party <img> gating (§3.5): opt-in — replacing every
@@ -52,7 +61,7 @@ final class Options {
 				// off by default, behind a warning in the UI.
 				'output_buffer'   => false,
 			),
-			'display'    => array(
+			'display'          => array(
 				// The provider's privacy-policy link inside the panel, shown
 				// before any click for providers that declare a privacy_url
 				// (generic/unknown embeds have none). On by default: the
@@ -60,7 +69,7 @@ final class Options {
 				// point of the panel.
 				'privacy_link' => true,
 			),
-			'appearance' => array(
+			'appearance'       => array(
 				// Preset styles (§7.1). 'default' is the shipped look;
 				// 'minimal' drops the panel background; 'card' adds border
 				// and shadow. Colours override the CSS custom properties;
@@ -108,7 +117,7 @@ final class Options {
 				'poster_dim'     => '', // '' | light | strong — darkens the poster behind the panel.
 				'link'           => '', // Link colour (hex); '' inherits the panel text colour.
 			),
-			'consent'    => array(
+			'consent'          => array(
 				// Consent memory (§6.2). Off by default: out of the box,
 				// consent applies to the one embed clicked and is stored
 				// nowhere. Client-side only (§6.3) — a server-side state
@@ -117,7 +126,7 @@ final class Options {
 				'scope'         => 'provider', // embed | provider | all.
 				'duration_days' => 180,        // Persistent lifetime.
 			),
-			'cmp'        => array(
+			'cmp'              => array(
 				// Consent platform bridge (§6.4). Off by default: without it,
 				// an installed CMP is detected but ignored — gating stands
 				// regardless of its choices (fail closed). Enabled, a grant
@@ -189,6 +198,19 @@ final class Options {
 				if ( array() !== $entry ) {
 					$clean['providers'][ $id ] = $entry;
 				}
+			}
+		}
+
+		if ( isset( $raw['custom_providers'] ) && is_array( $raw['custom_providers'] ) ) {
+			$clean['custom_providers'] = self::sanitize_custom_providers( $raw['custom_providers'] );
+		}
+		// Override rows for custom providers that no longer exist are
+		// dropped — otherwise a removed provider's note would resurface if
+		// a new one ever got the same id.
+		$custom_ids = array_column( $clean['custom_providers'], 'id' );
+		foreach ( array_keys( $clean['providers'] ) as $id ) {
+			if ( 0 === strpos( (string) $id, CustomProviders::ID_PREFIX ) && ! in_array( $id, $custom_ids, true ) ) {
+				unset( $clean['providers'][ $id ] );
 			}
 		}
 
@@ -373,6 +395,68 @@ final class Options {
 	 * @param mixed $value Raw list.
 	 * @return string[]
 	 */
+	/**
+	 * Owner-defined provider rows (Providers tab).
+	 *
+	 * A row needs a label and at least one host; a blank row (the always-
+	 * present empty line in the form) is simply ignored, and a row with
+	 * the remove flag is dropped. Ids are generated from the label once
+	 * and kept across saves; wildcards are not accepted because the
+	 * registry matches hosts exactly.
+	 *
+	 * @param array $raw Submitted rows.
+	 * @return array[]
+	 */
+	private static function sanitize_custom_providers( array $raw ): array {
+		$rows  = array();
+		$taken = array();
+		// Keep ids that already exist before generating new ones, so a new
+		// row can never steal an existing row's id.
+		foreach ( $raw as $row ) {
+			if ( is_array( $row ) && isset( $row['id'] ) && is_string( $row['id'] ) && preg_match( '/^custom-[a-z0-9-]{1,48}$/', $row['id'] ) ) {
+				$taken[] = $row['id'];
+			}
+		}
+		foreach ( $raw as $row ) {
+			if ( ! is_array( $row ) || ( ! empty( $row['remove'] ) && self::truthy( $row['remove'] ) ) ) {
+				continue;
+			}
+			$label = isset( $row['label'] ) && is_string( $row['label'] ) ? trim( strip_tags( $row['label'] ) ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- WordPress-free sanitize; escaped at render time regardless.
+			if ( function_exists( 'mb_substr' ) ) {
+				$label = mb_substr( $label, 0, 80 );
+			} else {
+				$label = substr( $label, 0, 80 );
+			}
+			if ( '' === $label ) {
+				continue;
+			}
+			$no_wildcards = static function ( string $host ): bool {
+				return 0 !== strpos( $host, '*.' );
+			};
+			$hosts        = array_values( array_filter( self::sanitize_host_list( $row['hosts'] ?? '' ), $no_wildcards ) );
+			$scripts      = array_values( array_filter( self::sanitize_host_list( $row['script_hosts'] ?? '' ), $no_wildcards ) );
+			if ( array() === $hosts && array() === $scripts ) {
+				continue;
+			}
+			$kind = isset( $row['kind'] ) && in_array( $row['kind'], array( 'video', 'map', 'audio' ), true ) ? $row['kind'] : '';
+
+			$id = isset( $row['id'] ) && is_string( $row['id'] ) && preg_match( '/^custom-[a-z0-9-]{1,48}$/', $row['id'] ) ? $row['id'] : '';
+			if ( '' === $id || in_array( $id, array_column( $rows, 'id' ), true ) ) {
+				$id      = CustomProviders::id_for( $label, $taken );
+				$taken[] = $id;
+			}
+
+			$rows[] = array(
+				'id'           => $id,
+				'label'        => $label,
+				'hosts'        => $hosts,
+				'script_hosts' => $scripts,
+				'kind'         => $kind,
+			);
+		}
+		return $rows;
+	}
+
 	private static function sanitize_host_list( $value ): array {
 		if ( is_string( $value ) ) {
 			$value = preg_split( '/[\r\n,]+/', $value );

@@ -367,6 +367,16 @@ returning an array, so a site can add one from `functions.php` in ten lines.
 `load_path`, `fallback` and `thumbnail`. Every interpolation is URL-encoded at
 substitution time, never at template-authoring time.
 
+**Owner-defined providers (settings, 0.10.0).** The Providers tab stores
+`custom_providers[]` rows — `id` (`custom-<slug>`, generated once from the
+label and kept so the per-provider override row stays attached), `label`,
+`hosts`, `script_hosts`, `kind`. `Providers\CustomProviders::descriptors()`
+turns them into descriptors with the generic note/action wording and no
+load-target rewrite; `Plugin::providers()` lists them **before** the
+built-ins, so an owner can deliberately take a host away from a built-in
+(the UI warns about the lost privacy-preserving load). Override rows for
+removed custom ids are pruned on save.
+
 ### 4.2 Built-in set
 
 Ship enough that a typical site needs no configuration.

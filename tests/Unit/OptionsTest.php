@@ -392,4 +392,55 @@ final class OptionsTest extends TestCase {
 		$bad = Options::sanitize( array( 'cmp' => array( 'borlabs_group' => 'x"};alert(1);//' ) ) );
 		self::assertSame( 'external-media', $bad['cmp']['borlabs_group'] );
 	}
+
+	public function test_custom_provider_rows_are_sanitised(): void {
+		$clean = Options::sanitize(
+			array(
+				'custom_providers' => array(
+					// Blank row (always present in the form): ignored.
+					array( 'id' => '', 'label' => '', 'hosts' => '', 'script_hosts' => '', 'kind' => '' ),
+					// Markup stripped, pasted URL reduced to its host, wildcard dropped, kind whitelisted.
+					array( 'label' => '<b>Example</b> Partner', 'hosts' => "https://widgets.example-partner.com/embed/1\n*.example-partner.com\nnot a host", 'kind' => 'poster' ),
+					// No hosts at all: ignored.
+					array( 'label' => 'Hostless', 'hosts' => '', 'script_hosts' => '' ),
+					// Remove flag: dropped.
+					array( 'id' => 'custom-gone', 'label' => 'Gone', 'hosts' => 'gone.example', 'remove' => '1' ),
+					// Existing id is kept even though the label changed.
+					array( 'id' => 'custom-old-name', 'label' => 'New Name', 'hosts' => 'old.example', 'kind' => 'map' ),
+					// Same label as an existing row: gets a distinct id.
+					array( 'label' => 'New Name', 'hosts' => 'other.example' ),
+					// A forged id that is not in the allowed shape is replaced.
+					array( 'id' => 'youtube', 'label' => 'Fake', 'hosts' => 'fake.example' ),
+				),
+				'providers'        => array(
+					'custom-gone'     => array( 'note' => 'stale' ),
+					'custom-old-name' => array( 'note' => 'kept' ),
+					'youtube'         => array( 'enabled' => '0' ),
+				),
+			)
+		);
+
+		self::assertSame(
+			array(
+				array( 'id' => 'custom-example-partner', 'label' => 'Example Partner', 'hosts' => array( 'widgets.example-partner.com' ), 'script_hosts' => array(), 'kind' => '' ),
+				array( 'id' => 'custom-old-name', 'label' => 'New Name', 'hosts' => array( 'old.example' ), 'script_hosts' => array(), 'kind' => 'map' ),
+				array( 'id' => 'custom-new-name', 'label' => 'New Name', 'hosts' => array( 'other.example' ), 'script_hosts' => array(), 'kind' => '' ),
+				array( 'id' => 'custom-fake', 'label' => 'Fake', 'hosts' => array( 'fake.example' ), 'script_hosts' => array(), 'kind' => '' ),
+			),
+			$clean['custom_providers']
+		);
+		// Override rows follow the provider: the removed one is pruned, the kept one stays, built-ins untouched.
+		self::assertArrayNotHasKey( 'custom-gone', $clean['providers'] );
+		self::assertSame( 'kept', $clean['providers']['custom-old-name']['note'] );
+		self::assertFalse( $clean['providers']['youtube']['enabled'] );
+	}
+
+	public function test_custom_providers_default_to_none_and_survive_a_resave(): void {
+		self::assertSame( array(), Options::sanitize( array() )['custom_providers'] );
+
+		$first  = Options::sanitize( array( 'custom_providers' => array( array( 'label' => 'Example', 'hosts' => 'a.example' ) ) ) );
+		$second = Options::sanitize( array( 'custom_providers' => $first['custom_providers'] ) );
+
+		self::assertSame( $first['custom_providers'], $second['custom_providers'] );
+	}
 }

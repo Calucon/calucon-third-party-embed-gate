@@ -27,6 +27,7 @@ return array(
 	'Load activity from Strava' => __( 'Load activity from Strava', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:171.
 	'Load calendar from Google' => __( 'Load calendar from Google', 'calucon-third-party-embed-gate' ),
+	// Defined at src/Providers/CustomProviders.php:73.
 	// Defined at src/Providers/Registry.php:134.
 	// Defined at src/Providers/Registry.php:164.
 	'Load content from %s' => __( 'Load content from %s', 'calucon-third-party-embed-gate' ),
@@ -70,6 +71,7 @@ return array(
 	'Loading this activity contacts Strava, which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this activity contacts Strava, which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:170.
 	'Loading this calendar contacts Google, which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this calendar contacts Google, which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
+	// Defined at src/Providers/CustomProviders.php:71.
 	// Defined at src/Providers/Registry.php:162.
 	'Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies.' => __( 'Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:324.

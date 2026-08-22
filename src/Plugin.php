@@ -38,6 +38,7 @@ use CaluconEmbedGate\Integration\TheContent;
 use CaluconEmbedGate\Integration\Widgets;
 use CaluconEmbedGate\Integration\WithdrawShortcode;
 use CaluconEmbedGate\Providers\Builtin\Descriptors;
+use CaluconEmbedGate\Providers\CustomProviders;
 use CaluconEmbedGate\Providers\Registry;
 use CaluconEmbedGate\Rendering\PlaceholderRenderer;
 use CaluconEmbedGate\Rendering\TemplateLoader;
@@ -204,7 +205,12 @@ final class Plugin {
 			$this->providers_cache = (array) apply_filters(
 				'calucon_embed_gate_providers',
 				Options::apply_provider_overrides(
-					Descriptors::all( $this->translator() ),
+					// Owner-defined providers first: a host listed there takes
+					// precedence over a built-in claiming the same host.
+					array_merge(
+						CustomProviders::descriptors( $this->options['custom_providers'], $this->translator() ),
+						Descriptors::all( $this->translator() )
+					),
 					$this->options
 				)
 			);

@@ -168,6 +168,13 @@ final class SettingsPage {
 			true
 		);
 		wp_enqueue_script(
+			'calucon-embed-gate-admin-custom-providers',
+			plugins_url( 'assets/js/admin-custom-providers.js', CALUCON_EMBED_GATE_FILE ),
+			array(),
+			CALUCON_EMBED_GATE_VERSION,
+			true
+		);
+		wp_enqueue_script(
 			'calucon-embed-gate-admin-csp',
 			plugins_url( 'assets/js/admin-csp.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
@@ -310,7 +317,7 @@ final class SettingsPage {
 			<form action="options.php" method="post">
 				<?php settings_fields( 'calucon_embed_gate' ); ?>
 
-				<?php $this->render_providers_tab( $providers, $options['display'] ); ?>
+				<?php $this->render_providers_tab( $providers, $options['display'], $options['custom_providers'] ); ?>
 
 				<?php $this->render_detection_tab( $detection ); ?>
 
@@ -351,9 +358,11 @@ final class SettingsPage {
 	 * overrides (§7.1).
 	 *
 	 * @param array $providers Sanitised per-provider option rows.
+	 * @param array $display   Sanitised display option subtree.
+	 * @param array $custom    Sanitised owner-defined provider rows.
 	 * @return void
 	 */
-	private function render_providers_tab( array $providers, array $display ): void {
+	private function render_providers_tab( array $providers, array $display, array $custom ): void {
 		?>
 <div id="cg-tab-providers" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-providers">
 				<h2><?php esc_html_e( 'Providers', 'calucon-third-party-embed-gate' ); ?></h2>
@@ -403,7 +412,11 @@ final class SettingsPage {
 						$builtin_url = isset( $descriptor['privacy_url'] ) && is_string( $descriptor['privacy_url'] ) ? $descriptor['privacy_url'] : '';
 						?>
 						<tr>
-							<td><?php echo esc_html( $label ); ?></td>
+							<td><?php echo esc_html( $label ); ?>
+							<?php
+							if ( ! empty( $descriptor['custom'] ) ) :
+								?>
+								<span class="cg-tag"><?php esc_html_e( 'added by you', 'calucon-third-party-embed-gate' ); ?></span><?php endif; ?></td>
 							<td>
 								<input type="hidden" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>[enabled]" value="0">
 								<input type="checkbox" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[enabled]" value="1" aria-label="<?php echo esc_attr( $aria_gate ); ?>" <?php checked( $enabled ); ?>>
@@ -423,8 +436,127 @@ final class SettingsPage {
 					<?php endforeach; ?>
 					</tbody>
 				</table>
+
+				<?php $this->render_custom_providers( $custom ); ?>
 				</div>
 <?php // phpcs:ignore Generic.WhiteSpace.ScopeIndent.Incorrect -- the close tag sits at column 0 so the method emits the moved block byte-identically, with no stray indentation.
+	}
+
+	/**
+	 * "Your own providers": owner-defined descriptors (Providers\CustomProviders).
+	 *
+	 * One row per saved provider plus one blank row, so adding works with
+	 * JavaScript off (save once per provider); admin-custom-providers.js
+	 * adds an "Add another" button that clones the blank row. Everything
+	 * per-provider beyond name/hosts/kind lives in the table above, where
+	 * a saved custom provider appears like any built-in.
+	 *
+	 * @param array $custom Sanitised owner-defined provider rows.
+	 * @return void
+	 */
+	private function render_custom_providers( array $custom ): void {
+		// Hosts the built-ins claim, to warn about precedence at a glance.
+		$builtin_hosts = array();
+		foreach ( $this->providers() as $descriptor ) {
+			if ( ! empty( $descriptor['custom'] ) || empty( $descriptor['match']['iframe_host'] ) ) {
+				continue;
+			}
+			foreach ( (array) $descriptor['match']['iframe_host'] as $host ) {
+				$builtin_hosts[ $host ] = isset( $descriptor['label'] ) ? (string) $descriptor['label'] : (string) $descriptor['id'];
+			}
+		}
+		$kinds       = array(
+			''      => __( 'Generic', 'calucon-third-party-embed-gate' ),
+			'video' => __( 'Video', 'calucon-third-party-embed-gate' ),
+			'map'   => __( 'Map', 'calucon-third-party-embed-gate' ),
+			'audio' => __( 'Audio', 'calucon-third-party-embed-gate' ),
+		);
+		$rows        = array_values( $custom );
+		$rows[]      = array(
+			'id'           => '',
+			'label'        => '',
+			'hosts'        => array(),
+			'script_hosts' => array(),
+			'kind'         => '',
+		);
+		$blank_index = count( $rows ) - 1;
+		?>
+				<h3 id="cg-custom-providers-heading"><?php esc_html_e( 'Your own providers', 'calucon-third-party-embed-gate' ); ?></h3>
+				<p class="description"><?php esc_html_e( 'Embeds from hosts nobody listed are already gated, under their host name. Add a provider here to give such a host a proper name and a kind (for the button icon); after saving it appears in the table above, where you can set its note, button text and privacy-policy link like for any other provider. Hosts must match exactly — list www. and bare variants separately — and a host added here takes precedence over a built-in provider claiming the same host.', 'calucon-third-party-embed-gate' ); ?></p>
+				<table class="widefat striped cg-custom-providers" id="cg-custom-providers" style="max-width: 60rem;" aria-labelledby="cg-custom-providers-heading">
+					<thead>
+						<tr>
+							<th scope="col"><?php esc_html_e( 'Name', 'calucon-third-party-embed-gate' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Embed hosts (one per line)', 'calucon-third-party-embed-gate' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Script hosts (optional)', 'calucon-third-party-embed-gate' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Kind', 'calucon-third-party-embed-gate' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Remove', 'calucon-third-party-embed-gate' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+					<?php foreach ( $rows as $i => $row ) : ?>
+						<?php
+						$is_blank    = $i === $blank_index;
+						$name_prefix = esc_attr( Options::OPTION . '[custom_providers][' . $i . ']' );
+						$row_label   = '' !== $row['label'] ? $row['label'] : __( 'new provider', 'calucon-third-party-embed-gate' );
+						/* translators: %s: provider label. */
+						$aria_name = sprintf( __( 'Name of %s', 'calucon-third-party-embed-gate' ), $row_label );
+						/* translators: %s: provider label. */
+						$aria_hosts = sprintf( __( 'Embed hosts of %s', 'calucon-third-party-embed-gate' ), $row_label );
+						/* translators: %s: provider label. */
+						$aria_scripts = sprintf( __( 'Script hosts of %s', 'calucon-third-party-embed-gate' ), $row_label );
+						/* translators: %s: provider label. */
+						$aria_kind = sprintf( __( 'Kind of %s', 'calucon-third-party-embed-gate' ), $row_label );
+						/* translators: %s: provider label. */
+						$aria_remove = sprintf( __( 'Remove %s', 'calucon-third-party-embed-gate' ), $row_label );
+						$overlaps    = array();
+						foreach ( $row['hosts'] as $host ) {
+							if ( isset( $builtin_hosts[ $host ] ) ) {
+								$overlaps[ $host ] = $builtin_hosts[ $host ];
+							}
+						}
+						?>
+						<tr<?php echo $is_blank ? ' data-cg-blank="1"' : ''; ?>>
+							<td>
+								<input type="hidden" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>[id]" value="<?php echo esc_attr( $row['id'] ); ?>">
+								<input type="text" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[label]" aria-label="<?php echo esc_attr( $aria_name ); ?>" value="<?php echo esc_attr( $row['label'] ); ?>" maxlength="80" placeholder="<?php echo esc_attr( $is_blank ? __( 'e.g. Example Videos', 'calucon-third-party-embed-gate' ) : '' ); ?>">
+							</td>
+							<td>
+								<textarea name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[hosts]" rows="2" class="code" aria-label="<?php echo esc_attr( $aria_hosts ); ?>" placeholder="<?php echo esc_attr( $is_blank ? "embed.example.com\nexample.com" : '' ); ?>"><?php echo esc_textarea( implode( "\n", $row['hosts'] ) ); ?></textarea>
+								<?php foreach ( $overlaps as $host => $builtin_label ) : ?>
+									<p class="description cg-custom-overlap">
+										<?php
+										printf(
+											/* translators: 1: host name, 2: built-in provider label. */
+											esc_html__( '%1$s is also matched by the built-in %2$s provider. Yours takes precedence, so its privacy-preserving load no longer applies to that host.', 'calucon-third-party-embed-gate' ),
+											'<code>' . esc_html( $host ) . '</code>',
+											esc_html( $builtin_label )
+										);
+										?>
+									</p>
+								<?php endforeach; ?>
+							</td>
+							<td><textarea name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[script_hosts]" rows="2" class="code" aria-label="<?php echo esc_attr( $aria_scripts ); ?>"><?php echo esc_textarea( implode( "\n", $row['script_hosts'] ) ); ?></textarea></td>
+							<td>
+								<select name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[kind]" aria-label="<?php echo esc_attr( $aria_kind ); ?>">
+									<?php foreach ( $kinds as $value => $kind_label ) : ?>
+										<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $row['kind'], $value ); ?>><?php echo esc_html( $kind_label ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</td>
+							<td>
+								<?php if ( ! $is_blank ) : ?>
+									<input type="checkbox" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[remove]" value="1" aria-label="<?php echo esc_attr( $aria_remove ); ?>">
+								<?php else : ?>
+									&mdash;
+								<?php endif; ?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+				<p id="cg-custom-add-wrap" hidden><button type="button" class="button" id="cg-custom-add"><?php esc_html_e( 'Add another provider', 'calucon-third-party-embed-gate' ); ?></button></p>
+		<?php
 	}
 
 	/**

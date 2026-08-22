@@ -67,6 +67,8 @@ wp option patch update calucon_embed_gate_options consent memory session
 
 Shape (see `src/Support/Options.php` for the authoritative schema):
 
+- `custom_providers[]`: `id` (`custom-<slug>`, generated once), `label`, `hosts`,
+  `script_hosts`, `kind` — the Providers tab's *Your own providers* rows
 - `providers.{id}`: `enabled` (bool), `privacy_variant` (bool), `note`,
   `action` (strings)
 - `detection`: `iframes`, `scripts`, `images` (bool; images off by
@@ -83,6 +85,17 @@ Shape (see `src/Support/Options.php` for the authoritative schema):
 Cache plugins are flushed automatically when this option changes.
 
 ## Adding a provider
+
+**No code needed for the common case.** Settings → Third-Party Embed Gate →
+Providers → *Your own providers*: a name, the embed hosts (one per line;
+pasted URLs are reduced to their host), optional script hosts, and a kind
+for the button icon. After saving, the provider appears in the table above
+with the same per-provider controls as the built-ins (gate on/off, note,
+button text, privacy-policy link). Owner-defined providers resolve **before**
+the built-ins, so a host listed there overrides a built-in claiming it — at
+the cost of that built-in's privacy-preserving load target. They never
+rewrite the load URL; for `load_host`/`load_path`, path captures, companion
+classes or hint scrubbing, register a descriptor in code:
 
 Providers are **descriptor arrays**, not classes. Register via the
 `calucon_embed_gate_providers` filter:

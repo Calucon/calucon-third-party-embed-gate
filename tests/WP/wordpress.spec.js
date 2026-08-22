@@ -813,3 +813,70 @@ test( 'admin: the CSP helper says whether the site sends a policy and which host
 	await expect( youtubeRow ).not.toContainText( 'www.youtube.com' );
 	await expect( page.locator( '.cg-csp-table thead' ) ).toContainText( 'frame-src' );
 } );
+
+test( 'admin: an owner-defined provider names an unknown host, takes its own note, and can be removed', async ( { page } ) => {
+	await page.goto( '/wp-login.php' );
+	await page.fill( '#user_login', 'admin' );
+	await page.fill( '#user_pass', 'password' );
+	await page.click( '#wp-submit' );
+	await page.waitForURL( /wp-admin/ );
+
+	// Before: the seeded unknown widget is gated generically, under its host.
+	await page.goto( '/gated-classic/' );
+	const widget = page.locator( '.cg-embed[data-cg-host="widgets.example-partner.com"]' );
+	await expect( widget ).toHaveAttribute( 'data-cg-provider', 'generic' );
+	await expect( widget.locator( 'button' ) ).toContainText( 'widgets.example-partner.com' );
+
+	// Add it on the Providers tab. The blank row is always there; "Add
+	// another provider" clones it so two can be added in one save.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	const blank = page.locator( '#cg-custom-providers tr[data-cg-blank]' );
+	await expect( blank ).toHaveCount( 1 );
+	await page.click( '#cg-custom-add' );
+	await expect( page.locator( '#cg-custom-providers tbody tr' ) ).toHaveCount( 2 );
+	const added = page.locator( '#cg-custom-providers tbody tr' ).first();
+	await added.locator( 'input[type="text"]' ).fill( 'Example Partner' );
+	await added.locator( 'textarea' ).first().fill( 'https://widgets.example-partner.com/embed/9\nexample-partner.com' );
+	await added.locator( 'select' ).selectOption( 'video' );
+	await blank.locator( 'input[type="text"]' ).fill( 'Widget SDK' );
+	await blank.locator( 'textarea' ).nth( 1 ).fill( 'cdn.widget-sdk.example' );
+	await page.click( '#submit' );
+	await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
+
+	// Saved rows: stable ids, pasted URL reduced to its host; the blank row is back.
+	const rows = page.locator( '#cg-custom-providers tbody tr' );
+	await expect( rows ).toHaveCount( 3 );
+	await expect( rows.nth( 0 ).locator( 'input[type="hidden"]' ) ).toHaveValue( 'custom-example-partner' );
+	await expect( rows.nth( 0 ).locator( 'textarea' ).first() ).toHaveValue( 'widgets.example-partner.com\nexample-partner.com' );
+	await expect( rows.nth( 1 ).locator( 'input[type="hidden"]' ) ).toHaveValue( 'custom-widget-sdk' );
+	await expect( rows.nth( 2 ) ).toHaveAttribute( 'data-cg-blank', '1' );
+
+	// …and both appear in the main table, marked, with the usual per-provider controls.
+	const mainRow = page.locator( '#cg-tab-providers table' ).first().locator( 'tbody tr', { hasText: 'Example Partner' } );
+	await expect( mainRow.locator( '.cg-tag' ) ).toHaveText( 'added by you' );
+	await mainRow.locator( 'input[name$="[note]"]' ).fill( 'Partner rules apply.' );
+	await mainRow.locator( 'input[name$="[privacy_url]"]' ).fill( 'https://example-partner.com/privacy' );
+	await page.click( '#submit' );
+	await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
+
+	// Front end: named, with the owner's note and privacy link; still a real gate.
+	const offenders = trackThirdPartyRequests( page );
+	await page.goto( '/gated-classic/' );
+	await expect( widget ).toHaveAttribute( 'data-cg-provider', 'custom-example-partner' );
+	await expect( widget.locator( 'button' ) ).toContainText( 'Load content from Example Partner' );
+	await expect( widget ).toContainText( 'Partner rules apply.' );
+	await expect( widget.locator( 'a[href="https://example-partner.com/privacy"]' ) ).toBeVisible();
+	// Logged in, so core's admin bar loads the user's Gravatar — WordPress's
+	// request, not the plugin's. Nothing else may leave the site.
+	expect( offenders.filter( ( url ) => ! /(^|\.)gravatar\.com$/.test( new URL( url ).hostname ) ) ).toEqual( [] );
+
+	// Remove both: the gate falls back to generic and the override rows are pruned.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.locator( '#cg-custom-providers input[type="checkbox"][name$="[remove]"]' ).first().check();
+	await page.locator( '#cg-custom-providers input[type="checkbox"][name$="[remove]"]' ).last().check();
+	await page.click( '#submit' );
+	await expect( page.locator( '#cg-custom-providers tbody tr' ) ).toHaveCount( 1 );
+	await expect( page.locator( '#cg-tab-providers .cg-tag' ) ).toHaveCount( 0 );
+	await page.goto( '/gated-classic/' );
+	await expect( widget ).toHaveAttribute( 'data-cg-provider', 'generic' );
+} );

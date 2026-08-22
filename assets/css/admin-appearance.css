@@ -540,3 +540,30 @@
 .cg-csp-table code {
 	white-space: nowrap;
 }
+
+/* Providers tab: owner-defined providers. */
+.cg-tag {
+	display: inline-block;
+	margin-inline-start: 6px;
+	padding: 1px 6px;
+	border-radius: 9px;
+	background: #f0f0f1;
+	color: #50575e;
+	font-size: 11px;
+	line-height: 1.6;
+	vertical-align: middle;
+}
+
+.cg-custom-providers textarea {
+	width: 100%;
+	min-width: 12em;
+}
+
+.cg-custom-providers input[type="text"] {
+	width: 100%;
+	min-width: 9em;
+}
+
+.cg-custom-overlap {
+	margin: 4px 0 0;
+}
