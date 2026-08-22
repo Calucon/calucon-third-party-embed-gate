@@ -808,6 +808,12 @@
 		var undoSnapshot = null;
 		var undoTimer = null;
 		var submitting = false;
+		// "Unsaved" means the OWNER changed something: the colour pickers
+		// rewrite their fields on their own after load, and programmatic
+		// syncs fire change events too — neither counts. A real interaction
+		// (pointer/keyboard in the form, or a bulk action) arms the check;
+		// the serialised form vs the settled baseline is the arbiter.
+		var interacted = false;
 
 		function snapshot() {
 			return form ? $( form ).serialize() : '';
@@ -854,7 +860,7 @@
 			if ( ! unsavedBar ) {
 				return;
 			}
-			var dirty = snapshot() !== baseline;
+			var dirty = interacted && '' !== baseline && snapshot() !== baseline;
 			unsavedBar.hidden = ! dirty && ! undoSnapshot;
 			document.body.classList.toggle( 'cg-has-unsaved', dirty );
 			updateBadges();
@@ -888,6 +894,7 @@
 		}
 
 		function bulkAction( run, message ) {
+			interacted = true;
 			undoSnapshot = snapshot();
 			run();
 			notify( message, true );
@@ -1109,6 +1116,9 @@
 			} );
 		}
 		if ( form ) {
+			$( form ).on( 'mousedown keydown touchstart', function () {
+				interacted = true;
+			} );
 			$( form ).on( 'change input', function () {
 				updateDirty();
 			} );
@@ -1116,7 +1126,7 @@
 				submitting = true;
 			} );
 			window.addEventListener( 'beforeunload', function ( event ) {
-				if ( ! submitting && snapshot() !== baseline ) {
+				if ( ! submitting && interacted && '' !== baseline && snapshot() !== baseline ) {
 					event.preventDefault();
 					event.returnValue = i18n.leaveWarning || '';
 				}
@@ -1211,7 +1221,12 @@
 			var defaultText = unsavedBar.querySelector( '.cg-unsaved__text' );
 			unsavedBar.setAttribute( 'data-cg-default-text', defaultText ? defaultText.textContent : '' );
 		}
-		baseline = snapshot();
+		// Baseline once the pickers have settled (Iris normalises its fields
+		// on a timer); until then nothing can read as dirty.
+		window.setTimeout( function () {
+			baseline = snapshot();
+			updateDirty();
+		}, 250 );
 		updateBadges();
 	} );
 }( window.jQuery ) );

@@ -642,7 +642,8 @@ final class SettingsPage {
 					<p class="description"><?php esc_html_e( 'A style fills in every control below; "Theme default" clears them all. Nothing changes on your site until you save.', 'calucon-third-party-embed-gate' ); ?></p>
 				</fieldset>
 
-				<h3><?php esc_html_e( 'Colours', 'calucon-third-party-embed-gate' ); ?></h3>
+				<details class="cg-section" open>
+					<summary><h3><?php esc_html_e( 'Colours', 'calucon-third-party-embed-gate' ); ?></h3></summary>
 				<table class="form-table" role="presentation">
 					<?php
 					$this->color_row( 'bg', __( 'Panel background', 'calucon-third-party-embed-gate' ), $appearance );
@@ -653,8 +654,10 @@ final class SettingsPage {
 					$this->color_row( 'border_color', __( 'Border', 'calucon-third-party-embed-gate' ), $appearance, __( 'Used when a border is shown (see Shape). Default: the panel text colour.', 'calucon-third-party-embed-gate' ) );
 					?>
 				</table>
+				</details>
 
-				<h3><?php esc_html_e( 'Shape and layout', 'calucon-third-party-embed-gate' ); ?></h3>
+				<details class="cg-section" open>
+					<summary><h3><?php esc_html_e( 'Shape and layout', 'calucon-third-party-embed-gate' ); ?></h3></summary>
 				<table class="form-table" role="presentation">
 					<?php
 					$this->select_row(
@@ -739,6 +742,7 @@ final class SettingsPage {
 					);
 					?>
 				</table>
+				</details>
 
 				<details class="cg-section" <?php echo $this->section_touched( $appearance, array( 'button_style', 'button_size', 'button_width', 'hover', 'play_icon' ) ) ? 'open' : ''; ?>>
 					<summary><h3><?php esc_html_e( 'Button', 'calucon-third-party-embed-gate' ); ?></h3></summary>

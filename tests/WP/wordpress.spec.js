@@ -235,15 +235,22 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	// The Appearance panel lives behind its tab.
 	await page.click( '#cg-tabbtn-appearance' );
 
-	// Advanced sections start collapsed on an untouched site (progressive
-	// disclosure); open them all so every control below is reachable.
+	// Regression: nothing has been touched, so the unsaved bar must not
+	// show — the colour pickers rewrite their fields after load and that
+	// once counted as a change.
+	await page.waitForTimeout( 600 );
+	await expect( page.locator( '#cg-unsaved' ) ).toBeHidden();
+
+	// Every section is a collapsible container: Colours and Shape start
+	// open, the advanced four collapsed on an untouched site. Open those
+	// so every control below is reachable.
 	const sections = page.locator( '#cg-tab-appearance details.cg-section' );
-	await expect( sections ).toHaveCount( 4 );
-	await expect( page.locator( '#cg-tab-appearance details.cg-section[open]' ) ).toHaveCount( 0 );
-	for ( let i = 0; i < 4; i++ ) {
+	await expect( sections ).toHaveCount( 6 );
+	await expect( page.locator( '#cg-tab-appearance details.cg-section[open]' ) ).toHaveCount( 2 );
+	for ( let i = 2; i < 6; i++ ) {
 		await sections.nth( i ).locator( ':scope > summary' ).click();
 	}
-	await expect( page.locator( '#cg-tab-appearance details.cg-section[open]' ) ).toHaveCount( 4 );
+	await expect( page.locator( '#cg-tab-appearance details.cg-section[open]' ) ).toHaveCount( 6 );
 
 	// The live preview is the real placeholder markup, and the contrast
 	// report measured every colour pair.
