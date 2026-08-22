@@ -258,7 +258,7 @@ final class SettingsPage {
 				?>
 				<div id="cg-unsaved" class="cg-unsaved" role="status" aria-live="polite" hidden>
 					<span class="cg-unsaved__text"><?php esc_html_e( 'You have unsaved changes.', 'calucon-third-party-embed-gate' ); ?></span>
-					<button type="button" id="cg-undo" class="button" hidden><?php esc_html_e( 'Undo', 'calucon-third-party-embed-gate' ); ?></button>
+					<button type="button" id="cg-undo" class="button" hidden><?php esc_html_e( 'Undo all changes', 'calucon-third-party-embed-gate' ); ?></button>
 					<button type="submit" class="button button-primary"><?php esc_html_e( 'Save changes', 'calucon-third-party-embed-gate' ); ?></button>
 				</div>
 			</form>
@@ -424,9 +424,70 @@ final class SettingsPage {
 	}
 
 	/**
-	 * One <select> row of the Appearance tab.
+	 * Bundled 24×24 glyphs for the choice menus (inline SVG, no requests).
+	 * Keyed by "<option key>:<value>"; '*' is the per-key fallback. Drawn in
+	 * currentColor so they follow the admin text colour.
 	 *
-	 * @param string $id          Element id (also the label target).
+	 * @return array<string,string> key => SVG inner markup.
+	 */
+	private static function choice_icons(): array {
+		$rect       = '<rect x="3" y="5" width="18" height="14" rx="%s" fill="currentColor" opacity="0.85"/>';
+		$outline    = '<rect x="3.75" y="5.75" width="16.5" height="12.5" rx="%s" fill="none" stroke="currentColor" stroke-width="1.5"/>';
+		$pill       = '<rect x="%s" y="9" width="%s" height="6" rx="3" fill="currentColor"/>';
+		$pill_out   = '<rect x="4.75" y="9.75" width="14.5" height="4.5" rx="2.25" fill="none" stroke="currentColor" stroke-width="1.5"/>';
+		$lines_left = '<rect x="4" y="7" width="12" height="2" fill="currentColor"/><rect x="4" y="11" width="16" height="2" fill="currentColor"/><rect x="4" y="15" width="9" height="2" fill="currentColor"/>';
+		$lines_ctr  = '<rect x="6" y="7" width="12" height="2" fill="currentColor"/><rect x="4" y="11" width="16" height="2" fill="currentColor"/><rect x="7.5" y="15" width="9" height="2" fill="currentColor"/>';
+		$inherit    = '<rect x="3.75" y="5.75" width="16.5" height="12.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2"/>';
+		$dim        = '<rect x="3" y="5" width="18" height="14" rx="2" fill="currentColor" opacity="%s"/><rect x="6" y="13" width="8" height="3" rx="1" fill="currentColor"/>';
+
+		return array(
+			'preset:default'         => sprintf( $rect, 2 ),
+			'preset:minimal'         => sprintf( $outline, 2 ),
+			'preset:card'            => '<rect x="5" y="7" width="16" height="13" rx="3" fill="currentColor" opacity="0.25"/>' . sprintf( $outline, 3 ),
+			'corners:'               => sprintf( $rect, 2 ),
+			'corners:square'         => sprintf( $rect, 0 ),
+			'corners:rounded'        => sprintf( $rect, 5 ),
+			'corners:pill'           => sprintf( $rect, 7 ),
+			'corners:custom'         => sprintf( $outline, 4 ) . '<path d="M8 13l2.5 2.5L16 10" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+			'shadow:'                => $inherit,
+			'shadow:none'            => sprintf( $outline, 2 ),
+			'shadow:soft'            => '<rect x="5" y="7" width="16" height="13" rx="2" fill="currentColor" opacity="0.2"/>' . sprintf( $rect, 2 ),
+			'shadow:strong'          => '<rect x="6" y="8" width="16" height="13" rx="2" fill="currentColor" opacity="0.45"/>' . sprintf( $rect, 2 ),
+			'density:'               => sprintf( $outline, 2 ) . '<rect x="7" y="9" width="10" height="6" rx="1" fill="currentColor"/>',
+			'density:compact'        => sprintf( $outline, 2 ) . '<rect x="5.5" y="7.5" width="13" height="9" rx="1" fill="currentColor"/>',
+			'density:spacious'       => sprintf( $outline, 2 ) . '<rect x="9" y="10" width="6" height="4" rx="1" fill="currentColor"/>',
+			'align:'                 => $lines_left,
+			'align:center'           => $lines_ctr,
+			'note_size:'             => '<rect x="4" y="6" width="16" height="3" fill="currentColor"/><rect x="4" y="11" width="16" height="3" fill="currentColor"/><rect x="4" y="16" width="10" height="3" fill="currentColor"/>',
+			'note_size:small'        => '<rect x="4" y="8" width="16" height="2" fill="currentColor"/><rect x="4" y="12" width="16" height="2" fill="currentColor"/><rect x="4" y="16" width="10" height="2" fill="currentColor"/>',
+			'button_style:'          => sprintf( $pill, 4, 16 ),
+			'button_style:outline'   => $pill_out,
+			'button_size:'           => sprintf( $pill, 5, 14 ),
+			'button_size:small'      => sprintf( $pill, 7, 10 ),
+			'button_size:large'      => '<rect x="3" y="8" width="18" height="8" rx="4" fill="currentColor"/>',
+			'button_width:'          => sprintf( $pill, 7, 10 ),
+			'button_width:full'      => '<rect x="3" y="9" width="18" height="6" rx="3" fill="currentColor"/>',
+			'hover:'                 => sprintf( $pill, 5, 14 ) . '<rect x="3.5" y="7.5" width="17" height="9" rx="4.5" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4"/>',
+			'hover:none'             => sprintf( $pill, 5, 14 ),
+			'hover:strong'           => sprintf( $pill, 5, 14 ) . '<rect x="2.75" y="6.75" width="18.5" height="10.5" rx="5.25" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+			'poster_panel:'          => sprintf( $outline, 2 ) . '<rect x="5.5" y="12" width="8" height="4.5" rx="1" fill="currentColor"/>',
+			'poster_panel:center'    => sprintf( $outline, 2 ) . '<rect x="8" y="9.75" width="8" height="4.5" rx="1" fill="currentColor"/>',
+			'poster_panel:bar'       => sprintf( $outline, 2 ) . '<rect x="3.75" y="13.5" width="16.5" height="4.75" rx="1" fill="currentColor"/>',
+			'poster_dim:'            => sprintf( $dim, '0.25' ),
+			'poster_dim:light'       => sprintf( $dim, '0.5' ),
+			'poster_dim:strong'      => sprintf( $dim, '0.8' ),
+			'withdraw_style:'        => sprintf( $pill, 4, 16 ),
+			'withdraw_style:outline' => $pill_out,
+			'withdraw_style:link'    => '<rect x="5" y="10" width="14" height="2" fill="currentColor"/><rect x="5" y="14" width="14" height="1.5" fill="currentColor"/>',
+		);
+	}
+
+	/**
+	 * One choice row of the Appearance tab: the same compact disclosure as
+	 * the colour rows — the summary shows a glyph and the current label, the
+	 * menu lists every option with its glyph. Real radios; no-JS safe.
+	 *
+	 * @param string $id          Element id of the control (the <details>).
 	 * @param string $key         appearance option key.
 	 * @param string $label       Row label.
 	 * @param array  $choices     value => label.
@@ -435,15 +496,35 @@ final class SettingsPage {
 	 * @return void
 	 */
 	private function select_row( string $id, string $key, string $label, array $choices, array $appearance, string $description = '' ): void {
+		$icons    = self::choice_icons();
+		$label_id = $id . '-label';
+		$current  = (string) $appearance[ $key ];
+		if ( ! array_key_exists( $current, $choices ) ) {
+			$current = (string) array_key_first( $choices );
+		}
+		$icon_of = static function ( string $value ) use ( $icons, $key ): string {
+			$svg = isset( $icons[ $key . ':' . $value ] ) ? $icons[ $key . ':' . $value ] : ( isset( $icons[ $key . ':*' ] ) ? $icons[ $key . ':*' ] : '' );
+			return '<svg class="cg-choice__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">' . $svg . '</svg>';
+		};
 		?>
 					<tr>
-						<th scope="row"><label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $label ); ?></label></th>
+						<th scope="row"><span id="<?php echo esc_attr( $label_id ); ?>"><?php echo esc_html( $label ); ?></span></th>
 						<td>
-							<select id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $key . ']' ); ?>">
-								<?php foreach ( $choices as $value => $choice_label ) : ?>
-									<option value="<?php echo esc_attr( (string) $value ); ?>" <?php selected( (string) $appearance[ $key ], (string) $value ); ?>><?php echo esc_html( $choice_label ); ?></option>
-								<?php endforeach; ?>
-							</select>
+							<details id="<?php echo esc_attr( $id ); ?>" class="cg-color cg-choice" data-cg-choice="<?php echo esc_attr( $key ); ?>">
+								<summary class="cg-color__summary">
+									<?php echo $icon_of( $current ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static bundled SVG from choice_icons(). ?>
+									<span class="cg-color__name"><?php echo esc_html( $choices[ $current ] ); ?></span>
+								</summary>
+								<div class="cg-color__menu cg-choice__menu" role="radiogroup" aria-labelledby="<?php echo esc_attr( $label_id ); ?>">
+									<?php foreach ( $choices as $value => $choice_label ) : ?>
+										<label class="cg-color__option">
+											<input type="radio" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $key . ']' ); ?>" value="<?php echo esc_attr( (string) $value ); ?>" data-cg-name="<?php echo esc_attr( $choice_label ); ?>" <?php checked( (string) $value, $current ); ?>>
+											<?php echo $icon_of( (string) $value ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static bundled SVG from choice_icons(). ?>
+											<span class="cg-color__label"><?php echo esc_html( $choice_label ); ?></span>
+										</label>
+									<?php endforeach; ?>
+								</div>
+							</details>
 							<?php if ( '' !== $description ) : ?>
 								<p class="description"><?php echo esc_html( $description ); ?></p>
 							<?php endif; ?>

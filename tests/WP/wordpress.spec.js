@@ -241,6 +241,16 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await page.waitForTimeout( 600 );
 	await expect( page.locator( '#cg-unsaved' ) ).toBeHidden();
 
+	// Choice controls are disclosure menus with radios (glyph + label).
+	const choose = async ( id, value ) => {
+		const control = page.locator( `#${ id }` );
+		if ( ! ( await control.getAttribute( 'open' ) ) ) {
+			await control.locator( ':scope > summary' ).click();
+		}
+		await control.locator( `input[type="radio"][value="${ value }"]` ).check( { force: true } );
+	};
+	const expectChoice = ( id, value ) => expect( page.locator( `#${ id } input[type="radio"]:checked` ) ).toHaveValue( value );
+
 	// Every section is a collapsible container: Colours and Shape start
 	// open, the advanced four collapsed on an untouched site. Open those
 	// so every control below is reachable.
@@ -260,37 +270,42 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await expect( page.locator( '#cg-contrast-report' ) ).toContainText( ':1' );
 
 	// Switching the panel style restyles the preview immediately.
-	await page.selectOption( '#cg-preset', 'minimal' );
+	await choose( 'cg-preset', 'minimal' );
 	await expect( page.locator( '#cg-preview-stage.cg-preview--minimal' ) ).toHaveCount( 1 );
 
 	// The 0.10 fine-grained controls mirror into the preview: a custom
 	// radius reveals its input and rounds the sample; a border width draws.
-	await page.selectOption( '#cg-corners', 'custom' );
+	await choose( 'cg-corners', 'custom' );
 	await expect( page.locator( '#cg-radius-row' ) ).toBeVisible();
 	await page.fill( '#cg-radius', '24' );
 	await expect( sample ).toHaveCSS( 'border-radius', '24px' );
 	await page.fill( '#cg-border-width', '4' );
 	await expect( sample ).toHaveCSS( 'border-top-width', '4px' );
-	await page.selectOption( '#cg-shadow', 'none' );
+	await choose( 'cg-shadow', 'none' );
 	await expect( sample ).toHaveCSS( 'box-shadow', 'none' );
+
+	// Every choice control shows a glyph for the current option and one per
+	// option in its menu.
+	await expect( page.locator( '#cg-corners > summary .cg-choice__icon' ) ).toHaveCount( 1 );
+	expect( await page.locator( '#cg-corners .cg-color__option .cg-choice__icon' ).count() ).toBe( 5 );
 
 	// Round 3: the tab is sectioned, and Reset returns every field to
 	// "inherit" (custom radius set above → back to default, row hidden).
 	// Six option sections plus the Preview heading.
 	await expect( page.locator( '#cg-tab-appearance h3' ) ).toHaveCount( 7 );
 	await page.click( '#cg-appearance-reset' );
-	await expect( page.locator( '#cg-corners' ) ).toHaveValue( '' );
+	await expectChoice( 'cg-corners', '' );
 	await expect( page.locator( '#cg-radius-row' ) ).toBeHidden();
 	await expect( page.locator( '#cg-border-width' ) ).toHaveValue( '' );
 	await expect( sample ).not.toHaveCSS( 'border-top-width', '4px' );
 	// Outline button style mirrors into the preview; the poster preview
 	// injects a bundled data: image and the placement select moves the
 	// panel over it.
-	await page.selectOption( '#cg-button-style', 'outline' );
+	await choose( 'cg-button-style', 'outline' );
 	await expect( sample.locator( '.cg-embed__button' ) ).toHaveCSS( 'background-color', 'rgba(0, 0, 0, 0)' );
 	await page.check( '#cg-preview-poster' );
 	await expect( sample.locator( 'img.cg-embed__poster' ) ).toHaveAttribute( 'src', /^data:image\/svg\+xml/ );
-	await page.selectOption( '#cg-poster-panel', 'bar' );
+	await choose( 'cg-poster-panel', 'bar' );
 	await expect( sample.locator( '.cg-embed__panel' ) ).toHaveCSS( 'justify-self', 'stretch' );
 	await page.uncheck( '#cg-preview-poster' );
 	await expect( sample.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
@@ -340,7 +355,7 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	// Round 4: a quick style fills in the controls AND the preview in one
 	// click; poster dimming and the phone-width preview mirror too.
 	await page.click( '.cg-quick-style[data-cg-quick-style="cinema"]' );
-	await expect( page.locator( '#cg-corners' ) ).toHaveValue( 'rounded' );
+	await expectChoice( 'cg-corners', 'rounded' );
 	await expect( page.locator( '#cg-play-icon' ) ).toBeChecked();
 	await expect( page.locator( '[data-cg-color="bg"]' ) ).toHaveValue( '#101418' );
 	await expect( bgRadios.last() ).toBeChecked();
@@ -367,10 +382,10 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await page.click( '.cg-quick-style[data-cg-quick-style="pastel"]' );
 	await expect( page.locator( '#cg-unsaved' ) ).toBeVisible();
 	await expect( page.locator( '#cg-undo' ) ).toBeVisible();
-	await expect( page.locator( '#cg-corners' ) ).toHaveValue( 'pill' );
+	await expectChoice( 'cg-corners', 'pill' );
 	await expect( page.locator( 'details.cg-section .cg-section__badge:visible' ).first() ).toContainText( 'changed' );
 	await page.click( '#cg-undo' );
-	await expect( page.locator( '#cg-corners' ) ).toHaveValue( '' );
+	await expectChoice( 'cg-corners', '' );
 	await expect( page.locator( '[data-cg-color="bg"]' ) ).toHaveValue( '' );
 
 	// Hover a row → its preview target is outlined.
@@ -403,7 +418,7 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	// lands on the stage.
 	const withdrawSample = page.locator( '#cg-preview-withdraw' );
 	await expect( withdrawSample ).toBeVisible();
-	await page.selectOption( '#cg-withdraw-style', 'outline' );
+	await choose( 'cg-withdraw-style', 'outline' );
 	await expect( withdrawSample ).toHaveClass( 'cg-withdraw cg-withdraw--outline' );
 	await expect( page.locator( '.cg-dark-row' ).first() ).toBeHidden();
 	await page.check( '#cg-dark-enabled' );

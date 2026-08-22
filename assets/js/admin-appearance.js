@@ -37,6 +37,54 @@
 		var panel = sample ? sample.querySelector( '.cg-embed__panel' ) : null;
 		var withdraw = document.getElementById( 'cg-preview-withdraw' );
 
+		// Choice controls (the former <select>s) are <details> with radios,
+		// like the colour controls. Read/write them by the control's id.
+		function choiceValue( id ) {
+			var el = document.getElementById( id );
+			if ( ! el ) {
+				return '';
+			}
+			if ( el.classList && el.classList.contains( 'cg-choice' ) ) {
+				var checked = el.querySelector( 'input[type="radio"]:checked' );
+				return checked ? checked.value : '';
+			}
+			return el.value;
+		}
+		function setChoice( id, value ) {
+			var el = document.getElementById( id );
+			if ( ! el ) {
+				return;
+			}
+			if ( el.classList && el.classList.contains( 'cg-choice' ) ) {
+				var radios = el.querySelectorAll( 'input[type="radio"]' );
+				for ( var i = 0; i < radios.length; i++ ) {
+					radios[ i ].checked = radios[ i ].value === String( value );
+				}
+				reflectChoice( el );
+				return;
+			}
+			if ( 'checkbox' === el.type ) {
+				el.checked = !! value;
+			} else {
+				el.value = value;
+			}
+		}
+		function reflectChoice( control ) {
+			var checked = control.querySelector( 'input[type="radio"]:checked' );
+			var name = control.querySelector( '.cg-color__name' );
+			var icon = control.querySelector( ':scope > summary .cg-choice__icon' );
+			if ( ! checked ) {
+				return;
+			}
+			if ( name ) {
+				name.textContent = checked.getAttribute( 'data-cg-name' ) || checked.value;
+			}
+			var optionIcon = checked.parentNode.querySelector( '.cg-choice__icon' );
+			if ( icon && optionIcon ) {
+				icon.innerHTML = optionIcon.innerHTML;
+			}
+		}
+
 		// A colour control is a <details>: the summary shows the current dot
 		// and name; the menu holds real radios (Default | the theme's colours
 		// | Custom) and, for Custom, the picker. The checked radio IS the
@@ -354,8 +402,8 @@
 				existing.parentNode.removeChild( existing );
 				sample.classList.remove( 'cg-embed--poster' );
 			}
-			applyPosterPanel( ( document.getElementById( 'cg-poster-panel' ) || { value: '' } ).value );
-			applyPosterDim( ( document.getElementById( 'cg-poster-dim' ) || { value: '' } ).value );
+			applyPosterPanel( choiceValue( 'cg-poster-panel' ) );
+			applyPosterDim( choiceValue( 'cg-poster-dim' ) );
 		}
 
 		// Mirrors AppearanceCss::build() poster placements.
@@ -457,15 +505,7 @@
 				if ( ! Object.prototype.hasOwnProperty.call( bundle, id ) || 'colors' === id ) {
 					continue;
 				}
-				var el = document.getElementById( id );
-				if ( ! el ) {
-					continue;
-				}
-				if ( 'checkbox' === el.type ) {
-					el.checked = !! bundle[ id ];
-				} else {
-					el.value = bundle[ id ];
-				}
+				setChoice( id, bundle[ id ] );
 			}
 			for ( var key in bundle.colors ) {
 				if ( Object.prototype.hasOwnProperty.call( bundle.colors, key ) ) {
@@ -686,14 +726,14 @@
 				out.push( { label: i18n.panelText, el: note, key: 'fg' } );
 			}
 			if ( button ) {
-				var outline = 'outline' === ( document.getElementById( 'cg-button-style' ) || { value: '' } ).value;
+				var outline = 'outline' === choiceValue( 'cg-button-style' );
 				out.push( { label: i18n.buttonText, el: button, key: outline ? 'fg' : 'accent_fg' } );
 			}
 			if ( link ) {
 				out.push( { label: i18n.linkText, el: link, key: 'link' } );
 			}
 			if ( withdraw ) {
-				var style = ( document.getElementById( 'cg-withdraw-style' ) || { value: '' } ).value;
+				var style = choiceValue( 'cg-withdraw-style' );
 				out.push( { label: i18n.withdrawText, el: withdraw, key: '' === style ? 'accent_fg' : null } );
 			}
 			return out;
@@ -805,7 +845,7 @@
 		var unsavedBar = document.getElementById( 'cg-unsaved' );
 		var undoButton = document.getElementById( 'cg-undo' );
 		var baseline = '';
-		var undoSnapshot = null;
+		var noticeShowing = false;
 		var undoTimer = null;
 		var submitting = false;
 		// "Unsaved" means the OWNER changed something: the colour pickers
@@ -849,8 +889,11 @@
 					$( this ).closest( '.wp-picker-container' ).find( '.wp-picker-clear' ).trigger( 'click' );
 				}
 			} );
-			$( '.cg-color' ).each( function () {
+			$( '.cg-color[data-cg-color-key]' ).each( function () {
 				reflectSwatch( this.getAttribute( 'data-cg-color-key' ) );
+			} );
+			$( '.cg-choice' ).each( function () {
+				reflectChoice( this );
 			} );
 			syncFromForm();
 			window.setTimeout( syncFromForm, 60 );
@@ -861,14 +904,20 @@
 				return;
 			}
 			var dirty = interacted && '' !== baseline && snapshot() !== baseline;
-			unsavedBar.hidden = ! dirty && ! undoSnapshot;
+			unsavedBar.hidden = ! dirty && ! noticeShowing;
+			if ( undoButton ) {
+				undoButton.hidden = ! dirty;
+			}
 			document.body.classList.toggle( 'cg-has-unsaved', dirty );
 			updateBadges();
 		}
 
 		// A short message in the bar (status region) with an Undo for the
 		// bulk actions that overwrite everything at once.
-		function notify( text, withUndo ) {
+		// A short status message in the bar; the bar's Undo always reverts
+		// to the state the form was loaded in (Simon's mental model), so it
+		// simply shows whenever there is something to revert.
+		function notify( text ) {
 			if ( ! unsavedBar ) {
 				return;
 			}
@@ -876,28 +925,22 @@
 			if ( label ) {
 				label.textContent = text;
 			}
-			if ( undoButton ) {
-				undoButton.hidden = ! withUndo;
-			}
+			noticeShowing = true;
 			unsavedBar.hidden = false;
 			window.clearTimeout( undoTimer );
 			undoTimer = window.setTimeout( function () {
-				undoSnapshot = withUndo ? null : undoSnapshot;
-				if ( undoButton ) {
-					undoButton.hidden = true;
-				}
+				noticeShowing = false;
 				if ( label ) {
-					label.textContent = i18n.leaveWarning ? unsavedBar.getAttribute( 'data-cg-default-text' ) || '' : '';
+					label.textContent = unsavedBar.getAttribute( 'data-cg-default-text' ) || '';
 				}
 				updateDirty();
-			}, 10000 );
+			}, 6000 );
 		}
 
 		function bulkAction( run, message ) {
 			interacted = true;
-			undoSnapshot = snapshot();
 			run();
-			notify( message, true );
+			notify( message );
 			updateDirty();
 		}
 
@@ -911,7 +954,8 @@
 				return el.checked;
 			}
 			if ( 'radio' === el.type ) {
-				return el.checked && '' !== el.value;
+				var first = el.form ? el.form.querySelector( 'input[type="radio"][name="' + el.name.replace( /"/g, '\\"' ) + '"]' ) : null;
+				return el.checked && first !== el;
 			}
 			if ( 'number' === el.type ) {
 				return 'cg-radius' === el.id ? '12' !== el.value && '' !== el.value : '' !== el.value;
@@ -1013,59 +1057,72 @@
 			event.preventDefault();
 		} );
 
-		$( '#cg-preset' ).on( 'change', function () {
+		$( '#cg-preset' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-preset' ) );
 			applyPreset( this.value );
 		} );
-		$( '#cg-corners' ).on( 'change', function () {
+		$( '#cg-corners' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-corners' ) );
 			applyCorners( this.value );
 		} );
 		$( '#cg-radius' ).on( 'input change', function () {
-			applyCorners( ( document.getElementById( 'cg-corners' ) || { value: '' } ).value );
+			applyCorners( choiceValue( 'cg-corners' ) );
 		} );
 		$( '#cg-border-width' ).on( 'input change', applyBorder );
-		$( '#cg-shadow' ).on( 'change', function () {
+		$( '#cg-shadow' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-shadow' ) );
 			applyShadow( this.value );
 		} );
-		$( '#cg-density' ).on( 'change', function () {
+		$( '#cg-density' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-density' ) );
 			applyDensity( this.value );
 		} );
-		$( '#cg-button-size' ).on( 'change', function () {
+		$( '#cg-button-size' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-button-size' ) );
 			applyButtonSize( this.value );
 		} );
 		$( '#cg-play-icon' ).on( 'change', function () {
 			applyPlayIcon( this.checked );
 		} );
-		$( '#cg-note-size' ).on( 'change', function () {
+		$( '#cg-note-size' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-note-size' ) );
 			applyNoteSize( this.value );
 		} );
-		$( '#cg-align' ).on( 'change', function () {
+		$( '#cg-align' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-align' ) );
 			applyAlign( this.value );
 		} );
-		$( '#cg-withdraw-style' ).on( 'change', function () {
+		$( '#cg-withdraw-style' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-withdraw-style' ) );
 			applyWithdrawStyle( this.value );
 		} );
-		$( '#cg-button-style' ).on( 'change', function () {
+		$( '#cg-button-style' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-button-style' ) );
 			applyButtonStyle( this.value );
 		} );
-		$( '#cg-button-width' ).on( 'change', function () {
+		$( '#cg-button-width' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-button-width' ) );
 			applyButtonWidth( this.value );
 		} );
-		$( '#cg-hover' ).on( 'change', function () {
+		$( '#cg-hover' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-hover' ) );
 			applyHover( this.value );
 		} );
-		$( '#cg-poster-panel' ).on( 'change', function () {
+		$( '#cg-poster-panel' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-poster-panel' ) );
 			applyPosterPanel( this.value );
 		} );
 		$( '#cg-preview-poster' ).on( 'change', function () {
 			applyPosterPreview( this.checked );
 		} );
-		$( '#cg-poster-dim' ).on( 'change', function () {
+		$( '#cg-poster-dim' ).on( 'change', 'input[type="radio"]', function () {
+			reflectChoice( document.getElementById( 'cg-poster-dim' ) );
 			applyPosterDim( this.value );
 		} );
 		$( '#cg-preview-narrow' ).on( 'change', function () {
 			applyNarrow( this.checked );
 		} );
-		$( '.cg-color input[type="radio"]' ).on( 'change', function () {
+		$( '.cg-color[data-cg-color-key] input[type="radio"]' ).on( 'change', function () {
 			var control = this.closest( '.cg-color' );
 			var key = control.getAttribute( 'data-cg-color-key' );
 			reflectSwatch( key );
@@ -1082,6 +1139,11 @@
 				control.querySelector( 'summary' ).focus();
 			}
 			colorChanged( key );
+		} );
+		$( '.cg-choice input[type="radio"]' ).on( 'change', function () {
+			var control = this.closest( '.cg-choice' );
+			control.removeAttribute( 'open' );
+			control.querySelector( 'summary' ).focus();
 		} );
 		// One colour menu at a time; Escape closes; a click elsewhere closes.
 		$( '.cg-color' ).on( 'toggle', function () {
@@ -1107,11 +1169,10 @@
 		} );
 		if ( undoButton ) {
 			undoButton.addEventListener( 'click', function () {
-				if ( undoSnapshot ) {
-					var snap = undoSnapshot;
-					undoSnapshot = null;
-					restoreSnapshot( snap );
-					notify( i18n.undone || 'Undone.', false );
+				if ( '' !== baseline ) {
+					restoreSnapshot( baseline );
+					notify( i18n.undone || 'Undone.' );
+					updateDirty();
 				}
 			} );
 		}
@@ -1141,8 +1202,11 @@
 			// Back to "inherit everything": selects to their first option,
 			// numbers to their defaults, checkboxes off, every colour cleared
 			// through the picker's own Clear so its swatch resets too.
-			$( '#cg-tab-appearance select' ).each( function () {
-				this.selectedIndex = 0;
+			$( '#cg-tab-appearance .cg-choice' ).each( function () {
+				var first = this.querySelector( 'input[type="radio"]' );
+				if ( first ) {
+					setChoice( this.id, first.value );
+				}
 			} );
 			$( '#cg-radius' ).val( '12' );
 			$( '#cg-border-width' ).val( '' );
@@ -1150,7 +1214,7 @@
 			$( '#cg-tab-appearance .wp-picker-clear' ).each( function () {
 				this.click();
 			} );
-			$( '.cg-color' ).each( function () {
+			$( '.cg-color[data-cg-color-key]' ).each( function () {
 				checkSwatch( this.getAttribute( 'data-cg-color-key' ), '' );
 			} );
 			$( '.cg-dark-row' ).prop( 'hidden', true );
@@ -1195,25 +1259,28 @@
 			}
 		} );
 		applyPalette();
-		applyCorners( ( document.getElementById( 'cg-corners' ) || { value: '' } ).value );
+		applyCorners( choiceValue( 'cg-corners' ) );
 		applyBorder();
-		applyShadow( ( document.getElementById( 'cg-shadow' ) || { value: '' } ).value );
-		applyDensity( ( document.getElementById( 'cg-density' ) || { value: '' } ).value );
-		applyButtonSize( ( document.getElementById( 'cg-button-size' ) || { value: '' } ).value );
-		applyPlayIcon( ( document.getElementById( 'cg-play-icon' ) || { checked: false } ).checked );
-		applyNoteSize( ( document.getElementById( 'cg-note-size' ) || { value: '' } ).value );
-		applyAlign( ( document.getElementById( 'cg-align' ) || { value: '' } ).value );
-		applyWithdrawStyle( ( document.getElementById( 'cg-withdraw-style' ) || { value: '' } ).value );
-		applyButtonStyle( ( document.getElementById( 'cg-button-style' ) || { value: '' } ).value );
-		applyButtonWidth( ( document.getElementById( 'cg-button-width' ) || { value: '' } ).value );
-		applyHover( ( document.getElementById( 'cg-hover' ) || { value: '' } ).value );
-		applyPosterPanel( ( document.getElementById( 'cg-poster-panel' ) || { value: '' } ).value );
-		applyPosterDim( ( document.getElementById( 'cg-poster-dim' ) || { value: '' } ).value );
+		applyShadow( choiceValue( 'cg-shadow' ) );
+		applyDensity( choiceValue( 'cg-density' ) );
+		applyButtonSize( choiceValue( 'cg-button-size' ) );
+		applyPlayIcon( !! ( document.getElementById( 'cg-play-icon' ) || {} ).checked );
+		applyNoteSize( choiceValue( 'cg-note-size' ) );
+		applyAlign( choiceValue( 'cg-align' ) );
+		applyWithdrawStyle( choiceValue( 'cg-withdraw-style' ) );
+		applyButtonStyle( choiceValue( 'cg-button-style' ) );
+		applyButtonWidth( choiceValue( 'cg-button-width' ) );
+		applyHover( choiceValue( 'cg-hover' ) );
+		applyPosterPanel( choiceValue( 'cg-poster-panel' ) );
+		applyPosterDim( choiceValue( 'cg-poster-dim' ) );
 		applyLinkColor( effectiveColor( 'link' ) );
-		applyPreset( ( document.getElementById( 'cg-preset' ) || { value: '' } ).value );
+		applyPreset( choiceValue( 'cg-preset' ) );
 		}
-		$( '.cg-color' ).each( function () {
+		$( '.cg-color[data-cg-color-key]' ).each( function () {
 			reflectSwatch( this.getAttribute( 'data-cg-color-key' ) );
+		} );
+		$( '.cg-choice' ).each( function () {
+			reflectChoice( this );
 		} );
 		drawQuickCards();
 		syncFromForm();

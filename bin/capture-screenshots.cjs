@@ -55,12 +55,18 @@ async function settings( page ) {
 	await page.evaluate( () => document.querySelectorAll( '#cg-tab-appearance details.cg-section' ).forEach( ( d ) => { d.open = true; } ) );
 	// Show the 0.10 controls doing something in the live preview instead of
 	// an all-default form: nothing is saved, the preview mirrors the form.
-	await page.selectOption( '#cg-corners', 'custom' );
+	const choose = async ( id, value ) => {
+		await page.evaluate( ( [ cid, v ] ) => {
+			const radio = document.querySelector( `#${ cid } input[type="radio"][value="${ v }"]` );
+			if ( radio ) { radio.checked = true; radio.dispatchEvent( new Event( 'change', { bubbles: true } ) ); }
+		}, [ id, value ] );
+	};
+	await choose( 'cg-corners', 'custom' );
 	await page.fill( '#cg-radius', '16' );
 	await page.fill( '#cg-border-width', '2' );
 	await page.evaluate( () => window.jQuery( '#cg-color-border-color' ).wpColorPicker( 'color', '#5c9e00' ) );
 	await page.check( '#cg-play-icon' );
-	await page.selectOption( '#cg-withdraw-style', 'outline' );
+	await choose( 'cg-withdraw-style', 'outline' );
 	// The preview column is sticky on desktop; a scroll-and-stitch element
 	// capture would paste it mid-image. Unstick it for the shot only.
 	await page.addStyleTag( { content: '.cg-appearance-preview{position:static!important}' } );

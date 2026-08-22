@@ -449,3 +449,21 @@
 	margin-left: 6px;
 	vertical-align: baseline;
 }
+
+/* Choice controls (the former selects) share the colour control's shell;
+   each option carries a bundled glyph instead of a colour dot. */
+.cg-choice__icon {
+	flex: 0 0 auto;
+	width: 20px;
+	height: 20px;
+	color: #1d2327;
+}
+
+.cg-choice__menu {
+	grid-template-columns: 1fr;
+	min-width: 280px;
+}
+
+.cg-choice .cg-color__option input:checked ~ .cg-choice__icon {
+	color: #2271b1;
+}
