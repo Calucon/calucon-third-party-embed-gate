@@ -87,7 +87,7 @@ async function settings( page ) {
 	await page.waitForTimeout( 500 );
 	await page.locator( '#cg-tab-status' ).screenshot( { path: path.join( OUT, 'screenshot-3.png' ) } );
 
-	// 4 — Providers tab. The full table is very tall (20+ providers); clip to
+	// 4 — Providers tab. The full table is very tall (35+ providers); clip to
 	// the top so the shot shows the columns and the first several providers.
 	await page.click( '#cg-tabbtn-providers' );
 	await page.waitForTimeout( 400 );

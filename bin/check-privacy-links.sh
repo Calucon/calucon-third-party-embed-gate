@@ -13,7 +13,10 @@ while IFS= read -r url; do
 	[ -z "$url" ] && continue
 	final=$(curl -sS -o /dev/null -L --max-redirs 5 --max-time 20 -A "calucon-embed-gate-link-canary" -w '%{http_code} %{url_effective}' "$url" 2>/dev/null) || final="000 $url"
 	code=${final%% *}; effective=${final#* }
-	from_host=$(printf '%s' "$url" | sed -E 's#^https?://([^/]+).*#\1#'); to_host=$(printf '%s' "$effective" | sed -E 's#^https?://([^/]+).*#\1#')
+	# Hosts only, without the default port curl echoes back in url_effective:
+	# a same-host redirect (amazon.com/privacy -> the notice's real path) is
+	# canonicalisation, not link rot.
+	from_host=$(printf '%s' "$url" | sed -E 's#^https?://([^/:]+).*#\1#'); to_host=$(printf '%s' "$effective" | sed -E 's#^https?://([^/:]+).*#\1#')
 	if [[ "$from_host" != "$to_host" ]]; then
 		# Redirected to another host — a moved policy or an acquisition
 		# (matterport.com → costar.com). Reported first, whatever the final

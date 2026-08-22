@@ -165,11 +165,12 @@ re-run after consent. Stylesheets in content are gated only as companions of
 a gated provider (Wolfram Cloud); a theme's own third-party stylesheets are
 outside an embed gate's scope (the Compatibility screen reports them).
 
-All keys and defaults: `src/Providers/Provider.php` (`normalize()`); the 21
+All keys and defaults: `src/Providers/Provider.php` (`normalize()`); the 36
 built-in descriptors in `src/Providers/Builtin/Descriptors.php` are working
 examples of every pattern, including script-strategy embeds
-(`match.script_host`, `companion_class`, `companion_fallback`) and sibling
-CDN hosts for resource-hint scrubbing (`scrub_hint_hosts`).
+(`match.script_host`, `script_path`, `companion_class`,
+`companion_fallback`), query-string captures (`match.iframe_query`) and
+sibling CDN hosts for resource-hint scrubbing (`scrub_hint_hosts`).
 
 Notes:
 
