@@ -104,7 +104,7 @@ final class Plugin {
 				$kinds = array();
 				foreach ( $this->providers() as $descriptor ) {
 					if ( ! empty( $descriptor['id'] ) && is_string( $descriptor['id'] ) ) {
-						$kinds[ $descriptor['id'] ] = isset( $descriptor['kind'] ) ? (string) $descriptor['kind'] : '';
+						$kinds[ $descriptor['id'] ] = isset( $descriptor['kind'] ) && is_string( $descriptor['kind'] ) ? $descriptor['kind'] : '';
 					}
 				}
 				return $kinds;
@@ -200,37 +200,28 @@ final class Plugin {
 	 *
 	 * @return array[]
 	 */
-	/**
-	 * Built-in descriptors first, then the owner-defined ones with every
-	 * host a built-in handles stripped: a custom provider can name an
-	 * unknown host, never take a known one away from the built-in that
-	 * knows its privacy-preserving load target. Nothing here can stop a
-	 * gate — an unknown host is gated generically with or without a row.
-	 *
-	 * @return array[]
-	 */
-	private function builtin_and_custom_providers(): array {
-		$builtin = Descriptors::all( $this->translator() );
-		$rows    = isset( $this->options['custom_providers'] ) && is_array( $this->options['custom_providers'] )
-			? $this->options['custom_providers'] : array();
-		if ( array() === $rows ) {
-			return $builtin;
-		}
-		return array_merge(
-			$builtin,
-			CustomProviders::descriptors( $rows, $this->translator(), CustomProviders::reserved_hosts( $builtin ) )
-		);
-	}
-
 	private function providers(): array {
 		if ( null === $this->providers_cache ) {
-			$this->providers_cache = (array) apply_filters(
-				'calucon_embed_gate_providers',
-				Options::apply_provider_overrides(
-					$this->builtin_and_custom_providers(),
-					$this->options
-				)
-			);
+			$translate = $this->translator();
+			// 1. Built-ins, then code-registered ones via the filter.
+			$registered = (array) apply_filters( 'calucon_embed_gate_providers', Descriptors::all( $translate ) );
+			// 2. Owner-defined rows AFTER everything registered in code, with
+			//    every host a registered provider handles stripped: a custom
+			//    row can name an unknown host, never take a known one away
+			//    from the provider that knows its privacy-preserving load
+			//    target. Nothing here can stop a gate — an unknown host is
+			//    gated generically with or without a row.
+			$rows = isset( $this->options['custom_providers'] ) && is_array( $this->options['custom_providers'] )
+				? $this->options['custom_providers'] : array();
+			if ( array() !== $rows ) {
+				$registered = array_merge(
+					$registered,
+					CustomProviders::descriptors( $rows, $translate, CustomProviders::reserved_hosts( $registered ) )
+				);
+			}
+			// 3. The owner's per-provider settings last, so they apply to
+			//    code-registered providers too (the settings table lists them).
+			$this->providers_cache = Options::apply_provider_overrides( $registered, $this->options );
 		}
 		return $this->providers_cache;
 	}

@@ -42,8 +42,8 @@ final class CustomProviders {
 
 		$out = array();
 		foreach ( $rows as $row ) {
-			if ( ! is_array( $row ) || empty( $row['id'] ) || empty( $row['label'] )
-				|| ! is_string( $row['id'] ) || ! preg_match( '/^custom-[a-z0-9-]{1,48}$/', $row['id'] ) || ! is_string( $row['label'] ) ) {
+			if ( ! is_array( $row ) || ! isset( $row['id'], $row['label'] ) || ! is_string( $row['id'] ) || ! is_string( $row['label'] )
+				|| '' === $row['label'] || ! preg_match( '/^custom-[a-z0-9-]{1,48}$/', $row['id'] ) ) {
 				continue;
 			}
 			// Belt and braces for rows saved before a built-in claimed one of
@@ -54,8 +54,9 @@ final class CustomProviders {
 			if ( array() === $hosts && array() === $scripts ) {
 				continue;
 			}
-			$label = (string) $row['label'];
-			$match = array();
+			$label  = $row['label'];
+			$script = array() === $hosts;
+			$match  = array();
 			if ( array() !== $hosts ) {
 				$match['iframe_host'] = $hosts;
 			}
@@ -69,13 +70,17 @@ final class CustomProviders {
 					'label'    => $label,
 					'match'    => $match,
 					'kind'     => isset( $row['kind'] ) && is_string( $row['kind'] ) ? $row['kind'] : '',
-					// Same wording the generic fallback uses for an unknown
-					// host, with the owner's label in place of the host.
-					/* translators: %s: host name of the third-party embed. */
-					'note'     => sprintf( $t( 'Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies.' ), $label ),
+					// Same wording the generic fallbacks use for an unknown
+					// host, with the owner's label in place of the host — the
+					// script wording for script-only rows, as in Registry.
+					'note'     => $script
+						/* translators: %s: host name of the third-party script. */
+						? sprintf( $t( 'Loading this content runs a script from %s, which receives your IP address and which page you are on, and may set cookies.' ), $label )
+						/* translators: %s: host name of the third-party embed. */
+						: sprintf( $t( 'Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies.' ), $label ),
 					/* translators: %s: host name of the third-party embed. */
 					'action'   => sprintf( $t( 'Load content from %s' ), $label ),
-					'strategy' => array() !== $hosts ? 'iframe' : 'script',
+					'strategy' => $script ? 'script' : 'iframe',
 					'custom'   => true,
 				)
 			);

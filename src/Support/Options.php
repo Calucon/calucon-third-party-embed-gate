@@ -225,7 +225,7 @@ final class Options {
 				if ( isset( $row['privacy_url'] ) && is_string( $row['privacy_url'] ) ) {
 					$url = trim( $row['privacy_url'] );
 					if ( strlen( $url ) <= 500
-						&& preg_match( '~^https://\S+$~i', $url )
+						&& preg_match( '~^https://[^\s"\'<>]+$~i', $url )
 						&& false !== filter_var( $url, FILTER_VALIDATE_URL ) ) {
 						$entry['privacy_url'] = $url;
 					}

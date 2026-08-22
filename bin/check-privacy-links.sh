@@ -14,7 +14,11 @@ while IFS= read -r url; do
 	final=$(curl -sS -o /dev/null -L --max-redirs 5 --max-time 20 -A "calucon-embed-gate-link-canary" -w '%{http_code} %{url_effective}' "$url" 2>/dev/null) || final="000 $url"
 	code=${final%% *}; effective=${final#* }
 	from_host=$(printf '%s' "$url" | sed -E 's#^https?://([^/]+).*#\1#'); to_host=$(printf '%s' "$effective" | sed -E 's#^https?://([^/]+).*#\1#')
-	if [[ "$code" != 2* ]]; then
+	if [[ "$code" == 401 || "$code" == 403 || "$code" == 429 ]]; then
+		# Bot-blocking, not link rot: the page exists but refuses a curl UA.
+		# Reported, not failed, so FAIL keeps meaning "gone".
+		echo "BLOCKED $code $url (anti-bot; check by hand)"
+	elif [[ "$code" != 2* ]]; then
 		echo "FAIL $code  $url -> $effective"; fail=1
 	elif [[ "$from_host" != "$to_host" ]]; then
 		echo "MOVED     $url -> $effective (update Descriptors.php)"

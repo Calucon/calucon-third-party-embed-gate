@@ -30,7 +30,8 @@ See it in action on the [live demo](https://calucon.de/third-party-embed-gate-sh
 * Strips `preconnect`/`dns-prefetch`/`preload`/`prefetch` resource hints pointing at gated providers and their CDN hosts (`i.ytimg.com`, `pbs.twimg.com`, …).
 * Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; a plain fallback link to the content stays for feed readers.
 * Per-block override in the editor: gate a specific embed always, never, or per the site default.
-* Optional poster image behind the consent panel, chosen per embed from your media library — served from your own site, never fetched from the provider.
+* Optional poster image behind the consent panel, chosen per embed from your media library — served from your own site, never fetched from the provider. Per-embed button and notice text in the block editor, too.
+* Multilingual sites: the texts you type (per-provider and per-block notices and button labels, provider privacy-policy URLs, your own providers' names) are registered for WPML and Polylang via a shipped wpml-config.xml.
 * Optional, off by default: remember consent in the visitor's browser (per embed, per provider, or for all embeds; session or with an expiry), with a withdrawal control via the `[calucon_embed_gate_withdraw]` shortcode.
 * Optional, off by default: a bridge to your consent platform. When a tested platform (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner) reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state; with an untested platform, or when the platform gives no answer, gating stands unchanged.
 * Accessible placeholder: named group, a real button, visible focus, sufficient contrast, focus kept after activation. Zero axe-core violations in CI.
@@ -98,14 +99,14 @@ Privately, please — through GitHub's private vulnerability reporting on the pl
 
 This plugin makes no request to any external service, on any page, at any time. It contacts no API, loads no remote script, font, image or update check, and sends no telemetry. Its entire purpose is the opposite direction: it prevents your pages from contacting embed providers.
 
-Third-party content enters the picture only after a visitor explicitly clicks the "Load" button on an embed placeholder. At that moment the visitor's browser loads that one embed from its provider (for example YouTube, Vimeo, or Google Maps) — exactly as it would have without this plugin, except that it now happens on the visitor's request instead of automatically. Each placeholder names the provider and links its privacy policy before the click, and the provider hostnames in the plugin's source code exist solely so it can recognise and gate that content. No data is sent anywhere by the plugin itself.
+Third-party content enters the picture only after a visitor explicitly clicks the "Load" button on an embed placeholder. At that moment the visitor's browser loads that one embed from its provider (for example YouTube, Vimeo, or Google Maps) — exactly as it would have without this plugin, except that it now happens on the visitor's request instead of automatically. Each placeholder names the provider and, for known providers, links its privacy policy before the click (the link can be turned off), and the provider hostnames in the plugin's source code exist solely so it can recognise and gate that content. No data is sent anywhere by the plugin itself.
 
 == Screenshots ==
 
 1. A gated YouTube embed as a visitor sees it: a server-rendered placeholder with a named panel, a real "Load" button and a working fallback link. Nothing is requested from the provider until the visitor clicks.
-2. The Appearance settings — presets, corner styles and colour pickers — with a live preview of the real panel and an automatic readability check that flags any colour pair below the 4.5:1 contrast minimum.
-3. The Status &amp; tools tab: the Compatibility overview (which cache plugin, consent platform and page builder are detected), a ready-to-paste Content-Security-Policy snippet for the enabled providers, and a read-only scan that reports whether every embed on your site is gated.
-4. The Providers tab: per-provider on/off, privacy-preserving load variants, and custom notice and button text — no code required.
+2. The Appearance settings — quick styles, colours that follow your theme's palette by name or your own, and sections for shape, button, poster image, withdraw button and dark mode — with a live preview of the real panel and an automatic readability check that flags any colour pair below the 4.5:1 contrast minimum.
+3. The Status &amp; tools tab: the Compatibility overview (which cache plugin, consent platform and page builder are detected), a read-only scan that reports whether every embed on your site is gated, and the Content-Security-Policy helper — a check of your own home page for an existing policy, the lines to add, and which provider needs which host.
+4. The Providers tab: per-provider on/off, privacy-preserving load variants, custom notice and button text, the privacy-policy link and its per-provider URL, and your own providers — no code required.
 5. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, set an optional poster image from your own media library, and give this one embed its own button and notice text.
 
 == Changelog ==

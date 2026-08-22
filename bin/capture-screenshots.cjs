@@ -69,7 +69,8 @@ async function settings( page ) {
 	await choose( 'cg-withdraw-style', 'outline' );
 	// The preview column is sticky on desktop; a scroll-and-stitch element
 	// capture would paste it mid-image. Unstick it for the shot only.
-	await page.addStyleTag( { content: '.cg-appearance-preview{position:static!important}' } );
+	// The sticky unsaved-changes bar would be pasted mid-image the same way.
+	await page.addStyleTag( { content: '.cg-appearance-preview{position:static!important}#cg-unsaved{display:none!important}' } );
 	// No hover/focus highlight or open menus in the listing image.
 	await page.mouse.move( 0, 0 );
 	await page.evaluate( () => {

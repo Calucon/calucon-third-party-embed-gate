@@ -59,6 +59,12 @@ final class AppearanceCss {
 		// Tolerate pre-0.10 subtrees (missing keys) so the builder stays
 		// callable with any sanitised snapshot, old or new.
 		$a    = $appearance + array(
+			'preset'         => 'default',
+			'corners'        => '',
+			'bg'             => '',
+			'fg'             => '',
+			'accent'         => '',
+			'accent_fg'      => '',
 			'radius'         => 12,
 			'border_width'   => '',
 			'border_color'   => '',
@@ -199,7 +205,7 @@ final class AppearanceCss {
 				. self::mask( 'generic' ) . '}';
 			$by_kind = array();
 			foreach ( $kinds as $provider_id => $kind ) {
-				if ( isset( self::GLYPHS[ $kind ] ) && 'generic' !== $kind && preg_match( '/^[a-z0-9_-]+$/', (string) $provider_id ) ) {
+				if ( is_string( $kind ) && isset( self::GLYPHS[ $kind ] ) && 'generic' !== $kind && preg_match( '/^[a-z0-9_-]+$/', (string) $provider_id ) ) {
 					$by_kind[ $kind ][] = '.cg-embed[data-cg-provider="' . $provider_id . '"] .cg-embed__button::before';
 				}
 			}
@@ -290,6 +296,23 @@ final class AppearanceCss {
 	private static function mask( string $kind ): string {
 		$mask = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='" . self::GLYPHS[ $kind ] . "'/%3E%3C/svg%3E\") center/contain no-repeat";
 		return '-webkit-mask:' . $mask . ';mask:' . $mask . ';';
+	}
+
+	/**
+	 * Does any colour in this appearance subtree follow the theme palette
+	 * (a `preset:<slug>` value)? Lets the caller skip resolving the palette
+	 * when no emitted rule would reference it.
+	 *
+	 * @param array $appearance Sanitised appearance option subtree.
+	 * @return bool
+	 */
+	public static function uses_theme_palette( array $appearance ): bool {
+		foreach ( $appearance as $value ) {
+			if ( is_string( $value ) && 0 === strpos( $value, 'preset:' ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

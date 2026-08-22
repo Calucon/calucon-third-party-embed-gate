@@ -69,14 +69,27 @@ Shape (see `src/Support/Options.php` for the authoritative schema):
 
 - `custom_providers[]`: `id` (`custom-<slug>`, generated once), `label`, `hosts`,
   `script_hosts`, `kind` — the Providers tab's *Your own providers* rows
-- `providers.{id}`: `enabled` (bool), `privacy_variant` (bool), `note`,
-  `action` (strings)
+- `providers.{id}`: `enabled` (bool; ignored for `custom-*` ids, which are
+  always gated), `privacy_variant` (bool), `note`, `action` (strings),
+  `privacy_url` (https only; overrides the built-in policy link)
+- `display`: `privacy_link` (bool, default true — the provider's
+  privacy-policy link inside every panel)
 - `detection`: `iframes`, `scripts`, `images` (bool; images off by
   default), `own_hosts`, `never_gate`, `always_gate` (host lists, `*.`
   wildcards allowed), `www_equivalence`, `output_buffer` (bool)
 - `appearance`: `preset` (`default|minimal|card`), `corners`
-  (`''|square|rounded|pill`), `bg`/`fg`/`accent`/`accent_fg` (hex or `''`
-  = inherit theme)
+  (`''|square|rounded|pill|custom`) + `radius` (0–48 px, with `custom`),
+  `border_width` (`''` or `'0'`–`'10'`), `shadow` (`''|soft|strong`),
+  `density` (`''|compact|airy`), `button_size` (`''|small|large`),
+  `button_style` (`''|outline`), `button_width` (`''|full`), `hover`
+  (`''|strong|none`), `play_icon` (bool; kind-aware glyph), `note_size`
+  (`''|small`), `align` (`''|center`), `poster_panel` (`''|center|bar`),
+  `poster_dim` (`''|light|strong`), `withdraw_style` (`''|outline|link`),
+  `dark` (bool) + `dark_bg`/`dark_fg`/`dark_accent`/`dark_accent_fg`; the
+  colours `bg`/`fg`/`accent`/`accent_fg`/`border_color`/`link` and the
+  dark ones each take `''` (inherit the theme), a `#hex`, or
+  `preset:<slug>` (follow that theme-palette colour by name) — see
+  `Options::defaults()` for the authoritative list
 - `consent`: `memory` (`off|session|persistent`), `scope`
   (`embed|provider|all`), `duration_days` (1–730)
 - `cmp`: `bridge` (bool, off by default), `borlabs_group` (slug, default
@@ -86,12 +99,12 @@ Cache plugins are flushed automatically when this option changes.
 
 ## Adding a provider
 
-**No code needed for the common case.** Settings → Third-Party Embed Gate →
-Providers → *Your own providers*: a name, the embed hosts (one per line;
-pasted URLs are reduced to their host), optional script hosts, and a kind
-for the button icon. After saving, the provider appears in the table above
-with the same per-provider controls as the built-ins (gate on/off, note,
-button text, privacy-policy link). Adding one can never change *what* is gated: unknown hosts are gated
+**No code needed for the common case.** Settings → Calucon Third-Party
+Embed Gate → Providers → *Your own providers*: a name, the embed hosts (one
+per line; pasted URLs are reduced to their host), optional script hosts,
+and a kind for the button icon. After saving, the provider appears in the
+table above with the same note, button-text and privacy-policy-link
+controls as the built-ins. Adding one can never change *what* is gated: unknown hosts are gated
 either way (a row only adds the name, icon and texts), hosts a built-in
 provider handles are refused at save time (with a notice) and ignored at
 run time, and owner-defined providers are always gated — there is no Gate
@@ -101,7 +114,11 @@ At most 100 rows of 50 hosts. They never rewrite the load URL; for
 register a descriptor in code:
 
 Providers are **descriptor arrays**, not classes. Register via the
-`calucon_embed_gate_providers` filter:
+`calucon_embed_gate_providers` filter. Order of assembly: built-ins → this
+filter → the owner's own providers (with every host a registered provider
+handles stripped) → the per-provider settings from the Providers table, so
+a site owner's note, button text, privacy URL or on/off choice applies to
+code-registered providers too:
 
 ```php
 add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array {
@@ -122,6 +139,8 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 		'controller'  => 'Example Videos Inc., City, Country',
 		'privacy_url' => 'https://example-videos.com/privacy', // Linked in the panel (Providers tab toggle) and shown by the CLI.
 		'kind'        => 'video', // video | map | audio | social | form | calendar | document | image | 3d | '' — picks the optional button glyph.
+		// Reserved: 'custom' (bool) marks owner-defined providers from the
+		// settings screen — never set it on a code-registered descriptor.
 		'aspect'      => '16/9',
 	);
 	return $providers;

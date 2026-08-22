@@ -98,8 +98,13 @@ final class Assets {
 			);
 		}
 
-		$kinds      = null !== $this->kinds_source ? (array) call_user_func( $this->kinds_source ) : array();
-		$appearance = AppearanceCss::build( $this->options['appearance'], $kinds, ThemePalette::map() );
+		// Resolve providers (fires the providers filter) and the theme
+		// palette only when the CSS will actually use them — both cost a
+		// little on every page view otherwise, embeds or not.
+		$a          = $this->options['appearance'];
+		$kinds      = ! empty( $a['play_icon'] ) && null !== $this->kinds_source ? (array) call_user_func( $this->kinds_source ) : array();
+		$palette    = AppearanceCss::uses_theme_palette( $a ) ? ThemePalette::map() : array();
+		$appearance = AppearanceCss::build( $a, $kinds, $palette );
 		if ( '' !== $appearance ) {
 			wp_add_inline_style( 'calucon-embed-gate', $appearance );
 		}

@@ -474,7 +474,11 @@
 				'cg-align': '', 'cg-button-size': '', 'cg-button-style': 'outline', 'cg-button-width': '',
 				'cg-hover': '', 'cg-play-icon': false, 'cg-poster-panel': '', 'cg-poster-dim': '',
 				'cg-withdraw-style': 'link', 'cg-note-size': 'small',
-				colors: { bg: '', fg: '', accent: '', accent_fg: '', link: '', border_color: '' }
+				// The panel is transparent here, so the text sits on the page
+				// itself: a dark text colour is set explicitly rather than
+				// inherited — a theme without a "contrast" preset would
+				// otherwise fall back to the built-in light panel text.
+				colors: { bg: '', fg: '#1b1b1b', accent: '#1b1b1b', accent_fg: '#ffffff', link: '#1b1b1b', border_color: '' }
 			},
 			card: {
 				'cg-preset': 'card', 'cg-corners': 'custom', 'cg-radius': '16', 'cg-shadow': 'soft', 'cg-density': '',
@@ -732,9 +736,11 @@
 			if ( link ) {
 				out.push( { label: i18n.linkText, el: link, key: 'link' } );
 			}
-			if ( withdraw ) {
-				var style = choiceValue( 'cg-withdraw-style' );
-				out.push( { label: i18n.withdrawText, el: withdraw, key: '' === style ? 'accent_fg' : null } );
+			// Outline and text-link withdraw styles inherit the page's own
+			// text colour, which the preview cannot know — only the filled
+			// style has a pair this report can measure and fix.
+			if ( withdraw && '' === choiceValue( 'cg-withdraw-style' ) ) {
+				out.push( { label: i18n.withdrawText, el: withdraw, key: 'accent_fg' } );
 			}
 			return out;
 		}
@@ -855,8 +861,17 @@
 		// the serialised form vs the settled baseline is the arbiter.
 		var interacted = false;
 
+		// WordPress's own hidden fields are not the owner's changes:
+		// admin-tabs rewrites _wp_http_referer on every tab switch, which
+		// would otherwise read as "unsaved changes" after a mere tab click.
+		var BOOKKEEPING = { _wp_http_referer: 1, _wpnonce: 1, option_page: 1, action: 1 };
 		function snapshot() {
-			return form ? $( form ).serialize() : '';
+			if ( ! form ) {
+				return '';
+			}
+			return $.param( $( form ).serializeArray().filter( function ( field ) {
+				return ! BOOKKEEPING[ field.name ];
+			} ) );
 		}
 		function restoreSnapshot( serialized ) {
 			var values = {};

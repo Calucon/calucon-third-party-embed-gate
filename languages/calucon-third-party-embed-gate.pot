@@ -414,7 +414,7 @@ msgstr ""
 msgid "Empty: the panel style decides. 0 removes the border."
 msgstr ""
 
-#: src/Plugin.php:374
+#: src/Plugin.php:365
 msgid "Example embed"
 msgstr ""
 
@@ -574,7 +574,7 @@ msgstr ""
 msgid "Load calendar from Google"
 msgstr ""
 
-#: src/Providers/CustomProviders.php:77
+#: src/Providers/CustomProviders.php:82
 #: src/Providers/Registry.php:134
 #: src/Providers/Registry.php:164
 msgid "Load content from %s"
@@ -656,7 +656,7 @@ msgstr ""
 msgid "Load video from YouTube"
 msgstr ""
 
-#: src/Integration/Assets.php:140
+#: src/Integration/Assets.php:145
 msgid "Loading embedded content…"
 msgstr ""
 
@@ -668,7 +668,7 @@ msgstr ""
 msgid "Loading this calendar contacts Google, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/CustomProviders.php:75
+#: src/Providers/CustomProviders.php:80
 #: src/Providers/Registry.php:162
 msgid "Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
@@ -677,6 +677,7 @@ msgstr ""
 msgid "Loading this content contacts Facebook (Meta), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
+#: src/Providers/CustomProviders.php:78
 #: src/Providers/Registry.php:132
 msgid "Loading this content runs a script from %s, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
@@ -854,7 +855,7 @@ msgstr ""
 msgid "Only used with Borlabs Cookie, whose consent groups are defined per site: the ID of the group that covers embedded content. The default installation calls it \"external-media\"."
 msgstr ""
 
-#: src/Integration/Assets.php:142
+#: src/Integration/Assets.php:147
 msgid "Open it on the provider’s site."
 msgstr ""
 
@@ -1122,7 +1123,7 @@ msgstr ""
 msgid "Status & tools"
 msgstr ""
 
-#: src/Integration/Assets.php:139
+#: src/Integration/Assets.php:144
 msgid "Stored embed consents have been removed. Embeds will ask again."
 msgstr ""
 
@@ -1168,7 +1169,7 @@ msgstr ""
 msgid "The \"Withdraw embed consents\" block or shortcode. It uses the colours and corners above."
 msgstr ""
 
-#: src/Integration/Assets.php:141
+#: src/Integration/Assets.php:146
 msgid "The embedded content could not be loaded."
 msgstr ""
 

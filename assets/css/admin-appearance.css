@@ -246,7 +246,8 @@
 	box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2271b1;
 }
 
-.cg-color__option input:focus-visible ~ .cg-color__dot {
+.cg-color__option input:focus-visible ~ .cg-color__dot,
+.cg-color__option input:focus-visible ~ .cg-choice__icon {
 	outline: 2px solid #2271b1;
 	outline-offset: 2px;
 }
@@ -319,39 +320,6 @@
 	gap: 6px;
 	height: auto;
 	padding: 8px 10px;
-}
-
-.cg-quick-card {
-	display: block;
-	width: 104px;
-	height: 58px;
-	padding: 8px;
-	border: 1px solid;
-	box-sizing: border-box;
-	background: #1b1b1b;
-}
-
-.cg-quick-card__line {
-	display: block;
-	width: 70%;
-	height: 5px;
-	border-radius: 3px;
-	opacity: 0.85;
-}
-
-.cg-quick-card__btn {
-	display: block;
-	width: 46px;
-	height: 13px;
-	margin-top: 18px;
-	border: 1px solid;
-	box-sizing: border-box;
-}
-
-.cg-quick-card--default {
-	background: repeating-linear-gradient( 45deg, #fff, #fff 5px, #e5e5e5 5px, #e5e5e5 10px );
-	border-color: #c3c4c7;
-	border-radius: 6px;
 }
 
 /* Readability lines: a pass/fail mark before each pair. */
@@ -593,4 +561,14 @@
 
 .cg-kind-cell {
 	white-space: nowrap;
+}
+
+/* Without JavaScript the custom-colour picker and the custom-radius row
+   follow the checked radio directly (JS toggles [hidden] the same way). */
+.cg-color:has(input[value="custom"]:checked) .cg-color__custom[hidden] {
+	display: block;
+}
+
+#cg-tab-appearance:has(input[name$="[corners]"][value="custom"]:checked) #cg-radius-row[hidden] {
+	display: table-row;
 }

@@ -333,9 +333,10 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await expect( bgControl.locator( '.cg-color__name' ) ).toHaveText( themeName );
 	await expect( bgControl ).not.toHaveAttribute( 'open', '' );
 	await expect( page.locator( '#cg-color-bg' ) ).toBeHidden();
-	if ( themeHex.length === 7 ) {
-		await expect( sample ).toHaveCSS( 'background-color', `rgb(${ parseInt( themeHex.slice( 1, 3 ), 16 ) }, ${ parseInt( themeHex.slice( 3, 5 ), 16 ) }, ${ parseInt( themeHex.slice( 5, 7 ), 16 ) })` );
-	}
+	// Normalise #abc to #aabbcc so the assertion never silently skips.
+	const hex6 = themeHex.length === 4 ? '#' + themeHex.slice( 1 ).split( '' ).map( ( c ) => c + c ).join( '' ) : themeHex;
+	expect( hex6 ).toMatch( /^#[0-9a-f]{6}$/i );
+	await expect( sample ).toHaveCSS( 'background-color', `rgb(${ parseInt( hex6.slice( 1, 3 ), 16 ) }, ${ parseInt( hex6.slice( 3, 5 ), 16 ) }, ${ parseInt( hex6.slice( 5, 7 ), 16 ) })` );
 	// Custom: the picker appears inside the menu (with the theme palette as
 	// named swatches in it too); a picked colour keeps Custom and shows hex.
 	await bgControl.locator( 'summary' ).click();
@@ -447,15 +448,17 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	// lands on the stage.
 	const withdrawSample = page.locator( '#cg-preview-withdraw' );
 	await expect( withdrawSample ).toBeVisible();
+	// The contrast report measures the withdraw pair only for the filled
+	// style — outline/link inherit the page's own text colour.
+	await expect( page.locator( '#cg-contrast-report' ) ).toContainText( 'Withdraw' );
 	await choose( 'cg-withdraw-style', 'outline' );
 	await expect( withdrawSample ).toHaveClass( 'cg-withdraw cg-withdraw--outline' );
+	await expect( page.locator( '#cg-contrast-report' ) ).not.toContainText( 'Withdraw' );
 	await expect( page.locator( '.cg-dark-row' ).first() ).toBeHidden();
 	await page.check( '#cg-dark-enabled' );
 	await expect( page.locator( '.cg-dark-row' ).first() ).toBeVisible();
 	await page.check( '#cg-play-icon' );
 	await expect( page.locator( '#cg-preview-stage.cg-preview--icon' ) ).toHaveCount( 1 );
-	// The contrast report includes the withdraw pair.
-	await expect( page.locator( '#cg-contrast-report' ) ).toContainText( 'Withdraw' );
 
 	// And the privacy link the front end now renders: preview panel shows
 	// it (the sample is a real described-provider panel), and its toggle
@@ -647,8 +650,8 @@ test( 'resource hints to gated providers are removed; harmless hints survive', a
 test( 'whole-page buffering: gates, enqueues everywhere, and restores cleanly', async ( { page } ) => {
 	// The output-buffer path had no integration coverage while it was
 	// refactored twice (0.9.1 asset delivery, 0.9.4 structure) — this test
-	// closes that gap. It runs LAST in this file and restores the option so
-	// the earlier assets-only-when-gated assertions stay true on re-runs.
+	// closes that gap. It restores the option in finally so the
+	// assets-only-when-gated assertions elsewhere stay true on re-runs.
 	await page.goto( '/wp-login.php' );
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
@@ -729,7 +732,11 @@ test( 'admin: the CSP helper says whether the site sends a policy and which host
 			wildcardHost: m( 'default-src *.vimeo.com https://*.twitter.com; frame-src https://www.youtube-nocookie.com https://*.vimeo.com', req ),
 			scheme: m( 'default-src https:', req ),
 			childSrc: m( "default-src 'self'; child-src https://www.youtube-nocookie.com https://player.vimeo.com; script-src 'self' platform.twitter.com", req ),
+			// CSP3: an http: source also matches the https: form of the host.
 			httpOnly: m( 'default-src http://www.youtube-nocookie.com http://player.vimeo.com http://platform.twitter.com', req ),
+			// Several CSP headers arrive comma-joined; every one must allow the host.
+			multi: m( "upgrade-insecure-requests, default-src 'self'; frame-src 'self' https://www.youtube-nocookie.com", req ),
+			multiAllAllow: m( "default-src *, frame-src https://www.youtube-nocookie.com https://player.vimeo.com; script-src https://platform.twitter.com", req ),
 			port: m( 'default-src https://www.youtube-nocookie.com:443 https://player.vimeo.com:8443 https://platform.twitter.com:*', req ),
 			firstWins: m( "default-src 'none'; default-src *", req ),
 			meta: window.caluconEmbedGateCspCheck.metaPolicy( '<html><head><meta\ncontent="default-src &#039;self&#039;" http-equiv=Content-Security-Policy></head></html>' ),
@@ -741,7 +748,9 @@ test( 'admin: the CSP helper says whether the site sends a policy and which host
 	expect( cases.wildcardHost ).toEqual( {} );
 	expect( cases.scheme ).toEqual( {} );
 	expect( cases.childSrc ).toEqual( {} );
-	expect( cases.httpOnly ).toEqual( required );
+	expect( cases.httpOnly ).toEqual( {} );
+	expect( cases.multi ).toEqual( { 'frame-src': [ 'player.vimeo.com' ], 'script-src': [ 'platform.twitter.com' ] } );
+	expect( cases.multiAllAllow ).toEqual( {} );
 	expect( cases.port ).toEqual( { 'frame-src': [ 'player.vimeo.com' ] } );
 	expect( cases.firstWins ).toEqual( required );
 	expect( cases.meta ).toBe( "default-src 'self'" );
@@ -812,6 +821,12 @@ test( 'admin: the CSP helper says whether the site sends a policy and which host
 	await expect( youtubeRow ).toContainText( 'www.youtube-nocookie.com' );
 	await expect( youtubeRow ).not.toContainText( 'www.youtube.com' );
 	await expect( page.locator( '.cg-csp-table thead' ) ).toContainText( 'frame-src' );
+
+	// Copy puts the snippet on the clipboard and says so.
+	await page.context().grantPermissions( [ 'clipboard-read', 'clipboard-write' ] );
+	await page.click( '#cg-csp-copy' );
+	await expect( page.locator( '#cg-csp-copied' ) ).toContainText( 'Copied' );
+	expect( await page.evaluate( () => navigator.clipboard.readText() ) ).toBe( await page.locator( '#cg-csp-snippet' ).inputValue() );
 } );
 
 test( 'admin: an owner-defined provider names an unknown host, takes its own note, and can be removed', async ( { page } ) => {
@@ -869,10 +884,12 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	// does not claim survives. YouTube keeps its host and nocookie load.
 	const thief = page.locator( '#cg-custom-providers tr[data-cg-blank]' );
 	await thief.locator( 'input[type="text"]' ).fill( 'Tube Thief' );
-	await thief.locator( 'textarea' ).first().fill( 'www.youtube.com\nwww.youtube-nocookie.com\nthief.example' );
+	await thief.locator( 'textarea' ).first().fill( 'www.youtube.com\nwww.youtube-nocookie.com\ncode.example-partner.com\nthief.example' );
 	await page.click( '#submit' );
 	const notice = page.locator( '.notice-warning, .notice.notice-warning', { hasText: 'Tube Thief' } );
 	await expect( notice ).toContainText( 'www.youtube.com' );
+	// …including hosts of providers registered in code (seed.php's mu-plugin).
+	await expect( notice ).toContainText( 'code.example-partner.com' );
 	await expect( notice ).toContainText( 'already handles' );
 	// Input values are not row text: match the row by its name field's value.
 	const thiefRow = page.locator( '#cg-custom-providers tbody tr', { has: page.locator( 'input[type="text"][value="Tube Thief"]' ) } );
@@ -906,4 +923,86 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	await expect( page.locator( '#cg-tab-providers .cg-tag' ) ).toHaveCount( 0 );
 	await page.goto( '/gated-classic/' );
 	await expect( widget ).toHaveAttribute( 'data-cg-provider', 'generic' );
+} );
+
+async function login( page ) {
+	await page.goto( '/wp-login.php' );
+	await page.fill( '#user_login', 'admin' );
+	await page.fill( '#user_pass', 'password' );
+	await page.click( '#wp-submit' );
+	await page.waitForURL( /wp-admin/ );
+}
+
+test( 'front end: appearance settings reach the page — colours, theme-palette fallback, kind glyphs, dark mode; privacy link toggle; withdraw style', async ( { page } ) => {
+	await login( page );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-appearance' );
+	await page.evaluate( () => document.querySelectorAll( '#cg-tab-appearance details.cg-section' ).forEach( ( d ) => { d.open = true; } ) );
+
+	// A custom panel colour, a theme-palette button colour, the glyph, dark mode, the outline withdraw style.
+	await page.locator( 'details[data-cg-color-key="bg"] > summary' ).click();
+	await page.locator( 'details[data-cg-color-key="bg"] input[value="custom"]' ).check();
+	await page.locator( 'details[data-cg-color-key="bg"] .cg-color__custom input[type="text"]' ).fill( '#101418' );
+	await page.keyboard.press( 'Escape' ); // close the open colour menu — it overlays the next control
+	const accentTheme = page.locator( 'details[data-cg-color-key="accent"] input[value^="preset:"]' ).first();
+	await page.locator( 'details[data-cg-color-key="accent"] > summary' ).click();
+	await accentTheme.check();
+	const accentSlug = ( await accentTheme.getAttribute( 'value' ) ).replace( 'preset:', '' );
+	const accentHex = await accentTheme.getAttribute( 'data-cg-hex' );
+	await page.keyboard.press( 'Escape' );
+	await page.check( '#cg-play-icon' );
+	await page.check( '#cg-dark-enabled' );
+	await page.locator( 'details[data-cg-color-key="dark_bg"] > summary' ).click();
+	await page.locator( 'details[data-cg-color-key="dark_bg"] input[value="custom"]' ).check();
+	await page.locator( 'details[data-cg-color-key="dark_bg"] .cg-color__custom input[type="text"]' ).fill( '#000000' );
+	await page.keyboard.press( 'Escape' );
+	await page.locator( '#cg-withdraw-style > summary' ).click();
+	await page.locator( '#cg-withdraw-style input[value="outline"]' ).check();
+	await page.keyboard.press( 'Escape' );
+	// And the privacy link off, on the Providers tab (same form).
+	await page.click( '#cg-tabbtn-providers' );
+	await page.uncheck( 'input[name$="[display][privacy_link]"][type="checkbox"]' );
+	await page.click( '#submit' );
+	await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
+
+	try {
+		await page.goto( '/gated-classic/' );
+		const css = await page.locator( 'style#calucon-embed-gate-inline-css' ).textContent();
+		expect( css ).toContain( '--cg-bg:#101418' );
+		expect( css ).toContain( `--cg-accent:var(--wp--preset--color--${ accentSlug },` );
+		expect( css.toLowerCase() ).toContain( accentHex.toLowerCase() );
+		expect( css ).toContain( '[data-cg-provider="youtube"] .cg-embed__button::before' );
+		expect( css ).toContain( '@media (prefers-color-scheme:dark)' );
+		expect( css ).toMatch( /url\("data:/ );
+		expect( css ).not.toMatch( /url\("?https?:/ );
+		const video = page.locator( '.cg-embed[data-cg-provider="youtube"]' ).first();
+		await expect( video ).toHaveCSS( 'background-color', 'rgb(16, 20, 24)' );
+		expect( await video.locator( '.cg-embed__button' ).evaluate( ( el ) => getComputedStyle( el, '::before' ).maskImage || getComputedStyle( el, '::before' ).webkitMaskImage ) ).toContain( 'data:image/svg+xml' );
+		await expect( page.locator( '.cg-embed__privacy' ) ).toHaveCount( 0 );
+		await page.emulateMedia( { colorScheme: 'dark' } );
+		await expect( video ).toHaveCSS( 'background-color', 'rgb(0, 0, 0)' );
+		await page.emulateMedia( { colorScheme: 'light' } );
+
+		await page.goto( '/withdraw-page/' );
+		await expect( page.locator( 'button.cg-withdraw.cg-withdraw--outline[data-cg-withdraw]' ) ).toHaveCount( 1 );
+	} finally {
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-appearance' );
+		await page.click( '#cg-appearance-reset' );
+		await page.click( '#cg-tabbtn-providers' );
+		await page.check( 'input[name$="[display][privacy_link]"][type="checkbox"]' );
+		await page.click( '#submit' );
+		await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
+	}
+	await page.goto( '/gated-classic/' );
+	await expect( page.locator( '.cg-embed__privacy' ).first() ).toBeVisible();
+} );
+
+test( 'front end: per-embed block texts are stripped of markup and capped', async ( { page } ) => {
+	await page.goto( '/per-embed-text/' );
+	const panel = page.locator( '.cg-embed[data-cg-provider="vimeo"]' );
+	await expect( panel.locator( '.cg-embed__button' ) ).toHaveText( 'Load the trailer' );
+	await expect( panel.locator( '.cg-embed__button b' ) ).toHaveCount( 0 );
+	const note = await panel.locator( '.cg-embed__note' ).textContent();
+	expect( note.startsWith( 'Own notice.' ) ).toBe( true );
+	expect( note ).not.toContain( '<em>' );
+	expect( note.length ).toBe( 400 );
 } );

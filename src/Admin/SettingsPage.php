@@ -298,8 +298,8 @@ final class SettingsPage {
 				sprintf(
 					/* translators: 1: custom provider label, 2: comma-separated host names. */
 					__( '%1$s: %2$s skipped — a built-in provider already handles these hosts, with its privacy-preserving load target and texts. Adjust that provider in the table instead.', 'calucon-third-party-embed-gate' ),
-					$label,
-					implode( ', ', $hosts )
+					esc_html( (string) $label ),
+					esc_html( implode( ', ', $hosts ) )
 				),
 				'warning'
 			);
@@ -761,7 +761,7 @@ final class SettingsPage {
 						<th scope="row"><span id="<?php echo esc_attr( $label_id ); ?>"><?php echo esc_html( $label ); ?></span></th>
 						<td>
 							<details id="<?php echo esc_attr( $id ); ?>" class="cg-color cg-choice" data-cg-choice="<?php echo esc_attr( $key ); ?>">
-								<summary class="cg-color__summary">
+								<summary class="cg-color__summary" id="<?php echo esc_attr( $id ); ?>-summary" aria-labelledby="<?php echo esc_attr( $label_id ); ?> <?php echo esc_attr( $id ); ?>-summary">
 									<?php echo $icon_of( $current ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static bundled SVG from choice_icons(). ?>
 									<span class="cg-color__name"><?php echo esc_html( $choices[ $current ] ); ?></span>
 								</summary>
@@ -896,7 +896,7 @@ final class SettingsPage {
 						<th scope="row"><span id="<?php echo esc_attr( $label_id ); ?>"><?php echo esc_html( $label ); ?></span></th>
 						<td>
 							<details class="cg-color" data-cg-color-key="<?php echo esc_attr( $key ); ?>">
-								<summary class="cg-color__summary">
+								<summary class="cg-color__summary" id="cg-color-<?php echo esc_attr( $key ); ?>-summary" aria-labelledby="<?php echo esc_attr( $label_id ); ?> cg-color-<?php echo esc_attr( $key ); ?>-summary">
 									<span class="cg-color__dot<?php echo '' === $current['hex'] ? ' cg-color__dot--missing' : ''; ?>"<?php echo '' !== $current['hex'] ? ' style="background:' . esc_attr( $current['hex'] ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?>></span>
 									<span class="cg-color__name"><?php echo esc_html( $current['name'] ); ?></span>
 								</summary>

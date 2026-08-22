@@ -56,10 +56,11 @@
 	// Does one source expression permit https://host/…? Keyword sources
 	// ('self', 'none', nonces, hashes) never match a third-party host. A
 	// path part is ignored: a path-restricted source may still block some
-	// embed URLs, which is more than this check claims to know.
+	// embed URLs, which is more than this check claims to know. Per CSP3
+	// an http: source also matches the https: form of the same host.
 	function permits( source, host ) {
 		var s = String( source ).toLowerCase();
-		if ( '*' === s || 'https:' === s ) {
+		if ( '*' === s || 'https:' === s || 'http:' === s ) {
 			return true;
 		}
 		if ( "'" === s.charAt( 0 ) ) {
@@ -69,7 +70,7 @@
 		if ( ! m ) {
 			return false;
 		}
-		if ( m[ 1 ] && 'https' !== m[ 1 ] ) {
+		if ( m[ 1 ] && 'https' !== m[ 1 ] && 'http' !== m[ 1 ] ) {
 			return false;
 		}
 		if ( m[ 3 ] && '*' !== m[ 3 ] && '443' !== m[ 3 ] ) {
@@ -85,17 +86,20 @@
 
 	// { directive: [ hosts the policy does NOT allow ] } — empty when the
 	// policy allows everything required (or does not restrict it at all).
-	function missing( policy, required ) {
-		var map = parse( policy );
+	// A site may send several Content-Security-Policy headers; the browser
+	// enforces ALL of them, and Headers.get() joins them with commas (a
+	// comma cannot occur inside one serialised policy), so every policy in
+	// the value has to permit a host for it to count as allowed.
+	function missing( header, required ) {
+		var policies = String( header || '' ).split( ',' ).map( parse );
 		var out = {};
 		Object.keys( required || {} ).forEach( function ( directive ) {
-			var list = governing( map, directive );
-			if ( null === list ) {
-				return;
-			}
 			var miss = required[ directive ].filter( function ( host ) {
-				return ! list.some( function ( source ) {
-					return permits( source, host );
+				return policies.some( function ( map ) {
+					var list = governing( map, directive );
+					return null !== list && ! list.some( function ( source ) {
+						return permits( source, host );
+					} );
 				} );
 			} );
 			if ( miss.length ) {
@@ -162,12 +166,14 @@
 		}
 
 		function show( state, nodes ) {
+			// Unhide before filling: a live region announces additions, and
+			// some screen readers skip content added while it was hidden.
 			result.innerHTML = '';
 			result.className = 'cg-csp-result cg-csp-result--' + state;
+			result.hidden = false;
 			nodes.forEach( function ( node ) {
 				result.appendChild( node );
 			} );
-			result.hidden = false;
 		}
 
 		function report( enforced, reportOnly ) {
@@ -224,6 +230,10 @@
 		if ( copyWrap && copyButton && snippet ) {
 			copyWrap.hidden = false;
 			copyButton.addEventListener( 'click', function () {
+				// Clear first so a repeat copy is announced again.
+				if ( copied ) {
+					copied.textContent = '';
+				}
 				var done = function () {
 					if ( copied ) {
 						copied.textContent = i18n.copied;

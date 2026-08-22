@@ -432,9 +432,16 @@ public API and version it.
     <p class="cg-embed__note">{note}</p>
     <button type="button" class="cg-embed__button">{action}</button>
     <p class="cg-embed__fallback"><a href="{fallback}" rel="noopener nofollow">{fallback label}</a></p>
+    <p class="cg-embed__privacy"><a href="{privacy_url}" rel="noopener nofollow">{provider} privacy policy</a></p>
   </div>
 </div>
 ```
+
+`cg-embed__privacy` (0.10.0) is present only for providers that declare a
+`privacy_url` and while `display.privacy_link` is on; the template exposes
+it as `$privacy_url` / `$privacy_label`. Scripts must find the fallback
+link **by its class**, never as "the last link in the panel" — the privacy
+link now follows it (gate.js `removePanel` was fixed for exactly this).
 
 **`role="group"` with `aria-label`, not a heading.** This was learned the hard
 way: the original implementation opened the panel with a bold paragraph, which
@@ -568,13 +575,18 @@ everything is overridable. Four layers, in increasing order of power.
 
 Information architecture:
 
-- **Providers** — table of built-ins; per-provider on/off, custom note/action
-  text, privacy-variant on/off.
+- **Providers** — table of built-ins plus the owner's own providers (§4.1);
+  per-provider on/off (built-ins only), custom note/action text,
+  privacy-variant on/off, privacy-policy URL override; the panel
+  privacy-link toggle.
 - **Detection** — which rules are active; the additional-own-hosts list; the
   never-gate host list; the always-gate host list; output-buffer toggle with
   its warning.
-- **Appearance** — preset styles (Minimal / Card / Overlay-on-thumbnail),
-  colours as CSS custom properties with a live preview, thumbnail on/off.
+- **Appearance** — quick styles, then sectioned controls (colours following
+  the theme palette by name or overridden; shape/layout; button; poster
+  image placement; withdraw button; dark mode) with a live preview and an
+  automatic readability (contrast) check. No thumbnail auto-fetch — posters
+  are owner-supplied per block (§5.4 rejected).
 - **Consent** — memory scope and lifetime; withdrawal control placement.
 - **Compatibility** — detected CMP, detected cache plugin, detected page
   builder, and what the plugin decided to do about each. This screen is the

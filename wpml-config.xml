@@ -14,6 +14,12 @@
 				<key name="*">
 					<key name="note" />
 					<key name="action" />
+					<key name="privacy_url" />
+				</key>
+			</key>
+			<key name="custom_providers">
+				<key name="*">
+					<key name="label" />
 				</key>
 			</key>
 		</key>
