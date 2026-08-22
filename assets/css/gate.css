@@ -5,7 +5,8 @@
  * fallback (PLAN.md §7.3), so themes restyle without a specificity war.
  */
 
-.cg-embed {
+.cg-embed,
+.cg-withdraw {
 	--cg-bg: var( --wp--preset--color--base, #1b1b1b );
 	--cg-fg: var( --wp--preset--color--contrast, #f0f0f0 );
 	--cg-accent: var( --wp--preset--color--accent-8, #5c9e00 );
@@ -204,4 +205,47 @@
 	.cg-embed__button:hover {
 		filter: brightness( 1.1 );
 	}
+}
+
+/* The withdrawal control (§6.2 shortcode/block). It shares the panel's
+   tokens (the token block above includes .cg-withdraw), so every colour,
+   radius and appearance setting restyles it in step with the panels. It
+   sits on the PAGE background, not the panel's: the filled default is
+   self-contained (accent on accent-fg), and the outline/link variants
+   inherit the page's own text colour. */
+.cg-withdraw {
+	font-family: inherit;
+	font-weight: inherit;
+	letter-spacing: inherit;
+	font-size: 1em;
+	min-width: 24px;
+	min-height: 24px; /* WCAG 2.5.8 hit-area floor, same as the load button. */
+	padding: 0.5em 1em;
+	border: 1px solid var( --cg-accent );
+	border-radius: var( --cg-radius );
+	background: var( --cg-accent );
+	color: var( --cg-accent-fg );
+	cursor: pointer;
+}
+
+.cg-withdraw:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+.cg-withdraw--outline {
+	background: transparent;
+	color: inherit;
+}
+
+.cg-withdraw--link {
+	background: none;
+	border: none;
+	padding: 0;
+	color: inherit;
+	text-decoration: underline;
+}
+
+.cg-withdraw__status {
+	margin-left: 0.5em;
 }

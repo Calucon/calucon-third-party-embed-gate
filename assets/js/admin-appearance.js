@@ -34,21 +34,56 @@
 		var button = sample ? sample.querySelector( '.cg-embed__button' ) : null;
 		var note = sample ? sample.querySelector( '.cg-embed__note' ) : null;
 		var link = sample ? sample.querySelector( '.cg-embed__fallback a' ) : null;
+		var panel = sample ? sample.querySelector( '.cg-embed__panel' ) : null;
+		var withdraw = document.getElementById( 'cg-preview-withdraw' );
+
+		// One palette store feeds the preview: the base colours, overlaid by
+		// the dark set when both the dark option and the dark-preview toggle
+		// are on — mirroring the @media (prefers-color-scheme: dark) emission.
+		var palette = { base: {}, dark: {} };
+
+		function darkPreviewActive() {
+			var previewToggle = document.getElementById( 'cg-preview-dark' );
+			var darkEnabled = document.getElementById( 'cg-dark-enabled' );
+			return !! ( previewToggle && previewToggle.checked && darkEnabled && darkEnabled.checked );
+		}
+
+		function applyPalette() {
+			if ( ! sample ) {
+				return;
+			}
+			var dark = darkPreviewActive();
+			for ( var key in VARS ) {
+				if ( ! Object.prototype.hasOwnProperty.call( VARS, key ) ) {
+					continue;
+				}
+				var value = ( dark && palette.dark[ key ] ) || palette.base[ key ] || '';
+				if ( value ) {
+					sample.style.setProperty( VARS[ key ], value );
+					if ( withdraw ) {
+						withdraw.style.setProperty( VARS[ key ], value );
+					}
+				} else {
+					sample.style.removeProperty( VARS[ key ] );
+					if ( withdraw ) {
+						withdraw.style.removeProperty( VARS[ key ] );
+					}
+				}
+			}
+			refresh();
+		}
 
 		function setColor( key, value ) {
 			if ( 'border_color' === key ) {
 				applyBorder();
 				return;
 			}
-			if ( ! sample || ! VARS[ key ] ) {
-				return;
-			}
-			if ( value ) {
-				sample.style.setProperty( VARS[ key ], value );
+			if ( 0 === key.indexOf( 'dark_' ) ) {
+				palette.dark[ key.slice( 5 ) ] = value;
 			} else {
-				sample.style.removeProperty( VARS[ key ] );
+				palette.base[ key ] = value;
 			}
-			refresh();
+			applyPalette();
 		}
 
 		function applyPreset( preset ) {
@@ -80,9 +115,15 @@
 			if ( null !== radius ) {
 				sample.style.setProperty( '--cg-radius', radius );
 				sample.style.borderRadius = radius;
+				if ( withdraw ) {
+					withdraw.style.setProperty( '--cg-radius', radius );
+				}
 			} else {
 				sample.style.removeProperty( '--cg-radius' );
 				sample.style.borderRadius = '';
+				if ( withdraw ) {
+					withdraw.style.removeProperty( '--cg-radius' );
+				}
 			}
 			if ( button ) {
 				button.style.borderRadius = 'pill' === corners ? '999px' : '';
@@ -120,6 +161,50 @@
 		function applyShadow( shadow ) {
 			if ( sample ) {
 				sample.style.boxShadow = SHADOWS[ shadow ] || '';
+				refresh();
+			}
+		}
+
+		// Mirrors AppearanceCss::build() — sizes live in both places.
+		var SIZES = {
+			small: { fontSize: '0.875em', padding: '0.375em 0.75em' },
+			large: { fontSize: '1.125em', padding: '0.625em 1.25em' }
+		};
+		function applyButtonSize( size ) {
+			var config = SIZES[ size ] || { fontSize: '', padding: '' };
+			var targets = [ button, withdraw ];
+			for ( var i = 0; i < targets.length; i++ ) {
+				if ( targets[ i ] ) {
+					targets[ i ].style.fontSize = config.fontSize;
+					targets[ i ].style.padding = config.padding;
+				}
+			}
+			refresh();
+		}
+
+		function applyPlayIcon( on ) {
+			if ( stage ) {
+				stage.classList.toggle( 'cg-preview--icon', !! on );
+			}
+		}
+
+		function applyNoteSize( size ) {
+			if ( note ) {
+				note.style.fontSize = 'small' === size ? '0.875em' : '';
+				refresh();
+			}
+		}
+
+		function applyAlign( align ) {
+			if ( panel ) {
+				panel.style.alignItems = 'center' === align ? 'center' : '';
+				panel.style.textAlign = 'center' === align ? 'center' : '';
+			}
+		}
+
+		function applyWithdrawStyle( style ) {
+			if ( withdraw ) {
+				withdraw.className = 'cg-withdraw' + ( 'outline' === style || 'link' === style ? ' cg-withdraw--' + style : '' );
 				refresh();
 			}
 		}
@@ -213,6 +298,9 @@
 			if ( link ) {
 				out.push( { label: i18n.linkText, el: link } );
 			}
+			if ( withdraw ) {
+				out.push( { label: i18n.withdrawText, el: withdraw } );
+			}
 			return out;
 		}
 
@@ -283,9 +371,31 @@
 		$( '#cg-density' ).on( 'change', function () {
 			applyDensity( this.value );
 		} );
+		$( '#cg-button-size' ).on( 'change', function () {
+			applyButtonSize( this.value );
+		} );
+		$( '#cg-play-icon' ).on( 'change', function () {
+			applyPlayIcon( this.checked );
+		} );
+		$( '#cg-note-size' ).on( 'change', function () {
+			applyNoteSize( this.value );
+		} );
+		$( '#cg-align' ).on( 'change', function () {
+			applyAlign( this.value );
+		} );
+		$( '#cg-withdraw-style' ).on( 'change', function () {
+			applyWithdrawStyle( this.value );
+		} );
+		$( '#cg-dark-enabled' ).on( 'change', function () {
+			var rows = document.querySelectorAll( '.cg-dark-row' );
+			for ( var i = 0; i < rows.length; i++ ) {
+				rows[ i ].hidden = ! this.checked;
+			}
+			applyPalette();
+		} );
 		$( '#cg-preview-dark' ).on( 'change', function () {
 			stage.classList.toggle( 'cg-preview-stage--dark', this.checked );
-			refresh();
+			applyPalette();
 		} );
 
 		// Recompute when admin-tabs.js reveals a panel: computed styles of a
@@ -298,14 +408,25 @@
 		// half-edited, so the preview and the controls can never disagree.
 		$( '.cg-color-field' ).each( function () {
 			var key = this.getAttribute( 'data-cg-color' );
-			if ( this.value && sample && VARS[ key ] ) {
-				sample.style.setProperty( VARS[ key ], this.value );
+			if ( ! this.value || 'border_color' === key ) {
+				return;
+			}
+			if ( 0 === key.indexOf( 'dark_' ) ) {
+				palette.dark[ key.slice( 5 ) ] = this.value;
+			} else if ( VARS[ key ] ) {
+				palette.base[ key ] = this.value;
 			}
 		} );
+		applyPalette();
 		applyCorners( ( document.getElementById( 'cg-corners' ) || { value: '' } ).value );
 		applyBorder();
 		applyShadow( ( document.getElementById( 'cg-shadow' ) || { value: '' } ).value );
 		applyDensity( ( document.getElementById( 'cg-density' ) || { value: '' } ).value );
+		applyButtonSize( ( document.getElementById( 'cg-button-size' ) || { value: '' } ).value );
+		applyPlayIcon( ( document.getElementById( 'cg-play-icon' ) || { checked: false } ).checked );
+		applyNoteSize( ( document.getElementById( 'cg-note-size' ) || { value: '' } ).value );
+		applyAlign( ( document.getElementById( 'cg-align' ) || { value: '' } ).value );
+		applyWithdrawStyle( ( document.getElementById( 'cg-withdraw-style' ) || { value: '' } ).value );
 		applyPreset( ( document.getElementById( 'cg-preset' ) || { value: '' } ).value );
 	} );
 }( window.jQuery ) );

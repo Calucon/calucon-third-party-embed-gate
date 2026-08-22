@@ -64,24 +64,41 @@ final class Options {
 				// 'minimal' drops the panel background; 'card' adds border
 				// and shadow. Colours override the CSS custom properties;
 				// '' means "inherit the theme's presets".
-				'preset'       => 'default', // default | minimal | card.
-				'bg'           => '',
-				'fg'           => '',
-				'accent'       => '',
-				'accent_fg'    => '',
+				'preset'         => 'default', // default | minimal | card.
+				'bg'             => '',
+				'fg'             => '',
+				'accent'         => '',
+				'accent_fg'      => '',
 				// Corner style: '' inherits the stylesheet default (slightly
 				// rounded); the named values override panel and button;
 				// 'custom' uses the radius value below.
-				'corners'      => '', // '' | square | rounded | pill | custom.
-				'radius'       => 12, // px, used when corners = custom.
+				'corners'        => '', // '' | square | rounded | pill | custom.
+				'radius'         => 12, // px, used when corners = custom.
 				// Border, shadow and spacing: empty means the chosen preset
 				// decides (the pre-0.10 behaviour). A zero border width
 				// removes the border outright; a border colour alone
 				// recolours the preset's own border.
-				'border_width' => '', // Empty, or 0-10 (px, stored as a string).
-				'border_color' => '',
-				'shadow'       => '', // '' | none | soft | strong.
-				'density'      => '', // '' | compact | spacious.
+				'border_width'   => '', // Empty, or 0-10 (px, stored as a string).
+				'border_color'   => '',
+				'shadow'         => '', // '' | none | soft | strong.
+				'density'        => '', // '' | compact | spacious.
+				// The withdrawal control's look: filled follows the load
+				// button; outline and link are quieter fits for a privacy-
+				// policy page.
+				'withdraw_style' => '', // '' (filled) | outline | link.
+				'button_size'    => '', // '' | small | large.
+				// A decorative play glyph on the load button — bundled
+				// inline SVG via CSS mask, never a fetched asset.
+				'play_icon'      => false,
+				'note_size'      => '', // '' | small.
+				'align'          => '', // '' | center.
+				// Optional dark-scheme palette: applied only under
+				// prefers-color-scheme: dark, and only for the colours set.
+				'dark'           => false,
+				'dark_bg'        => '',
+				'dark_fg'        => '',
+				'dark_accent'    => '',
+				'dark_accent_fg' => '',
 			),
 			'consent'    => array(
 				// Consent memory (§6.2). Off by default: out of the box,
@@ -196,7 +213,24 @@ final class Options {
 			if ( isset( $a['density'] ) && in_array( $a['density'], array( '', 'compact', 'spacious' ), true ) ) {
 				$clean['appearance']['density'] = $a['density'];
 			}
-			foreach ( array( 'bg', 'fg', 'accent', 'accent_fg', 'border_color' ) as $color_key ) {
+			if ( isset( $a['withdraw_style'] ) && in_array( $a['withdraw_style'], array( '', 'outline', 'link' ), true ) ) {
+				$clean['appearance']['withdraw_style'] = $a['withdraw_style'];
+			}
+			if ( isset( $a['button_size'] ) && in_array( $a['button_size'], array( '', 'small', 'large' ), true ) ) {
+				$clean['appearance']['button_size'] = $a['button_size'];
+			}
+			if ( isset( $a['note_size'] ) && in_array( $a['note_size'], array( '', 'small' ), true ) ) {
+				$clean['appearance']['note_size'] = $a['note_size'];
+			}
+			if ( isset( $a['align'] ) && in_array( $a['align'], array( '', 'center' ), true ) ) {
+				$clean['appearance']['align'] = $a['align'];
+			}
+			foreach ( array( 'play_icon', 'dark' ) as $appearance_flag ) {
+				if ( array_key_exists( $appearance_flag, $a ) ) {
+					$clean['appearance'][ $appearance_flag ] = self::truthy( $a[ $appearance_flag ] );
+				}
+			}
+			foreach ( array( 'bg', 'fg', 'accent', 'accent_fg', 'border_color', 'dark_bg', 'dark_fg', 'dark_accent', 'dark_accent_fg' ) as $color_key ) {
 				if ( isset( $a[ $color_key ] ) && is_string( $a[ $color_key ] ) ) {
 					$color = strtolower( trim( $a[ $color_key ] ) );
 					// Hex colours only: anything else could smuggle CSS out

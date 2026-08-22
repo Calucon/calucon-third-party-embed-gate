@@ -228,8 +228,9 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	const pluginOffenders = () => offenders.filter( ( url ) => ! url.includes( 'gravatar.com' ) );
 	expect( pluginOffenders(), 'settings screen made a third-party request' ).toEqual( [] );
 
-	// All five colours got a real WordPress colour picker — no hex typing.
-	await expect( page.locator( '.wp-picker-container' ) ).toHaveCount( 5 );
+	// Every colour — the five base ones and the four dark-mode ones — got a
+	// real WordPress colour picker; no hex typing anywhere.
+	await expect( page.locator( '.wp-picker-container' ) ).toHaveCount( 9 );
 
 	// The Appearance panel lives behind its tab.
 	await page.click( '#cg-tabbtn-appearance' );
@@ -255,6 +256,21 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await expect( sample ).toHaveCSS( 'border-top-width', '4px' );
 	await page.selectOption( '#cg-shadow', 'none' );
 	await expect( sample ).toHaveCSS( 'box-shadow', 'none' );
+
+	// Round-2 controls: the withdraw sample restyles with its variant, the
+	// dark colour rows reveal behind their toggle, and the play icon class
+	// lands on the stage.
+	const withdrawSample = page.locator( '#cg-preview-withdraw' );
+	await expect( withdrawSample ).toBeVisible();
+	await page.selectOption( '#cg-withdraw-style', 'outline' );
+	await expect( withdrawSample ).toHaveClass( 'cg-withdraw cg-withdraw--outline' );
+	await expect( page.locator( '.cg-dark-row' ).first() ).toBeHidden();
+	await page.check( '#cg-dark-enabled' );
+	await expect( page.locator( '.cg-dark-row' ).first() ).toBeVisible();
+	await page.check( '#cg-play-icon' );
+	await expect( page.locator( '#cg-preview-stage.cg-preview--icon' ) ).toHaveCount( 1 );
+	// The contrast report includes the withdraw pair.
+	await expect( page.locator( '#cg-contrast-report' ) ).toContainText( 'Withdraw' );
 
 	// And the privacy link the front end now renders: preview panel shows
 	// it (the sample is a real described-provider panel), and its toggle

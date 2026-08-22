@@ -57,3 +57,21 @@
 .cg-contrast-report:empty {
 	display: none;
 }
+
+/* The withdraw-control sample below the panel preview. */
+.cg-preview-withdraw-wrap {
+	margin: 1em 0 0;
+}
+
+/* Preview mirror of the AppearanceCss play_icon emission (same glyph, same
+   sizing) — change both together. */
+.cg-preview--icon .cg-embed__button::before {
+	content: '';
+	display: inline-block;
+	width: 0.75em;
+	height: 0.75em;
+	margin-right: 0.5em;
+	background: currentColor;
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 2l10 6-10 6z'/%3E%3C/svg%3E") center/contain no-repeat;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 2l10 6-10 6z'/%3E%3C/svg%3E") center/contain no-repeat;
+}

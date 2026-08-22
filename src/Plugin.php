@@ -114,7 +114,8 @@ final class Plugin {
 				// page with no embeds — without this enqueue the button is a
 				// dead element there (invariant 2's spirit).
 				$this->assets->enqueue_assets();
-			}
+			},
+			(string) $this->options['appearance']['withdraw_style']
 		);
 		$withdraw->register();
 		( new BlockEditor( $withdraw ) )->register();

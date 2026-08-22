@@ -208,6 +208,49 @@ final class OptionsTest extends TestCase {
 		self::assertSame( '', $bad['appearance']['density'] );
 	}
 
+	public function test_appearance_round_two_knobs_sanitise(): void {
+		$clean = Options::sanitize(
+			array(
+				'appearance' => array(
+					'withdraw_style' => 'link',
+					'button_size'    => 'large',
+					'play_icon'      => '1',
+					'note_size'      => 'small',
+					'align'          => 'center',
+					'dark'           => '1',
+					'dark_bg'        => '#101418',
+					'dark_accent_fg' => 'ARGB(1,2,3)',
+				),
+			)
+		);
+
+		self::assertSame( 'link', $clean['appearance']['withdraw_style'] );
+		self::assertSame( 'large', $clean['appearance']['button_size'] );
+		self::assertTrue( $clean['appearance']['play_icon'] );
+		self::assertSame( 'small', $clean['appearance']['note_size'] );
+		self::assertSame( 'center', $clean['appearance']['align'] );
+		self::assertTrue( $clean['appearance']['dark'] );
+		self::assertSame( '#101418', $clean['appearance']['dark_bg'] );
+		self::assertSame( '', $clean['appearance']['dark_accent_fg'], 'non-hex dark colour rejected' );
+
+		$bad = Options::sanitize(
+			array(
+				'appearance' => array(
+					'withdraw_style' => 'blinking',
+					'button_size'    => 'giant',
+					'note_size'      => 'huge',
+					'align'          => 'justify',
+				),
+			)
+		);
+		self::assertSame( '', $bad['appearance']['withdraw_style'] );
+		self::assertSame( '', $bad['appearance']['button_size'] );
+		self::assertSame( '', $bad['appearance']['note_size'] );
+		self::assertSame( '', $bad['appearance']['align'] );
+		self::assertFalse( $bad['appearance']['play_icon'] );
+		self::assertFalse( $bad['appearance']['dark'] );
+	}
+
 	public function test_privacy_link_toggle_defaults_on_and_becomes_boolean(): void {
 		self::assertTrue( Options::sanitize( array() )['display']['privacy_link'] );
 		self::assertFalse( Options::sanitize( array( 'display' => array( 'privacy_link' => '0' ) ) )['display']['privacy_link'] );

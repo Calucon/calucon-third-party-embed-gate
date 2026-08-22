@@ -30,11 +30,20 @@ final class AppearanceCss {
 		// Tolerate pre-0.10 subtrees (missing keys) so the builder stays
 		// callable with any sanitised snapshot, old or new.
 		$a    = $appearance + array(
-			'radius'       => 12,
-			'border_width' => '',
-			'border_color' => '',
-			'shadow'       => '',
-			'density'      => '',
+			'radius'         => 12,
+			'border_width'   => '',
+			'border_color'   => '',
+			'shadow'         => '',
+			'density'        => '',
+			'button_size'    => '',
+			'play_icon'      => false,
+			'note_size'      => '',
+			'align'          => '',
+			'dark'           => false,
+			'dark_bg'        => '',
+			'dark_fg'        => '',
+			'dark_accent'    => '',
+			'dark_accent_fg' => '',
 		);
 		$vars = '';
 		foreach ( array(
@@ -50,7 +59,7 @@ final class AppearanceCss {
 
 		$css = '';
 		if ( '' !== $vars ) {
-			$css .= '.cg-embed{' . $vars . '}';
+			$css .= '.cg-embed,.cg-withdraw{' . $vars . '}';
 		}
 		if ( 'minimal' === $a['preset'] ) {
 			// Transparent panel on the page's own background; --cg-fg
@@ -78,7 +87,7 @@ final class AppearanceCss {
 			$radius = (int) $a['radius'] . 'px';
 		}
 		if ( null !== $radius ) {
-			$css .= '.cg-embed{--cg-radius:' . $radius . ';}.cg-embed:not(.cg-embed--active){border-radius:' . $radius . ';}';
+			$css .= '.cg-embed,.cg-withdraw{--cg-radius:' . $radius . ';}.cg-embed:not(.cg-embed--active){border-radius:' . $radius . ';}';
 			if ( 'pill' === $a['corners'] ) {
 				$css .= '.cg-embed .cg-embed__button{border-radius:999px;}';
 			}
@@ -115,6 +124,49 @@ final class AppearanceCss {
 		);
 		if ( isset( $gaps[ $a['density'] ] ) ) {
 			$css .= '.cg-embed{--cg-gap:' . $gaps[ $a['density'] ] . ';}';
+		}
+
+		$sizes = array(
+			'small' => 'font-size:0.875em;padding:0.375em 0.75em;',
+			'large' => 'font-size:1.125em;padding:0.625em 1.25em;',
+		);
+		if ( isset( $sizes[ $a['button_size'] ] ) ) {
+			$css .= '.cg-embed .cg-embed__button,.cg-withdraw{' . $sizes[ $a['button_size'] ] . '}';
+		}
+
+		if ( $a['play_icon'] ) {
+			// A decorative glyph, drawn in the button's own text colour via a
+			// CSS mask over an inline data: SVG — bundled bytes, no request
+			// (invariant 9), and invisible to accessibility APIs (the button
+			// keeps its text name). Mirrored in assets/css/admin-appearance.css
+			// for the settings preview — change both together.
+			$mask = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 2l10 6-10 6z'/%3E%3C/svg%3E\") center/contain no-repeat";
+			$css .= '.cg-embed .cg-embed__button::before{content:\'\';display:inline-block;width:0.75em;height:0.75em;margin-right:0.5em;background:currentColor;-webkit-mask:' . $mask . ';mask:' . $mask . ';}';
+		}
+
+		if ( 'small' === $a['note_size'] ) {
+			$css .= '.cg-embed .cg-embed__note{font-size:0.875em;}';
+		}
+
+		if ( 'center' === $a['align'] ) {
+			$css .= '.cg-embed .cg-embed__panel{align-items:center;text-align:center;}';
+		}
+
+		if ( $a['dark'] ) {
+			$dark_vars = '';
+			foreach ( array(
+				'dark_bg'        => '--cg-bg',
+				'dark_fg'        => '--cg-fg',
+				'dark_accent'    => '--cg-accent',
+				'dark_accent_fg' => '--cg-accent-fg',
+			) as $option_key => $property ) {
+				if ( '' !== $a[ $option_key ] ) {
+					$dark_vars .= $property . ':' . $a[ $option_key ] . ';';
+				}
+			}
+			if ( '' !== $dark_vars ) {
+				$css .= '@media (prefers-color-scheme:dark){.cg-embed,.cg-withdraw{' . $dark_vars . '}}';
+			}
 		}
 
 		return $css;

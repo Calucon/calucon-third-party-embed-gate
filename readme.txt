@@ -42,7 +42,7 @@ Calucon Third-Party Embed Gate is a technical measure. It is not a consent manag
 
 **Customisation**
 
-* Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): per-provider on/off, privacy-variant on/off, custom note and button text, a provider privacy-policy link in every panel (can be turned off); own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets, corner styles with a custom radius, border width and colour, shadow and spacing controls, colour pickers with a live preview and an automatic readability check — no CSS needed; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a read-only Status scan of recent content.
+* Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): per-provider on/off, privacy-variant on/off, custom note and button text, a provider privacy-policy link in every panel (can be turned off); own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets, corner styles with a custom radius, border width and colour, shadow, spacing, button size, an optional play glyph, notice size, panel alignment, withdraw-button styles and optional dark-mode colours — with colour pickers, a live preview and an automatic readability check, no CSS needed; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a read-only Status scan of recent content.
 * Theme override: copy `templates/placeholder.php` to `{your-theme}/calucon-embed-gate/placeholder.php`.
 * CSS custom properties on `.cg-embed` (`--cg-bg`, `--cg-fg`, `--cg-accent`, …) for restyling without specificity wars.
 * WP-CLI: `wp calucon-embed-gate scan` (is every embed gated? `--format=json` for CI and automation) and `wp calucon-embed-gate providers`; the shipped `docs/customizing.md` is a self-contained customization reference for developers and AI agents.
@@ -112,7 +112,10 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 
 = 0.10.0 =
 * New: each placeholder now links the provider's privacy policy before the click (for the built-in providers that declare one; unknown embeds have no known policy). A checkbox on the Providers tab turns the link off.
-* New: fine-grained appearance controls without CSS — custom corner radius, border width and colour, shadow strength and panel spacing, all mirrored in the live preview.
+* New: fine-grained appearance controls without CSS — custom corner radius, border width and colour, shadow strength, panel spacing, button size, an optional bundled play glyph on the button, notice text size and panel alignment, all mirrored in the live preview.
+* New: the "Withdraw embed consents" control is now styled to match the panels (same colours and corners) with filled, outline and text-link variants.
+* New: optional dark-mode colours, applied only when the visitor prefers a dark colour scheme.
+* Fixed: the error state after a failed load could link the wrong destination when the panel showed more than one link.
 
 = 0.9.4 =
 * Performance and robustness: the embed detector now handles pathological markup (thousands of unterminated code blocks) in linear time instead of quadratic, the zero-embed fast path is ~4x cheaper on every page view, and resource-hint scrubbing skips pages with no hint tags at all.

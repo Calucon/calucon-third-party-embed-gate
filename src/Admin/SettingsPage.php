@@ -136,12 +136,13 @@ final class SettingsPage {
 			'window.caluconEmbedGateAdminI18n = ' . wp_json_encode(
 				array(
 					/* translators: contrast-report line. 1: which colour pair, 2: measured ratio like "4.9:1", 3: verdict. */
-					'line'       => __( '%1$s: %2$s — %3$s', 'calucon-third-party-embed-gate' ),
-					'panelText'  => __( 'Panel text on the panel background', 'calucon-third-party-embed-gate' ),
-					'buttonText' => __( 'Button text on the button background', 'calucon-third-party-embed-gate' ),
-					'linkText'   => __( 'Fallback link on the panel background', 'calucon-third-party-embed-gate' ),
-					'pass'       => __( 'readable (meets the 4.5:1 minimum)', 'calucon-third-party-embed-gate' ),
-					'fail'       => __( 'hard to read — below the 4.5:1 minimum. Pick a lighter or darker colour for this pair.', 'calucon-third-party-embed-gate' ),
+					'line'         => __( '%1$s: %2$s — %3$s', 'calucon-third-party-embed-gate' ),
+					'panelText'    => __( 'Panel text on the panel background', 'calucon-third-party-embed-gate' ),
+					'buttonText'   => __( 'Button text on the button background', 'calucon-third-party-embed-gate' ),
+					'linkText'     => __( 'Fallback link on the panel background', 'calucon-third-party-embed-gate' ),
+					'withdrawText' => __( 'Withdraw button text on its background', 'calucon-third-party-embed-gate' ),
+					'pass'         => __( 'readable (meets the 4.5:1 minimum)', 'calucon-third-party-embed-gate' ),
+					'fail'         => __( 'hard to read — below the 4.5:1 minimum. Pick a lighter or darker colour for this pair.', 'calucon-third-party-embed-gate' ),
 				)
 			) . ';',
 			'before'
@@ -458,6 +459,77 @@ final class SettingsPage {
 							</select>
 						</td>
 					</tr>
+					<tr>
+						<th scope="row"><label for="cg-button-size"><?php esc_html_e( 'Button size', 'calucon-third-party-embed-gate' ); ?></label></th>
+						<td>
+							<select id="cg-button-size" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][button_size]">
+								<option value="" <?php selected( $appearance['button_size'], '' ); ?>><?php esc_html_e( 'Default', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="small" <?php selected( $appearance['button_size'], 'small' ); ?>><?php esc_html_e( 'Small', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="large" <?php selected( $appearance['button_size'], 'large' ); ?>><?php esc_html_e( 'Large', 'calucon-third-party-embed-gate' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Play icon', 'calucon-third-party-embed-gate' ); ?></th>
+						<td>
+							<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][play_icon]" value="0">
+							<label><input type="checkbox" id="cg-play-icon" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][play_icon]" value="1" <?php checked( $appearance['play_icon'] ); ?>> <?php esc_html_e( 'Show a play symbol on the button (a bundled glyph — nothing is fetched)', 'calucon-third-party-embed-gate' ); ?></label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="cg-note-size"><?php esc_html_e( 'Notice text', 'calucon-third-party-embed-gate' ); ?></label></th>
+						<td>
+							<select id="cg-note-size" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][note_size]">
+								<option value="" <?php selected( $appearance['note_size'], '' ); ?>><?php esc_html_e( 'Default size', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="small" <?php selected( $appearance['note_size'], 'small' ); ?>><?php esc_html_e( 'Small', 'calucon-third-party-embed-gate' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="cg-align"><?php esc_html_e( 'Panel alignment', 'calucon-third-party-embed-gate' ); ?></label></th>
+						<td>
+							<select id="cg-align" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][align]">
+								<option value="" <?php selected( $appearance['align'], '' ); ?>><?php esc_html_e( 'Left (default)', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="center" <?php selected( $appearance['align'], 'center' ); ?>><?php esc_html_e( 'Centred', 'calucon-third-party-embed-gate' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="cg-withdraw-style"><?php esc_html_e( 'Withdraw button', 'calucon-third-party-embed-gate' ); ?></label></th>
+						<td>
+							<select id="cg-withdraw-style" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][withdraw_style]">
+								<option value="" <?php selected( $appearance['withdraw_style'], '' ); ?>><?php esc_html_e( 'Filled — matches the load button', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="outline" <?php selected( $appearance['withdraw_style'], 'outline' ); ?>><?php esc_html_e( 'Outline — quieter', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="link" <?php selected( $appearance['withdraw_style'], 'link' ); ?>><?php esc_html_e( 'Text link — quietest', 'calucon-third-party-embed-gate' ); ?></option>
+							</select>
+							<p class="description"><?php esc_html_e( 'The "Withdraw embed consents" control from the block or shortcode. It follows the colours and corners above in every style.', 'calucon-third-party-embed-gate' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Dark mode', 'calucon-third-party-embed-gate' ); ?></th>
+						<td>
+							<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][dark]" value="0">
+							<label><input type="checkbox" id="cg-dark-enabled" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][dark]" value="1" <?php checked( $appearance['dark'] ); ?>> <?php esc_html_e( 'Use different colours when the visitor prefers a dark colour scheme', 'calucon-third-party-embed-gate' ); ?></label>
+							<p class="description"><?php esc_html_e( 'Only the colours you set below change in dark mode; cleared ones keep the values above. Tick "Preview on a dark page background" under the preview to check them.', 'calucon-third-party-embed-gate' ); ?></p>
+						</td>
+					</tr>
+					<?php
+					$dark_fields = array(
+						'dark_bg'        => __( 'Panel background (dark)', 'calucon-third-party-embed-gate' ),
+						'dark_fg'        => __( 'Panel text (dark)', 'calucon-third-party-embed-gate' ),
+						'dark_accent'    => __( 'Button background (dark)', 'calucon-third-party-embed-gate' ),
+						'dark_accent_fg' => __( 'Button text (dark)', 'calucon-third-party-embed-gate' ),
+					);
+					foreach ( $dark_fields as $dark_key => $dark_label ) :
+						$dark_id = 'cg-color-' . str_replace( '_', '-', $dark_key );
+						?>
+						<tr class="cg-dark-row" <?php echo $appearance['dark'] ? '' : 'hidden'; ?>>
+							<th scope="row"><label for="<?php echo esc_attr( $dark_id ); ?>"><?php echo esc_html( $dark_label ); ?></label></th>
+							<td>
+								<input type="text" id="<?php echo esc_attr( $dark_id ); ?>" class="cg-color-field" data-cg-color="<?php echo esc_attr( $dark_key ); ?>" name="<?php echo esc_attr( Options::OPTION . '[appearance][' . $dark_key . ']' ); ?>" value="<?php echo esc_attr( $appearance[ $dark_key ] ); ?>">
+							</td>
+						</tr>
+					<?php endforeach; ?>
 					<?php
 					$color_fields = array(
 						'bg'        => __( 'Panel background', 'calucon-third-party-embed-gate' ),
@@ -548,6 +620,7 @@ final class SettingsPage {
 		<h3><?php esc_html_e( 'Preview', 'calucon-third-party-embed-gate' ); ?></h3>
 		<div id="cg-preview-stage" class="cg-preview-stage">
 			<?php echo $sample; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- placeholder HTML escaped by the renderer, same output as the front end. ?>
+			<p class="cg-preview-withdraw-wrap"><button type="button" class="cg-withdraw" id="cg-preview-withdraw"><?php esc_html_e( 'Withdraw embed consents', 'calucon-third-party-embed-gate' ); ?></button></p>
 		</div>
 		<p>
 			<label>

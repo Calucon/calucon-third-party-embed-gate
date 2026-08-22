@@ -34,6 +34,16 @@ final class AppearanceCssTest extends TestCase {
 				'border_color' => '',
 				'shadow'       => '',
 				'density'      => '',
+				'withdraw_style' => '',
+				'button_size'    => '',
+				'play_icon'      => false,
+				'note_size'      => '',
+				'align'          => '',
+				'dark'           => false,
+				'dark_bg'        => '',
+				'dark_fg'        => '',
+				'dark_accent'    => '',
+				'dark_accent_fg' => '',
 			),
 			$overrides
 		);
@@ -47,7 +57,7 @@ final class AppearanceCssTest extends TestCase {
 
 	public function test_hex_colors_become_custom_property_overrides(): void {
 		self::assertSame(
-			'.cg-embed{--cg-bg:#112233;--cg-accent:#abcdef;}',
+			'.cg-embed,.cg-withdraw{--cg-bg:#112233;--cg-accent:#abcdef;}',
 			AppearanceCss::build(
 				self::appearance(
 					array(
@@ -75,14 +85,14 @@ final class AppearanceCssTest extends TestCase {
 
 	public function test_corners_override_panel_radius_and_pill_rounds_the_button(): void {
 		self::assertSame(
-			'.cg-embed{--cg-radius:0;}.cg-embed:not(.cg-embed--active){border-radius:0;}',
+			'.cg-embed,.cg-withdraw{--cg-radius:0;}.cg-embed:not(.cg-embed--active){border-radius:0;}',
 			AppearanceCss::build( self::appearance( array( 'corners' => 'square' ) ) )
 		);
 		// Corner rules are emitted after the preset's so they win at equal
 		// specificity — an explicit choice beats the card radius.
 		self::assertSame(
 			'.cg-embed:not(.cg-embed--active){border:1px solid rgba(0,0,0,0.12);border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.18);}'
-			. '.cg-embed{--cg-radius:12px;}.cg-embed:not(.cg-embed--active){border-radius:12px;}'
+			. '.cg-embed,.cg-withdraw{--cg-radius:12px;}.cg-embed:not(.cg-embed--active){border-radius:12px;}'
 			. '.cg-embed .cg-embed__button{border-radius:999px;}',
 			AppearanceCss::build(
 				self::appearance(
@@ -97,7 +107,7 @@ final class AppearanceCssTest extends TestCase {
 
 	public function test_custom_corner_radius_emits_the_px_value(): void {
 		self::assertSame(
-			'.cg-embed{--cg-radius:20px;}.cg-embed:not(.cg-embed--active){border-radius:20px;}',
+			'.cg-embed,.cg-withdraw{--cg-radius:20px;}.cg-embed:not(.cg-embed--active){border-radius:20px;}',
 			AppearanceCss::build( self::appearance( array( 'corners' => 'custom', 'radius' => 20 ) ) )
 		);
 	}
@@ -162,5 +172,60 @@ final class AppearanceCssTest extends TestCase {
 				)
 			)
 		);
+	}
+
+	public function test_button_size_reaches_load_and_withdraw_buttons(): void {
+		self::assertSame(
+			'.cg-embed .cg-embed__button,.cg-withdraw{font-size:0.875em;padding:0.375em 0.75em;}',
+			AppearanceCss::build( self::appearance( array( 'button_size' => 'small' ) ) )
+		);
+		self::assertSame(
+			'.cg-embed .cg-embed__button,.cg-withdraw{font-size:1.125em;padding:0.625em 1.25em;}',
+			AppearanceCss::build( self::appearance( array( 'button_size' => 'large' ) ) )
+		);
+	}
+
+	public function test_play_icon_is_a_masked_inline_svg_never_a_fetch(): void {
+		$css = AppearanceCss::build( self::appearance( array( 'play_icon' => true ) ) );
+
+		self::assertStringContainsString( '.cg-embed .cg-embed__button::before', $css );
+		self::assertStringContainsString( 'data:image/svg+xml', $css );
+		self::assertStringContainsString( 'background:currentColor', $css );
+		// Invariant 9: the only url() in the emission is the data: one.
+		self::assertSame( substr_count( $css, 'url(' ), substr_count( $css, 'url("data:' ) );
+	}
+
+	public function test_note_size_and_alignment(): void {
+		self::assertSame(
+			'.cg-embed .cg-embed__note{font-size:0.875em;}',
+			AppearanceCss::build( self::appearance( array( 'note_size' => 'small' ) ) )
+		);
+		self::assertSame(
+			'.cg-embed .cg-embed__panel{align-items:center;text-align:center;}',
+			AppearanceCss::build( self::appearance( array( 'align' => 'center' ) ) )
+		);
+	}
+
+	public function test_dark_palette_emits_only_inside_the_media_query_and_only_when_enabled(): void {
+		self::assertSame(
+			'@media (prefers-color-scheme:dark){.cg-embed,.cg-withdraw{--cg-bg:#101418;--cg-accent:#7ab648;}}',
+			AppearanceCss::build( self::appearance( array( 'dark' => true, 'dark_bg' => '#101418', 'dark_accent' => '#7ab648' ) ) )
+		);
+		// Colours set but the toggle off: nothing leaks.
+		self::assertSame(
+			'',
+			AppearanceCss::build( self::appearance( array( 'dark' => false, 'dark_bg' => '#101418' ) ) )
+		);
+		// Toggle on but no colours chosen: no empty media block.
+		self::assertSame(
+			'',
+			AppearanceCss::build( self::appearance( array( 'dark' => true ) ) )
+		);
+	}
+
+	public function test_withdraw_style_emits_no_css(): void {
+		// The variant is a class on the shortcode markup; the stylesheet
+		// rules are static in gate.css.
+		self::assertSame( '', AppearanceCss::build( self::appearance( array( 'withdraw_style' => 'outline' ) ) ) );
 	}
 }
