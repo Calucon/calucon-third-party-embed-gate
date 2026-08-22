@@ -42,7 +42,7 @@ Calucon Third-Party Embed Gate is a technical measure. It is not a consent manag
 
 **Customisation**
 
-* Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): per-provider on/off, privacy-variant on/off, custom note and button text, a provider privacy-policy link in every panel (can be turned off); own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets, corner styles with a custom radius, border width and colour, shadow, spacing, button size, an optional play glyph, notice size, panel alignment, withdraw-button styles and optional dark-mode colours — with colour pickers, a live preview and an automatic readability check, no CSS needed; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a read-only Status scan of recent content.
+* Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): per-provider on/off, privacy-variant on/off, custom note and button text, a provider privacy-policy link in every panel (can be turned off); own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets, corner styles with a custom radius, border width and colour, shadow, spacing, button size/style/width/hover, an optional play glyph, notice size, panel alignment, poster placement, withdraw-button styles and optional dark-mode colours — sectioned, with colour pickers, a live preview, a one-click reset and an automatic readability check, no CSS needed; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a read-only Status scan of recent content.
 * Theme override: copy `templates/placeholder.php` to `{your-theme}/calucon-embed-gate/placeholder.php`.
 * CSS custom properties on `.cg-embed` (`--cg-bg`, `--cg-fg`, `--cg-accent`, …) for restyling without specificity wars.
 * WP-CLI: `wp calucon-embed-gate scan` (is every embed gated? `--format=json` for CI and automation) and `wp calucon-embed-gate providers`; the shipped `docs/customizing.md` is a self-contained customization reference for developers and AI agents.
@@ -106,7 +106,7 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 2. The Appearance settings — presets, corner styles and colour pickers — with a live preview of the real panel and an automatic readability check that flags any colour pair below the 4.5:1 contrast minimum.
 3. The Status &amp; tools tab: the Compatibility overview (which cache plugin, consent platform and page builder are detected), a ready-to-paste Content-Security-Policy snippet for the enabled providers, and a read-only scan that reports whether every embed on your site is gated.
 4. The Providers tab: per-provider on/off, privacy-preserving load variants, and custom notice and button text — no code required.
-5. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, and set an optional poster image from your own media library.
+5. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, set an optional poster image from your own media library, and give this one embed its own button and notice text.
 
 == Changelog ==
 
@@ -115,6 +115,9 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 * New: fine-grained appearance controls without CSS — custom corner radius, border width and colour, shadow strength, panel spacing, button size, an optional bundled play glyph on the button, notice text size and panel alignment, all mirrored in the live preview.
 * New: the "Withdraw embed consents" control is now styled to match the panels (same colours and corners) with filled, outline and text-link variants.
 * New: optional dark-mode colours, applied only when the visitor prefers a dark colour scheme.
+* New: the Appearance tab is organised into sections with a one-click "Reset appearance to defaults".
+* New: load-button style (filled or outline), full-width option and hover strength; panel placement over poster images (corner card, centred card, or bottom bar) with a poster preview in the settings.
+* New: per-embed button and notice text in the block editor, next to the existing gate override and poster controls.
 * Fixed: the error state after a failed load could link the wrong destination when the panel showed more than one link.
 
 = 0.9.4 =

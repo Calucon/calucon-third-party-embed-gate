@@ -190,6 +190,26 @@ final class PlaceholderRendererTest extends TestCase {
 		self::assertStringNotContainsStringIgnoringCase( 'javascript:', $html );
 	}
 
+	public function test_per_embed_text_from_ctx_overrides_provider_text_and_is_escaped(): void {
+		// §7.5 block attributes arrive as ctx; they beat the provider's text
+		// (default or settings override) and go through the same escaping.
+		$html = $this->render_with_ctx(
+			array(
+				'action_text' => 'Load the <trailer>',
+				'note_text'   => 'Custom "notice" & text',
+			)
+		);
+
+		self::assertStringContainsString( '<button type="button" class="cg-embed__button">Load the &lt;trailer&gt;</button>', $html );
+		self::assertStringContainsString( '<p class="cg-embed__note">Custom &quot;notice&quot; &amp; text</p>', $html );
+		self::assertStringNotContainsString( 'Load it', $html );
+		self::assertStringNotContainsString( 'Note text.', $html );
+
+		// Empty strings mean "inherit".
+		$inherit = $this->render_with_ctx( array( 'action_text' => '', 'note_text' => '' ) );
+		self::assertStringContainsString( '>Load it</button>', $inherit );
+	}
+
 	public function test_https_fallback_url_survives(): void {
 		// The negative test above must fail for the right reason: a real https
 		// fallback still renders a link.

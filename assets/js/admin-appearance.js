@@ -209,6 +209,94 @@
 			}
 		}
 
+		function applyButtonStyle( style ) {
+			if ( ! button ) {
+				return;
+			}
+			if ( 'outline' === style ) {
+				button.style.background = 'transparent';
+				button.style.color = 'var( --cg-fg )';
+				button.style.borderColor = 'var( --cg-accent )';
+			} else {
+				button.style.background = '';
+				button.style.color = '';
+				button.style.borderColor = '';
+			}
+			refresh();
+		}
+
+		function applyButtonWidth( width ) {
+			if ( button ) {
+				button.style.width = 'full' === width ? '100%' : '';
+			}
+		}
+
+		// Hover is a state, not a property: mirrored by stage classes whose
+		// rules live in admin-appearance.css (same values as AppearanceCss).
+		function applyHover( hover ) {
+			if ( ! stage ) {
+				return;
+			}
+			stage.classList.remove( 'cg-preview--hover-none', 'cg-preview--hover-strong' );
+			if ( 'none' === hover || 'strong' === hover ) {
+				stage.classList.add( 'cg-preview--hover-' + hover );
+			}
+		}
+
+		// Poster preview: a bundled gradient stands in for the owner's image
+		// (a data: URI — nothing is fetched), so the placement option can be
+		// seen without uploading anything.
+		var POSTER_SRC = 'data:image/svg+xml,' + encodeURIComponent(
+			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 9"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6b8e9f"/><stop offset="1" stop-color="#2d3e4f"/></linearGradient></defs><rect width="16" height="9" fill="url(#g)"/></svg>'
+		);
+		function applyPosterPreview( on ) {
+			if ( ! sample ) {
+				return;
+			}
+			var existing = sample.querySelector( '.cg-embed__poster' );
+			if ( on && ! existing ) {
+				var img = document.createElement( 'img' );
+				img.className = 'cg-embed__poster';
+				img.setAttribute( 'alt', '' );
+				img.setAttribute( 'aria-hidden', 'true' );
+				img.src = POSTER_SRC;
+				sample.insertBefore( img, sample.firstChild );
+				sample.classList.add( 'cg-embed--poster' );
+			} else if ( ! on && existing ) {
+				existing.parentNode.removeChild( existing );
+				sample.classList.remove( 'cg-embed--poster' );
+			}
+			applyPosterPanel( ( document.getElementById( 'cg-poster-panel' ) || { value: '' } ).value );
+		}
+
+		// Mirrors AppearanceCss::build() poster placements.
+		function applyPosterPanel( placement ) {
+			if ( ! panel ) {
+				return;
+			}
+			var hasPoster = sample && sample.classList.contains( 'cg-embed--poster' );
+			panel.style.alignSelf = '';
+			panel.style.justifySelf = '';
+			panel.style.margin = '';
+			panel.style.maxWidth = '';
+			panel.style.borderRadius = '';
+			if ( ! hasPoster ) {
+				refresh();
+				return;
+			}
+			if ( 'center' === placement ) {
+				panel.style.alignSelf = 'center';
+				panel.style.justifySelf = 'center';
+			} else if ( 'bar' === placement ) {
+				panel.style.alignSelf = 'end';
+				panel.style.justifySelf = 'stretch';
+				panel.style.margin = '0';
+				panel.style.maxWidth = 'none';
+				panel.style.borderRadius = '0 0 var( --cg-radius ) var( --cg-radius )';
+			}
+			refresh();
+		}
+
 		var GAPS = { compact: '0.5rem', spacious: '1.25rem' };
 		function applyDensity( density ) {
 			if ( ! sample ) {
@@ -386,6 +474,38 @@
 		$( '#cg-withdraw-style' ).on( 'change', function () {
 			applyWithdrawStyle( this.value );
 		} );
+		$( '#cg-button-style' ).on( 'change', function () {
+			applyButtonStyle( this.value );
+		} );
+		$( '#cg-button-width' ).on( 'change', function () {
+			applyButtonWidth( this.value );
+		} );
+		$( '#cg-hover' ).on( 'change', function () {
+			applyHover( this.value );
+		} );
+		$( '#cg-poster-panel' ).on( 'change', function () {
+			applyPosterPanel( this.value );
+		} );
+		$( '#cg-preview-poster' ).on( 'change', function () {
+			applyPosterPreview( this.checked );
+		} );
+		$( '#cg-appearance-reset' ).on( 'click', function () {
+			// Back to "inherit everything": selects to their first option,
+			// numbers to their defaults, checkboxes off, every colour cleared
+			// through the picker's own Clear so its swatch resets too.
+			$( '#cg-tab-appearance select' ).each( function () {
+				this.selectedIndex = 0;
+			} );
+			$( '#cg-radius' ).val( '12' );
+			$( '#cg-border-width' ).val( '' );
+			$( '#cg-play-icon, #cg-dark-enabled' ).prop( 'checked', false );
+			$( '#cg-tab-appearance .wp-picker-clear' ).each( function () {
+				this.click();
+			} );
+			$( '.cg-dark-row' ).prop( 'hidden', true );
+			palette = { base: {}, dark: {} };
+			syncFromForm();
+		} );
 		$( '#cg-dark-enabled' ).on( 'change', function () {
 			var rows = document.querySelectorAll( '.cg-dark-row' );
 			for ( var i = 0; i < rows.length; i++ ) {
@@ -404,8 +524,9 @@
 			refresh();
 		} );
 
-		// Initial state: mirror whatever the form currently holds, saved or
-		// half-edited, so the preview and the controls can never disagree.
+		// Mirror whatever the form currently holds — saved, half-edited or
+		// just reset — so the preview and the controls can never disagree.
+		function syncFromForm() {
 		$( '.cg-color-field' ).each( function () {
 			var key = this.getAttribute( 'data-cg-color' );
 			if ( ! this.value || 'border_color' === key ) {
@@ -427,6 +548,12 @@
 		applyNoteSize( ( document.getElementById( 'cg-note-size' ) || { value: '' } ).value );
 		applyAlign( ( document.getElementById( 'cg-align' ) || { value: '' } ).value );
 		applyWithdrawStyle( ( document.getElementById( 'cg-withdraw-style' ) || { value: '' } ).value );
+		applyButtonStyle( ( document.getElementById( 'cg-button-style' ) || { value: '' } ).value );
+		applyButtonWidth( ( document.getElementById( 'cg-button-width' ) || { value: '' } ).value );
+		applyHover( ( document.getElementById( 'cg-hover' ) || { value: '' } ).value );
+		applyPosterPanel( ( document.getElementById( 'cg-poster-panel' ) || { value: '' } ).value );
 		applyPreset( ( document.getElementById( 'cg-preset' ) || { value: '' } ).value );
+		}
+		syncFromForm();
 	} );
 }( window.jQuery ) );

@@ -19,9 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 return array(
-	// Defined at src/Rendering/PlaceholderRenderer.php:184.
+	// Defined at src/Rendering/PlaceholderRenderer.php:193.
 	'%s privacy policy' => __( '%s privacy policy', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Rendering/PlaceholderRenderer.php:158.
+	// Defined at src/Rendering/PlaceholderRenderer.php:167.
 	'Embedded content from %s' => __( 'Embedded content from %s', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:241.
 	'Load activity from Strava' => __( 'Load activity from Strava', 'calucon-third-party-embed-gate' ),
@@ -111,6 +111,6 @@ return array(
 	// Defined at src/Providers/Builtin/Descriptors.php:56.
 	'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Detection/EmbedStripper.php:146.
-	// Defined at src/Rendering/PlaceholderRenderer.php:160.
+	// Defined at src/Rendering/PlaceholderRenderer.php:169.
 	'Open on %s' => __( 'Open on %s', 'calucon-third-party-embed-gate' ),
 );

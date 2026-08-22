@@ -100,7 +100,18 @@ async function settings( page ) {
 	await page.waitForTimeout( 1500 );
 	// The store action that opens the block inspector has moved between
 	// WordPress versions; the sidebar's own "Block" tab is stable UI.
-	const blockTab = page.locator( '.interface-interface-skeleton__sidebar' ).getByRole( 'tab', { name: 'Block' } );
+	const guide = page.getByRole( 'dialog', { name: /welcome/i } );
+	await guide.waitFor( { timeout: 8000 } ).catch( () => {} );
+	if ( await guide.isVisible() ) {
+		await guide.getByRole( 'button', { name: /close/i } ).first().click();
+		await guide.waitFor( { state: 'hidden' } );
+	}
+	const sidebarEl = page.locator( '.interface-interface-skeleton__sidebar' );
+	if ( ! ( await sidebarEl.isVisible() ) ) {
+		await page.locator( '.editor-header__settings, .edit-post-header__settings' ).getByRole( 'button', { name: 'Settings', exact: true } ).click();
+		await sidebarEl.waitFor();
+	}
+	const blockTab = sidebarEl.getByRole( 'tab', { name: 'Block' } );
 	if ( await blockTab.count() ) {
 		await blockTab.click();
 	} else {
@@ -110,7 +121,8 @@ async function settings( page ) {
 	// WordPress 7.x opens the inspector on a "List View" tab for some blocks;
 	// inspector panels live under "Settings".
 	const settingsTab = page.locator( '.interface-interface-skeleton__sidebar' ).getByRole( 'tab', { name: 'Settings' } );
-	if ( await settingsTab.count() ) {
+	await settingsTab.waitFor( { timeout: 15000 } ).catch( () => {} );
+	if ( await settingsTab.isVisible() ) {
 		await settingsTab.click();
 		await page.waitForTimeout( 500 );
 	}

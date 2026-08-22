@@ -144,6 +144,15 @@ final class PlaceholderRenderer {
 		if ( isset( $this->bridges['before'] ) ) {
 			call_user_func( $this->bridges['before'], $provider, $ctx );
 		}
+		// Per-embed text from the block editor (§7.5) beats the provider's
+		// text (default or settings override); the filters below still get
+		// the final word, so site code can post-process either.
+		if ( isset( $ctx['note_text'] ) && is_string( $ctx['note_text'] ) && '' !== $ctx['note_text'] ) {
+			$provider['note'] = $ctx['note_text'];
+		}
+		if ( isset( $ctx['action_text'] ) && is_string( $ctx['action_text'] ) && '' !== $ctx['action_text'] ) {
+			$provider['action'] = $ctx['action_text'];
+		}
 		if ( isset( $this->bridges['note'] ) ) {
 			$provider['note'] = (string) call_user_func( $this->bridges['note'], $provider['note'], $provider, $ctx );
 		}

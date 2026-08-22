@@ -44,6 +44,10 @@ final class AppearanceCssTest extends TestCase {
 				'dark_fg'        => '',
 				'dark_accent'    => '',
 				'dark_accent_fg' => '',
+				'button_style'   => '',
+				'button_width'   => '',
+				'hover'          => '',
+				'poster_panel'   => '',
 			),
 			$overrides
 		);
@@ -227,5 +231,35 @@ final class AppearanceCssTest extends TestCase {
 		// The variant is a class on the shortcode markup; the stylesheet
 		// rules are static in gate.css.
 		self::assertSame( '', AppearanceCss::build( self::appearance( array( 'withdraw_style' => 'outline' ) ) ) );
+	}
+
+	public function test_button_style_width_and_hover(): void {
+		self::assertSame(
+			'.cg-embed .cg-embed__button{background:transparent;color:var(--cg-fg);border-color:var(--cg-accent);}',
+			AppearanceCss::build( self::appearance( array( 'button_style' => 'outline' ) ) )
+		);
+		self::assertSame(
+			'.cg-embed .cg-embed__button{width:100%;}',
+			AppearanceCss::build( self::appearance( array( 'button_width' => 'full' ) ) )
+		);
+		self::assertSame(
+			'.cg-embed .cg-embed__button:hover{filter:none;}',
+			AppearanceCss::build( self::appearance( array( 'hover' => 'none' ) ) )
+		);
+		self::assertSame(
+			'.cg-embed .cg-embed__button:hover{filter:brightness(1.25);}',
+			AppearanceCss::build( self::appearance( array( 'hover' => 'strong' ) ) )
+		);
+	}
+
+	public function test_poster_panel_placement(): void {
+		self::assertSame(
+			'.cg-embed--poster:not(.cg-embed--active) .cg-embed__panel{align-self:center;justify-self:center;}',
+			AppearanceCss::build( self::appearance( array( 'poster_panel' => 'center' ) ) )
+		);
+		self::assertSame(
+			'.cg-embed--poster:not(.cg-embed--active) .cg-embed__panel{align-self:end;justify-self:stretch;margin:0;max-width:none;border-radius:0 0 var(--cg-radius) var(--cg-radius);}',
+			AppearanceCss::build( self::appearance( array( 'poster_panel' => 'bar' ) ) )
+		);
 	}
 }

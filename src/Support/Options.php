@@ -99,6 +99,11 @@ final class Options {
 				'dark_fg'        => '',
 				'dark_accent'    => '',
 				'dark_accent_fg' => '',
+				// Load-button polish and poster layout (0.10 round 3).
+				'button_style'   => '', // '' (filled) | outline.
+				'button_width'   => '', // '' | full.
+				'hover'          => '', // '' (subtle) | none | strong.
+				'poster_panel'   => '', // '' (bottom-left card) | center | bar.
 			),
 			'consent'    => array(
 				// Consent memory (§6.2). Off by default: out of the box,
@@ -224,6 +229,16 @@ final class Options {
 			}
 			if ( isset( $a['align'] ) && in_array( $a['align'], array( '', 'center' ), true ) ) {
 				$clean['appearance']['align'] = $a['align'];
+			}
+			foreach ( array(
+				'button_style' => array( '', 'outline' ),
+				'button_width' => array( '', 'full' ),
+				'hover'        => array( '', 'none', 'strong' ),
+				'poster_panel' => array( '', 'center', 'bar' ),
+			) as $enum_key => $allowed ) {
+				if ( isset( $a[ $enum_key ] ) && in_array( $a[ $enum_key ], $allowed, true ) ) {
+					$clean['appearance'][ $enum_key ] = $a[ $enum_key ];
+				}
 			}
 			foreach ( array( 'play_icon', 'dark' ) as $appearance_flag ) {
 				if ( array_key_exists( $appearance_flag, $a ) ) {

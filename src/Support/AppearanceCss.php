@@ -44,6 +44,10 @@ final class AppearanceCss {
 			'dark_fg'        => '',
 			'dark_accent'    => '',
 			'dark_accent_fg' => '',
+			'button_style'   => '',
+			'button_width'   => '',
+			'hover'          => '',
+			'poster_panel'   => '',
 		);
 		$vars = '';
 		foreach ( array(
@@ -134,6 +138,25 @@ final class AppearanceCss {
 			$css .= '.cg-embed .cg-embed__button,.cg-withdraw{' . $sizes[ $a['button_size'] ] . '}';
 		}
 
+		if ( 'outline' === $a['button_style'] ) {
+			// Ghost button: the panel text colour on the panel background,
+			// the accent kept as the outline — the contrast report measures
+			// exactly this pair.
+			$css .= '.cg-embed .cg-embed__button{background:transparent;color:var(--cg-fg);border-color:var(--cg-accent);}';
+		}
+		if ( 'full' === $a['button_width'] ) {
+			$css .= '.cg-embed .cg-embed__button{width:100%;}';
+		}
+		$hovers = array(
+			'none'   => 'none',
+			'strong' => 'brightness(1.25)',
+		);
+		if ( isset( $hovers[ $a['hover'] ] ) ) {
+			// Beats the stylesheet's reduced-motion-gated subtle hover at
+			// higher specificity; a static filter needs no transition.
+			$css .= '.cg-embed .cg-embed__button:hover{filter:' . $hovers[ $a['hover'] ] . ';}';
+		}
+
 		if ( $a['play_icon'] ) {
 			// A decorative glyph, drawn in the button's own text colour via a
 			// CSS mask over an inline data: SVG — bundled bytes, no request
@@ -150,6 +173,14 @@ final class AppearanceCss {
 
 		if ( 'center' === $a['align'] ) {
 			$css .= '.cg-embed .cg-embed__panel{align-items:center;text-align:center;}';
+		}
+
+		$placements = array(
+			'center' => 'align-self:center;justify-self:center;',
+			'bar'    => 'align-self:end;justify-self:stretch;margin:0;max-width:none;border-radius:0 0 var(--cg-radius) var(--cg-radius);',
+		);
+		if ( isset( $placements[ $a['poster_panel'] ] ) ) {
+			$css .= '.cg-embed--poster:not(.cg-embed--active) .cg-embed__panel{' . $placements[ $a['poster_panel'] ] . '}';
 		}
 
 		if ( $a['dark'] ) {

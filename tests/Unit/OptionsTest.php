@@ -251,6 +251,37 @@ final class OptionsTest extends TestCase {
 		self::assertFalse( $bad['appearance']['dark'] );
 	}
 
+	public function test_appearance_round_three_enums(): void {
+		$clean = Options::sanitize(
+			array(
+				'appearance' => array(
+					'button_style' => 'outline',
+					'button_width' => 'full',
+					'hover'        => 'strong',
+					'poster_panel' => 'bar',
+				),
+			)
+		);
+		self::assertSame( 'outline', $clean['appearance']['button_style'] );
+		self::assertSame( 'full', $clean['appearance']['button_width'] );
+		self::assertSame( 'strong', $clean['appearance']['hover'] );
+		self::assertSame( 'bar', $clean['appearance']['poster_panel'] );
+
+		$bad = Options::sanitize(
+			array(
+				'appearance' => array(
+					'button_style' => 'neon',
+					'button_width' => '200%',
+					'hover'        => 'wiggle',
+					'poster_panel' => 'top',
+				),
+			)
+		);
+		foreach ( array( 'button_style', 'button_width', 'hover', 'poster_panel' ) as $key ) {
+			self::assertSame( '', $bad['appearance'][ $key ], $key );
+		}
+	}
+
 	public function test_privacy_link_toggle_defaults_on_and_becomes_boolean(): void {
 		self::assertTrue( Options::sanitize( array() )['display']['privacy_link'] );
 		self::assertFalse( Options::sanitize( array( 'display' => array( 'privacy_link' => '0' ) ) )['display']['privacy_link'] );

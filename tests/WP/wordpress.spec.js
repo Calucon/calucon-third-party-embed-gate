@@ -257,6 +257,27 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await page.selectOption( '#cg-shadow', 'none' );
 	await expect( sample ).toHaveCSS( 'box-shadow', 'none' );
 
+	// Round 3: the tab is sectioned, and Reset returns every field to
+	// "inherit" (custom radius set above → back to default, row hidden).
+	// Six option sections plus the Preview heading.
+	await expect( page.locator( '#cg-tab-appearance h3' ) ).toHaveCount( 7 );
+	await page.click( '#cg-appearance-reset' );
+	await expect( page.locator( '#cg-corners' ) ).toHaveValue( '' );
+	await expect( page.locator( '#cg-radius-row' ) ).toBeHidden();
+	await expect( page.locator( '#cg-border-width' ) ).toHaveValue( '' );
+	await expect( sample ).not.toHaveCSS( 'border-top-width', '4px' );
+	// Outline button style mirrors into the preview; the poster preview
+	// injects a bundled data: image and the placement select moves the
+	// panel over it.
+	await page.selectOption( '#cg-button-style', 'outline' );
+	await expect( sample.locator( '.cg-embed__button' ) ).toHaveCSS( 'background-color', 'rgba(0, 0, 0, 0)' );
+	await page.check( '#cg-preview-poster' );
+	await expect( sample.locator( 'img.cg-embed__poster' ) ).toHaveAttribute( 'src', /^data:image\/svg\+xml/ );
+	await page.selectOption( '#cg-poster-panel', 'bar' );
+	await expect( sample.locator( '.cg-embed__panel' ) ).toHaveCSS( 'justify-self', 'stretch' );
+	await page.uncheck( '#cg-preview-poster' );
+	await expect( sample.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
+
 	// Round-2 controls: the withdraw sample restyles with its variant, the
 	// dark colour rows reveal behind their toggle, and the play icon class
 	// lands on the stage.
@@ -353,14 +374,39 @@ test( 'editor: the per-block gate control appears in the block inspector', async
 		window.wp.data.dispatch( 'core/block-editor' ).selectBlock( block.clientId );
 	} );
 
+	// A brand-new install opens the welcome guide as a modal over the
+	// inspector — and on a cold server it appears a few seconds AFTER the
+	// editor is usable. An aria-modal hides everything behind it from role
+	// queries, so a too-early "is it visible?" check lets it eat the test.
+	// Wait for it, then close it; the preference write above only prevents
+	// the NEXT one.
+	const guide = page.getByRole( 'dialog', { name: /welcome/i } );
+	await guide.waitFor( { timeout: 8000 } ).catch( () => {} );
+	if ( await guide.isVisible() ) {
+		await guide.getByRole( 'button', { name: /close/i } ).first().click();
+		await expect( guide ).toBeHidden();
+	}
+
 	const sidebar = page.locator( '.interface-interface-skeleton__sidebar' );
+	// Gutenberg remembers the sidebar state per user: open it through the
+	// header's Settings toggle when a fresh editor starts with it closed.
+	if ( ! ( await sidebar.isVisible() ) ) {
+		await page.locator( '.editor-header__settings, .edit-post-header__settings' ).getByRole( 'button', { name: 'Settings', exact: true } ).click();
+		await expect( sidebar ).toBeVisible();
+	}
 	await sidebar.getByRole( 'tab', { name: 'Block' } ).click();
+	// A cold Playground renders the inspector in stages: the block card
+	// (heading) first, then the inner List View / Settings tablist. Wait
+	// for each stage explicitly instead of sampling once.
+	await expect( sidebar.getByRole( 'heading', { name: 'Custom HTML' } ) ).toBeVisible( { timeout: 30000 } );
 	const settingsTab = sidebar.getByRole( 'tab', { name: 'Settings' } );
-	if ( await settingsTab.count() ) {
+	await settingsTab.waitFor( { timeout: 15000 } ).catch( () => {} );
+	if ( await settingsTab.isVisible() ) {
 		await settingsTab.click();
+		await expect( settingsTab ).toHaveAttribute( 'aria-selected', 'true' );
 	}
 	const panel = page.getByRole( 'button', { name: 'Calucon Third-Party Embed Gate' } ).first();
-	await expect( panel ).toBeVisible();
+	await expect( panel ).toBeVisible( { timeout: 20000 } );
 	if ( 'false' === await panel.getAttribute( 'aria-expanded' ) ) {
 		await panel.click();
 	}
@@ -373,6 +419,13 @@ test( 'editor: the per-block gate control appears in the block inspector', async
 	// The poster picker is offered while the block is gated (it hides for
 	// "never" — nothing to poster).
 	await expect( sidebar.getByRole( 'button', { name: /poster/i } ) ).toBeVisible();
+
+	// Per-embed text (round 3): the fields write their block attributes.
+	await sidebar.getByLabel( 'Button text for this embed' ).fill( 'Load the trailer' );
+	await sidebar.getByLabel( 'Notice text for this embed' ).fill( 'Custom notice.' );
+	const attrs = await page.evaluate( () => window.wp.data.select( 'core/block-editor' ).getSelectedBlock().attributes );
+	expect( attrs.caluconEmbedGateAction ).toBe( 'Load the trailer' );
+	expect( attrs.caluconEmbedGateNote ).toBe( 'Custom notice.' );
 } );
 
 test( 'resource hints to gated providers are removed; harmless hints survive', async ( { page } ) => {
