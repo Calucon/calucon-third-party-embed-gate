@@ -496,6 +496,11 @@ final class Descriptors {
 				'action'           => $t( 'Load pin from Pinterest' ),
 				'strategy'         => 'iframe',
 			),
+			// Plugin Check's offloading sniff denylists imgur.com because
+			// plugins have used it to host their own assets. Here the host is
+			// the OPPOSITE: a third party this plugin exists to stop loading
+			// until the visitor asks. Nothing is fetched from it, ever.
+			// phpcs:disable PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- host names of an embed provider to gate, not an asset source.
 			array(
 				'id'               => 'imgur',
 				'kind'             => 'image',
@@ -512,6 +517,7 @@ final class Descriptors {
 				'companion_class'  => array( 'imgur-embed-pub' ),
 				'scrub_hint_hosts' => array( 'i.imgur.com' ),
 			),
+			// phpcs:enable PluginCheck.CodeAnalysis.Offloading.OffloadedContent
 			array(
 				'id'               => 'tumblr',
 				'kind'             => 'social',
