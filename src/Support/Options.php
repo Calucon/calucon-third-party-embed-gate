@@ -51,19 +51,37 @@ final class Options {
 				// off by default, behind a warning in the UI.
 				'output_buffer'   => false,
 			),
+			'display'    => array(
+				// The provider's privacy-policy link inside the panel, shown
+				// before any click for providers that declare a privacy_url
+				// (generic/unknown embeds have none). On by default: the
+				// readme promises it, and informing before the click is the
+				// point of the panel.
+				'privacy_link' => true,
+			),
 			'appearance' => array(
 				// Preset styles (§7.1). 'default' is the shipped look;
 				// 'minimal' drops the panel background; 'card' adds border
 				// and shadow. Colours override the CSS custom properties;
 				// '' means "inherit the theme's presets".
-				'preset'    => 'default', // default | minimal | card.
-				'bg'        => '',
-				'fg'        => '',
-				'accent'    => '',
-				'accent_fg' => '',
+				'preset'       => 'default', // default | minimal | card.
+				'bg'           => '',
+				'fg'           => '',
+				'accent'       => '',
+				'accent_fg'    => '',
 				// Corner style: '' inherits the stylesheet default (slightly
-				// rounded); the named values override panel and button.
-				'corners'   => '', // '' | square | rounded | pill.
+				// rounded); the named values override panel and button;
+				// 'custom' uses the radius value below.
+				'corners'      => '', // '' | square | rounded | pill | custom.
+				'radius'       => 12, // px, used when corners = custom.
+				// Border, shadow and spacing: empty means the chosen preset
+				// decides (the pre-0.10 behaviour). A zero border width
+				// removes the border outright; a border colour alone
+				// recolours the preset's own border.
+				'border_width' => '', // Empty, or 0-10 (px, stored as a string).
+				'border_color' => '',
+				'shadow'       => '', // '' | none | soft | strong.
+				'density'      => '', // '' | compact | spacious.
 			),
 			'consent'    => array(
 				// Consent memory (§6.2). Off by default: out of the box,
@@ -152,15 +170,33 @@ final class Options {
 			}
 		}
 
+		if ( isset( $raw['display'] ) && is_array( $raw['display'] ) ) {
+			if ( array_key_exists( 'privacy_link', $raw['display'] ) ) {
+				$clean['display']['privacy_link'] = self::truthy( $raw['display']['privacy_link'] );
+			}
+		}
+
 		if ( isset( $raw['appearance'] ) && is_array( $raw['appearance'] ) ) {
 			$a = $raw['appearance'];
 			if ( isset( $a['preset'] ) && in_array( $a['preset'], array( 'default', 'minimal', 'card' ), true ) ) {
 				$clean['appearance']['preset'] = $a['preset'];
 			}
-			if ( isset( $a['corners'] ) && in_array( $a['corners'], array( '', 'square', 'rounded', 'pill' ), true ) ) {
+			if ( isset( $a['corners'] ) && in_array( $a['corners'], array( '', 'square', 'rounded', 'pill', 'custom' ), true ) ) {
 				$clean['appearance']['corners'] = $a['corners'];
 			}
-			foreach ( array( 'bg', 'fg', 'accent', 'accent_fg' ) as $color_key ) {
+			if ( isset( $a['radius'] ) && is_numeric( $a['radius'] ) ) {
+				$clean['appearance']['radius'] = max( 0, min( 48, (int) $a['radius'] ) );
+			}
+			if ( isset( $a['border_width'] ) && '' !== $a['border_width'] && is_numeric( $a['border_width'] ) ) {
+				$clean['appearance']['border_width'] = (string) max( 0, min( 10, (int) $a['border_width'] ) );
+			}
+			if ( isset( $a['shadow'] ) && in_array( $a['shadow'], array( '', 'none', 'soft', 'strong' ), true ) ) {
+				$clean['appearance']['shadow'] = $a['shadow'];
+			}
+			if ( isset( $a['density'] ) && in_array( $a['density'], array( '', 'compact', 'spacious' ), true ) ) {
+				$clean['appearance']['density'] = $a['density'];
+			}
+			foreach ( array( 'bg', 'fg', 'accent', 'accent_fg', 'border_color' ) as $color_key ) {
 				if ( isset( $a[ $color_key ] ) && is_string( $a[ $color_key ] ) ) {
 					$color = strtolower( trim( $a[ $color_key ] ) );
 					// Hex colours only: anything else could smuggle CSS out

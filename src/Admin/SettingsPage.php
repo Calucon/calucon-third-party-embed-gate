@@ -215,7 +215,7 @@ final class SettingsPage {
 			<form action="options.php" method="post">
 				<?php settings_fields( 'calucon_embed_gate' ); ?>
 
-				<?php $this->render_providers_tab( $providers ); ?>
+				<?php $this->render_providers_tab( $providers, $options['display'] ); ?>
 
 				<?php $this->render_detection_tab( $detection ); ?>
 
@@ -249,11 +249,15 @@ final class SettingsPage {
 	 * @param array $providers Sanitised per-provider option rows.
 	 * @return void
 	 */
-	private function render_providers_tab( array $providers ): void {
+	private function render_providers_tab( array $providers, array $display ): void {
 		?>
 <div id="cg-tab-providers" class="cg-tab-panel" role="tabpanel" aria-labelledby="cg-tabbtn-providers">
 				<h2><?php esc_html_e( 'Providers', 'calucon-third-party-embed-gate' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Disabling a provider stops gating its embeds — they load exactly as WordPress renders them. Unknown third-party iframes and scripts are always gated by the generic entries.', 'calucon-third-party-embed-gate' ); ?></p>
+				<p>
+					<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[display][privacy_link]" value="0">
+					<label><input type="checkbox" name="<?php echo esc_attr( Options::OPTION ); ?>[display][privacy_link]" value="1" <?php checked( $display['privacy_link'] ); ?>> <?php esc_html_e( 'Link each provider\'s privacy policy in the placeholder panel, so visitors can read it before loading anything. Applies to the providers listed below; unknown embeds have no known policy to link.', 'calucon-third-party-embed-gate' ); ?></label>
+				</p>
 				<table class="widefat striped" style="max-width: 60rem;">
 					<thead>
 						<tr>
@@ -408,6 +412,49 @@ final class SettingsPage {
 								<option value="square" <?php selected( $appearance['corners'], 'square' ); ?>><?php esc_html_e( 'Square', 'calucon-third-party-embed-gate' ); ?></option>
 								<option value="rounded" <?php selected( $appearance['corners'], 'rounded' ); ?>><?php esc_html_e( 'Rounded', 'calucon-third-party-embed-gate' ); ?></option>
 								<option value="pill" <?php selected( $appearance['corners'], 'pill' ); ?>><?php esc_html_e( 'Rounded, with a pill-shaped button', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="custom" <?php selected( $appearance['corners'], 'custom' ); ?>><?php esc_html_e( 'Custom radius…', 'calucon-third-party-embed-gate' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr id="cg-radius-row" <?php echo 'custom' === $appearance['corners'] ? '' : 'hidden'; ?>>
+						<th scope="row"><label for="cg-radius"><?php esc_html_e( 'Corner radius (px)', 'calucon-third-party-embed-gate' ); ?></label></th>
+						<td>
+							<input type="number" id="cg-radius" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][radius]" value="<?php echo esc_attr( (string) $appearance['radius'] ); ?>" min="0" max="48" step="1" class="small-text">
+							<p class="description"><?php esc_html_e( 'Used with the “Custom radius” corner option. 0 is square; 48 is very round.', 'calucon-third-party-embed-gate' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="cg-border-width"><?php esc_html_e( 'Border width (px)', 'calucon-third-party-embed-gate' ); ?></label></th>
+						<td>
+							<input type="number" id="cg-border-width" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][border_width]" value="<?php echo esc_attr( (string) $appearance['border_width'] ); ?>" min="0" max="10" step="1" class="small-text" placeholder="—">
+							<p class="description"><?php esc_html_e( 'Leave empty to let the panel style decide. 0 removes the border even from the Minimal and Card styles.', 'calucon-third-party-embed-gate' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="cg-color-border-color"><?php esc_html_e( 'Border colour', 'calucon-third-party-embed-gate' ); ?></label></th>
+						<td>
+							<input type="text" id="cg-color-border-color" class="cg-color-field" data-cg-color="border_color" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][border_color]" value="<?php echo esc_attr( $appearance['border_color'] ); ?>">
+							<p class="description"><?php esc_html_e( 'Cleared, the border uses the panel text colour (or the style\'s own border colour).', 'calucon-third-party-embed-gate' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="cg-shadow"><?php esc_html_e( 'Shadow', 'calucon-third-party-embed-gate' ); ?></label></th>
+						<td>
+							<select id="cg-shadow" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][shadow]">
+								<option value="" <?php selected( $appearance['shadow'], '' ); ?>><?php esc_html_e( 'Default — follows the panel style', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="none" <?php selected( $appearance['shadow'], 'none' ); ?>><?php esc_html_e( 'None', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="soft" <?php selected( $appearance['shadow'], 'soft' ); ?>><?php esc_html_e( 'Soft', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="strong" <?php selected( $appearance['shadow'], 'strong' ); ?>><?php esc_html_e( 'Strong', 'calucon-third-party-embed-gate' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="cg-density"><?php esc_html_e( 'Spacing', 'calucon-third-party-embed-gate' ); ?></label></th>
+						<td>
+							<select id="cg-density" name="<?php echo esc_attr( Options::OPTION ); ?>[appearance][density]">
+								<option value="" <?php selected( $appearance['density'], '' ); ?>><?php esc_html_e( 'Default', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="compact" <?php selected( $appearance['density'], 'compact' ); ?>><?php esc_html_e( 'Compact — tighter panel', 'calucon-third-party-embed-gate' ); ?></option>
+								<option value="spacious" <?php selected( $appearance['density'], 'spacious' ); ?>><?php esc_html_e( 'Spacious — more breathing room', 'calucon-third-party-embed-gate' ); ?></option>
 							</select>
 						</td>
 					</tr>

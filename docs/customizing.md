@@ -104,7 +104,7 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 		// The no-JS fallback link (and the error-state link).
 		'fallback'    => 'https://example-videos.com/watch/{id}',
 		'controller'  => 'Example Videos Inc., City, Country',
-		'privacy_url' => 'https://example-videos.com/privacy',
+		'privacy_url' => 'https://example-videos.com/privacy', // Linked in the panel (Providers tab toggle) and shown by the CLI.
 		'aspect'      => '16/9',
 	);
 	return $providers;

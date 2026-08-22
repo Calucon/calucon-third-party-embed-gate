@@ -27,7 +27,15 @@ final class AppearanceCss {
 	 * @return string
 	 */
 	public static function build( array $appearance ): string {
-		$a    = $appearance;
+		// Tolerate pre-0.10 subtrees (missing keys) so the builder stays
+		// callable with any sanitised snapshot, old or new.
+		$a    = $appearance + array(
+			'radius'       => 12,
+			'border_width' => '',
+			'border_color' => '',
+			'shadow'       => '',
+			'density'      => '',
+		);
 		$vars = '';
 		foreach ( array(
 			'bg'        => '--cg-bg',
@@ -57,17 +65,56 @@ final class AppearanceCss {
 		// corner choice beats the card preset's radius. The admin preview
 		// (assets/js/admin-appearance.js) mirrors these values inline —
 		// change them in both places.
-		$radii = array(
+		$radii  = array(
 			'square'  => '0',
 			'rounded' => '12px',
 			'pill'    => '12px',
 		);
+		$radius = null;
 		if ( isset( $radii[ $a['corners'] ] ) ) {
 			$radius = $radii[ $a['corners'] ];
-			$css   .= '.cg-embed{--cg-radius:' . $radius . ';}.cg-embed:not(.cg-embed--active){border-radius:' . $radius . ';}';
+		} elseif ( 'custom' === $a['corners'] ) {
+			// Sanitised to an int (0–48) in Options; the cast is belt-and-braces.
+			$radius = (int) $a['radius'] . 'px';
+		}
+		if ( null !== $radius ) {
+			$css .= '.cg-embed{--cg-radius:' . $radius . ';}.cg-embed:not(.cg-embed--active){border-radius:' . $radius . ';}';
 			if ( 'pill' === $a['corners'] ) {
 				$css .= '.cg-embed .cg-embed__button{border-radius:999px;}';
 			}
+		}
+
+		// Border, shadow and spacing follow the same rule as corners: emitted
+		// after the preset at equal specificity, so an explicit choice always
+		// beats the preset's own border/shadow. An empty value means "let the
+		// preset decide" — the pre-0.10 behaviour, byte for byte.
+		if ( '' !== (string) $a['border_width'] ) {
+			$width = (int) $a['border_width'];
+			$color = '' !== $a['border_color'] ? $a['border_color'] : 'var(--cg-fg)';
+			$css  .= '.cg-embed:not(.cg-embed--active){border:'
+				. ( 0 === $width ? 'none' : $width . 'px solid ' . $color )
+				. ';}';
+		} elseif ( '' !== $a['border_color'] ) {
+			// Colour without a width recolours whatever border the preset
+			// draws (minimal, card); with no preset border it does nothing.
+			$css .= '.cg-embed:not(.cg-embed--active){border-color:' . $a['border_color'] . ';}';
+		}
+
+		$shadows = array(
+			'none'   => 'none',
+			'soft'   => '0 1px 4px rgba(0,0,0,0.18)',
+			'strong' => '0 6px 24px rgba(0,0,0,0.35)',
+		);
+		if ( isset( $shadows[ $a['shadow'] ] ) ) {
+			$css .= '.cg-embed:not(.cg-embed--active){box-shadow:' . $shadows[ $a['shadow'] ] . ';}';
+		}
+
+		$gaps = array(
+			'compact'  => '0.5rem',
+			'spacious' => '1.25rem',
+		);
+		if ( isset( $gaps[ $a['density'] ] ) ) {
+			$css .= '.cg-embed{--cg-gap:' . $gaps[ $a['density'] ] . ';}';
 		}
 
 		return $css;

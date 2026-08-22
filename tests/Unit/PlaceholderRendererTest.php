@@ -133,6 +133,63 @@ final class PlaceholderRendererTest extends TestCase {
 		}
 	}
 
+	public function test_privacy_link_renders_for_described_providers(): void {
+		$provider = Provider::normalize(
+			array(
+				'id'          => 'vimeo',
+				'label'       => 'Vimeo',
+				'note'        => 'Note text.',
+				'action'      => 'Load it',
+				'fallback'    => 'https://vimeo.com/1',
+				'privacy_url' => 'https://vimeo.com/privacy',
+			)
+		);
+
+		$html = ( new PlaceholderRenderer() )->render( $provider, 'https://player.vimeo.com/video/1', array( 'title' => 'T' ) );
+
+		self::assertStringContainsString( '<p class="cg-embed__privacy"><a href="https://vimeo.com/privacy" rel="noopener nofollow">Vimeo privacy policy</a></p>', $html );
+	}
+
+	public function test_privacy_link_absent_without_a_url_and_when_disabled(): void {
+		// Generic providers carry no privacy_url — nothing to link.
+		self::assertStringNotContainsString( 'cg-embed__privacy', $this->render( array( 'title' => 'T' ) ) );
+
+		// The display.privacy_link option turns it off entirely.
+		$provider = Provider::normalize(
+			array(
+				'id'          => 'vimeo',
+				'label'       => 'Vimeo',
+				'note'        => 'Note text.',
+				'action'      => 'Load it',
+				'fallback'    => 'https://vimeo.com/1',
+				'privacy_url' => 'https://vimeo.com/privacy',
+			)
+		);
+		$off      = new PlaceholderRenderer( null, null, null, null, array(), false );
+
+		self::assertStringNotContainsString( 'cg-embed__privacy', $off->render( $provider, 'https://player.vimeo.com/video/1', array( 'title' => 'T' ) ) );
+	}
+
+	public function test_privacy_link_url_is_scheme_guarded(): void {
+		// A filtered descriptor could carry anything; same rule as every
+		// other URL sink — a non-http(s) privacy URL yields no link.
+		$provider = Provider::normalize(
+			array(
+				'id'          => 'vimeo',
+				'label'       => 'Vimeo',
+				'note'        => 'Note text.',
+				'action'      => 'Load it',
+				'fallback'    => 'https://vimeo.com/1',
+				'privacy_url' => 'javascript:alert(1)',
+			)
+		);
+
+		$html = ( new PlaceholderRenderer() )->render( $provider, 'https://player.vimeo.com/video/1', array( 'title' => 'T' ) );
+
+		self::assertStringNotContainsString( 'cg-embed__privacy', $html );
+		self::assertStringNotContainsStringIgnoringCase( 'javascript:', $html );
+	}
+
 	public function test_https_fallback_url_survives(): void {
 		// The negative test above must fail for the right reason: a real https
 		// fallback still renders a link.

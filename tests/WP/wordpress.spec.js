@@ -228,8 +228,8 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	const pluginOffenders = () => offenders.filter( ( url ) => ! url.includes( 'gravatar.com' ) );
 	expect( pluginOffenders(), 'settings screen made a third-party request' ).toEqual( [] );
 
-	// All four colours got a real WordPress colour picker — no hex typing.
-	await expect( page.locator( '.wp-picker-container' ) ).toHaveCount( 4 );
+	// All five colours got a real WordPress colour picker — no hex typing.
+	await expect( page.locator( '.wp-picker-container' ) ).toHaveCount( 5 );
 
 	// The Appearance panel lives behind its tab.
 	await page.click( '#cg-tabbtn-appearance' );
@@ -244,6 +244,24 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	// Switching the panel style restyles the preview immediately.
 	await page.selectOption( '#cg-preset', 'minimal' );
 	await expect( page.locator( '#cg-preview-stage.cg-preview--minimal' ) ).toHaveCount( 1 );
+
+	// The 0.10 fine-grained controls mirror into the preview: a custom
+	// radius reveals its input and rounds the sample; a border width draws.
+	await page.selectOption( '#cg-corners', 'custom' );
+	await expect( page.locator( '#cg-radius-row' ) ).toBeVisible();
+	await page.fill( '#cg-radius', '24' );
+	await expect( sample ).toHaveCSS( 'border-radius', '24px' );
+	await page.fill( '#cg-border-width', '4' );
+	await expect( sample ).toHaveCSS( 'border-top-width', '4px' );
+	await page.selectOption( '#cg-shadow', 'none' );
+	await expect( sample ).toHaveCSS( 'box-shadow', 'none' );
+
+	// And the privacy link the front end now renders: preview panel shows
+	// it (the sample is a real described-provider panel), and its toggle
+	// lives on the Providers tab.
+	await page.click( '#cg-tabbtn-providers' );
+	await expect( page.locator( 'input[name="calucon_embed_gate_options[display][privacy_link]"][type="checkbox"]' ) ).toBeVisible();
+	await page.click( '#cg-tabbtn-appearance' );
 
 	// The preview's fallback link is defused — clicking it must not
 	// navigate the owner away (nor toward the provider).

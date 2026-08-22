@@ -289,7 +289,8 @@ final class Plugin {
 				'fallback' => static function ( string $url, array $provider, array $ctx ): string {
 					return (string) apply_filters( 'calucon_embed_gate_fallback_url', $url, $provider, $ctx );
 				},
-			)
+			),
+			! empty( $this->options['display']['privacy_link'] )
 		);
 
 		$scanner     = new HtmlScanner();

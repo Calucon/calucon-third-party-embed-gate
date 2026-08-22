@@ -31,6 +31,26 @@ test( 'zero third-party requests before interaction', async ( { page } ) => {
 	expect( await page.locator( 'iframe' ).count() ).toBe( 1 );
 } );
 
+test( 'the privacy-policy link is offered before the click and leaves with the panel', async ( { page } ) => {
+	await page.goto( '/page/gated' );
+	const container = page.locator( '.cg-embed' ).first();
+	await expect( container ).toBeVisible();
+
+	// Before any click: a plain link to the provider's policy — informing
+	// the visitor is free, no request happens unless they follow it.
+	const privacy = container.locator( '.cg-embed__privacy a' );
+	await expect( privacy ).toHaveAttribute( 'href', /^https:\/\// );
+
+	await page.route( '**', ( route ) => {
+		const host = new URL( route.request().url() ).hostname;
+		return [ '127.0.0.1', 'localhost' ].includes( host ) ? route.continue() : route.abort();
+	} );
+	await container.locator( '.cg-embed__button' ).click();
+
+	// After activation the panel — privacy link included — is gone.
+	await expect( container.locator( '.cg-embed__privacy' ) ).toHaveCount( 0 );
+} );
+
 test( 'nothing is stored before consent', async ( { page } ) => {
 	// Invariant 3: the plugin itself must not write to terminal equipment.
 	await page.goto( '/page/gated' );

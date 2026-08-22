@@ -168,6 +168,52 @@ final class OptionsTest extends TestCase {
 		self::assertSame( '', $bad['appearance']['corners'] );
 	}
 
+	public function test_appearance_new_knobs_are_bounded_and_enum_checked(): void {
+		$clean = Options::sanitize(
+			array(
+				'appearance' => array(
+					'corners'      => 'custom',
+					'radius'       => '999',
+					'border_width' => '99',
+					'border_color' => '#ABCDEF',
+					'shadow'       => 'soft',
+					'density'      => 'spacious',
+				),
+			)
+		);
+
+		self::assertSame( 'custom', $clean['appearance']['corners'] );
+		self::assertSame( 48, $clean['appearance']['radius'], 'radius clamps to 48' );
+		self::assertSame( '10', $clean['appearance']['border_width'], 'border width clamps to 10' );
+		self::assertSame( '#abcdef', $clean['appearance']['border_color'], 'hex lowercased like the other colours' );
+		self::assertSame( 'soft', $clean['appearance']['shadow'] );
+		self::assertSame( 'spacious', $clean['appearance']['density'] );
+
+		$bad = Options::sanitize(
+			array(
+				'appearance' => array(
+					'radius'       => 'huge',
+					'border_width' => 'expression(alert(1))',
+					'border_color' => 'red',
+					'shadow'       => 'dramatic',
+					'density'      => 'cosy',
+				),
+			)
+		);
+
+		self::assertSame( 12, $bad['appearance']['radius'] );
+		self::assertSame( '', $bad['appearance']['border_width'] );
+		self::assertSame( '', $bad['appearance']['border_color'] );
+		self::assertSame( '', $bad['appearance']['shadow'] );
+		self::assertSame( '', $bad['appearance']['density'] );
+	}
+
+	public function test_privacy_link_toggle_defaults_on_and_becomes_boolean(): void {
+		self::assertTrue( Options::sanitize( array() )['display']['privacy_link'] );
+		self::assertFalse( Options::sanitize( array( 'display' => array( 'privacy_link' => '0' ) ) )['display']['privacy_link'] );
+		self::assertTrue( Options::sanitize( array( 'display' => array( 'privacy_link' => '1' ) ) )['display']['privacy_link'] );
+	}
+
 	public function test_always_gate_list_is_sanitised_like_the_other_host_lists(): void {
 		$clean = Options::sanitize(
 			array(

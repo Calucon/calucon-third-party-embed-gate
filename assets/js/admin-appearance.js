@@ -36,6 +36,10 @@
 		var link = sample ? sample.querySelector( '.cg-embed__fallback a' ) : null;
 
 		function setColor( key, value ) {
+			if ( 'border_color' === key ) {
+				applyBorder();
+				return;
+			}
 			if ( ! sample || ! VARS[ key ] ) {
 				return;
 			}
@@ -62,17 +66,73 @@
 			if ( ! sample ) {
 				return;
 			}
+			var radiusRow = document.getElementById( 'cg-radius-row' );
+			var radiusInput = document.getElementById( 'cg-radius' );
+			if ( radiusRow ) {
+				radiusRow.hidden = 'custom' !== corners;
+			}
 			// Inline styles beat the preview's preset class rules, matching
 			// the front end where the corner CSS is emitted after the preset.
-			if ( RADII[ corners ] ) {
-				sample.style.setProperty( '--cg-radius', RADII[ corners ] );
-				sample.style.borderRadius = RADII[ corners ];
+			var radius = RADII[ corners ] || null;
+			if ( 'custom' === corners && radiusInput ) {
+				radius = ( parseInt( radiusInput.value, 10 ) || 0 ) + 'px';
+			}
+			if ( null !== radius ) {
+				sample.style.setProperty( '--cg-radius', radius );
+				sample.style.borderRadius = radius;
 			} else {
 				sample.style.removeProperty( '--cg-radius' );
 				sample.style.borderRadius = '';
 			}
 			if ( button ) {
 				button.style.borderRadius = 'pill' === corners ? '999px' : '';
+			}
+			refresh();
+		}
+
+		// Mirrors AppearanceCss::build() — border/shadow/spacing values live
+		// in both places; change them together.
+		function applyBorder() {
+			if ( ! sample ) {
+				return;
+			}
+			var widthInput = document.getElementById( 'cg-border-width' );
+			var colorInput = document.getElementById( 'cg-color-border-color' );
+			var width = widthInput ? widthInput.value : '';
+			var color = colorInput && colorInput.value ? colorInput.value : '';
+			if ( '' === width ) {
+				sample.style.border = '';
+				sample.style.borderColor = color;
+			} else if ( 0 === ( parseInt( width, 10 ) || 0 ) ) {
+				sample.style.border = 'none';
+			} else {
+				sample.style.border = ( parseInt( width, 10 ) || 0 ) + 'px solid '
+					+ ( color || 'var( --cg-fg )' );
+			}
+			refresh();
+		}
+
+		var SHADOWS = {
+			none: 'none',
+			soft: '0 1px 4px rgba(0,0,0,0.18)',
+			strong: '0 6px 24px rgba(0,0,0,0.35)'
+		};
+		function applyShadow( shadow ) {
+			if ( sample ) {
+				sample.style.boxShadow = SHADOWS[ shadow ] || '';
+				refresh();
+			}
+		}
+
+		var GAPS = { compact: '0.5rem', spacious: '1.25rem' };
+		function applyDensity( density ) {
+			if ( ! sample ) {
+				return;
+			}
+			if ( GAPS[ density ] ) {
+				sample.style.setProperty( '--cg-gap', GAPS[ density ] );
+			} else {
+				sample.style.removeProperty( '--cg-gap' );
 			}
 			refresh();
 		}
@@ -213,6 +273,16 @@
 		$( '#cg-corners' ).on( 'change', function () {
 			applyCorners( this.value );
 		} );
+		$( '#cg-radius' ).on( 'input change', function () {
+			applyCorners( ( document.getElementById( 'cg-corners' ) || { value: '' } ).value );
+		} );
+		$( '#cg-border-width' ).on( 'input change', applyBorder );
+		$( '#cg-shadow' ).on( 'change', function () {
+			applyShadow( this.value );
+		} );
+		$( '#cg-density' ).on( 'change', function () {
+			applyDensity( this.value );
+		} );
 		$( '#cg-preview-dark' ).on( 'change', function () {
 			stage.classList.toggle( 'cg-preview-stage--dark', this.checked );
 			refresh();
@@ -233,6 +303,9 @@
 			}
 		} );
 		applyCorners( ( document.getElementById( 'cg-corners' ) || { value: '' } ).value );
+		applyBorder();
+		applyShadow( ( document.getElementById( 'cg-shadow' ) || { value: '' } ).value );
+		applyDensity( ( document.getElementById( 'cg-density' ) || { value: '' } ).value );
 		applyPreset( ( document.getElementById( 'cg-preset' ) || { value: '' } ).value );
 	} );
 }( window.jQuery ) );
