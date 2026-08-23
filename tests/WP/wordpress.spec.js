@@ -1103,3 +1103,50 @@ test( 'admin: the provider list is grouped, filterable and fits a phone', async 
 	await expect( page.locator( '.cg-provider-group[open]' ) ).toHaveCount( 0 );
 	await expect( page.locator( '.cg-provider[data-cg-provider-row="youtube"]' ) ).toBeHidden();
 } );
+
+test( 'admin: every settings tab fits phone, tablet and desktop without sideways scrolling', async ( { page } ) => {
+	await login( page );
+
+	const VIEWPORTS = [
+		{ name: 'mobile-360', width: 360, height: 740 },
+		{ name: 'mobile-390', width: 390, height: 844 },
+		{ name: 'tablet-768', width: 768, height: 1024 },
+		{ name: 'tablet-1024', width: 1024, height: 768 },
+		{ name: 'desktop-1280', width: 1280, height: 800 },
+		{ name: 'desktop-1920', width: 1920, height: 1080 },
+	];
+	const TABS = [ 'providers', 'detection', 'appearance', 'consent', 'status' ];
+
+	for ( const vp of VIEWPORTS ) {
+		await page.setViewportSize( { width: vp.width, height: vp.height } );
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+		await page.waitForSelector( '.cg-tabs' );
+		// The admin bar is core's and collapses on its own; measure the
+		// settings screen itself.
+		await page.addStyleTag( { content: '#wpadminbar{display:none!important}' } );
+
+		for ( const tab of TABS ) {
+			await page.click( `#cg-tabbtn-${ tab }` );
+			await page.waitForTimeout( 150 );
+			// Open everything that folds away, so the widest state is measured.
+			await page.evaluate( () => {
+				document.querySelectorAll( '#cg-tab-providers details, #cg-tab-appearance details, #cg-tab-status details' )
+					.forEach( ( d ) => { d.open = true; } );
+			} );
+			await page.waitForTimeout( 200 );
+
+			const overflow = await page.evaluate( () => {
+				const root = document.documentElement;
+				const over = [];
+				document.querySelectorAll( '.cg-tab-panel:not([hidden]) *' ).forEach( ( el ) => {
+					if ( el.offsetParent !== null && el.getBoundingClientRect().right > root.clientWidth + 1 ) {
+						over.push( el.tagName.toLowerCase() + '.' + String( el.className ).split( ' ' )[ 0 ] );
+					}
+				} );
+				return { page: root.scrollWidth - root.clientWidth, widest: over.slice( 0, 3 ) };
+			} );
+
+			expect( overflow.page, `${ tab } @ ${ vp.name } scrolls sideways (widest: ${ overflow.widest.join( ', ' ) })` ).toBeLessThanOrEqual( 1 );
+		}
+	}
+} );

@@ -39,6 +39,10 @@
    taller of the two and nothing is ever hidden. */
 .cg-embed:not( .cg-embed--active ) {
 	display: grid;
+	/* One column, bounded to the container. A grid's default auto column
+	   takes its MAX-CONTENT width, which stops the notice wrapping and
+	   pushes the panel into a sideways scroll on a phone. */
+	grid-template-columns: minmax( 0, 1fr );
 }
 
 .cg-embed:not( .cg-embed--active )::before {
@@ -50,6 +54,7 @@
 
 .cg-embed:not( .cg-embed--active ) > * {
 	grid-area: 1 / 1;
+	min-width: 0;
 }
 
 /* An SDK's own reserved box (Calendly's inline-widget div is empty with a

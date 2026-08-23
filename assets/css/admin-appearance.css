@@ -839,3 +839,15 @@
 		min-width: 0;
 	}
 }
+
+/* Read-only data tables (Compatibility, the Status scan, the CSP host list)
+   are genuinely tabular, so they keep their shape and scroll inside their
+   own box on a narrow screen — the page itself must never scroll sideways.
+   The custom-provider table is a form and stacks instead (above). */
+@media ( max-width: 782px ) {
+	.cg-tab-panel table.widefat:not( .cg-custom-providers ) {
+		display: block;
+		max-width: 100%;
+		overflow-x: auto;
+	}
+}

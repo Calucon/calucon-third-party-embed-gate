@@ -16,11 +16,14 @@ test.describe( 'panel box', () => {
 		const m = await box.evaluate( ( el ) => ( {
 			scroll: el.scrollHeight,
 			client: el.clientHeight,
+			scrollW: el.scrollWidth,
+			clientW: el.clientWidth,
 			panel: el.querySelector( '.cg-embed__panel' ).getBoundingClientRect().bottom,
 			bottom: el.getBoundingClientRect().bottom,
 		} ) );
 
 		expect( m.scroll, 'nothing scrolls out of sight' ).toBeLessThanOrEqual( m.client );
+		expect( m.scrollW, 'and nothing scrolls sideways either' ).toBeLessThanOrEqual( m.clientW );
 		expect( m.panel, 'the panel ends inside its own box' ).toBeLessThanOrEqual( m.bottom + 1 );
 
 		// Every part of the panel is reachable without scrolling inside it.

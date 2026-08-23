@@ -224,6 +224,29 @@ Lives in PLAN.md §0 (measurements), §6.2 (consent memory) and §14 (framing);
 README copy summarises it. **Legal copy changes need a human** — never reword
 notes, README legal text, or provider disclosures on your own initiative.
 
+## Responsive expectations
+
+Two layout regressions shipped within a day because nothing checked panel
+geometry across screen sizes: a hard `aspect-ratio` box hid the fallback and
+privacy links behind a vertical scrollbar on a phone, and the grid that fixed
+it took its column from `max-content`, so the notice stopped wrapping and
+scrolled sideways instead. Both axes, every time:
+
+- `tests/E2E/responsive.spec.js` sweeps 9 viewports (360–1920) over every
+  harness page: no `.cg-embed` may hide content below **or beside** its own
+  box, and none may be wider than its container. `/page/aspect` is exempt
+  from the page-width check only — it deliberately contains a site-authored
+  `width:640px` box.
+- `tests/WP/wordpress.spec.js` sweeps the five settings tabs over 6 viewports
+  with every `<details>` forced open; the admin page must never scroll
+  sideways. Read-only data tables scroll inside their own box instead
+  (`table.widefat:not(.cg-custom-providers)`), the custom-provider form
+  stacks via `data-cg-label`.
+
+A CSS grid's default column is `max-content`: bound it with
+`grid-template-columns: minmax( 0, 1fr )` and `min-width: 0` on the items,
+or text stops wrapping.
+
 ## Testing expectations
 
 Every behavioural change ships with a fixture. Generated `expected.html`
