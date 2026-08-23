@@ -137,15 +137,15 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 == Upgrade Notice ==
 
 = 0.11.0 =
-Adds proper names, icons, privacy-policy links and working no-JavaScript links for the embed types WordPress offers out of the box (Dailymotion, TED, VideoPress, Mixcloud, Pocket Casts, Scribd, Speaker Deck, Issuu, Kickstarter, Wolfram Cloud, Kindle, Imgur, Tumblr, Pinterest, Bluesky, Crowdsignal). They were already gated; nothing changes for what loads.
+Names the rest of WordPress's built-in embed types: Dailymotion, TED, VideoPress, Mixcloud, Pocket Casts, Scribd, Issuu, Kickstarter, Imgur, Tumblr, Pinterest, Bluesky and more. Fixes Scribd and Wolfram Cloud embeds, which contacted their provider before the click. All were gated before.
 
 = 0.10.0 =
-The panel's markup and look are unchanged unless you opt in: a provider privacy-policy link (Providers tab) and the new Appearance controls are all off by default. If a page cache serves your site, clear it once after updating so placeholders pick up the new markup. Adds your own providers, a CSP helper and a much larger Appearance tab.
+The panel looks and behaves as before unless you opt in: the privacy-policy link and the new Appearance controls are off by default. Clear your page cache once after updating. Adds your own providers, a CSP helper and a much larger Appearance tab.
 
 == Changelog ==
 
 = 0.11.0 =
-* Fixed: Scribd embeds (an inline script that fetches Scribd's loader), VideoPress embeds (a resize loader) and Wolfram Cloud notebooks (stylesheets and an inline call) requested their provider before the click; these companions are now gated with their panel and load only after it.
+* Fixed: Scribd embeds (an inline script that fetches Scribd's loader), VideoPress embeds (a resize loader) and Wolfram Cloud notebooks (stylesheets and an inline call) requested their provider before the click; these companions are now gated with their panel and load only after it. Scripts of your own that merely mention a provider's address are left alone.
 * New: built-in providers for the rest of WordPress core's embed types — Dailymotion, TED, VideoPress and WordPress.tv, Mixcloud, Pocket Casts, Scribd, Speaker Deck, Issuu, Kickstarter, Wolfram Cloud and Amazon Kindle (players and documents), plus Imgur, Tumblr, Pinterest, Bluesky and Crowdsignal (script embeds, now with a real fallback link to the post instead of the script host). All of these were gated before under their host names; they now get a name, an icon, a privacy-policy link and a Providers-tab row.
 
 = 0.10.0 =

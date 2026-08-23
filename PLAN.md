@@ -341,8 +341,18 @@ panel of the same provider exists in the fragment (the iframe rule runs
 first; external scripts before inline ones), and `gate.js` loads them
 right after that panel is activated, under the same consent. A loader
 without a panel to attach to keeps its own panel (it is the embed, as for
-a Crowdsignal survey). Inline scripts are gated only when they name a
-known provider's script host (`Registry::resolve_for_inline_script()`);
+a Crowdsignal survey). Inline scripts that name a known provider's script host
+(`Registry::resolve_for_inline_script()`) are gated on two different
+grounds, because two very different things look alike: one that **injects**
+a loader (`createElement`, `.src =`, `document.write`) causes a request by
+itself and is gated wherever it appears — with its own panel when it is the
+only thing standing for that embed (a Crowdsignal survey); one that merely
+**calls into** an already-gated script (Wolfram's `embed()` line) or just
+names a URL causes no request, so it is gated only as a silent companion of
+a panel that already exists. A site's own script that happens to mention a
+provider URL therefore keeps running, and no inline script ever sprouts a
+panel of its own. Deferred inline code runs with `document.write` shimmed to
+append (running it after load would otherwise replace the whole document);
 stylesheets only as companions (`StylesheetRule`). Content ids in the
 query string are captured via `match.iframe_query` / `match.script_path`;
 a template left with a placeholder is dropped, never shipped literally

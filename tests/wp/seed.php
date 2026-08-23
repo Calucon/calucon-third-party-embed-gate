@@ -109,8 +109,13 @@ foreach ( $cg_seed_posts as $cg_slug => $cg_post ) {
 // (§9.14). The integration tests assert the filter path is always cleaned
 // and the literal path is cleaned exactly when output buffering is on.
 $cg_mu_dir = defined( 'WPMU_PLUGIN_DIR' ) ? WPMU_PLUGIN_DIR : WP_CONTENT_DIR . '/mu-plugins';
-if ( ! is_dir( $cg_mu_dir ) ) {
-	mkdir( $cg_mu_dir, 0755, true );
+if ( ! is_dir( $cg_mu_dir ) && ! mkdir( $cg_mu_dir, 0755, true ) && ! is_dir( $cg_mu_dir ) ) {
+	// Fail loudly. A silent mkdir failure (wrong container user, read-only
+	// volume) leaves the hint emulator and the code-registered provider
+	// missing, and three integration tests then fail as if the PLUGIN were
+	// broken. Seeding must not half-succeed.
+	fwrite( STDERR, "seed: cannot create $cg_mu_dir — check the container user and volume permissions\n" );
+	exit( 1 );
 }
 $cg_mu_source = <<<'MUPLUGIN'
 <?php
@@ -139,7 +144,10 @@ add_action( 'wp_head', function () {
 	echo '<link rel="preconnect" href="https://cdn.literal-safe.example">' . "\n";
 }, 99 );
 MUPLUGIN;
-file_put_contents( $cg_mu_dir . '/cg-test-hints.php', $cg_mu_source . "\n" );
+if ( false === file_put_contents( $cg_mu_dir . '/cg-test-hints.php', $cg_mu_source . "\n" ) ) {
+	fwrite( STDERR, "seed: cannot write the hint emulator into $cg_mu_dir\n" );
+	exit( 1 );
+}
 
 // Pretty permalinks so the tests can address posts by slug. Flush
 // unconditionally: newer Playground images pre-set the structure WITHOUT

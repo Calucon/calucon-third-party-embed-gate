@@ -307,6 +307,17 @@ if ( '/page/companions' === $uri ) {
 	return true;
 }
 
+if ( '/page/inline-write' === $uri ) {
+	// A provider loader that uses document.write. None of the bundled
+	// providers do, but running one after load would REPLACE the whole
+	// document — gate.js shims document.write while the deferred code runs.
+	$content = '<script>document.write(\'<p id="cg-written">written by the loader</p>\');'
+		. 'var loader = "https://www.scribd.com/javascripts/embed_code/inject.js";</script>';
+
+	cg_e2e_page( $content );
+	return true;
+}
+
 if ( '/page/collision' === $uri ) {
 	// Two UNKNOWN third-party widgets (both resolve to the generic-script
 	// provider) plus one unknown iframe: activating one widget must not

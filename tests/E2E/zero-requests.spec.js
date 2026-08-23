@@ -199,3 +199,24 @@ test( 'silent companions: nothing loads before the click; after it, the inline i
 	await expect( page.locator( 'link[rel="stylesheet"][href*="wolframcloud"]' ) ).toHaveCount( 2 );
 	await expect( page.locator( '.cg-embed--silent[data-cg-activated="1"]' ) ).toHaveCount( 4 );
 } );
+
+test( 'a deferred document.write loader appends instead of wiping the page', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+
+	await page.goto( '/page/inline-write' );
+	await page.waitForLoadState( 'networkidle' );
+	expect( offenders ).toEqual( [] );
+
+	// Gated: the loader has not run, so nothing was written yet.
+	await expect( page.locator( '#cg-written' ) ).toHaveCount( 0 );
+	const panel = page.locator( '.cg-embed[data-cg-provider="scribd"]' );
+	await expect( panel ).toHaveCount( 1 );
+
+	await panel.locator( 'button' ).click();
+
+	// The write landed AND the page survived — without the shim, document.write
+	// after load replaces the whole document and the heading disappears.
+	await expect( page.locator( '#cg-written' ) ).toHaveCount( 1 );
+	await expect( page.locator( 'h1' ) ).toBeVisible();
+	await expect( page.locator( 'main' ) ).toContainText( 'written by the loader' );
+} );

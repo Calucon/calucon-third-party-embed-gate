@@ -105,4 +105,50 @@ final class SilentCompanionTest extends TestCase {
 
 		self::assertSame( $input, PipelineFactory::gate( $input, array( 'example.test' ), array(), $providers ) );
 	}
+
+	/**
+	 * A site's own inline script may name a provider URL in a variable or a
+	 * comment. Deferring that would break the site's code, and giving it a
+	 * panel would put a stray "Load content from …" box on the page.
+	 */
+	public function test_an_inline_script_that_only_mentions_a_provider_host_is_left_alone(): void {
+		$mention = '<script>var docs = "https://www.scribd.com/document/1"; renderMyOwnThing( docs );</script>';
+
+		self::assertSame( $mention, PipelineFactory::gate( $mention ), 'no gating, no panel' );
+		self::assertStringNotContainsString( 'cg-embed', PipelineFactory::gate( '<p>x</p>' . $mention ) );
+	}
+
+	/**
+	 * …but next to a panel of that provider it is a companion: Wolfram's
+	 * embed() line calls into the gated script and must run after it, not
+	 * before. It never gets a panel of its own.
+	 */
+	public function test_a_mentioning_inline_script_next_to_a_panel_becomes_a_silent_companion(): void {
+		$html = PipelineFactory::gate(
+			'<script src="https://www.wolframcloud.com/obj/redirect/notebook-embedder-oembed-lib"></script>'
+			. '<script>WolframNotebookEmbedder.embed("https://www.wolframcloud.com/obj/u/Public/A.nb", document.getElementById("n"), {});</script>'
+		);
+		$found = $this->payloads( $html );
+
+		self::assertCount( 2, $found );
+		self::assertFalse( $found[0]['silent'], 'the loader script is the embed' );
+		self::assertTrue( $found[1]['silent'], 'the call that follows is its companion' );
+		self::assertStringContainsString( 'WolframNotebookEmbedder.embed', $found[1]['payload']['inline'] );
+		self::assertSame( 1, substr_count( $html, 'role="group"' ), 'one panel, not two' );
+	}
+
+	/**
+	 * An inline script that INJECTS a loader causes a request by itself, so
+	 * it is gated even where no panel exists — it is the embed (a
+	 * Crowdsignal survey).
+	 */
+	public function test_an_injecting_inline_script_is_gated_even_alone(): void {
+		$html = PipelineFactory::gate(
+			'<script>(function(){var s=document.createElement("script");s.src="https://app.crowdsignal.com/survey.js";document.body.appendChild(s);})();</script>'
+		);
+
+		self::assertStringContainsString( 'data-cg-provider="crowdsignal"', $html );
+		self::assertStringContainsString( 'role="group"', $html, 'alone, it gets its own panel' );
+		self::assertStringNotContainsString( 'createElement("script")', $html, 'and no longer runs on load' );
+	}
 }

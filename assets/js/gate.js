@@ -441,7 +441,7 @@
 				container.setAttribute( 'tabindex', '-1' );
 				container.focus();
 			}
-			runInline( payload.inline );
+			runInline( payload.inline, container );
 			activateSilentSiblings( providerId );
 			runReadyHook( providerId );
 			return;
@@ -494,12 +494,37 @@
 	function hasClass( el, name ) {
 		return ( ' ' + ( el.className || '' ) + ' ' ).indexOf( ' ' + name + ' ' ) !== -1;
 	}
-	// Re-run the page's own inline loader (Scribd, Crowdsignal) — the
-	// same text the browser would have executed on load, just after consent.
-	function runInline( code ) {
-		var el = document.createElement( 'script' );
-		el.text = code;
-		( document.head || document.body ).appendChild( el );
+	// Re-run the page's own inline loader (Scribd, Crowdsignal) — the same
+	// text the browser would have executed on load, just after consent.
+	//
+	// document.write after load REPLACES the whole document, so a loader
+	// that uses it would wipe the page on click. None of the bundled
+	// providers do, but a future one might: swap in an appending shim for
+	// the duration of the call, then put the real one back.
+	function runInline( code, container ) {
+		var realWrite = document.write;
+		var realWriteln = document.writeln;
+		var sink = function ( markup ) {
+			var host = container || document.body;
+			if ( ! host ) {
+				return;
+			}
+			var holder = document.createElement( 'div' );
+			holder.innerHTML = String( markup );
+			while ( holder.firstChild ) {
+				host.appendChild( holder.firstChild );
+			}
+		};
+		try {
+			document.write = sink;
+			document.writeln = sink;
+			var el = document.createElement( 'script' );
+			el.text = code;
+			( document.head || document.body ).appendChild( el );
+		} finally {
+			document.write = realWrite;
+			document.writeln = realWriteln;
+		}
 	}
 	function addStylesheet( href ) {
 		var el = document.createElement( 'link' );
@@ -510,7 +535,7 @@
 	function activateSilent( container, payload ) {
 		container.setAttribute( 'data-cg-activated', '1' );
 		if ( typeof payload.inline === 'string' ) {
-			runInline( payload.inline );
+			runInline( payload.inline, container.parentNode );
 			return;
 		}
 		var src = typeof payload.src === 'string' ? payload.src : '';

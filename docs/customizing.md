@@ -159,9 +159,13 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 } );
 ```
 
-Inline scripts are gated only when they inject a known provider's loader
-(Scribd, Crowdsignal surveys) — the script body is carried in the payload and
-re-run after consent. Stylesheets in content are gated only as companions of
+Inline scripts are gated only when they name a known provider's script host,
+and then only if they either inject a loader (Scribd, Crowdsignal surveys) or
+sit next to an already-gated panel of that provider (Wolfram's `embed()`
+call). A script of your own that merely mentions a provider URL keeps running
+untouched, and an inline script never gets a panel of its own. The script body
+is carried in the payload and re-run after consent, with `document.write`
+shimmed to append so a loader that uses it cannot replace the page. Stylesheets in content are gated only as companions of
 a gated provider (Wolfram Cloud); a theme's own third-party stylesheets are
 outside an embed gate's scope (the Compatibility screen reports them).
 

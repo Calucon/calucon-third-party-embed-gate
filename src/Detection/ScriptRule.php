@@ -185,7 +185,23 @@ final class ScriptRule {
 				continue;
 			}
 
-			$silent = false !== strpos( $html, 'data-cg-provider="' . $provider['id'] . '"' );
+			// Two very different inline scripts name a provider host:
+			//
+			//  - one that INJECTS the provider's loader (Scribd's, and the
+			//    Crowdsignal survey bootstrap) — a request on load, so it is
+			//    gated wherever it appears, with its own panel if it is the
+			//    only thing standing for that embed;
+			//  - one that merely CALLS into an already-gated script (Wolfram's
+			//    embed() line) or just mentions a URL — no request by itself.
+			//    Gating that is only right as a silent companion of a panel
+			//    that already exists; a site's own script that happens to name
+			//    a provider URL must keep running, and must never sprout a
+			//    "Load content from …" panel of its own.
+			$silent  = false !== strpos( $html, 'data-cg-provider="' . $provider['id'] . '"' );
+			$injects = 1 === preg_match( '/createElement|\.src\s*=|document\.write|insertAdjacentHTML/i', $code );
+			if ( ! $injects && ! $silent ) {
+				continue;
+			}
 
 			$provider['strategy'] = 'script';
 			$provider['fallback'] = $this->resolve_fallback( $provider, $html, $match['start'], $match['end'], $host );
