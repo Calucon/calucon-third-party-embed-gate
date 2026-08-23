@@ -24,12 +24,42 @@
 	color: var( --cg-fg );
 	border-radius: var( --cg-radius );
 	font-family: var( --cg-font );
-	overflow: auto; /* Contents scroll rather than clip in a short reserved box (WCAG 1.4.10). */
+	overflow: auto; /* Last resort: contents scroll rather than clip (WCAG 1.4.10). */
+}
 
-	/* Layout preservation where no reserved box exists (PLAN.md §5.3):
-	   occupy the space the embed would, or the page reflows on activation.
-	   The renderer sets --cg-aspect from the embed's own width/height. */
+/* Layout preservation where no reserved box exists (PLAN.md §5.3): occupy
+   the space the embed would, or the page reflows on activation. The
+   renderer sets --cg-aspect from the embed's own width/height.
+
+   It is a MINIMUM, not a cage. A theme with roomy type needs more height
+   for the notice, button and links than 9/16 of a phone's width, and a
+   hard aspect-ratio box turned that into a scrollbar nobody notices — the
+   privacy link sat below the fold of the panel itself. The ratio now lives
+   on a spacer sharing one grid cell with the panel, so the box is the
+   taller of the two and nothing is ever hidden. */
+.cg-embed:not( .cg-embed--active ) {
+	display: grid;
+}
+
+.cg-embed:not( .cg-embed--active )::before {
+	content: '';
+	grid-area: 1 / 1;
+	width: 100%;
 	aspect-ratio: var( --cg-aspect, auto );
+}
+
+.cg-embed:not( .cg-embed--active ) > * {
+	grid-area: 1 / 1;
+}
+
+/* An SDK's own reserved box (Calendly's inline-widget div is empty with a
+   fixed height) would otherwise leave a tall blank gap above the panel
+   while gated. Only ever an EMPTY element directly before a panel — a
+   companion carrying real fallback content, like a tweet's blockquote, has
+   children and is untouched. It returns the moment the panel activates,
+   because the SDK renders into it. */
+:empty:has( + .cg-embed:not( .cg-embed--active ) ) {
+	display: none;
 }
 
 /* The core block-theme trap (PLAN.md §5.3), which comes in two eras:

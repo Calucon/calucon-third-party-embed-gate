@@ -470,6 +470,17 @@ it as `$privacy_url` / `$privacy_label`. Scripts must find the fallback
 link **by its class**, never as "the last link in the panel" — the privacy
 link now follows it (gate.js `removePanel` was fixed for exactly this).
 
+**The reserved box is a minimum.** `--cg-aspect` keeps the page from jumping
+when the embed loads, but it must never cage the panel: with roomy theme
+type a phone needs more height for the notice, button and links than 9/16 of
+the width, and a hard `aspect-ratio` box turned that into a scrollbar nobody
+notices (the privacy link sat below the panel's own fold). The ratio lives on
+a spacer sharing one grid cell with the panel, so the box is the taller of
+the two. An SDK's own empty reserved box (Calendly's inline-widget div) is
+collapsed while gated by `:empty:has( + .cg-embed:not( .cg-embed--active ) )`
+and returns on activation — only ever an EMPTY element, so a companion
+carrying real fallback content is untouched.
+
 **`role="group"` with `aria-label`, not a heading.** This was learned the hard
 way: the original implementation opened the panel with a bold paragraph, which
 an external accessibility scanner correctly flagged as a heading in everything

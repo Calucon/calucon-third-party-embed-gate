@@ -229,18 +229,26 @@ final class Descriptors {
 				'strategy'    => 'iframe',
 			),
 			array(
-				'id'          => 'calendly',
-				'kind'        => 'calendar',
-				'label'       => 'Calendly',
-				'match'       => array(
+				'id'                 => 'calendly',
+				'kind'               => 'calendar',
+				'label'              => 'Calendly',
+				'match'              => array(
 					'iframe_host' => array( 'calendly.com' ),
 					'script_host' => array( 'assets.calendly.com' ),
 				),
-				'privacy_url' => 'https://calendly.com/privacy',
-				'controller'  => 'Calendly LLC, Atlanta, USA',
-				'note'        => $t( 'Loading this scheduler contacts Calendly, which receives your IP address and which page you are on, and sets cookies.' ),
-				'action'      => $t( 'Load scheduler from Calendly' ),
-				'strategy'    => 'iframe',
+				// The inline widget is an empty sized div carrying the real
+				// booking URL; without this the fallback would point at the
+				// SDK host, which is no destination for a visitor.
+				'companion_class'    => array( 'calendly-inline-widget' ),
+				'companion_fallback' => static function ( array $attributes ): ?string {
+					$url = isset( $attributes['data-url'] ) ? (string) $attributes['data-url'] : '';
+					return preg_match( '#^https://(?:[a-z0-9-]+\\.)?calendly\\.com/[^"\\s<>]*$#i', $url ) ? $url : null;
+				},
+				'privacy_url'        => 'https://calendly.com/privacy',
+				'controller'         => 'Calendly LLC, Atlanta, USA',
+				'note'               => $t( 'Loading this scheduler contacts Calendly, which receives your IP address and which page you are on, and sets cookies.' ),
+				'action'             => $t( 'Load scheduler from Calendly' ),
+				'strategy'           => 'iframe',
 			),
 			array(
 				'id'                 => 'strava',

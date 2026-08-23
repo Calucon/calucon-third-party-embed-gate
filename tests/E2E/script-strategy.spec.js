@@ -120,3 +120,28 @@ test( 'a retried activation after a failed SDK load does not corrupt state', asy
 	expect( state.classes.split( 'cg-embed--active' ).length - 1 ).toBe( 1 ); // no duplicate class
 	expect( state.deadScripts ).toBe( 1 ); // failed element removed, only the retry's element remains
 } );
+
+test( "an SDK's own empty reserved box leaves no gap while gated, and returns on activation", async ( { page } ) => {
+	await page.route( '**', ( route ) => {
+		const host = new URL( route.request().url() ).hostname;
+		return [ '127.0.0.1', 'localhost' ].includes( host )
+			? route.continue()
+			: route.fulfill( { contentType: 'application/javascript', body: 'window.cgSdk = true;' } );
+	} );
+
+	await page.goto( '/page/companion-hole' );
+
+	// Calendly's inline widget is an empty div with height:580px. Gated, it
+	// must not leave a tall blank band above the panel.
+	const widget = page.locator( '.calendly-inline-widget' );
+	expect( await widget.evaluate( ( el ) => el.getBoundingClientRect().height ) ).toBe( 0 );
+
+	// …and the fallback points at the booking page from data-url, not at the
+	// SDK host, which is no destination for a visitor.
+	await expect( page.locator( '.cg-embed[data-cg-provider="calendly"] .cg-embed__fallback a' ) )
+		.toHaveAttribute( 'href', 'https://calendly.com/placeholder' );
+
+	// After the click the SDK needs its box back to render into.
+	await page.locator( '.cg-embed[data-cg-provider="calendly"] button' ).click();
+	await expect.poll( () => widget.evaluate( ( el ) => el.getBoundingClientRect().height ) ).toBeGreaterThan( 100 );
+} );

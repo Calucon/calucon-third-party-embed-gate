@@ -318,6 +318,29 @@ if ( '/page/inline-write' === $uri ) {
 	return true;
 }
 
+if ( '/page/narrow' === $uri ) {
+	// The panel must never be clipped by the box reserved from the embed's
+	// aspect ratio: on a phone the notice, button and links are taller than
+	// 9/16 of the width, and a scrollbar nobody sees hides the privacy link.
+	$content = '<iframe title="Video" width="560" height="315" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>';
+	// A roomy theme font, as on the showcase page: the panel then needs more
+	// height than 9/16 of a phone's width.
+	$css = '.cg-embed{font-size:18px;line-height:1.7;font-family:monospace}';
+
+	cg_e2e_page( $content, $css, '', array( 'privacy_link' => true ) );
+	return true;
+}
+
+if ( '/page/companion-hole' === $uri ) {
+	// A script-strategy embed whose companion is an EMPTY sized box (the
+	// Calendly inline widget): gated, it must not leave a tall blank gap.
+	$content = '<div class="calendly-inline-widget" data-url="https://calendly.com/placeholder" style="min-width:320px;height:580px;"></div>'
+		. '<script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>';
+
+	cg_e2e_page( $content );
+	return true;
+}
+
 if ( '/page/collision' === $uri ) {
 	// Two UNKNOWN third-party widgets (both resolve to the generic-script
 	// provider) plus one unknown iframe: activating one widget must not

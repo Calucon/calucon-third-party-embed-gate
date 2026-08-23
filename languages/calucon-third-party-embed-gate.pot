@@ -572,7 +572,7 @@ msgstr ""
 msgid "Links"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:255
+#: src/Providers/Builtin/Descriptors.php:263
 msgid "Load activity from Strava"
 msgstr ""
 
@@ -586,11 +586,11 @@ msgstr ""
 msgid "Load content from %s"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:335
+#: src/Providers/Builtin/Descriptors.php:343
 msgid "Load content from Facebook"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:615
+#: src/Providers/Builtin/Descriptors.php:623
 msgid "Load document from Scribd"
 msgstr ""
 
@@ -606,7 +606,7 @@ msgstr ""
 msgid "Load form from Typeform"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:374
+#: src/Providers/Builtin/Descriptors.php:382
 msgid "Load image from GIPHY"
 msgstr ""
 
@@ -622,11 +622,11 @@ msgstr ""
 msgid "Load model from Sketchfab"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:683
+#: src/Providers/Builtin/Descriptors.php:691
 msgid "Load notebook from Wolfram Cloud"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:496
+#: src/Providers/Builtin/Descriptors.php:504
 msgid "Load pin from Pinterest"
 msgstr ""
 
@@ -634,11 +634,11 @@ msgstr ""
 msgid "Load player from Apple"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:459
+#: src/Providers/Builtin/Descriptors.php:467
 msgid "Load player from Mixcloud"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:476
+#: src/Providers/Builtin/Descriptors.php:484
 msgid "Load player from Pocket Casts"
 msgstr ""
 
@@ -650,51 +650,51 @@ msgstr ""
 msgid "Load player from Spotify"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:581
+#: src/Providers/Builtin/Descriptors.php:589
 msgid "Load poll from Crowdsignal"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:550
+#: src/Providers/Builtin/Descriptors.php:558
 msgid "Load post from Bluesky"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:515
+#: src/Providers/Builtin/Descriptors.php:523
 msgid "Load post from Imgur"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:304
+#: src/Providers/Builtin/Descriptors.php:312
 msgid "Load post from Instagram"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:359
+#: src/Providers/Builtin/Descriptors.php:367
 msgid "Load post from Reddit"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:532
+#: src/Providers/Builtin/Descriptors.php:540
 msgid "Load post from Tumblr"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:288
+#: src/Providers/Builtin/Descriptors.php:296
 msgid "Load post from X (Twitter)"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:632
+#: src/Providers/Builtin/Descriptors.php:640
 msgid "Load presentation from Speaker Deck"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:699
+#: src/Providers/Builtin/Descriptors.php:707
 msgid "Load preview from Amazon Kindle"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:665
+#: src/Providers/Builtin/Descriptors.php:673
 msgid "Load project from Kickstarter"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:650
+#: src/Providers/Builtin/Descriptors.php:658
 msgid "Load publication from Issuu"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:242
+#: src/Providers/Builtin/Descriptors.php:250
 msgid "Load scheduler from Calendly"
 msgstr ""
 
@@ -702,19 +702,19 @@ msgstr ""
 msgid "Load tour from Matterport"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:398
+#: src/Providers/Builtin/Descriptors.php:406
 msgid "Load video from Dailymotion"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:417
+#: src/Providers/Builtin/Descriptors.php:425
 msgid "Load video from TED"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:320
+#: src/Providers/Builtin/Descriptors.php:328
 msgid "Load video from TikTok"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:439
+#: src/Providers/Builtin/Descriptors.php:447
 msgid "Load video from VideoPress"
 msgstr ""
 
@@ -730,7 +730,7 @@ msgstr ""
 msgid "Loading embedded content…"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:254
+#: src/Providers/Builtin/Descriptors.php:262
 msgid "Loading this activity contacts Strava, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
@@ -743,7 +743,7 @@ msgstr ""
 msgid "Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:334
+#: src/Providers/Builtin/Descriptors.php:342
 msgid "Loading this content contacts Facebook (Meta), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
@@ -752,7 +752,7 @@ msgstr ""
 msgid "Loading this content runs a script from %s, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:614
+#: src/Providers/Builtin/Descriptors.php:622
 msgid "Loading this document contacts Scribd, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
@@ -764,7 +764,7 @@ msgstr ""
 msgid "Loading this form contacts Typeform, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:373
+#: src/Providers/Builtin/Descriptors.php:381
 msgid "Loading this image contacts GIPHY, which receives your IP address and which page you are on."
 msgstr ""
 
@@ -780,11 +780,11 @@ msgstr ""
 msgid "Loading this model contacts Sketchfab, which receives your IP address and which page you are on."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:682
+#: src/Providers/Builtin/Descriptors.php:690
 msgid "Loading this notebook contacts Wolfram, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:495
+#: src/Providers/Builtin/Descriptors.php:503
 msgid "Loading this pin contacts Pinterest, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
@@ -792,11 +792,11 @@ msgstr ""
 msgid "Loading this player contacts Apple, which receives your IP address and which page you are on."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:458
+#: src/Providers/Builtin/Descriptors.php:466
 msgid "Loading this player contacts Mixcloud, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:475
+#: src/Providers/Builtin/Descriptors.php:483
 msgid "Loading this player contacts Pocket Casts (Automattic), which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
@@ -808,51 +808,51 @@ msgstr ""
 msgid "Loading this player contacts Spotify, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:580
+#: src/Providers/Builtin/Descriptors.php:588
 msgid "Loading this poll contacts Crowdsignal (Automattic), which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:549
+#: src/Providers/Builtin/Descriptors.php:557
 msgid "Loading this post contacts Bluesky, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:514
+#: src/Providers/Builtin/Descriptors.php:522
 msgid "Loading this post contacts Imgur, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:303
+#: src/Providers/Builtin/Descriptors.php:311
 msgid "Loading this post contacts Instagram (Meta), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:358
+#: src/Providers/Builtin/Descriptors.php:366
 msgid "Loading this post contacts Reddit, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:531
+#: src/Providers/Builtin/Descriptors.php:539
 msgid "Loading this post contacts Tumblr (Automattic), which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:287
+#: src/Providers/Builtin/Descriptors.php:295
 msgid "Loading this post contacts X (Twitter), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:631
+#: src/Providers/Builtin/Descriptors.php:639
 msgid "Loading this presentation contacts Speaker Deck, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:698
+#: src/Providers/Builtin/Descriptors.php:706
 msgid "Loading this preview contacts Amazon, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:664
+#: src/Providers/Builtin/Descriptors.php:672
 msgid "Loading this project contacts Kickstarter, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:649
+#: src/Providers/Builtin/Descriptors.php:657
 msgid "Loading this publication contacts Issuu, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:241
+#: src/Providers/Builtin/Descriptors.php:249
 msgid "Loading this scheduler contacts Calendly, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
@@ -860,19 +860,19 @@ msgstr ""
 msgid "Loading this tour contacts Matterport, which receives your IP address and which page you are on."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:397
+#: src/Providers/Builtin/Descriptors.php:405
 msgid "Loading this video contacts Dailymotion, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:416
+#: src/Providers/Builtin/Descriptors.php:424
 msgid "Loading this video contacts TED, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:319
+#: src/Providers/Builtin/Descriptors.php:327
 msgid "Loading this video contacts TikTok, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:438
+#: src/Providers/Builtin/Descriptors.php:446
 msgid "Loading this video contacts VideoPress (Automattic), which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
