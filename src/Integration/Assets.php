@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use CaluconEmbedGate\Support\AppearanceCss;
+use CaluconEmbedGate\Support\AssetVersion;
 use CaluconEmbedGate\Support\ThemePalette;
 
 /**
@@ -68,14 +69,14 @@ final class Assets {
 			'calucon-embed-gate',
 			plugins_url( 'assets/js/gate.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CALUCON_EMBED_GATE_VERSION,
+			AssetVersion::of( 'assets/js/gate.js' ),
 			true
 		);
 		wp_register_style(
 			'calucon-embed-gate',
 			plugins_url( 'assets/css/gate.css', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CALUCON_EMBED_GATE_VERSION
+			AssetVersion::of( 'assets/css/gate.css' )
 		);
 		// The §6.4 bridge is a separate file so the default build (bridge
 		// off) ships not a byte of CMP code to visitors.
@@ -83,7 +84,7 @@ final class Assets {
 			'calucon-embed-gate-cmp',
 			plugins_url( 'assets/js/cmp-bridge.js', CALUCON_EMBED_GATE_FILE ),
 			array( 'calucon-embed-gate' ),
-			CALUCON_EMBED_GATE_VERSION,
+			AssetVersion::of( 'assets/js/cmp-bridge.js' ),
 			true
 		);
 

@@ -19,6 +19,7 @@ use CaluconEmbedGate\Cmp\Detector;
 use CaluconEmbedGate\Detection\HostMatcher;
 use CaluconEmbedGate\Providers\CustomProviders;
 use CaluconEmbedGate\Support\AppearanceCss;
+use CaluconEmbedGate\Support\AssetVersion;
 use CaluconEmbedGate\Support\ContentScan;
 use CaluconEmbedGate\Support\Csp;
 use CaluconEmbedGate\Support\Options;
@@ -149,26 +150,26 @@ final class SettingsPage {
 			'calucon-embed-gate',
 			plugins_url( 'assets/css/gate.css', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CALUCON_EMBED_GATE_VERSION
+			AssetVersion::of( 'assets/css/gate.css' )
 		);
 		wp_enqueue_style(
 			'calucon-embed-gate-admin',
 			plugins_url( 'assets/css/admin-appearance.css', CALUCON_EMBED_GATE_FILE ),
 			array( 'calucon-embed-gate' ),
-			CALUCON_EMBED_GATE_VERSION
+			AssetVersion::of( 'assets/css/admin-appearance.css' )
 		);
 		wp_enqueue_script(
 			'calucon-embed-gate-admin',
 			plugins_url( 'assets/js/admin-appearance.js', CALUCON_EMBED_GATE_FILE ),
 			array( 'jquery', 'wp-color-picker' ),
-			CALUCON_EMBED_GATE_VERSION,
+			AssetVersion::of( 'assets/js/admin-appearance.js' ),
 			true
 		);
 		wp_enqueue_script(
 			'calucon-embed-gate-admin-tabs',
 			plugins_url( 'assets/js/admin-tabs.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CALUCON_EMBED_GATE_VERSION,
+			AssetVersion::of( 'assets/js/admin-tabs.js' ),
 			true
 		);
 		wp_add_inline_style( 'calucon-embed-gate-admin', AppearanceCss::kind_icon_rules( '.cg-kind-glyph' ) );
@@ -176,7 +177,7 @@ final class SettingsPage {
 			'calucon-embed-gate-admin-scan-actions',
 			plugins_url( 'assets/js/admin-scan-actions.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CALUCON_EMBED_GATE_VERSION,
+			AssetVersion::of( 'assets/js/admin-scan-actions.js' ),
 			true
 		);
 		wp_add_inline_script(
@@ -194,7 +195,7 @@ final class SettingsPage {
 			'calucon-embed-gate-admin-providers',
 			plugins_url( 'assets/js/admin-providers.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CALUCON_EMBED_GATE_VERSION,
+			AssetVersion::of( 'assets/js/admin-providers.js' ),
 			true
 		);
 		wp_add_inline_script(
@@ -211,14 +212,14 @@ final class SettingsPage {
 			'calucon-embed-gate-admin-custom-providers',
 			plugins_url( 'assets/js/admin-custom-providers.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CALUCON_EMBED_GATE_VERSION,
+			AssetVersion::of( 'assets/js/admin-custom-providers.js' ),
 			true
 		);
 		wp_enqueue_script(
 			'calucon-embed-gate-admin-csp',
 			plugins_url( 'assets/js/admin-csp.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CALUCON_EMBED_GATE_VERSION,
+			AssetVersion::of( 'assets/js/admin-csp.js' ),
 			true
 		);
 		wp_add_inline_script(

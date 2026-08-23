@@ -239,6 +239,18 @@ the obvious "real Dailymotion embed" to hand, and it turned out to be a
 re-uploaded 45-minute television series on a fan account. Anyone building a
 demo, screenshot or docs example from these fixtures will do the same.
 
+## Asset cache keys
+
+Enqueue every bundled file with `AssetVersion::of( 'assets/…' )`, never the
+bare `CALUCON_EMBED_GATE_VERSION`. The plugin version alone is not a cache
+key **while testing**: two builds of one version serve different bytes at an
+identical URL, so a browser that already holds the file is right to keep it —
+and no amount of clearing W3TC or Cloudflare helps, because the stale copy is
+in the browser. That is how a settings screen ends up showing new markup with
+last week's CSS. Released versions are not affected (every release bumps),
+which is exactly why it is easy to miss. The helper appends the file's mtime,
+keeping the release readable in the URL.
+
 ## Responsive expectations
 
 Two layout regressions shipped within a day because nothing checked panel
