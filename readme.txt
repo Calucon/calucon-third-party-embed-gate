@@ -138,14 +138,15 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 
 1. A gated YouTube embed as a visitor sees it: a server-rendered placeholder with a named panel, a real "Load" button and a working fallback link. Nothing is requested from the provider until the visitor clicks.
 2. The Appearance settings — quick styles, colours that follow your theme's palette by name or your own, and sections for shape, button, poster image, withdraw button and dark mode — with a live preview of the real panel and an automatic readability check that flags any colour pair below the 4.5:1 contrast minimum.
-3. The Status &amp; tools tab: the Compatibility overview (which cache plugin, consent platform and page builder are detected), a read-only scan that reports whether every embed on your site is gated, and the Content-Security-Policy helper — a check of your own home page for an existing policy, the lines to add, and which provider needs which host.
+3. The content scan on Status & tools: every embed found in your recent posts and pages, the address it would contact, and whether it is gated — with a one-click way to give an unknown host a proper name, or let it through, without working out an address yourself. Nothing changes until you save.
 4. The Providers tab: providers grouped by what the embed is, with a filter box — per-provider on/off, privacy-preserving load variants, custom notice and button text, the privacy-policy link and its per-provider URL, and your own providers — no code required.
 5. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, set an optional poster image from your own media library, and give this one embed its own button and notice text.
+6. The Content-Security-Policy helper: what a policy is, a check of your own site for one, the exact lines to add for the providers you have enabled, and which provider needs which host.
 
 == Upgrade Notice ==
 
 = 0.11.0 =
-Names the rest of WordPress's built-in embed types: Dailymotion, TED, VideoPress, Mixcloud, Pocket Casts, Scribd, Issuu, Kickstarter, Imgur, Tumblr, Pinterest, Bluesky and more. Fixes Scribd and Wolfram Cloud embeds, which contacted their provider before the click. All were gated before.
+Names the rest of WordPress's built-in embed types, and the content scan can now name or let through any host it finds without you typing an address. Fixes Scribd and Wolfram Cloud embeds, which contacted their provider before the click. Everything here was already gated.
 
 = 0.10.0 =
 The panel looks and behaves as before unless you opt in: the privacy-policy link and the new Appearance controls are off by default. Clear your page cache once after updating. Adds your own providers, a CSP helper and a much larger Appearance tab.
