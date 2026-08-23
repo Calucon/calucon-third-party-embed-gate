@@ -242,14 +242,28 @@ demo, screenshot or docs example from these fixtures will do the same.
 ## Asset cache keys
 
 Enqueue every bundled file with `AssetVersion::of( 'assets/…' )`, never the
-bare `CALUCON_EMBED_GATE_VERSION`. The plugin version alone is not a cache
-key **while testing**: two builds of one version serve different bytes at an
-identical URL, so a browser that already holds the file is right to keep it —
-and no amount of clearing W3TC or Cloudflare helps, because the stale copy is
-in the browser. That is how a settings screen ends up showing new markup with
-last week's CSS. Released versions are not affected (every release bumps),
-which is exactly why it is easy to miss. The helper appends the file's mtime,
-keeping the release readable in the URL.
+bare `CALUCON_EMBED_GATE_VERSION`.
+
+On a live site that returns the release, which is a sound key because every
+release bumps it. On a site that has declared itself non-production —
+`SCRIPT_DEBUG`, `WP_DEBUG`, or `wp_get_environment_type()` anything but
+`production` — it appends the file's mtime.
+
+The split is deliberate. While testing, two builds of one version serve
+different bytes at an identical URL, so a browser that already holds the file
+is right to keep it, and clearing a page cache or CDN does not help because
+the stale copy is in the browser; that is how a settings screen ends up
+showing new markup with last week's CSS. But an mtime is not a property of
+the code: it differs between servers in a fleet and moves on any redeploy, so
+shipping it to live sites would fragment caches and force re-downloads to buy
+nothing.
+
+**A test site therefore needs one of those flags set**, or it will cache
+assets across builds exactly as a live site should. A live site that is also
+used for testing sets `CALUCON_EMBED_GATE_DEV_ASSETS` instead, which wins
+over the ambient flags in both directions; `calucon_embed_gate_asset_version`
+filters the final string for anything else (a build hash on a server fleet,
+where an mtime differs per machine).
 
 ## Responsive expectations
 

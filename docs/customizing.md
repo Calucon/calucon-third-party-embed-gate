@@ -222,6 +222,38 @@ prefer the iframe: it renders on its own, whereas some loaders only draw
 while the document is still parsing and come up empty when injected later —
 which happens with or without this plugin.
 
+## Testing successive builds
+
+Assets are enqueued with the plugin version, so `gate.css?ver=1.2.3` only
+changes when the version does — correct for a live site, awkward on a test
+site where several builds of one version replace each other and the browser
+keeps the copy it already has. Clearing a page cache or CDN will not help:
+the stale file is in the browser.
+
+Set any of `SCRIPT_DEBUG`, `WP_DEBUG`, or `WP_ENVIRONMENT_TYPE` to something
+other than `production` in `wp-config.php` on that site, and the plugin
+appends each file's modification time to its version instead, so every build
+gets fresh URLs.
+
+If the site is genuinely production and you would rather not say otherwise —
+a live site you also test on — set the plugin's own flag instead:
+
+```php
+define( 'CALUCON_EMBED_GATE_DEV_ASSETS', true );
+```
+
+It wins over everything above, in both directions: `false` keeps stable URLs
+on a site that is otherwise flagged for development.
+
+For full control — a multi-server site wanting a build hash, which is stable
+across machines in a way a timestamp is not — filter the result:
+
+```php
+add_filter( 'calucon_embed_gate_asset_version', function ( $version, $file ) {
+	return $version . '.' . MY_BUILD_HASH;   // $file is e.g. 'assets/js/gate.js'
+}, 10, 2 );
+```
+
 ## Adjusting behaviour with filters
 
 ```php
@@ -235,7 +267,7 @@ add_filter( 'calucon_embed_gate_should_gate', fn( $gate, $url, $ctx ) =>
 	false !== strpos( $url, 'widgets.already-covered.example' ) ? false : $gate, 10, 3 );
 ```
 
-All hooks: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`,
+All hooks: `calucon_embed_gate_asset_version`, `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`,
 `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`,
 `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`,
 `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`,

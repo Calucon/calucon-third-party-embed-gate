@@ -43,15 +43,54 @@ final class AssetVersion {
 	}
 
 	/**
-	 * The same, for a path relative to the plugin directory.
+	 * The version to enqueue a bundled file with: the release on a live site,
+	 * the release plus the file's mtime while developing.
 	 *
 	 * @param string $relative e.g. 'assets/js/gate.js'.
 	 * @return string
 	 */
 	public static function of( string $relative ): string {
-		return self::for_file(
-			CALUCON_EMBED_GATE_DIR . '/' . ltrim( $relative, '/' ),
-			CALUCON_EMBED_GATE_VERSION
-		);
+		$version = self::is_development()
+			? self::for_file( CALUCON_EMBED_GATE_DIR . '/' . ltrim( $relative, '/' ), CALUCON_EMBED_GATE_VERSION )
+			: CALUCON_EMBED_GATE_VERSION;
+
+		/**
+		 * Filter the cache-busting version of one bundled asset.
+		 *
+		 * The last word for anyone the built-in rule does not suit — a
+		 * multi-server site wanting a build hash rather than an mtime, say,
+		 * which is stable across machines in a way a timestamp is not.
+		 *
+		 * @param string $version  Version string for the `ver` argument.
+		 * @param string $relative Asset path relative to the plugin, e.g. 'assets/js/gate.js'.
+		 */
+		return (string) apply_filters( 'calucon_embed_gate_asset_version', $version, $relative );
+	}
+
+	/**
+	 * Is this a site where the same version gets rebuilt? Generous on
+	 * purpose: a site that has said it is not production in ANY of the ways
+	 * WordPress offers would rather have a correct cache key than a tidy URL.
+	 *
+	 * @return bool
+	 */
+	private static function is_development(): bool {
+		// An explicit choice for THIS plugin wins over anything ambient, in
+		// both directions: a live site used to test builds can say so without
+		// having to claim it is not production, and a development site that
+		// wants stable URLs can say that too.
+		if ( defined( 'CALUCON_EMBED_GATE_DEV_ASSETS' ) ) {
+			return (bool) CALUCON_EMBED_GATE_DEV_ASSETS;
+		}
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
+			return true;
+		}
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			return true;
+		}
+		if ( function_exists( 'wp_get_environment_type' ) ) {
+			return 'production' !== wp_get_environment_type();
+		}
+		return false;
 	}
 }
