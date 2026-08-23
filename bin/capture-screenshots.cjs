@@ -87,10 +87,12 @@ async function settings( page ) {
 	await page.waitForTimeout( 500 );
 	await page.locator( '#cg-tab-status' ).screenshot( { path: path.join( OUT, 'screenshot-3.png' ) } );
 
-	// 4 — Providers tab. The full table is very tall (35+ providers); clip to
-	// the top so the shot shows the columns and the first several providers.
+	// 4 — Providers tab: the groups, plus one opened so the shot shows the
+	// per-provider controls and not just a list of headings.
 	await page.click( '#cg-tabbtn-providers' );
 	await page.waitForTimeout( 400 );
+	await page.locator( '.cg-provider-group[data-cg-kind-group="video"] > summary' ).click();
+	await page.waitForTimeout( 300 );
 	const box = await page.locator( '#cg-tab-providers' ).boundingBox();
 	await page.screenshot( {
 		path: path.join( OUT, 'screenshot-4.png' ),

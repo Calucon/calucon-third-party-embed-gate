@@ -854,12 +854,16 @@
 		var noticeShowing = false;
 		var undoTimer = null;
 		var submitting = false;
-		// "Unsaved" means the OWNER changed something: the colour pickers
-		// rewrite their fields on their own after load, and programmatic
-		// syncs fire change events too — neither counts. A real interaction
-		// (pointer/keyboard in the form, or a bulk action) arms the check;
-		// the serialised form vs the settled baseline is the arbiter.
-		var interacted = false;
+		// "Unsaved" means the OWNER changed a value. Clicking, scrolling,
+		// opening a section or switching tabs are not changes, and neither
+		// is anything the page does to its own fields (picker
+		// normalisation, programmatic syncs). So the flag is armed ONLY by
+		// a change/input event that carries a real browser event, or by a
+		// bulk action the owner asked for; until then the baseline follows
+		// the form, so no drift can accumulate into a phantom warning.
+		// The serialised form vs that baseline then decides, which also
+		// clears the flag when an edit is undone by hand.
+		var edited = false;
 
 		// WordPress's own hidden fields are not the owner's changes:
 		// admin-tabs rewrites _wp_http_referer on every tab switch, which
@@ -918,7 +922,12 @@
 			if ( ! unsavedBar ) {
 				return;
 			}
-			var dirty = interacted && '' !== baseline && snapshot() !== baseline;
+			if ( ! edited ) {
+				// Nothing the owner changed yet: keep the baseline in step
+				// with whatever the page did to itself.
+				baseline = snapshot();
+			}
+			var dirty = edited && '' !== baseline && snapshot() !== baseline;
 			unsavedBar.hidden = ! dirty && ! noticeShowing;
 			if ( undoButton ) {
 				undoButton.hidden = ! dirty;
@@ -953,7 +962,7 @@
 		}
 
 		function bulkAction( run, message ) {
-			interacted = true;
+			edited = true;
 			run();
 			notify( message );
 			updateDirty();
@@ -1139,9 +1148,20 @@
 			$( this ).wpColorPicker( {
 				palettes: paletteColors.length ? paletteColors : true,
 				change: function ( event, ui ) {
+					// Iris also fires this while it initialises and whenever
+					// the code sets a colour (quick styles, readability fix,
+					// reset). Only a browser-dispatched event means the owner
+					// picked a colour; the bulk actions arm the flag on their
+					// own, so nothing is missed.
+					if ( event && event.originalEvent ) {
+						edited = true;
+					}
 					setColor( key, ui.color.toString() );
 				},
-				clear: function () {
+				clear: function ( event ) {
+					if ( event && event.originalEvent ) {
+						edited = true;
+					}
 					setColor( key, '' );
 				}
 			} );
@@ -1285,25 +1305,21 @@
 			} );
 		}
 		if ( form ) {
-			$( form ).on( 'mousedown keydown touchstart', function () {
-				if ( ! interacted ) {
-					// The first real interaction: everything the page did on
-					// its own (picker normalisation, preview sync) is done, and
-					// the edit this event precedes has not happened yet — the
-					// exact "as loaded" state to compare against.
-					baseline = snapshot();
+			$( form ).on( 'change input', function ( event ) {
+				// originalEvent is present only for events the browser
+				// dispatched — i.e. the owner actually changed a control.
+				// jQuery's own .trigger( 'change' ) (preview syncs, picker
+				// plumbing) carries none, and must not arm the warning.
+				if ( event.originalEvent ) {
+					edited = true;
 				}
-				interacted = true;
-				updateDirty();
-			} );
-			$( form ).on( 'change input', function () {
 				updateDirty();
 			} );
 			$( form ).on( 'submit', function () {
 				submitting = true;
 			} );
 			window.addEventListener( 'beforeunload', function ( event ) {
-				if ( ! submitting && interacted && '' !== baseline && snapshot() !== baseline ) {
+				if ( ! submitting && edited && '' !== baseline && snapshot() !== baseline ) {
 					event.preventDefault();
 					event.returnValue = i18n.leaveWarning || '';
 				}

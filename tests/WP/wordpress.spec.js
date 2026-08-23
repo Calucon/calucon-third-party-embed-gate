@@ -514,12 +514,13 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	await expect( page.locator( 'h1' ) ).toContainText( 'Calucon Third-Party Embed Gate' );
 
 	// Providers is the default tab; the other panels are behind their tabs.
-	await expect( page.locator( 'td', { hasText: 'YouTube' } ).first() ).toBeVisible();
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="youtube"]' ) ).toHaveCount( 1 );
+	await expect( page.locator( '#cg-provider-filter' ) ).toBeVisible();
 	await expect( page.locator( '#cg-own-hosts' ) ).toBeHidden();
 
 	await page.click( '#cg-tabbtn-detection' );
 	await expect( page.locator( '#cg-own-hosts' ) ).toBeVisible();
-	await expect( page.locator( 'td', { hasText: 'YouTube' } ).first() ).toBeHidden();
+	await expect( page.locator( '#cg-provider-filter' ) ).toBeHidden();
 
 	await page.click( '#cg-tabbtn-consent' );
 	await expect( page.locator( '#cg-memory' ) ).toBeVisible();
@@ -873,7 +874,7 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	await expect( added.locator( 'select option' ) ).toHaveCount( 10 );
 	await added.locator( 'select' ).selectOption( 'social' );
 	await expect( added.locator( '.cg-kind-glyph' ) ).toHaveAttribute( 'data-cg-kind', 'social' );
-	await expect( page.locator( '#cg-tab-providers table' ).first().locator( 'tbody tr', { hasText: 'YouTube' } ).locator( '.cg-kind-glyph' ) ).toHaveAttribute( 'data-cg-kind', 'video' );
+	await expect( page.locator( '.cg-provider-group[data-cg-kind-group="video"] .cg-provider[data-cg-provider-row="youtube"]' ) ).toHaveCount( 1 );
 	const glyphMask = await added.locator( '.cg-kind-glyph' ).evaluate( ( el ) => getComputedStyle( el ).maskImage || getComputedStyle( el ).webkitMaskImage );
 	expect( glyphMask ).toContain( 'data:image/svg+xml' );
 	await blank.locator( 'input[type="text"]' ).fill( 'Widget SDK' );
@@ -892,10 +893,10 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	// …and both appear in the main table, marked, always gated (no Gate
 	// checkbox: a custom row can name a host, never exempt it), with the
 	// usual note / button text / privacy-URL controls.
-	const mainRow = page.locator( '#cg-tab-providers table' ).first().locator( 'tbody tr', { hasText: 'Example Partner' } );
+	const mainRow = page.locator( '.cg-provider[data-cg-provider-row="custom-example-partner"]' );
 	await expect( mainRow.locator( '.cg-tag' ) ).toHaveText( 'added by you' );
 	await expect( mainRow.locator( 'input[name$="[enabled]"]' ) ).toHaveCount( 0 );
-	await expect( mainRow ).toContainText( 'always' );
+	await expect( mainRow ).toContainText( 'always gated' );
 
 	// A row claiming a built-in's hosts is refused with a notice; what it
 	// does not claim survives. YouTube keeps its host and nocookie load.
@@ -914,7 +915,11 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	await thiefRow.locator( 'input[type="checkbox"][name$="[remove]"]' ).check();
 	await page.click( '#submit' );
 	await expect( page.locator( '#cg-custom-providers input[type="text"][value="Tube Thief"]' ) ).toHaveCount( 0 );
-	await expect( mainRow.locator( '.cg-kind-glyph' ) ).toHaveAttribute( 'data-cg-kind', 'social' );
+	await expect( page.locator( '.cg-provider-group[data-cg-kind-group="social"] .cg-provider[data-cg-provider-row="custom-example-partner"]' ) ).toHaveCount( 1 );
+	// The wording fields sit behind a per-provider disclosure, inside a
+	// group that is collapsed until something in it is customised.
+	await page.locator( '.cg-provider-group[data-cg-kind-group="social"]' ).evaluate( ( d ) => { d.open = true; } );
+	await mainRow.locator( '.cg-provider__more' ).evaluate( ( d ) => { d.open = true; } );
 	await mainRow.locator( 'input[name$="[note]"]' ).fill( 'Partner rules apply.' );
 	await mainRow.locator( 'input[name$="[privacy_url]"]' ).fill( 'https://example-partner.com/privacy' );
 	await page.check( 'input[name$="[display][privacy_link]"][type="checkbox"]' ); // the link is off by default
@@ -1024,4 +1029,77 @@ test( 'front end: per-embed block texts are stripped of markup and capped', asyn
 	expect( note.startsWith( 'Own notice.' ) ).toBe( true );
 	expect( note ).not.toContain( '<em>' );
 	expect( note.length ).toBe( 400 );
+} );
+
+test( 'admin: browsing the settings never claims unsaved changes; a real edit still does', async ( { page } ) => {
+	await login( page );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.waitForSelector( '.cg-tabs' );
+	await page.waitForTimeout( 1200 ); // let the colour pickers settle
+
+	const dirty = () => page.evaluate( () => document.body.classList.contains( 'cg-has-unsaved' ) );
+
+	// Reading the screen is not editing it: tabs, disclosures, scrolling and
+	// opening a colour menu must all leave the warning alone (Simon hit this
+	// twice — the old rule armed on any pointer event in the form).
+	for ( const tab of [ 'detection', 'appearance', 'consent', 'status', 'providers' ] ) {
+		await page.click( `#cg-tabbtn-${ tab }` );
+		await page.waitForTimeout( 250 );
+		expect( await dirty(), `switching to ${ tab } must not look like an edit` ).toBe( false );
+	}
+	await page.locator( '.cg-provider-group' ).first().locator( ':scope > summary' ).click();
+	await page.locator( '.cg-provider' ).first().locator( '.cg-provider__more > summary' ).click();
+	expect( await dirty(), 'opening disclosures must not look like an edit' ).toBe( false );
+
+	await page.click( '#cg-tabbtn-appearance' );
+	// Open every section explicitly — clicking the first summary would close
+	// the one the colour controls live in.
+	await page.evaluate( () => document.querySelectorAll( '#cg-tab-appearance details.cg-section' ).forEach( ( d ) => { d.open = true; } ) );
+	await page.locator( 'details[data-cg-color-key="bg"] > summary' ).click();
+	await page.mouse.wheel( 0, 400 );
+	await page.waitForTimeout( 400 );
+	expect( await dirty(), 'opening a colour menu must not look like an edit' ).toBe( false );
+	await expect( page.locator( '#cg-unsaved' ) ).toBeHidden();
+
+	// …but changing a value does.
+	await page.locator( 'details[data-cg-color-key="bg"] input[value^="preset:"]' ).first().check();
+	await expect( page.locator( 'body' ) ).toHaveClass( /cg-has-unsaved/ );
+	await expect( page.locator( '#cg-unsaved' ) ).toBeVisible();
+
+	// And undoing it by hand clears the warning again.
+	await page.locator( '#cg-undo' ).click();
+	await page.waitForTimeout( 300 );
+	expect( await dirty() ).toBe( false );
+} );
+
+test( 'admin: the provider list is grouped, filterable and fits a phone', async ( { page } ) => {
+	await login( page );
+	await page.setViewportSize( { width: 390, height: 844 } );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.waitForSelector( '.cg-tabs' );
+
+	// Thirty-six providers collapse to a handful of groups, and the page
+	// does not scroll sideways on a phone.
+	const groups = page.locator( '.cg-provider-group' );
+	expect( await groups.count() ).toBeGreaterThan( 5 );
+	await expect( page.locator( '.cg-provider-group[open]' ) ).toHaveCount( 0 );
+	const overflow = await page.evaluate( () => document.documentElement.scrollWidth <= document.documentElement.clientWidth );
+	expect( overflow, 'no horizontal overflow at 390px' ).toBe( true );
+
+	// Every provider is present, just folded away.
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="youtube"]' ) ).toHaveCount( 1 );
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="dailymotion"]' ) ).toHaveCount( 1 );
+
+	// The filter finds one wherever it lives, and opens its group.
+	await page.fill( '#cg-provider-filter', 'dailymo' );
+	await page.waitForTimeout( 300 );
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="dailymotion"]' ) ).toBeVisible();
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="youtube"]' ) ).toBeHidden();
+	await expect( page.locator( '#cg-provider-filter-count' ) ).toContainText( '1' );
+
+	// Clearing it puts the list back as it was.
+	await page.fill( '#cg-provider-filter', '' );
+	await page.waitForTimeout( 300 );
+	await expect( page.locator( '.cg-provider-group[open]' ) ).toHaveCount( 0 );
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="youtube"]' ) ).toBeHidden();
 } );
