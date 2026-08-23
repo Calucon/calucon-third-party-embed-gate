@@ -1150,3 +1150,97 @@ test( 'admin: every settings tab fits phone, tablet and desktop without sideways
 		}
 	}
 } );
+
+test( 'admin: the scan turns a discovered host into a one-click exception, and nothing is written until Save', async ( { page } ) => {
+	// Every scanned load renders 50 posts through the_content; this walks the
+	// whole round trip several times.
+	test.setTimeout( 180000 );
+	await login( page );
+	// A fresh query each time: navigating to the same URL only moves the
+	// fragment, which would leave a staged (unsaved) value in the DOM. After
+	// staging, the hash points at the Detection tab, so ask for Status by name.
+	const scanUrl = () => `/wp-admin/options-general.php?page=calucon-embed-gate&calucon-embed-gate-scan=1&_=${ Date.now() }#cg-status`;
+	const partner = () => page.locator( '#cg-scan-results tbody tr', { hasText: 'widgets.example-partner.com' } ).first();
+	const neverGate = () => page.locator( '#cg-never-gate' );
+	const openScan = async () => {
+		await page.goto( scanUrl() );
+		await page.waitForSelector( '.cg-tabs' );
+		await page.click( '#cg-tabbtn-status' );
+	};
+
+	try {
+		await openScan();
+
+		// The seeded post carries an iframe from a host no descriptor claims,
+		// so it is gated generically — the case a novice cannot act on today.
+		await expect( partner() ).toContainText( 'Gated' );
+		// The safe action leads for an unknown host; the one that switches
+		// gating off is offered too, but quieter.
+		await expect( partner().locator( '[data-cg-name-host]' ) ).toBeVisible();
+		await expect( partner().locator( '[data-cg-except]' ) ).toBeVisible();
+
+		await partner().locator( '[data-cg-except]' ).click();
+
+		// The host is staged into the field it belongs to, on the tab that owns
+		// it, with the consequence spelled out — and the form is now dirty.
+		await expect( page.locator( '#cg-staged-note' ) ).toBeVisible();
+		await expect( page.locator( '.cg-staged__host' ) ).toHaveText( 'widgets.example-partner.com' );
+		await expect( page.locator( '.cg-staged__body' ) ).toBeVisible();
+		await expect( neverGate() ).toHaveValue( 'widgets.example-partner.com' );
+		await expect( page.locator( 'body' ) ).toHaveClass( /cg-has-unsaved/ );
+
+		// Nothing was written: reload without saving and it is gone. This is
+		// the assertion that proves there is no save-on-click endpoint.
+		await openScan();
+		await expect( neverGate() ).toHaveValue( '' );
+		await expect( partner() ).toContainText( 'Gated' );
+
+		// Stage again and save through the notice's own button.
+		await partner().locator( '[data-cg-except]' ).click();
+		await page.locator( '#cg-staged-note button[type="submit"]' ).click();
+		await page.waitForLoadState( 'load' );
+		await expect( neverGate() ).toHaveValue( 'widgets.example-partner.com' );
+
+		// The after-state is visible, and says who decided it.
+		await openScan();
+		await expect( page.locator( '.cg-let-through' ) ).toContainText( 'widgets.example-partner.com' );
+		await expect( partner() ).toContainText( 'Let through by you' );
+		await expect( partner().locator( '[data-cg-ungate]' ) ).toBeVisible();
+
+		// …and it is reversible in one click, with the opposite sentence.
+		await page.locator( '.cg-let-through [data-cg-ungate]' ).first().click();
+		await expect( page.locator( '.cg-staged__gate' ) ).toBeVisible();
+		await expect( page.locator( '.cg-staged__body' ) ).toBeHidden();
+		await page.locator( '#cg-staged-note button[type="submit"]' ).click();
+		await page.waitForLoadState( 'load' );
+		await expect( neverGate() ).toHaveValue( '' );
+
+		await openScan();
+		await expect( partner() ).toContainText( 'Gated' );
+
+		// The scan table carries an extra column now; loaded at phone width it
+		// must not push the page sideways.
+		await page.setViewportSize( { width: 360, height: 740 } );
+		await openScan();
+		await page.addStyleTag( { content: '#wpadminbar{display:none!important}' } );
+		const overflow = await page.evaluate( () => document.documentElement.scrollWidth - document.documentElement.clientWidth );
+		expect( overflow, 'the scanned Status tab scrolls sideways at 360px' ).toBeLessThanOrEqual( 1 );
+		await page.setViewportSize( { width: 1280, height: 800 } );
+
+		// The safe action names the host instead of ungating it.
+		await partner().locator( '[data-cg-name-host]' ).click();
+		const blank = page.locator( '#cg-custom-providers tr[data-cg-blank]' );
+		await expect( blank.locator( 'textarea' ).first() ).toHaveValue( 'widgets.example-partner.com' );
+		await expect( neverGate() ).toHaveValue( '', 'naming a host must never ungate it' );
+
+	} finally {
+		// Shared site state: leave the exception list as we found it.
+		await page.setViewportSize( { width: 1280, height: 800 } );
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-detection' );
+		await page.waitForSelector( '.cg-tabs' );
+		await page.locator( '#cg-never-gate' ).fill( '' );
+		await page.locator( '#cg-always-gate' ).fill( '' );
+		await page.click( '#submit' );
+		await page.waitForLoadState( 'load' );
+	}
+} );

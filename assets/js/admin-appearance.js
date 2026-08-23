@@ -1420,10 +1420,17 @@
 			var defaultText = unsavedBar.querySelector( '.cg-unsaved__text' );
 			unsavedBar.setAttribute( 'data-cg-default-text', defaultText ? defaultText.textContent : '' );
 		}
-		// Baseline once the pickers have settled (Iris normalises its fields
-		// on a timer); until then nothing can read as dirty.
+		// A baseline straight away, so an edit made in the first moments has
+		// something to be compared against, and a second one once the pickers
+		// have settled (Iris normalises its fields on a timer). The re-take is
+		// skipped once the owner has edited something — otherwise a fast edit,
+		// or one staged by another control, would be absorbed into the
+		// baseline and never read as unsaved.
+		baseline = snapshot();
 		window.setTimeout( function () {
-			baseline = snapshot();
+			if ( ! edited ) {
+				baseline = snapshot();
+			}
 			updateDirty();
 		}, 250 );
 		updateBadges();

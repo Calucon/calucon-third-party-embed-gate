@@ -95,4 +95,56 @@ final class ContentScanTest extends TestCase {
 
 		self::assertSame( ContentScan::RULE_DISABLED, $rows[0]['status'] );
 	}
+
+	/**
+	 * The admin needs to tell an unknown third party from a named provider so
+	 * it can lead with the safe action ("name this host") rather than the one
+	 * that switches gating off. The label cannot answer that: the generic
+	 * fallback uses the host name AS the label.
+	 */
+	public function test_rows_carry_the_resolved_provider_id(): void {
+		$scan = new ContentScan(
+			new HtmlScanner(),
+			new HostMatcher( array( 'example.test' ) ),
+			new Registry( Descriptors::all() ),
+			array( 'iframes' => true, 'scripts' => true, 'images' => true )
+		);
+
+		$rows = $scan->scan(
+			'<iframe src="https://www.youtube.com/embed/y_pjE_p1HwE" title="Y"></iframe>'
+			. '<iframe src="https://widgets.example-partner.com/embed/9" title="W"></iframe>'
+			. '<script src="https://cdn.unknown-sdk.example/w.js"></script>'
+			. '<iframe src="https://example.test/local" title="Own"></iframe>'
+		);
+
+		$by_host = array();
+		foreach ( $rows as $row ) {
+			$by_host[ $row['host'] ] = $row;
+		}
+
+		self::assertSame( 'youtube', $by_host['www.youtube.com']['provider'] );
+		self::assertSame( 'generic', $by_host['widgets.example-partner.com']['provider'], 'an undescribed iframe host' );
+		self::assertSame( 'generic-script', $by_host['cdn.unknown-sdk.example']['provider'], 'an undescribed script host' );
+		self::assertSame( '', $by_host['example.test']['provider'], 'own host: no provider resolved' );
+		// The label alone could not have told these apart.
+		self::assertSame( 'widgets.example-partner.com', $by_host['widgets.example-partner.com']['label'] );
+	}
+
+	public function test_aggregate_keeps_the_provider_id(): void {
+		$aggregated = ContentScan::aggregate(
+			array(
+				array(
+					'source' => 'A post',
+					'rows'   => array(
+						array( 'tag' => 'iframe', 'url' => 'https://a.example/1', 'host' => 'a.example', 'status' => ContentScan::GATED, 'label' => 'a.example', 'provider' => 'generic' ),
+						array( 'tag' => 'iframe', 'url' => 'https://a.example/2', 'host' => 'a.example', 'status' => ContentScan::GATED, 'label' => 'a.example', 'provider' => 'generic' ),
+					),
+				),
+			)
+		);
+
+		self::assertCount( 1, $aggregated );
+		self::assertSame( 'generic', $aggregated[0]['provider'] );
+		self::assertSame( 2, $aggregated[0]['count'] );
+	}
 }

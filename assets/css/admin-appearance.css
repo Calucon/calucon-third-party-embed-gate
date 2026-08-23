@@ -851,3 +851,51 @@
 		overflow-x: auto;
 	}
 }
+
+/* Status scan: the per-host actions. The cell is bounded so a long host name
+   cannot push the column to max-content (see "Responsive expectations"). */
+.cg-scan-actions {
+	white-space: nowrap;
+}
+
+.cg-scan-actions .button-link {
+	margin-inline-start: 8px;
+}
+
+/* The action that switches gating off for a host stays quieter than the one
+   that keeps it on. */
+.cg-scan-through {
+	color: #b32d2e;
+	text-decoration: underline;
+}
+
+.cg-scan-through:hover,
+.cg-scan-through:focus {
+	color: #8a2424;
+}
+
+.cg-staged {
+	max-width: 60rem;
+}
+
+.cg-staged[hidden] {
+	display: none;
+}
+
+.cg-staged__host {
+	font-weight: 600;
+}
+
+.cg-scan-cta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+	margin: 12px 0;
+}
+
+@media ( max-width: 782px ) {
+	.cg-scan-actions {
+		white-space: normal;
+	}
+}

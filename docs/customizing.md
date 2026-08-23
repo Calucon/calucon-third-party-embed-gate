@@ -41,6 +41,8 @@ read-only and make no outbound request):
 wp calucon-embed-gate scan --format=json     # every embed found in recent
                                        # content + whether it is gated
 wp calucon-embed-gate providers --format=json # providers as the gate resolves
+# `scan` also reports a `provider` column: the resolved provider id, or
+# `generic`/`generic-script` for a host no descriptor claims.
                                         # them (builtins + your filter)
 ```
 
