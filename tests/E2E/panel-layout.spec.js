@@ -50,3 +50,20 @@ test.describe( 'panel box at desktop width', () => {
 		expect( ratio ).toBeLessThan( 500 / 281 + 0.15 );
 	} );
 } );
+
+test.describe( 'withdrawal control in a block theme', () => {
+	test.use( { viewport: { width: 1280, height: 800 } } );
+
+	test( 'lines up with the text instead of hugging the page edge', async ( { page } ) => {
+		await page.goto( '/page/withdraw-layout' );
+
+		const text = await page.locator( 'p.cg-text' ).first().boundingBox();
+		const button = await page.locator( 'button.cg-withdraw' ).boundingBox();
+
+		// A bare inline-level button ignores the theme's auto margins and
+		// starts at the full-width wrapper's edge; wrapped, it starts where
+		// the paragraphs do.
+		expect( Math.abs( button.x - text.x ), 'the control starts where the text does' ).toBeLessThanOrEqual( 2 );
+		expect( button.x, 'and not at the page edge' ).toBeGreaterThan( 20 );
+	} );
+} );

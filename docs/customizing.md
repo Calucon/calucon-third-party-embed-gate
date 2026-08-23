@@ -188,6 +188,13 @@ Notes:
 - Then verify: `wp calucon-embed-gate providers` must list it;
   `wp calucon-embed-gate scan` must show its embeds `gated` with your label.
 
+The withdrawal control renders as
+`<span class="cg-withdraw-block"><button class="cg-withdraw" …></button><span
+class="cg-withdraw__status">…</span></span>`. The wrapper is block-level so a
+block theme's constrained layout can place it — auto margins do nothing to a
+bare inline-level button, which then hugs the page edge. Style the button
+with `.cg-withdraw`; the wrapper only carries layout.
+
 ## Adjusting behaviour with filters
 
 ```php

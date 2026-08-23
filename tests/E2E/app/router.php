@@ -154,8 +154,8 @@ if ( '/page/memory' === $uri ) {
 	// Consent memory enabled (provider scope, session lifetime) plus the
 	// withdrawal control a site would place in its privacy policy.
 	$content = '<iframe title="Video" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>'
-		. "\n" . '<button type="button" class="cg-withdraw" data-cg-withdraw aria-controls="cg-withdraw-status">Withdraw embed consents</button>'
-		. '<span id="cg-withdraw-status" class="cg-withdraw__status" role="status" aria-live="polite"></span>';
+		. "\n" . '<span class="cg-withdraw-block"><button type="button" class="cg-withdraw" data-cg-withdraw aria-controls="cg-withdraw-status">Withdraw embed consents</button>'
+		. '<span id="cg-withdraw-status" class="cg-withdraw__status" role="status" aria-live="polite"></span></span>';
 
 	cg_e2e_page(
 		$content,
@@ -338,6 +338,23 @@ if ( '/page/companion-hole' === $uri ) {
 		. '<script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>';
 
 	cg_e2e_page( $content );
+	return true;
+}
+
+if ( '/page/withdraw-layout' === $uri ) {
+	// A block theme's constrained layout, as WordPress emits it: the content
+	// wrapper is full width and its direct children are centred with
+	// margin-inline:auto. That does nothing to an inline-level <button>, so
+	// a bare control lands against the left edge of the page instead of
+	// lining up with the text.
+	$content = '<p class="cg-text">Consent memory is off here, so nothing is stored.</p>'
+		. '<span class="cg-withdraw-block"><button type="button" class="cg-withdraw" data-cg-withdraw aria-controls="cg-withdraw-status-1">Withdraw embed consents</button>'
+		. '<span id="cg-withdraw-status-1" class="cg-withdraw__status" role="status" aria-live="polite"></span></span>'
+		. '<p class="cg-text">Another paragraph after it.</p>';
+
+	$theme_css = 'main{width:100%;} main > *{max-width:645px;margin-left:auto !important;margin-right:auto !important;}';
+
+	cg_e2e_page( $content, $theme_css );
 	return true;
 }
 

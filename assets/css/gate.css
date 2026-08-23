@@ -317,6 +317,16 @@
 	}
 }
 
+/* The withdrawal control's wrapper. Block-level so a block theme's
+   constrained-layout rule (max-width + margin-inline:auto on the content
+   wrapper's children) can place it: applied to the bare inline-level
+   <button> those auto margins do nothing, and the control ends up against
+   the left edge of the full-width wrapper instead of lining up with the
+   text around it. The button itself keeps its intrinsic width. */
+.cg-withdraw-block {
+	display: block;
+}
+
 /* A silent companion loader (PLAN.md §3.5): a script that accompanies an
    iframe of the same provider is gated without a panel of its own. Never
    painted, whatever a theme does to .cg-embed. */

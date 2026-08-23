@@ -70,9 +70,18 @@ final class WithdrawShortcode {
 
 		$class = 'cg-withdraw' . ( '' !== $this->style ? ' cg-withdraw--' . $this->style : '' );
 
-		return '<button type="button" class="' . esc_attr( $class ) . '" data-cg-withdraw aria-controls="' . esc_attr( $status_id ) . '">'
+		// Wrapped, because a bare <button> is inline-level: block themes
+		// constrain a content wrapper's direct children with
+		// `margin-inline: auto`, which does nothing to an inline box — the
+		// control then sits at the left edge of the FULL-width wrapper
+		// instead of lining up with the text. A <span> we display as a block
+		// is valid wherever the shortcode is dropped (including inside a
+		// paragraph) and gives the theme a block-level child to constrain.
+		return '<span class="cg-withdraw-block">'
+			. '<button type="button" class="' . esc_attr( $class ) . '" data-cg-withdraw aria-controls="' . esc_attr( $status_id ) . '">'
 			. esc_html( $atts['label'] )
 			. '</button>'
-			. '<span id="' . esc_attr( $status_id ) . '" class="cg-withdraw__status" role="status" aria-live="polite"></span>';
+			. '<span id="' . esc_attr( $status_id ) . '" class="cg-withdraw__status" role="status" aria-live="polite"></span>'
+			. '</span>';
 	}
 }
