@@ -195,6 +195,31 @@ block theme's constrained layout can place it — auto margins do nothing to a
 bare inline-level button, which then hugs the page edge. Style the button
 with `.cg-withdraw`; the wrapper only carries layout.
 
+## After a script embed loads
+
+A loader script (X, Instagram, Reddit, TikTok, …) normally scans the page
+once, when it first runs. Injected after a click it may need a nudge to draw
+an embed that was not there at parse time. `gate.js` ships hooks for the
+providers where that is known to be needed (`strava`, `twitter`, `instagram`,
+`facebook`) and lets a site add its own — before or after the script loads:
+
+```js
+window.caluconEmbedGateReadyHooks = window.caluconEmbedGateReadyHooks || {};
+window.caluconEmbedGateReadyHooks.tiktok = function () {
+	if ( window.tiktokEmbed && window.tiktokEmbed.lib ) {
+		window.tiktokEmbed.lib.render();
+	}
+};
+```
+
+The key is the provider id (`wp calucon-embed-gate providers` lists them).
+A hook registered here wins over the built-in one for that provider.
+
+Where a provider publishes **both** an iframe embed code and a loader script,
+prefer the iframe: it renders on its own, whereas some loaders only draw
+while the document is still parsing and come up empty when injected later —
+which happens with or without this plugin.
+
 ## Adjusting behaviour with filters
 
 ```php

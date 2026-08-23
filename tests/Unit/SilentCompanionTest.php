@@ -56,7 +56,7 @@ final class SilentCompanionTest extends TestCase {
 	}
 
 	public function test_inline_injector_is_gated_as_inline_code_without_a_src(): void {
-		$input = '<iframe src="https://www.scribd.com/embeds/110799637/content" width="100%" height="500"></iframe>'
+		$input = '<iframe src="https://www.scribd.com/embeds/123456789/content" width="100%" height="500"></iframe>'
 			. '<script>(function(){var s=document.createElement("script");s.src="https://www.scribd.com/javascripts/embed_code/inject.js";document.head.appendChild(s);})()</script>'
 			. '<script>var unrelated = 1;</script>';
 		$html  = PipelineFactory::gate( $input );

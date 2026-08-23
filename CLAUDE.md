@@ -224,6 +224,21 @@ Lives in PLAN.md §0 (measurements), §6.2 (consent memory) and §14 (framing);
 README copy summarises it. **Legal copy changes need a human** — never reword
 notes, README legal text, or provider disclosures on your own initiative.
 
+## Fixture provenance
+
+A fixture needs a **shaped** URL, not a live one — the suite never fetches
+anything. Use an obviously-fake id (`AbCdEfGhIjK`, `example.test`,
+`xexample1`, `a/exampleAlbum`). Where a real target is genuinely useful it
+must be the provider's own account, an institution publishing its own work,
+or Calucon's own upload (`y_pjE_p1HwE` is Calucon's "Kolkja Cycling") —
+never an individual's, whose right to post it cannot be checked.
+
+This is not fussiness: **fixture ids get copied.** A Dailymotion id shipped
+in 0.11.0 travelled from a fixture onto the public demo page because it was
+the obvious "real Dailymotion embed" to hand, and it turned out to be a
+re-uploaded 45-minute television series on a fan account. Anyone building a
+demo, screenshot or docs example from these fixtures will do the same.
+
 ## Responsive expectations
 
 Two layout regressions shipped within a day because nothing checked panel
