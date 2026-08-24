@@ -1,43 +1,40 @@
 <!doctype html><meta charset="utf-8">
+<!--
+  Source for the WordPress.org listing banner. Render it with
+  `node bin/make-banner.cjs`, which writes both sizes into .wordpress-org/.
+
+  Kept as HTML, not a binary: the palette is the plugin's own — #1B1B1B,
+  #5C9E00, #BAED49, #F0F0F0, the same tokens as assets/css/gate.css and
+  .wordpress-org/icon.svg — and the mark is the icon's artwork, so the
+  banner cannot drift away from the product. It is also diffable in review.
+
+  Deliberately absent: any third-party logo (trademark risk on a directory
+  listing) and any compliance claim (PLAN.md invariant 10). System fonts
+  only, so it renders identically without a network.
+-->
 <style>
   :root{--bg:#1b1b1b;--fg:#f0f0f0;--accent:#5c9e00;--accent-lt:#baed49;--muted:#9aa08f}
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{width:772px;height:250px;overflow:hidden}
   body{background:var(--bg);color:var(--fg);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-    display:grid;grid-template-columns:1fr 286px;align-items:center;gap:34px;padding:0 42px;
-    background-image:radial-gradient(120% 150% at 100% 0%, #242a1c 0%, #1b1b1b 60%)}
-  .brand{display:flex;align-items:center;gap:9px;margin-bottom:10px}
-  .brand svg{display:block}
-  .brand span{font-size:12.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--accent-lt);font-weight:700}
-  h1{font-size:33px;line-height:1.12;font-weight:800;letter-spacing:-.015em}
-  p{margin-top:13px;font-size:15px;line-height:1.5;color:var(--muted)}
-  p strong{color:#dfe3d8;font-weight:600}
-  .panel{background:#151515;border:1px solid #2f3529;border-radius:8px;padding:15px 15px 16px;
-    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  .panel .note{font-size:10.5px;line-height:1.55;color:#cfd4c6}
-  .panel .btn{margin-top:12px;display:inline-flex;align-items:center;gap:7px;
-    background:var(--accent);color:#12210a;font-weight:700;font-size:11.5px;border-radius:4px;padding:9px 12px}
-  .panel .link{margin-top:10px;font-size:10px;color:#8f958a;text-decoration:underline}
+    display:flex;align-items:center;justify-content:center;gap:44px;padding:0 52px;
+    background-image:radial-gradient(90% 160% at 8% 50%, #232a1a 0%, #1b1b1b 62%)}
+  .mark{flex:none}
+  .brand{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-lt);font-weight:700;margin-bottom:9px}
+  h1{font-size:40px;line-height:1.06;font-weight:800;letter-spacing:-.015em}
+  p{margin-top:14px;font-size:16.5px;line-height:1.45;color:var(--muted);max-width:24em}
+  strong{color:var(--fg);font-weight:600}
 </style>
 <body>
+  <svg class="mark" width="160" height="160" viewBox="0 0 512 512" aria-hidden="true">
+    <rect x="80" y="157" width="352" height="198" rx="26" fill="none" stroke="#5C9E00" stroke-width="26"/>
+    <path d="M 226 214 L 226 298 L 306 256 Z" fill="none" stroke="#BAED49" stroke-width="24" stroke-linejoin="round"/>
+    <path d="M 300 300 l 92 34 -38 14 -14 38 Z" fill="#F0F0F0" stroke="#1B1B1B" stroke-width="14" stroke-linejoin="round" paint-order="stroke"/>
+  </svg>
   <div>
-    <div class="brand">
-      <svg width="22" height="22" viewBox="0 0 512 512" aria-hidden="true">
-        <rect x="80" y="157" width="352" height="198" rx="26" fill="none" stroke="#5C9E00" stroke-width="40"/>
-        <path d="M 226 214 L 226 298 L 306 256 Z" fill="none" stroke="#BAED49" stroke-width="36" stroke-linejoin="round"/>
-      </svg>
-      <span>Calucon</span>
-    </div>
-    <h1>Third-Party<br>Embed&nbsp;Gate</h1>
-    <p><strong>Nothing third-party loads<br>until the visitor clicks.</strong><br>No banner, no consent platform.</p>
-  </div>
-  <div class="panel">
-    <div class="note">Loading this video contacts YouTube, which receives your IP address and which page you are on, and sets cookies.</div>
-    <div class="btn">
-      <svg width="9" height="11" viewBox="0 0 9 11" aria-hidden="true"><path d="M0 0 L9 5.5 L0 11 Z" fill="#12210a"/></svg>
-      Load video
-    </div>
-    <div class="link">Open on YouTube</div>
+    <div class="brand">Calucon</div>
+    <h1>Third-Party Embed Gate</h1>
+    <p><strong>Nothing third-party loads until the visitor clicks.</strong> Videos, maps and social posts, gated by default.</p>
   </div>
 </body>
