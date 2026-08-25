@@ -529,6 +529,22 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	// does not.
 	await page.click( '#cg-tabbtn-status' );
 	await expect( page.locator( '#cg-compatibility' ) ).toBeVisible();
+
+	// The exclusion list an owner pastes into a caching/minification plugin.
+	// Always shown, because the optimizer that needs it may be one this
+	// plugin has never heard of. It must name the real installed paths, not
+	// a hard-coded folder name.
+	const exclusions = page.locator( 'pre.cg-exclusions' );
+	await expect( exclusions ).toBeVisible();
+	await expect( exclusions ).toContainText( '/assets/js/gate.js' );
+	await expect( exclusions ).toContainText( '/assets/css/gate.css' );
+	// Paths do not wrap at spaces: this block has to scroll inside its own
+	// box rather than widen the admin page (see the responsive sweep below).
+	const scrolls = await exclusions.evaluate(
+		( el ) => getComputedStyle( el ).overflowX
+	);
+	expect( [ 'auto', 'scroll' ] ).toContain( scrolls );
+
 	// The CSP helper is an advanced, collapsed section at the end.
 	await expect( page.locator( '#cg-csp-snippet' ) ).toBeHidden();
 	await page.locator( '#cg-csp > summary' ).click();

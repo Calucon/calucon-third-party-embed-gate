@@ -194,4 +194,134 @@ final class Compatibility {
 
 		return $findings;
 	}
+
+	/**
+	 * The plugin's own asset paths, for pasting into an optimizer's
+	 * "do not combine / do not defer / do not delay" field.
+	 *
+	 * Offered as text rather than written into anyone's settings on the
+	 * owner's behalf: every optimizer changes its option schema between
+	 * versions, and silently editing another plugin's configuration is not a
+	 * thing a privacy plugin should do. A list the owner pastes works with
+	 * optimizers this plugin has never heard of, including future ones.
+	 *
+	 * Paths, not URLs: that is the shape those fields want, and it stays
+	 * correct on a site with a moved wp-content directory or a CDN in front.
+	 *
+	 * @return string[]
+	 */
+	public static function exclusion_paths(): array {
+		$paths = array();
+		foreach ( array( 'assets/js/gate.js', 'assets/js/cmp-bridge.js', 'assets/css/gate.css' ) as $asset ) {
+			$path = wp_parse_url( plugins_url( $asset, CALUCON_EMBED_GATE_FILE ), PHP_URL_PATH );
+			if ( is_string( $path ) && '' !== $path ) {
+				$paths[] = $path;
+			}
+		}
+		return $paths;
+	}
+
+	/**
+	 * Which detected optimizers have a JS setting that costs the visitor
+	 * something, and which could not be read at all.
+	 *
+	 * @return array[] Rows: name, state (see optimizer_state()), features.
+	 */
+	public static function optimizer_findings(): array {
+		$readers = array(
+			'WP Rocket'            => static function (): array {
+				$o = get_option( 'wp_rocket_settings' );
+				if ( ! is_array( $o ) ) {
+					return array();
+				}
+				return array(
+					'delay'   => ! empty( $o['delay_js'] ),
+					'combine' => ! empty( $o['minify_concatenate_js'] ),
+				);
+			},
+			'LiteSpeed Cache'      => static function (): array {
+				// LiteSpeed keeps one option row per setting; js_defer is
+				// 0 = off, 1 = deferred, 2 = delayed until interaction.
+				$defer = get_option( 'litespeed.optm.js_defer', null );
+				$comb  = get_option( 'litespeed.optm.js_comb', null );
+				if ( null === $defer && null === $comb ) {
+					return array();
+				}
+				return array(
+					'delay'   => '2' === (string) $defer,
+					'combine' => (bool) $comb,
+				);
+			},
+			'Autoptimize'          => static function (): array {
+				$js = get_option( 'autoptimize_js', null );
+				if ( null === $js ) {
+					return array();
+				}
+				return array(
+					'delay'   => false,
+					'combine' => ! empty( $js ) && ! empty( get_option( 'autoptimize_js_aggregate', true ) ),
+				);
+			},
+			'SiteGround Optimizer' => static function (): array {
+				$combine = get_option( 'siteground_optimizer_combine_javascript', null );
+				if ( null === $combine ) {
+					return array();
+				}
+				return array(
+					'delay'   => false,
+					'combine' => (bool) $combine,
+				);
+			},
+		);
+
+		$findings = array();
+		foreach ( self::detect() as $row ) {
+			if ( 'cache' !== $row['kind'] ) {
+				continue;
+			}
+			$flags    = isset( $readers[ $row['name'] ] ) ? call_user_func( $readers[ $row['name'] ] ) : array();
+			$state    = self::optimizer_state( $flags );
+			$features = array();
+			foreach ( array( 'delay', 'combine' ) as $feature ) {
+				if ( ! empty( $flags[ $feature ] ) ) {
+					$features[] = $feature;
+				}
+			}
+			$findings[] = array(
+				'name'     => $row['name'],
+				'state'    => $state,
+				'features' => $features,
+			);
+		}
+
+		return $findings;
+	}
+
+	/**
+	 * Turn one optimizer's read flags into a state for the screen.
+	 *
+	 * An empty array means the settings could not be read — a different
+	 * thing from "read them, nothing risky is on", and it must never render
+	 * as an all-clear. Optimizers rename and restructure their options
+	 * between versions, so a false green here would be worse than saying
+	 * nothing: the owner would stop looking.
+	 *
+	 * Pure on purpose (no get_option), so the precedence is unit-testable.
+	 *
+	 * @param array $flags Feature => bool, as read from that plugin.
+	 * @return string 'delay', 'combine', 'off' or 'unknown'.
+	 */
+	public static function optimizer_state( array $flags ): string {
+		if ( array() === $flags ) {
+			return 'unknown';
+		}
+		// Delay first: it is the only one that costs the visitor a click.
+		if ( ! empty( $flags['delay'] ) ) {
+			return 'delay';
+		}
+		if ( ! empty( $flags['combine'] ) ) {
+			return 'combine';
+		}
+		return 'off';
+	}
 }

@@ -5,7 +5,7 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.12.1
+Stable tag: 0.13.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,14 @@ Consent Mode is deliberately not read or written directly. It is a signal that c
 
 Page builders render outside WordPress's content filters. Enable "Gate the whole page output" under Settings → Calucon Third-Party Embed Gate → Detection. It is off by default because whole-page buffering can conflict with other buffering plugins.
 
+= I use a caching or minification plugin — will this still work? =
+
+Yes, and gating itself is unaffected: it happens on the server, so the page that gets cached is the gated one. Minified HTML is expected rather than a problem — the scanner is built for it, which is where most implementations quietly fail. Deferring, combining or lazily injecting the plugin's script all work too; that is covered by tests.
+
+One setting is worth knowing about: "delay JavaScript until interaction" holds every script back until the visitor first interacts, and that interaction is spent switching the scripts on — so their first click on a "Load" button does nothing and they have to click again. Nothing third-party is contacted by the extra click, but the placeholder feels broken. Settings → Status & tools lists the exact files to paste into your optimisation plugin's exclusion list, and reports what it could read about the JavaScript settings of the caching plugin you have installed.
+
+If your assets are served from a CDN hostname, that is recognised as your own and never gated.
+
 = The placeholder looks unstyled after an update =
 
 If your minification setup serves CSS from a long-cached URL that does not change with the file contents, browsers can keep the old stylesheet for a long time. A hard reload fixes it; the plugin cannot.
@@ -154,6 +162,9 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 
 == Upgrade Notice ==
 
+= 0.13.0 =
+Fixes a case where a CDN in front of your assets, together with whole-page gating, could make the plugin gate your site's own scripts. Adds a list of files to exclude from caching and minification plugins, on Status & tools. No settings change.
+
 = 0.12.1 =
 German only: corrections after review by the German translation team — the settings tab is now "Design", and a number of terms and sentences were brought in line with the WordPress German glossary and style guide. English sites see no change.
 
@@ -167,6 +178,12 @@ Names the rest of WordPress's built-in embed types, and the content scan can now
 The panel looks and behaves as before unless you opt in: the privacy-policy link and the new Appearance controls are off by default. Clear your page cache once after updating. Adds your own providers, a CSP helper and a much larger Appearance tab.
 
 == Changelog ==
+
+= 0.13.0 =
+* Fixed: with a CDN serving your assets from another hostname *and* whole-page gating enabled, the plugin could treat your site's own scripts and stylesheets as third-party and replace them with a placeholder — which broke the page's JavaScript instead of protecting anyone. The site's own asset hosts (from `content_url()`, `includes_url()`, `plugins_url()`, the uploads base and the theme URIs) now count as its own, so a CDN plugin that filters those is trusted automatically. For a CDN that rewrites the finished page instead, a `/wp-content/` or `/wp-includes/` path is left alone whatever host serves it — scripts and stylesheets only, never iframes, and your always-gate list still overrides it.
+* New: Status & tools lists the plugin's own asset paths to paste into a caching or minification plugin's exclusion list, and reports what it could read about the JavaScript settings of the caching plugin you have installed — including, honestly, when it could read nothing.
+* New: a FAQ entry on caching and minification plugins, and a section in the shipped `docs/customizing.md`.
+* Tests: gate.js is now exercised deferred, async, and injected after the load event has fired, plus the script order a combiner produces and the "delay JavaScript until interaction" setting. All of that already worked; none of it was covered.
 
 = 0.12.1 =
 * Changed: the German translation was reviewed by the German translation team at translate.wordpress.org and corrected against their glossary and style guide. The Appearance tab is now called "Design"; "Reiter" became "Tab", "Rahmen" became "Rand", "Eigene" became "Individuell" where the English says "custom", and a few sentences were rewritten because they read like English rather than German. Nothing changed for sites running in English.

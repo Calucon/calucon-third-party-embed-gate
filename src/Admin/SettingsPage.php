@@ -1645,6 +1645,37 @@ final class SettingsPage {
 		<?php endif; ?>
 
 		<?php
+		$optimizers = Compatibility::optimizer_findings();
+		if ( array() !== $optimizers ) :
+			$optimizer_messages = array(
+				'delay'   => __( 'This plugin is set to delay JavaScript until the visitor interacts with the page. That first interaction is spent switching the scripts on, so a visitor\'s first click on a "Load" button does nothing and they have to click again. Nothing third-party is contacted by the extra click, and the embed loads on the second one — but the placeholder feels broken. Exclude the files below from that setting.', 'calucon-third-party-embed-gate' ),
+				'combine' => __( 'This plugin is set to combine JavaScript into a bundle. Combining moves scripts away from the inline snippets that belong to them, which is a common cause of console errors across a site. Gating survives it, but if anything looks wrong, exclude the files below first.', 'calucon-third-party-embed-gate' ),
+				'off'     => __( 'Its JavaScript settings were read and none of the ones that cause trouble are on.', 'calucon-third-party-embed-gate' ),
+				'unknown' => __( 'Its JavaScript settings could not be read from here, so this is not an all-clear. If embeds misbehave, check whether it combines, defers or delays JavaScript, and exclude the files below.', 'calucon-third-party-embed-gate' ),
+			);
+			?>
+			<h3><?php esc_html_e( 'JavaScript optimisation', 'calucon-third-party-embed-gate' ); ?></h3>
+			<table class="widefat striped" style="max-width: 60rem;">
+				<tbody>
+				<?php foreach ( $optimizers as $optimizer ) : ?>
+					<tr>
+						<td><?php echo esc_html( $optimizer['name'] ); ?></td>
+						<td><?php echo esc_html( $optimizer_messages[ $optimizer['state'] ] ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
+
+		<?php $exclusions = Compatibility::exclusion_paths(); ?>
+		<?php if ( array() !== $exclusions ) : ?>
+			<h3><?php esc_html_e( 'Files to exclude from JavaScript and CSS optimisation', 'calucon-third-party-embed-gate' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'If a caching, minification or optimisation plugin combines, defers or delays scripts, paste these into its exclusion list. They are small, local and already cached by the browser, so excluding them costs nothing measurable.', 'calucon-third-party-embed-gate' ); ?></p>
+			<pre class="cg-exclusions"><?php echo esc_html( implode( "\n", $exclusions ) ); ?></pre>
+			<p class="description"><?php esc_html_e( 'Keep the inline configuration next to gate.js as well: some plugins list it separately as "calucon-embed-gate-js-before".', 'calucon-third-party-embed-gate' ); ?></p>
+		<?php endif; ?>
+
+		<?php
 		$theme_findings = Compatibility::theme_asset_findings();
 		if ( array() !== $theme_findings ) :
 			?>

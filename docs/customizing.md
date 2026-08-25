@@ -260,6 +260,59 @@ add_filter( 'calucon_embed_gate_asset_version', function ( $version, $file ) {
 }, 10, 2 );
 ```
 
+## Caching, minification and CDN plugins
+
+Gating happens on the server, so a page cache stores the gated page and
+serves that. Nothing leaks: the placeholder is what gets cached, and the
+plugin flushes the caches it can reach when its settings change or it is
+activated, deactivated or updated.
+
+The interesting part is what an optimizer does to the *scripts*.
+
+**Minified HTML is expected, not a problem.** The scanner is built for
+attribute quotes stripped, newlines inside tags and attributes in any order;
+that is the single most common reason competing implementations fail
+silently, and the fixture corpus carries a minified variant of every case.
+
+**Deferred, async and combined `gate.js` all work.** The click handler is
+delegated on `document` and the memory restore is guarded on
+`document.readyState`, so it does not matter when the script arrives or in
+what order the inline configuration reaches it.
+`tests/E2E/loading-strategy.spec.js` pins all of that — including a build
+where `gate.js` is injected after the load event has already fired.
+
+**"Delay JavaScript until interaction" costs the visitor a click.** That
+feature holds every script back until the first interaction, and that
+interaction is spent switching the scripts on — so the first click on a
+"Load" button does nothing and the visitor has to click again. Nothing
+third-party is contacted by the extra click and the embed loads on the
+second one, but the placeholder feels broken. Exclude the plugin's assets
+from that setting; Settings → Status & tools lists the exact paths, and they
+are:
+
+```
+wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js
+wp-content/plugins/calucon-third-party-embed-gate/assets/js/cmp-bridge.js
+wp-content/plugins/calucon-third-party-embed-gate/assets/css/gate.css
+```
+
+Keep the inline configuration with `gate.js`; some plugins list it separately
+as `calucon-embed-gate-js-before`.
+
+**A CDN in front of your assets is handled, twice over.** The own-host list
+includes whatever `content_url()`, `includes_url()`, `plugins_url()`, the
+uploads base and the theme URIs report, so a CDN plugin that filters those
+is trusted automatically — WordPress itself is saying where your assets
+live. For a CDN that rewrites the finished HTML instead, where those
+functions never see the change, a `/wp-content/` or `/wp-includes/` path is
+left alone whatever host serves it. That second rule applies to `<script>`
+and `<link rel=stylesheet>` only, never to iframes, and your always-gate
+list overrides it.
+
+Without either rule, whole-page buffering plus an asset CDN would gate your
+own `wp-includes` scripts into placeholders — which breaks the site's
+JavaScript rather than protecting anybody.
+
 ## Adjusting behaviour with filters
 
 ```php

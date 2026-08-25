@@ -1,6 +1,7 @@
 # readme.txt auf Deutsch (de_DE, „du“)
 
-<!-- readme.txt: e924a3878db614c8 -->
+<!-- readme.txt: 63cab00279964151 -->
+
 <!-- Dieser Stempel bindet die Übersetzung an den englischen Stand.
      tests/Unit/ReadmeTranslationTest.php schlägt fehl, sobald readme.txt sich ändert. -->
 
@@ -194,6 +195,16 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE (Antwort):** Page-Builder rendern außerhalb der Inhaltsfilter von WordPress. Aktiviere „Die gesamte Seitenausgabe sperren“ unter Einstellungen → Calucon Third-Party Embed Gate → Erkennung. Die Option ist standardmäßig aus, weil das Puffern der gesamten Seite mit anderen puffernden Plugins kollidieren kann.
 
+**EN:** I use a caching or minification plugin — will this still work?
+
+**DE:** Ich nutze ein Caching- oder Minifizierungs-Plugin – funktioniert das trotzdem?
+
+**DE (Antwort):** Ja, und an der Sperre ändert sich nichts: Sie greift auf dem Server, gespeichert wird also die bereits gesperrte Seite. Minifiziertes HTML ist eingeplant und kein Problem – der Scanner ist dafür gebaut, und genau daran scheitern die meisten Umsetzungen still. Auch Deferring, Zusammenfassen oder spätes Nachladen des Plugin-Skripts funktionieren; das ist durch Tests abgedeckt.
+
+Eine Einstellung solltest du kennen: „JavaScript bis zur Interaktion verzögern“ hält alle Skripte zurück, bis der Besucher die Seite zum ersten Mal berührt – und diese Interaktion wird dafür verbraucht, die Skripte einzuschalten. Sein erster Klick auf einen „Laden“-Button bewirkt dann nichts und er muss ein zweites Mal klicken. Durch den zusätzlichen Klick wird kein Drittanbieter kontaktiert, aber der Platzhalter wirkt kaputt. Unter Einstellungen → Status und Werkzeuge stehen die genauen Dateien, die du in die Ausschlussliste deines Optimierungs-Plugins einträgst, samt dem, was sich über die JavaScript-Einstellungen des installierten Caching-Plugins auslesen ließ.
+
+Werden deine Assets über einen CDN-Hostnamen ausgeliefert, gilt dieser als deiner eigener und wird nie gesperrt.
+
 **EN:** The placeholder looks unstyled after an update
 
 **DE:** Der Platzhalter sieht nach einem Update ungestylt aus
@@ -284,6 +295,12 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 ## Upgrade Notice (0.12.1)
 
 **DE:** Nur Deutsch: Korrekturen nach der Prüfung durch das deutsche Übersetzungsteam – der Einstellungsbereich heißt jetzt „Design“, und mehrere Begriffe und Sätze wurden an Glossar und Styleguide von WordPress Deutsch angeglichen. Für englischsprachige Websites ändert sich nichts.
+
+---
+
+## Upgrade Notice (0.13.0)
+
+**DE:** Behebt einen Fall, in dem ein CDN vor deinen Assets zusammen mit der Sperre für die gesamte Seite dazu führen konnte, dass die eigenen Skripte deiner Website gesperrt wurden. Ergänzt unter Status und Werkzeuge eine Liste von Dateien, die du in Caching- und Minifizierungs-Plugins ausschließen solltest. An den Einstellungen ändert sich nichts.
 
 ---
 
