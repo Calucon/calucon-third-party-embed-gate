@@ -16,18 +16,7 @@
 # Keep "may set cookies" hedged as "es können Cookies gesetzt werden" — the
 # English hedge is deliberate and the German must not promise more.
 msgid ""
-msgstr ""
-"Project-Id-Version: Calucon Third-Party Embed Gate 0.12.0\n"
-"Report-Msgid-Bugs-To: https://github.com/Calucon/calucon-third-party-embed-gate/issues\n"
-"PO-Revision-Date: 2026-08-25 12:00+0000\n"
-"Last-Translator: Calucon <https://calucon.de>\n"
-"Language-Team: German\n"
-"Language: de_DE_formal\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Domain: calucon-third-party-embed-gate\n"
+msgstr "Project-Id-Version: Calucon Third-Party Embed Gate 0.12.0\nReport-Msgid-Bugs-To: https://github.com/Calucon/calucon-third-party-embed-gate/issues\nPO-Revision-Date: 2026-08-25 12:00+0000\nLast-Translator: Calucon <https://calucon.de>\nLanguage-Team: German\nLanguage: de_DE_formal\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\nX-Domain: calucon-third-party-embed-gate\n"
 
 #: src/Admin/SettingsPage.php:695
 msgid "%1$s is handled by the built-in %2$s provider, which takes precedence — this entry is ignored for that host. Remove it here to clear this note."
@@ -35,7 +24,7 @@ msgstr "%1$s wird vom mitgelieferten Anbieter %2$s abgedeckt, der Vorrang hat �
 
 #: src/Admin/SettingsPage.php:343
 msgid "%1$s: %2$s skipped — a built-in provider already handles these hosts, with its privacy-preserving load target and texts. Adjust that provider in the table instead."
-msgstr "%1$s: %2$s übersprungen – ein mitgelieferter Anbieter kümmert sich bereits um diese Hosts, samt datensparsamer Ladeadresse und Texten. Passen Sie stattdessen diesen Anbieter in der Tabelle an."
+msgstr "%1$s: %2$s übersprungen – ein mitgelieferter Anbieter kümmert sich bereits um diese Hosts, samt datenschutzfreundlicher Ladeadresse und Texten. Passen Sie stattdessen diesen Anbieter in der Tabelle an."
 
 #: src/Admin/SettingsPage.php:263
 msgid "%1$s: %2$s — %3$s"
@@ -51,7 +40,7 @@ msgstr "%s (nicht im aktuellen Theme)"
 
 #: src/Admin/SettingsPage.php:188
 msgid "%s is ready to be named below. Give it a label, then save."
-msgstr "%s kann unten benannt werden. Vergib einen Namen und speichere."
+msgstr "%s kann unten benannt werden. Vergeben Sie einen Namen und speichern Sie."
 
 #: src/Rendering/PlaceholderRenderer.php:195
 msgid "%s privacy policy"
@@ -67,7 +56,7 @@ msgstr "+%d weitere"
 
 #: src/Admin/SettingsPage.php:608
 msgid "3D / virtual tour"
-msgstr "3D / virtueller Rundgang"
+msgstr "3D / virtuelle Tour"
 
 #: src/Admin/SettingsPage.php:1546
 msgid "A Content-Security-Policy (CSP) is a security setting some sites send to browsers. It lists which other websites a page is allowed to load anything from — and blocks the rest. Most WordPress sites do not send one. If you never set one up in a security plugin, your hosting panel or the web server, you can skip this section."
@@ -103,11 +92,11 @@ msgstr "Weiteren Anbieter hinzufügen"
 
 #: src/Admin/SettingsPage.php:242
 msgid "Add the lines below to your policy, where it is defined, and run the check again."
-msgstr "Fügen Sie die Zeilen unten dort zu Ihrer Policy hinzu, wo sie definiert ist, und führen Sie die Prüfung erneut aus."
+msgstr "Fügen Sie die Zeilen unten dort zu Ihrer Richtlinie hinzu, wo sie definiert ist, und führen Sie die Prüfung erneut aus."
 
 #: src/Admin/SettingsPage.php:1561
 msgid "Add them wherever your policy is defined — a security plugin, your hosting panel or the web server configuration. Merge, do not replace: if the policy already has a frame-src line, add these hosts to that line instead of adding a second one. If it has neither frame-src nor script-src, the browser falls back to default-src — add the hosts there."
-msgstr "Ergänzen Sie sie dort, wo Ihre Policy definiert ist – in einem Sicherheits-Plugin, im Hosting-Panel oder in der Webserver-Konfiguration. Zusammenführen statt ersetzen: Hat die Policy bereits eine frame-src-Zeile, fügen Sie diese Hosts dieser Zeile hinzu, statt eine zweite anzulegen. Fehlen sowohl frame-src als auch script-src, greift im Browser default-src – dann gehören die Hosts dorthin."
+msgstr "Ergänzen Sie sie dort, wo Ihre Richtlinie definiert ist – in einem Sicherheits-Plugin, im Hosting-Panel oder in der Webserver-Konfiguration. Zusammenführen statt ersetzen: Hat die Richtlinie bereits eine frame-src-Zeile, fügen Sie diese Hosts dieser Zeile hinzu, statt eine zweite anzulegen. Fehlen sowohl frame-src als auch script-src, greift im Browser default-src – dann gehören die Hosts dorthin."
 
 #: src/Admin/SettingsPage.php:776
 msgid "Additional own hosts"
@@ -249,7 +238,7 @@ msgstr "Zentriert"
 
 #: src/Admin/SettingsPage.php:1550
 msgid "Check my site for a policy"
-msgstr "Meine Website auf eine Policy prüfen"
+msgstr "Meine Website auf eine Richtlinie prüfen"
 
 #: src/Admin/SettingsPage.php:469
 msgid "Check what is on my site"
@@ -257,7 +246,7 @@ msgstr "Nachsehen, was auf meiner Website läuft"
 
 #: src/Admin/SettingsPage.php:239
 msgid "Checked just now, as your browser sees the page. If you are sure a policy is set somewhere (some setups only send it on certain pages), add the lines below to it anyway — listing a host that is never loaded is harmless."
-msgstr "Gerade geprüft, so wie Ihr Browser die Seite sieht. Wenn Sie sicher sind, dass irgendwo eine Policy gesetzt ist (manche Setups senden sie nur auf bestimmten Seiten), fügen Sie die Zeilen unten trotzdem hinzu – einen Host aufzuführen, der nie geladen wird, schadet nicht."
+msgstr "Gerade geprüft, so wie Ihr Browser die Seite sieht. Wenn Sie sicher sind, dass irgendwo eine Richtlinie gesetzt ist (manche Setups senden sie nur auf bestimmten Seiten), fügen Sie die Zeilen unten trotzdem hinzu – einen Host aufzuführen, der nie geladen wird, schadet nicht."
 
 #: src/Admin/SettingsPage.php:236
 msgid "Checking your home page…"
@@ -394,7 +383,7 @@ msgstr "Erkannt. Dieses Plugin übersetzt die fertige Seite – die Texte des Pl
 
 #: src/Admin/SettingsPage.php:1597
 msgid "Detected. Its page cache is flushed automatically when Calucon Third-Party Embed Gate settings change and when the plugin is activated, deactivated or updated. If pages still look stale, clear it once by hand."
-msgstr "Erkannt. Sein Seiten-Cache wird automatisch geleert, wenn sich die Einstellungen von Calucon Third-Party Embed Gate ändern und wenn das Plugin aktiviert, deaktiviert oder aktualisiert wird. Sehen Seiten trotzdem veraltet aus, leere ihn einmal von Hand."
+msgstr "Erkannt. Sein Seiten-Cache wird automatisch geleert, wenn sich die Einstellungen von Calucon Third-Party Embed Gate ändern und wenn das Plugin aktiviert, deaktiviert oder aktualisiert wird. Sehen Seiten trotzdem veraltet aus, leeren Sie ihn einmal von Hand."
 
 #: src/Admin/SettingsPage.php:1600
 msgid "Detected. Page builders render outside the content filters — if its embeds are not being gated, enable \"Gate the whole page output\" under Detection."
@@ -590,7 +579,7 @@ msgstr "Läuft auf dieser Website eine Consent-Plattform (Cookie-Banner), kann C
 
 #: src/Admin/SettingsPage.php:244
 msgid "If you later switch it to an enforced policy, it would need these hosts:"
-msgstr "Wenn Sie sie später auf eine durchsetzende Policy umstellen, bräuchte sie diese Hosts:"
+msgstr "Wenn Sie sie später auf eine durchsetzende Richtlinie umstellen, bräuchte sie diese Hosts:"
 
 #: src/Admin/SettingsPage.php:607
 msgid "Image / GIF"
@@ -767,7 +756,7 @@ msgstr "Terminplaner von Calendly laden"
 
 #: src/Providers/Builtin/Descriptors.php:200
 msgid "Load tour from Matterport"
-msgstr "Rundgang von Matterport laden"
+msgstr "Tour von Matterport laden"
 
 #: src/Providers/Builtin/Descriptors.php:406
 msgid "Load video from Dailymotion"
@@ -923,7 +912,7 @@ msgstr "Beim Laden dieses Terminplaners wird Calendly kontaktiert. Dabei werden 
 
 #: src/Providers/Builtin/Descriptors.php:199
 msgid "Loading this tour contacts Matterport, which receives your IP address and which page you are on."
-msgstr "Beim Laden dieses Rundgangs wird Matterport kontaktiert. Dabei werden Ihre IP-Adresse und die aufgerufene Seite übermittelt."
+msgstr "Beim Laden dieser Tour wird Matterport kontaktiert. Dabei werden Ihre IP-Adresse und die aufgerufene Seite übermittelt."
 
 #: src/Providers/Builtin/Descriptors.php:405
 msgid "Loading this video contacts Dailymotion, which receives your IP address and which page you are on, and sets cookies."
@@ -951,7 +940,7 @@ msgstr "Beim Laden dieses Videos wird YouTube (Google) kontaktiert. Dabei werden
 
 #: src/Admin/SettingsPage.php:1551
 msgid "Loads your home page once, in this browser, and reads whether it sends a policy and what it allows. Nothing leaves your site."
-msgstr "Lädt Ihre Startseite einmal in diesem Browser und liest aus, ob sie eine Policy sendet und was diese erlaubt. Nichts verlässt Ihre Website."
+msgstr "Lädt Ihre Startseite einmal in diesem Browser und liest aus, ob sie eine Richtlinie sendet und was diese erlaubt. Nichts verlässt Ihre Website."
 
 #: src/Admin/SettingsPage.php:268
 msgid "Make readable"
@@ -1023,7 +1012,7 @@ msgstr "Keiner"
 
 #: src/Admin/SettingsPage.php:749
 msgid "Nothing has changed yet."
-msgstr "Noch hat sich nichts geändert."
+msgstr "Es wurde bisher nichts geändert."
 
 #: src/Admin/SettingsPage.php:541
 msgid "Notice text"
@@ -1055,7 +1044,7 @@ msgstr "Aktivieren Sie das nur, wenn Einbettungen aus einem Page-Builder nicht g
 
 #: src/Admin/SettingsPage.php:1565
 msgid "Only enabled providers are listed; disable a provider under Providers and its hosts disappear from the lines above. A host can differ from the embed address when the plugin loads a privacy-preserving variant (YouTube loads from youtube-nocookie.com, for example)."
-msgstr "Aufgeführt sind nur aktivierte Anbieter; wird ein Anbieter unter „Anbieter“ abgeschaltet, verschwinden seine Hosts aus den Zeilen oben. Ein Host kann von der Einbettungsadresse abweichen, wenn das Plugin eine datensparsame Variante lädt (YouTube lädt zum Beispiel von youtube-nocookie.com)."
+msgstr "Aufgeführt sind nur aktivierte Anbieter; wird ein Anbieter unter „Anbieter“ abgeschaltet, verschwinden seine Hosts aus den Zeilen oben. Ein Host kann von der Einbettungsadresse abweichen, wenn das Plugin eine datenschutzfreundliche Variante lädt (YouTube lädt zum Beispiel von youtube-nocookie.com)."
 
 #: src/Admin/SettingsPage.php:1327
 msgid "Only the colours you set here change; the rest keep the values above. Tick \"Preview on a dark page background\" to check them."
@@ -1076,7 +1065,7 @@ msgstr "Beim Anbieter öffnen."
 #: src/Detection/EmbedStripper.php:146
 #: src/Rendering/PlaceholderRenderer.php:171
 msgid "Open on %s"
-msgstr "Bei %s öffnen"
+msgstr "Auf %s öffnen"
 
 #: src/Admin/SettingsPage.php:1221 src/Admin/SettingsPage.php:1309
 msgid "Outline"
@@ -1164,7 +1153,7 @@ msgstr "URL der Datenschutzerklärung"
 
 #: src/Admin/SettingsPage.php:533
 msgid "Privacy-preserving load"
-msgstr "Datensparsam laden"
+msgstr "Datenschutzfreundlich laden"
 
 #: src/Admin/SettingsPage.php:1568
 msgid "Provider"
@@ -1432,7 +1421,7 @@ msgstr "Andere Farben für Besucher verwenden, die ein dunkles Farbschema bevorz
 
 #: src/Admin/SettingsPage.php:515
 msgid "Use the privacy-preserving load for %s"
-msgstr "Datensparsame Ladeadresse für %s verwenden"
+msgstr "Datenschutzfreundliche Ladeadresse für %s verwenden"
 
 #: src/Admin/SettingsPage.php:1118
 msgid "Used when a border is shown (see Shape). Default: the panel text colour."
@@ -1456,7 +1445,7 @@ msgstr "Nach dem Speichern wird dieser Host wieder gesperrt: Seine Einbettungen 
 
 #: src/Admin/SettingsPage.php:1547
 msgid "Why it matters here: when a policy does not list a provider, that provider's embed stays empty after the visitor clicks Load, and the browser console reports “Refused to frame …”. Listing a host only grants permission; it does not load anything — nothing is contacted before the click either way."
-msgstr "Warum das hier zählt: Führt eine Policy einen Anbieter nicht auf, bleibt dessen Einbettung leer, nachdem der Besucher auf „Laden“ geklickt hat, und die Browser-Konsole meldet „Refused to frame …“. Einen Host aufzuführen erteilt nur eine Erlaubnis; geladen wird dadurch nichts – vor dem Klick wird so oder so niemand kontaktiert."
+msgstr "Warum das hier zählt: Führt eine Richtlinie einen Anbieter nicht auf, bleibt dessen Einbettung leer, nachdem der Besucher auf „Laden“ geklickt hat, und die Browser-Konsole meldet „Refused to frame …“. Einen Host aufzuführen erteilt nur eine Erlaubnis; geladen wird dadurch nichts – vor dem Klick wird so oder so niemand kontaktiert."
 
 #: src/Admin/SettingsPage.php:1239
 msgid "Width"
@@ -1501,7 +1490,7 @@ msgstr "Eigene Anbieter"
 
 #: src/Admin/SettingsPage.php:526
 msgid "Your own providers are always gated. To let a host through, use the never-gate list under Detection."
-msgstr "Eigene Anbieter sind immer gesperrt. Um einen Host durchzulassen, nutze die Liste „Diese Hosts nie sperren“ unter Erkennung."
+msgstr "Eigene Anbieter sind immer gesperrt. Um einen Host durchzulassen, nutzen Sie die Liste „Diese Hosts nie sperren“ unter Erkennung."
 
 #: src/Admin/SettingsPage.php:241
 msgid "Your site sends a Content-Security-Policy that does not yet allow these hosts — their embeds would stay empty after the visitor clicks Load:"
@@ -1513,7 +1502,7 @@ msgstr "Ihre Website sendet eine Content-Security-Policy, und sie erlaubt bereit
 
 #: src/Admin/SettingsPage.php:243
 msgid "Your site sends a report-only policy (Content-Security-Policy-Report-Only). It logs violations but blocks nothing, so embeds still load."
-msgstr "Ihre Website sendet eine reine Melde-Policy (Content-Security-Policy-Report-Only). Sie protokolliert Verstöße, blockiert aber nichts – Einbettungen laden also weiterhin."
+msgstr "Ihre Website sendet eine reine Melde-Richtlinie (Content-Security-Policy-Report-Only). Sie protokolliert Verstöße, blockiert aber nichts – Einbettungen laden also weiterhin."
 
 #: src/Admin/SettingsPage.php:1652
 msgid "Your theme references these third-party asset hosts (found by reading its files — nothing was fetched). Fonts and CDN assets load on every page view without consent, outside what an embed gate can cover. Consider serving them locally; your theme or a localisation plugin can usually do this."
@@ -1554,6 +1543,3 @@ msgstr "script-src (Anbieter-Skripte, z. B. für Social-Media-Beiträge)"
 #: src/Admin/SettingsPage.php:128
 msgid "support its development"
 msgstr "die Entwicklung unterstützen"
-
-#~ msgid "No cache plugin, consent platform or page builder detected."
-#~ msgstr "Kein Cache-Plugin, keine Consent-Plattform und kein Page-Builder erkannt."
