@@ -152,6 +152,11 @@ add_filter( 'locale', function ( $locale ) {
 	$requested = isset( $_GET['cg_locale'] ) ? (string) $_GET['cg_locale'] : '';
 	return preg_match( '/^[a-z]{2}_[A-Z]{2}(?:_formal)?$/', $requested ) ? $requested : $locale;
 } );
+// WPML's presence is detected by the constant it defines. ?cg_wpml=1 makes
+// the Compatibility screen see one, without installing WPML.
+if ( isset( $_GET['cg_wpml'] ) && ! defined( 'ICL_SITEPRESS_VERSION' ) ) {
+	define( 'ICL_SITEPRESS_VERSION', '4.6.13' );
+}
 // Multilingual emulator: WPML and Polylang translate the strings named in
 // wpml-config.xml by filtering the option as the page is built, in that
 // page's language — long after plugins_loaded. ?cg_translate=1 does the same

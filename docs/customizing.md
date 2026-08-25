@@ -364,6 +364,14 @@ panel shows. Only the texts are re-read: which providers are enabled, the host
 lists and every detection rule come from the values loaded at startup, so a
 translation layer can reword a panel and can never ungate an embed.
 
+With WPML or Polylang active, Status & tools → Compatibility names it and
+repeats where those strings are translated, so nobody has to remember this
+page.
+
+With WPML or Polylang active, Status & tools → Compatibility names it and
+repeats where those strings are translated, so nobody has to remember this
+page.
+
 The settings screen deliberately keeps showing the original text you typed —
 that is the source string your translations hang off, and editing it there
 edits the original, not a translation.

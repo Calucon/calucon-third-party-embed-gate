@@ -189,7 +189,7 @@ test( 'editor REST content is NOT gated — invariant 4', async ( { page, reques
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
-	await page.waitForURL( /wp-admin/ ); // Login sets the auth cookie via redirect; navigating before it lands races back to wp-login.
+	await page.waitForURL( /wp-admin/, { timeout: 120000 } ); // Login sets the auth cookie via redirect; navigating before it lands races back to wp-login.
 	await page.goto( `/wp-admin/post.php?post=${ id }&action=edit` );
 	await page.waitForFunction( () => window.wp && window.wp.apiFetch );
 
@@ -219,7 +219,7 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
-	await page.waitForURL( /wp-admin/ ); // Login sets the auth cookie via redirect; navigating before it lands races back to wp-login.
+	await page.waitForURL( /wp-admin/, { timeout: 120000 } ); // Login sets the auth cookie via redirect; navigating before it lands races back to wp-login.
 
 	const offenders = trackThirdPartyRequests( page );
 	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
@@ -507,7 +507,7 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
-	await page.waitForURL( /wp-admin/ ); // Login sets the auth cookie via redirect; navigating before it lands races back to wp-login.
+	await page.waitForURL( /wp-admin/, { timeout: 120000 } ); // Login sets the auth cookie via redirect; navigating before it lands races back to wp-login.
 
 	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
 
@@ -563,7 +563,7 @@ test( 'editor: the per-block gate control appears in the block inspector', async
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
-	await page.waitForURL( /wp-admin/ );
+	await page.waitForURL( /wp-admin/, { timeout: 120000 } );
 
 	await page.goto( '/wp-admin/post-new.php' );
 	await page.waitForFunction( () => window.wp && window.wp.data && window.wp.blocks && window.wp.hooks );
@@ -637,7 +637,7 @@ test( 'admin: Plugins screen links to Settings; a tab hash does not scroll the t
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
-	await page.waitForURL( /wp-admin/ );
+	await page.waitForURL( /wp-admin/, { timeout: 120000 } );
 
 	// "Settings" next to Deactivate on the Plugins screen.
 	await page.goto( '/wp-admin/plugins.php' );
@@ -685,7 +685,7 @@ test( 'whole-page buffering: gates, enqueues everywhere, and restores cleanly', 
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
-	await page.waitForURL( /wp-admin/ );
+	await page.waitForURL( /wp-admin/, { timeout: 120000 } );
 
 	const OPTION = 'input[name="calucon_embed_gate_options[detection][output_buffer]"][type="checkbox"]';
 	const save = async () => {
@@ -741,7 +741,7 @@ test( 'admin: the CSP helper says whether the site sends a policy and which host
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
-	await page.waitForURL( /wp-admin/ );
+	await page.waitForURL( /wp-admin/, { timeout: 120000 } );
 
 	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-status' );
 	await page.locator( '#cg-csp > summary' ).click();
@@ -863,7 +863,7 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
-	await page.waitForURL( /wp-admin/ );
+	await page.waitForURL( /wp-admin/, { timeout: 120000 } );
 
 	// Before: the seeded unknown widget is gated generically, under its host.
 	await page.goto( '/gated-classic/' );
@@ -960,12 +960,15 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	await expect( widget ).toHaveAttribute( 'data-cg-provider', 'generic' );
 } );
 
+// The login redirect is the slowest step in the Playground backend (one
+// PHP-WASM process for the whole suite) and has timed out at the default 60s
+// under load, so every login waits longer than the default.
 async function login( page ) {
 	await page.goto( '/wp-login.php' );
 	await page.fill( '#user_login', 'admin' );
 	await page.fill( '#user_pass', 'password' );
 	await page.click( '#wp-submit' );
-	await page.waitForURL( /wp-admin/ );
+	await page.waitForURL( /wp-admin/, { timeout: 120000 } );
 }
 
 test( 'front end: appearance settings reach the page — colours, theme-palette fallback, kind glyphs, dark mode; privacy link toggle; withdraw style', async ( { page } ) => {
@@ -1299,7 +1302,7 @@ test( 'German: the visitor panel, the settings screen and the editor controls ar
 // long after plugins_loaded, where the plugin takes its options snapshot, so
 // the texts are re-read at render time. Only the texts: a filter arriving that
 // late must not be able to change what is gated.
-test( 'multilingual: translated provider texts reach the panel, and cannot ungate it', async ( { page } ) => {
+test( 'multilingual: translated texts reach the panel, cannot ungate it, and the screen says where to translate them', async ( { page } ) => {
 	const offenders = trackThirdPartyRequests( page );
 
 	await page.goto( '/gated-classic/?cg_translate=1' );
@@ -1315,4 +1318,21 @@ test( 'multilingual: translated provider texts reach the panel, and cannot ungat
 	await expect( panel ).toHaveCount( 1 );
 	await expect( page.locator( 'iframe[src*="youtube"]' ) ).toHaveCount( 0 );
 	expect( offenders, 'INVARIANT 1 — a late option filter ungated an embed' ).toEqual( [] );
+
+	// Registering the strings is only half the job: the owner has to know
+	// they exist and which screen translates them, or the setting silently
+	// stays in one language. The Compatibility table is where the plugin
+	// already answers "we detected X, here is what it means".
+	await login( page );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg_wpml=1' );
+	await page.click( '#cg-tabbtn-status' );
+	const wpml = page.locator( '#cg-compatibility + table tr', { hasText: 'WPML' } );
+	await expect( wpml ).toHaveCount( 1 );
+	await expect( wpml ).toContainText( 'WPML → String Translation' );
+	await expect( wpml ).toContainText( 'privacy-policy URL' );
+
+	// …and it is not claimed on a site that has no multilingual plugin.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.click( '#cg-tabbtn-status' );
+	await expect( page.locator( '#cg-tab-status' ) ).not.toContainText( 'String Translation' );
 } );

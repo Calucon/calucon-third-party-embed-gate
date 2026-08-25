@@ -248,7 +248,7 @@ final class Plugin {
 		if ( null === $this->providers_cache ) {
 			$translate = $this->translator();
 			// Owner-typed texts, in the language of THIS page (see below).
-			$options   = $this->localized_options();
+			$options = $this->localized_options();
 			// 1. Built-ins, then code-registered ones via the filter.
 			$registered = (array) apply_filters( 'calucon_embed_gate_providers', Descriptors::all( $translate ) );
 			// 2. Owner-defined rows AFTER everything registered in code, with
