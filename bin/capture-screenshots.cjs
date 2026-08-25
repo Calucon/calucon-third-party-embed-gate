@@ -6,7 +6,7 @@
  *   bash tests/wp/serve-playground.sh &      # or npm run test:wp backend
  *   node bin/capture-screenshots.cjs
  *
- * Writes .wordpress-org/screenshot-{1..5}.png, matching the readme's
+ * Writes .wordpress-org/screenshot-{1..6}.png, matching the readme's
  * == Screenshots == captions in order (the fifth drives a real editing
  * session for the block-inspector control). Not part of CI — this is a
  * one-off asset generator.
@@ -79,18 +79,58 @@ async function settings( page ) {
 		document.querySelectorAll( '.cg-color[open]' ).forEach( ( el ) => el.removeAttribute( 'open' ) );
 	} );
 	await page.waitForTimeout( 700 );
-	await page.locator( '#cg-tab-appearance' ).screenshot( { path: path.join( OUT, 'screenshot-2.png' ) } );
+	// Cap the height: the whole Appearance tab is ~2500 CSS px tall, and a
+	// 1:2.2 strip renders as an unreadable sliver in the .org gallery. Stop
+	// at the end of the Colours section — quick styles, colours, the live
+	// preview and the readability check, which is what the caption leads on.
+	{
+		const box = await page.locator( '#cg-tab-appearance' ).boundingBox();
+		await page.screenshot( {
+			path: path.join( OUT, 'screenshot-2.png' ),
+			clip: { x: box.x, y: box.y, width: box.width, height: Math.min( box.height, 960 ) },
+		} );
+	}
 
-	// 3 — Compatibility overview (under Status & tools).
+	// 3 — Status & tools with the scan actually run, so the listing shows the
+	// thing a novice needs: every embed found, and a button to name it or let
+	// it through without typing a host name anywhere. The CSP section stays
+	// collapsed; it has its own shot.
+	await page.goto( BASE + '/wp-admin/options-general.php?page=calucon-embed-gate&calucon-embed-gate-scan=1#cg-status', { waitUntil: 'networkidle' } );
+	await page.waitForSelector( '.cg-tabs' );
+	await page.addStyleTag( { content: '#wpadminbar{display:none!important}html.wp-toolbar{padding-top:0!important}' } );
 	await page.click( '#cg-tabbtn-status' );
-	await page.evaluate( () => { document.getElementById( 'cg-csp' ).open = true; } );
-	await page.waitForTimeout( 500 );
-	await page.locator( '#cg-tab-status' ).screenshot( { path: path.join( OUT, 'screenshot-3.png' ) } );
+	await page.waitForSelector( '#cg-scan-results' );
+	await page.waitForTimeout( 600 );
+	{
+		// Start the image at the scan heading rather than the Compatibility
+		// table above it, and cap the height: the whole tab is very tall.
+		const scan = await page.locator( '#cg-status' ).boundingBox();
+		const panel = await page.locator( '#cg-tab-status' ).boundingBox();
+		await page.screenshot( {
+			path: path.join( OUT, 'screenshot-3.png' ),
+			clip: { x: panel.x, y: scan.y - 12, width: panel.width, height: Math.min( panel.height, 1000 ) },
+		} );
+	}
 
-	// 4 — Providers tab. The full table is very tall (20+ providers); clip to
-	// the top so the shot shows the columns and the first several providers.
+	// 6 — the Content-Security-Policy helper, opened. Starts at its own
+	// heading so it does not repeat the scan table from the shot above.
+	await page.evaluate( () => { document.getElementById( 'cg-csp' ).open = true; } );
+	await page.waitForTimeout( 400 );
+	{
+		const csp = await page.locator( '#cg-csp' ).boundingBox();
+		const panel = await page.locator( '#cg-tab-status' ).boundingBox();
+		await page.screenshot( {
+			path: path.join( OUT, 'screenshot-6.png' ),
+			clip: { x: panel.x, y: csp.y - 12, width: panel.width, height: Math.min( csp.height + 24, 1000 ) },
+		} );
+	}
+
+	// 4 — Providers tab: the groups, plus one opened so the shot shows the
+	// per-provider controls and not just a list of headings.
 	await page.click( '#cg-tabbtn-providers' );
 	await page.waitForTimeout( 400 );
+	await page.locator( '.cg-provider-group[data-cg-kind-group="video"] > summary' ).click();
+	await page.waitForTimeout( 300 );
 	const box = await page.locator( '#cg-tab-providers' ).boundingBox();
 	await page.screenshot( {
 		path: path.join( OUT, 'screenshot-4.png' ),
@@ -156,7 +196,7 @@ async function settings( page ) {
 	await page.locator( '.interface-interface-skeleton__sidebar' ).screenshot( { path: path.join( OUT, 'screenshot-5.png' ) } );
 
 	await browser.close();
-	console.log( 'Wrote screenshot-1..5.png to .wordpress-org/' );
+	console.log( 'Wrote screenshot-1..6.png to .wordpress-org/' );
 } )().catch( ( e ) => {
 	console.error( e );
 	process.exit( 1 );

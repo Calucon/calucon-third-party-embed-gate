@@ -179,7 +179,15 @@ final class IframeRule {
 				$provider['fallback'] = $src;
 			}
 
-			$placeholder = $this->renderer->render( $provider, $load_src, $attributes, $ctx );
+			// A <noscript> iframe (Crowdsignal's poll fallback) is real markup
+			// for a no-JS visitor, so it must be gated — but its panel must
+			// not offer a button no script will ever wire up.
+			$placeholder = $this->renderer->render(
+				$provider,
+				$load_src,
+				$attributes,
+				self::inside_noscript( $html, $span_start ) ? $ctx + array( 'noscript' => true ) : $ctx
+			);
 
 			$html = substr( $html, 0, $span_start ) . $placeholder . substr( $html, $span_end );
 
@@ -348,5 +356,26 @@ final class IframeRule {
 			'start' => $open,
 			'href'  => $href,
 		);
+	}
+	/**
+	 * Is this offset inside a <noscript> element? Content there renders only
+	 * when scripting is off, so anything the plugin puts inside it must work
+	 * without JavaScript — the one place a "Load" button is guaranteed inert.
+	 *
+	 * A plain backwards look: the nearest opener before the offset with no
+	 * closer between them. `<noscript>` cannot nest, so that is exact.
+	 *
+	 * @param string $html   Fragment being rewritten.
+	 * @param int    $offset Start offset of the match.
+	 * @return bool
+	 */
+	private static function inside_noscript( string $html, int $offset ): bool {
+		$before = substr( $html, 0, $offset );
+		$open   = strripos( $before, '<noscript' );
+		if ( false === $open ) {
+			return false;
+		}
+		$close = strripos( $before, '</noscript' );
+		return false === $close || $close < $open;
 	}
 }

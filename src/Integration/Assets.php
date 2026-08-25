@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use CaluconEmbedGate\Support\AppearanceCss;
+use CaluconEmbedGate\Support\AssetVersion;
 use CaluconEmbedGate\Support\ThemePalette;
 
 /**
@@ -68,14 +69,14 @@ final class Assets {
 			'calucon-embed-gate',
 			plugins_url( 'assets/js/gate.js', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CALUCON_EMBED_GATE_VERSION,
+			AssetVersion::of( 'assets/js/gate.js' ),
 			true
 		);
 		wp_register_style(
 			'calucon-embed-gate',
 			plugins_url( 'assets/css/gate.css', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CALUCON_EMBED_GATE_VERSION
+			AssetVersion::of( 'assets/css/gate.css' )
 		);
 		// The §6.4 bridge is a separate file so the default build (bridge
 		// off) ships not a byte of CMP code to visitors.
@@ -83,20 +84,17 @@ final class Assets {
 			'calucon-embed-gate-cmp',
 			plugins_url( 'assets/js/cmp-bridge.js', CALUCON_EMBED_GATE_FILE ),
 			array( 'calucon-embed-gate' ),
-			CALUCON_EMBED_GATE_VERSION,
+			AssetVersion::of( 'assets/js/cmp-bridge.js' ),
 			true
 		);
 
 		// Consent-memory config (§6.2): only shipped when the site enabled
 		// memory. The default build stores nothing and needs no config.
-		$config = $this->inline_config_json();
-		if ( null !== $config ) {
-			wp_add_inline_script(
-				'calucon-embed-gate',
-				'window.caluconEmbedGateConfig = ' . $config . ';',
-				'before'
-			);
-		}
+		wp_add_inline_script(
+			'calucon-embed-gate',
+			'window.caluconEmbedGateConfig = ' . $this->inline_config_json() . ';',
+			'before'
+		);
 
 		// Resolve providers (fires the providers filter) and the theme
 		// palette only when the CSS will actually use them — both cost a
@@ -135,9 +133,9 @@ final class Assets {
 	 * inline before-script. Always present: the loading/error announcements
 	 * (§8) must be translatable even when consent memory is off.
 	 *
-	 * @return string|null
+	 * @return string
 	 */
-	private function inline_config_json(): ?string {
+	private function inline_config_json(): string {
 		$consent = $this->options['consent'];
 		$config  = array(
 			'i18n' => array(

@@ -1,0 +1,40 @@
+<!doctype html><meta charset="utf-8">
+<!--
+  Source for the WordPress.org listing banner. Render it with
+  `node bin/make-banner.cjs`, which writes both sizes into .wordpress-org/.
+
+  Kept as HTML, not a binary: the palette is the plugin's own — #1B1B1B,
+  #5C9E00, #BAED49, #F0F0F0, the same tokens as assets/css/gate.css and
+  .wordpress-org/icon.svg — and the mark is the icon's artwork, so the
+  banner cannot drift away from the product. It is also diffable in review.
+
+  Deliberately absent: any third-party logo (trademark risk on a directory
+  listing) and any compliance claim (PLAN.md invariant 10). System fonts
+  only, so it renders identically without a network.
+-->
+<style>
+  :root{--bg:#1b1b1b;--fg:#f0f0f0;--accent:#5c9e00;--accent-lt:#baed49;--muted:#9aa08f}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:772px;height:250px;overflow:hidden}
+  body{background:var(--bg);color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    display:flex;align-items:center;justify-content:center;gap:44px;padding:0 52px;
+    background-image:radial-gradient(90% 160% at 8% 50%, #232a1a 0%, #1b1b1b 62%)}
+  .mark{flex:none}
+  .brand{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-lt);font-weight:700;margin-bottom:9px}
+  h1{font-size:40px;line-height:1.06;font-weight:800;letter-spacing:-.015em}
+  p{margin-top:14px;font-size:16.5px;line-height:1.45;color:var(--muted);max-width:24em}
+  strong{color:var(--fg);font-weight:600}
+</style>
+<body>
+  <svg class="mark" width="160" height="160" viewBox="0 0 512 512" aria-hidden="true">
+    <rect x="80" y="157" width="352" height="198" rx="26" fill="none" stroke="#5C9E00" stroke-width="26"/>
+    <path d="M 226 214 L 226 298 L 306 256 Z" fill="none" stroke="#BAED49" stroke-width="24" stroke-linejoin="round"/>
+    <path d="M 300 300 l 92 34 -38 14 -14 38 Z" fill="#F0F0F0" stroke="#1B1B1B" stroke-width="14" stroke-linejoin="round" paint-order="stroke"/>
+  </svg>
+  <div>
+    <div class="brand">Calucon</div>
+    <h1>Third-Party Embed Gate</h1>
+    <p><strong>Nothing third-party loads until the visitor clicks.</strong> Videos, maps and social posts, gated by default.</p>
+  </div>
+</body>

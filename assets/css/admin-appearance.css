@@ -597,3 +597,305 @@
 	font-weight: 400;
 	text-decoration: underline;
 }
+
+/* ---------------------------------------------------------------------
+   Providers tab: grouped, card-shaped entries.
+
+   Deliberately not a table. Thirty-six providers in a six-column table
+   scrolls sideways on a phone and reads as a wall on a desktop; these are
+   form controls, not tabular data, so they are a list that wraps.
+   --------------------------------------------------------------------- */
+.cg-provider-filter {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin: 12px 0;
+}
+
+.cg-provider-filter[hidden] {
+	display: none;
+}
+
+.cg-provider-filter #cg-provider-filter {
+	max-width: 22em;
+}
+
+.cg-providers {
+	max-width: 60rem;
+}
+
+.cg-provider-group {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+	margin-bottom: 8px;
+}
+
+.cg-provider-group[hidden] {
+	display: none;
+}
+
+.cg-provider-group > summary {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 12px;
+	cursor: pointer;
+	font-weight: 600;
+	list-style: none;
+}
+
+.cg-provider-group > summary::-webkit-details-marker {
+	display: none;
+}
+
+.cg-provider-group > summary::before {
+	content: '';
+	flex: none;
+	width: 7px;
+	height: 7px;
+	border: solid #50575e;
+	border-width: 0 2px 2px 0;
+	transform: rotate( -45deg );
+	transition: transform 120ms ease;
+}
+
+.cg-provider-group[open] > summary::before {
+	transform: rotate( 45deg );
+}
+
+.cg-provider-group > summary:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: -2px;
+}
+
+.cg-provider-group__count {
+	margin-inline-start: auto;
+	padding: 1px 8px;
+	border-radius: 10px;
+	background: #f0f0f1;
+	color: #50575e;
+	font-size: 11px;
+	font-weight: 600;
+}
+
+.cg-provider-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	border-top: 1px solid #f0f0f1;
+}
+
+.cg-provider {
+	padding: 10px 12px;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.cg-provider[hidden] {
+	display: none;
+}
+
+.cg-provider:last-child {
+	border-bottom: 0;
+}
+
+.cg-provider--changed {
+	box-shadow: inset 3px 0 0 #2271b1;
+}
+
+.cg-provider__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 6px 16px;
+}
+
+.cg-provider__name {
+	font-weight: 600;
+	margin-inline-end: auto;
+}
+
+.cg-provider__toggles {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 16px;
+}
+
+.cg-provider__toggle {
+	white-space: nowrap;
+}
+
+.cg-provider__always {
+	color: #50575e;
+	font-size: 12px;
+}
+
+.cg-provider__more {
+	margin-top: 6px;
+}
+
+.cg-provider__more > summary {
+	display: inline-block;
+	cursor: pointer;
+	color: #2271b1;
+	font-size: 12px;
+}
+
+.cg-provider__more > summary:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}
+
+.cg-provider__fields {
+	display: grid;
+	gap: 4px 16px;
+	margin: 6px 0 2px;
+}
+
+.cg-provider__fields p {
+	margin: 0 0 6px;
+}
+
+.cg-provider__fields label {
+	display: block;
+	font-size: 12px;
+	color: #50575e;
+}
+
+.cg-provider__fields input {
+	width: 100%;
+	max-width: 32em;
+}
+
+/* Roomier screens: the two text fields sit side by side. */
+@media ( min-width: 900px ) {
+	.cg-provider__fields {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.cg-provider__fields p:last-child {
+		grid-column: 1 / -1;
+	}
+}
+
+/* "Your own providers": a five-column table with textareas does not fit a
+   phone. Below the admin breakpoint each row becomes a labelled block
+   instead of scrolling sideways. */
+@media ( max-width: 782px ) {
+	.cg-custom-providers,
+	.cg-custom-providers tbody,
+	.cg-custom-providers tr,
+	.cg-custom-providers td {
+		display: block;
+		width: auto;
+	}
+
+	.cg-custom-providers thead {
+		display: none;
+	}
+
+	.cg-custom-providers tr {
+		border-bottom: 1px solid #dcdcde;
+		padding: 6px 0 10px;
+	}
+
+	.cg-custom-providers td {
+		padding: 6px 10px;
+	}
+
+	.cg-custom-providers td::before {
+		content: attr( data-cg-label );
+		display: block;
+		margin-bottom: 2px;
+		color: #50575e;
+		font-size: 12px;
+	}
+
+	.cg-custom-providers input[type="text"],
+	.cg-custom-providers textarea,
+	.cg-custom-providers select {
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+
+	/* The kind cell pairs a fixed glyph with the select: let them share the
+	   row instead of the select claiming 100% next to the icon. */
+	.cg-custom-providers .cg-kind-cell {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		white-space: normal;
+	}
+
+	.cg-custom-providers .cg-kind-cell::before {
+		flex-basis: 100%;
+	}
+
+	.cg-custom-providers .cg-kind-cell select {
+		width: auto;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+
+/* Read-only data tables (Compatibility, the Status scan, the CSP host list)
+   are genuinely tabular, so they keep their shape and scroll inside their
+   own box on a narrow screen — the page itself must never scroll sideways.
+   The custom-provider table is a form and stacks instead (above). */
+@media ( max-width: 782px ) {
+	.cg-tab-panel table.widefat:not( .cg-custom-providers ) {
+		display: block;
+		max-width: 100%;
+		overflow-x: auto;
+	}
+}
+
+/* Status scan: the per-host actions. The cell is bounded so a long host name
+   cannot push the column to max-content (see "Responsive expectations"). */
+.cg-scan-actions {
+	white-space: nowrap;
+}
+
+.cg-scan-actions .button-link {
+	margin-inline-start: 8px;
+}
+
+/* The action that switches gating off for a host stays quieter than the one
+   that keeps it on. */
+.cg-scan-through {
+	color: #b32d2e;
+	text-decoration: underline;
+}
+
+.cg-scan-through:hover,
+.cg-scan-through:focus {
+	color: #8a2424;
+}
+
+.cg-staged {
+	max-width: 60rem;
+}
+
+.cg-staged[hidden] {
+	display: none;
+}
+
+.cg-staged__host {
+	font-weight: 600;
+}
+
+.cg-scan-cta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+	margin: 12px 0;
+}
+
+@media ( max-width: 782px ) {
+	.cg-scan-actions {
+		white-space: normal;
+	}
+}

@@ -91,21 +91,45 @@
 			} );
 		} );
 
-		// Initial tab: a panel id in the hash, or the panel containing the
-		// hash target (legacy anchors like #cg-status keep working).
+		// A panel id in the hash, or the panel containing the hash target
+		// (legacy anchors like #cg-status keep working).
+		function indexForHash( hash ) {
+			if ( ! hash ) {
+				return -1;
+			}
+			var target = document.getElementById( hash );
+			if ( ! target ) {
+				return -1;
+			}
+			// closest() matches the element itself, so a panel id and an
+			// anchor inside a panel both resolve to the right tab.
+			var panel = target.closest ? target.closest( '.cg-tab-panel' ) : target;
+			return panels.indexOf( panel );
+		}
+
+		// A link from one panel to another — Providers' "Check what is on my
+		// site" points at #cg-status — only changes the FRAGMENT once the
+		// page it links to is the page you are on (after a scan, the query
+		// already carries calucon-embed-gate-scan=1). The browser then does
+		// not reload, and without this the tab never switches: the button
+		// looks broken. select()'s own replaceState fires no hashchange, so
+		// this cannot loop.
+		window.addEventListener( 'hashchange', function () {
+			var index = indexForHash( window.location.hash.slice( 1 ) );
+			if ( index > -1 ) {
+				select( index, false );
+				// The target sits inside a panel that was hidden when the
+				// browser tried to scroll to it, so nothing moved. Show the
+				// panel from its top rather than mid-page.
+				window.scrollTo( 0, 0 );
+			}
+		} );
+
 		var initial = 0;
 		var hash = window.location.hash.slice( 1 );
-		if ( hash ) {
-			var target = document.getElementById( hash );
-			if ( target ) {
-				// closest() matches the element itself, so a panel id and an
-				// anchor inside a panel both resolve to the right tab.
-				var panel = target.closest ? target.closest( '.cg-tab-panel' ) : target;
-				var index = panels.indexOf( panel );
-				if ( index > -1 ) {
-					initial = index;
-				}
-			}
+		var fromHash = indexForHash( hash );
+		if ( fromHash > -1 ) {
+			initial = fromHash;
 		}
 
 		tablist.hidden = false;

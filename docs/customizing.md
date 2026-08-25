@@ -44,6 +44,9 @@ wp calucon-embed-gate providers --format=json # providers as the gate resolves
                                         # them (builtins + your filter)
 ```
 
+`scan` also reports a `provider` column: the resolved provider id, or
+`generic`/`generic-script` for a host no descriptor claims.
+
 In `scan` output, every third-party row should read `status: gated`.
 Other statuses mean "loads without consent, because a setting says so":
 `rule-disabled` (detection rule off), `provider-disabled` (owner disabled
@@ -79,8 +82,8 @@ Shape (see `src/Support/Options.php` for the authoritative schema):
   wildcards allowed), `www_equivalence`, `output_buffer` (bool)
 - `appearance`: `preset` (`default|minimal|card`), `corners`
   (`''|square|rounded|pill|custom`) + `radius` (0–48 px, with `custom`),
-  `border_width` (`''` or `'0'`–`'10'`), `shadow` (`''|soft|strong`),
-  `density` (`''|compact|airy`), `button_size` (`''|small|large`),
+  `border_width` (`''` or `'0'`–`'10'`), `shadow` (`''|none|soft|strong`),
+  `density` (`''|compact|spacious`), `button_size` (`''|small|large`),
   `button_style` (`''|outline`), `button_width` (`''|full`), `hover`
   (`''|strong|none`), `play_icon` (bool; kind-aware glyph), `note_size`
   (`''|small`), `align` (`''|center`), `poster_panel` (`''|center|bar`),
@@ -133,6 +136,20 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 			// Optional: named captures interpolated (URL-encoded) into
 			// load_path / fallback as {id}-style tokens.
 			'iframe_path' => '#^/embed/(?<id>[A-Za-z0-9_-]+)#',
+			// Optional: captures from the query string (Dailymotion keeps the
+			// id in ?video=). Never decides the match; a template whose
+			// placeholder finds no capture is dropped, never shipped literally.
+			// One pattern, or a LIST of them (one per parameter) when the
+			// provider writes them in any order: 'iframe_query' => array(
+			// '/(?:^|&)u=(?<u>[a-z0-9_.-]+)/i', '/(?:^|&)d=(?<d>…)/i' ).
+			'iframe_query' => '/(?:^|&)video=(?<id>[A-Za-z0-9]+)/',
+			// Script-strategy providers: 'script_host' (+ optional 'script_path'
+			// with captures, e.g. Crowdsignal's /p/{id}.js) and 'companion_class'.
+			// A script, inline loader or stylesheet from these hosts that sits
+			// next to a panel of the same provider becomes a SILENT companion:
+			// gated without a panel, loaded by gate.js after that panel's click.
+			// "Next to" is literal — same block, no blank line between them —
+			// so a second embed from the same provider keeps its own panel.
 		),
 		// Optional privacy-preserving load target used after the click.
 		'load_host'   => 'embed-nocookie.example-videos.com',
@@ -150,11 +167,22 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 } );
 ```
 
-All keys and defaults: `src/Providers/Provider.php` (`normalize()`); the 21
+Inline scripts are gated only when they name a known provider's script host,
+and then only if they either inject a loader (Scribd, Crowdsignal surveys) or
+sit next to an already-gated panel of that provider (Wolfram's `embed()`
+call). A script of your own that merely mentions a provider URL keeps running
+untouched, and an inline script never gets a panel of its own. The script body
+is carried in the payload and re-run after consent, with `document.write`
+shimmed to append so a loader that uses it cannot replace the page. Stylesheets in content are gated only as companions of
+a gated provider (Wolfram Cloud); a theme's own third-party stylesheets are
+outside an embed gate's scope (the Compatibility screen reports them).
+
+All keys and defaults: `src/Providers/Provider.php` (`normalize()`); the 36
 built-in descriptors in `src/Providers/Builtin/Descriptors.php` are working
 examples of every pattern, including script-strategy embeds
-(`match.script_host`, `companion_class`, `companion_fallback`) and sibling
-CDN hosts for resource-hint scrubbing (`scrub_hint_hosts`).
+(`match.script_host`, `script_path`, `companion_class`,
+`companion_fallback`), query-string captures (`match.iframe_query`) and
+sibling CDN hosts for resource-hint scrubbing (`scrub_hint_hosts`).
 
 Notes:
 
@@ -167,6 +195,70 @@ Notes:
   imply `www.youtube.com` in `match`).
 - Then verify: `wp calucon-embed-gate providers` must list it;
   `wp calucon-embed-gate scan` must show its embeds `gated` with your label.
+
+The withdrawal control renders as
+`<span class="cg-withdraw-block"><button class="cg-withdraw" …></button><span
+class="cg-withdraw__status">…</span></span>`. The wrapper is block-level so a
+block theme's constrained layout can place it — auto margins do nothing to a
+bare inline-level button, which then hugs the page edge. Style the button
+with `.cg-withdraw`; the wrapper only carries layout.
+
+## After a script embed loads
+
+A loader script (X, Instagram, Reddit, TikTok, …) normally scans the page
+once, when it first runs. Injected after a click it may need a nudge to draw
+an embed that was not there at parse time. `gate.js` ships hooks for the
+providers where that is known to be needed (`strava`, `twitter`, `instagram`,
+`facebook`) and lets a site add its own — before or after the script loads:
+
+```js
+window.caluconEmbedGateReadyHooks = window.caluconEmbedGateReadyHooks || {};
+window.caluconEmbedGateReadyHooks.tiktok = function () {
+	if ( window.tiktokEmbed && window.tiktokEmbed.lib ) {
+		window.tiktokEmbed.lib.render();
+	}
+};
+```
+
+The key is the provider id (`wp calucon-embed-gate providers` lists them).
+A hook registered here wins over the built-in one for that provider.
+
+Where a provider publishes **both** an iframe embed code and a loader script,
+prefer the iframe: it renders on its own, whereas some loaders only draw
+while the document is still parsing and come up empty when injected later —
+which happens with or without this plugin.
+
+## Testing successive builds
+
+Assets are enqueued with the plugin version, so `gate.css?ver=1.2.3` only
+changes when the version does — correct for a live site, awkward on a test
+site where several builds of one version replace each other and the browser
+keeps the copy it already has. Clearing a page cache or CDN will not help:
+the stale file is in the browser.
+
+Set any of `SCRIPT_DEBUG`, `WP_DEBUG`, or `WP_ENVIRONMENT_TYPE` to something
+other than `production` in `wp-config.php` on that site, and the plugin
+appends each file's modification time to its version instead, so every build
+gets fresh URLs.
+
+If the site is genuinely production and you would rather not say otherwise —
+a live site you also test on — set the plugin's own flag instead:
+
+```php
+define( 'CALUCON_EMBED_GATE_DEV_ASSETS', true );
+```
+
+It wins over everything above, in both directions: `false` keeps stable URLs
+on a site that is otherwise flagged for development.
+
+For full control — a multi-server site wanting a build hash, which is stable
+across machines in a way a timestamp is not — filter the result:
+
+```php
+add_filter( 'calucon_embed_gate_asset_version', function ( $version, $file ) {
+	return $version . '.' . MY_BUILD_HASH;   // $file is e.g. 'assets/js/gate.js'
+}, 10, 2 );
+```
 
 ## Adjusting behaviour with filters
 
@@ -181,7 +273,7 @@ add_filter( 'calucon_embed_gate_should_gate', fn( $gate, $url, $ctx ) =>
 	false !== strpos( $url, 'widgets.already-covered.example' ) ? false : $gate, 10, 3 );
 ```
 
-All hooks: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`,
+All hooks: `calucon_embed_gate_asset_version`, `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`,
 `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`,
 `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`,
 `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`,
@@ -260,6 +352,19 @@ minimum contract it must keep (container classes/attributes, a real
 `<button type="button">`, the server-rendered fallback link). Keep the
 panel's name on `role="group"` + `aria-label` — do not substitute a
 heading; the correct heading level cannot be known from inside an embed.
+
+`$show_button` is `false` when the panel sits inside `<noscript>` — markup a
+browser renders only with scripting off, where no script could ever wire a
+button up. Render the note and the link there, not the button; a template that
+ignores the variable keeps its button, which is what older overrides do.
+
+The template also receives `$privacy_url` and `$privacy_label` — the
+provider's own policy page and its link text, both `''` unless the site
+enabled the privacy link. If your template renders them, keep the
+`cg-embed__privacy` class: scripts (this plugin's and other people's) find
+the fallback and privacy links by class, never as "the last link in the
+panel". A template copied from 0.9.x has no such block, so the link stays
+invisible however the setting is configured — add it when you update.
 
 The template receives a `$poster` variable — the site-origin poster image
 chosen in the block editor ('' when none). If your template renders it,

@@ -154,3 +154,69 @@ test( 'owner-defined providers: zero third-party requests, built-ins keep their 
 	await video.locator( 'button' ).click();
 	await expect( video.locator( 'iframe' ) ).toHaveAttribute( 'src', /youtube-nocookie\.com/ );
 } );
+
+test( 'silent companions: nothing loads before the click; after it, the inline injector and stylesheets follow their panel', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+	const attempted = [];
+	// Third-party requests are answered with stubs so loads "succeed"; the
+	// test only needs to see WHEN they are attempted.
+	await page.route( '**/*', ( route ) => {
+		const url = route.request().url();
+		if ( url.startsWith( 'http://127.0.0.1' ) ) {
+			return route.continue();
+		}
+		attempted.push( url );
+		if ( url.endsWith( '.css' ) ) {
+			return route.fulfill( { contentType: 'text/css', body: '' } );
+		}
+		if ( url.endsWith( '.js' ) || url.includes( 'embedder' ) ) {
+			return route.fulfill( { contentType: 'application/javascript', body: 'window.cgEmbedderLoaded = true;' } );
+		}
+		return route.fulfill( { contentType: 'text/html', body: '<p>frame</p>' } );
+	} );
+
+	await page.goto( '/page/companions' );
+	await page.waitForLoadState( 'networkidle' );
+	expect( offenders, 'INVARIANT 1 VIOLATED — third-party requests before any click' ).toEqual( [] );
+	expect( attempted ).toEqual( [] );
+
+	// Two visible panels (Scribd, Wolfram); the injector, the two
+	// stylesheets and the inline call are silent companions.
+	await expect( page.locator( '.cg-embed[role="group"]' ) ).toHaveCount( 2 );
+	await expect( page.locator( '.cg-embed--silent' ) ).toHaveCount( 4 );
+	expect( await page.evaluate( () => window.cgWolframInlineRan ) ).toBeUndefined();
+	await expect( page.locator( 'link[rel="stylesheet"][href*="wolframcloud"]' ) ).toHaveCount( 0 );
+
+	// Scribd: the iframe loads, then its inline injector runs and fetches inject.js.
+	await page.locator( '.cg-embed[data-cg-provider="scribd"] button' ).click();
+	await expect.poll( () => attempted.filter( ( u ) => u.includes( 'inject.js' ) ).length ).toBe( 1 );
+	expect( attempted.filter( ( u ) => u.includes( 'wolframcloud' ) ) ).toEqual( [] );
+
+	// Wolfram: the embedder script loads, then both stylesheets and the inline call follow.
+	await page.locator( '.cg-embed[data-cg-provider="wolfram-cloud"] button' ).click();
+	await expect.poll( () => attempted.filter( ( u ) => u.includes( 'wolframcloud.com/dist/' ) ).length ).toBe( 2 );
+	await expect.poll( () => page.evaluate( () => window.cgWolframInlineRan ) ).toBe( true );
+	await expect( page.locator( 'link[rel="stylesheet"][href*="wolframcloud"]' ) ).toHaveCount( 2 );
+	await expect( page.locator( '.cg-embed--silent[data-cg-activated="1"]' ) ).toHaveCount( 4 );
+} );
+
+test( 'a deferred document.write loader appends instead of wiping the page', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+
+	await page.goto( '/page/inline-write' );
+	await page.waitForLoadState( 'networkidle' );
+	expect( offenders ).toEqual( [] );
+
+	// Gated: the loader has not run, so nothing was written yet.
+	await expect( page.locator( '#cg-written' ) ).toHaveCount( 0 );
+	const panel = page.locator( '.cg-embed[data-cg-provider="scribd"]' );
+	await expect( panel ).toHaveCount( 1 );
+
+	await panel.locator( 'button' ).click();
+
+	// The write landed AND the page survived — without the shim, document.write
+	// after load replaces the whole document and the heading disappears.
+	await expect( page.locator( '#cg-written' ) ).toHaveCount( 1 );
+	await expect( page.locator( 'h1' ) ).toBeVisible();
+	await expect( page.locator( 'main' ) ).toContainText( 'written by the loader' );
+} );

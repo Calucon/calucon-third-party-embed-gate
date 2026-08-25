@@ -154,8 +154,8 @@ if ( '/page/memory' === $uri ) {
 	// Consent memory enabled (provider scope, session lifetime) plus the
 	// withdrawal control a site would place in its privacy policy.
 	$content = '<iframe title="Video" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>'
-		. "\n" . '<button type="button" class="cg-withdraw" data-cg-withdraw aria-controls="cg-withdraw-status">Withdraw embed consents</button>'
-		. '<span id="cg-withdraw-status" class="cg-withdraw__status" role="status" aria-live="polite"></span>';
+		. "\n" . '<span class="cg-withdraw-block"><button type="button" class="cg-withdraw" data-cg-withdraw aria-controls="cg-withdraw-status">Withdraw embed consents</button>'
+		. '<span id="cg-withdraw-status" class="cg-withdraw__status" role="status" aria-live="polite"></span></span>';
 
 	cg_e2e_page(
 		$content,
@@ -286,6 +286,117 @@ if ( '/page/custom-provider' === $uri ) {
 	);
 
 	cg_e2e_page( $content, '', '', array(), '', $providers );
+	return true;
+}
+
+if ( '/page/companions' === $uri ) {
+	// Silent companions (§3.5): Scribd's inline injector next to its
+	// iframe, and Wolfram's stylesheets + embedder script + inline call.
+	$content = implode(
+		"\n",
+		array(
+			'<iframe class="scribd_iframe_embed" src="https://www.scribd.com/embeds/123456789/content" width="100%" height="500" frameborder="0"></iframe>',
+			'<script>(function(){var s=document.createElement("script");s.src="https://www.scribd.com/javascripts/embed_code/inject.js";document.head.appendChild(s);})()</script>',
+			'<div id="nb1"><link rel="stylesheet" href="https://www.wolframcloud.com/dist/a.css"><link rel="stylesheet" href="https://www.wolframcloud.com/dist/b.css"></div>',
+			'<script src="https://www.wolframcloud.com/obj/redirect/notebook-embedder-oembed-lib"></script>',
+			'<script>window.cgWolframInlineRan = true;window.cgWolframInlineSawSdk = !! window.cgEmbedderLoaded;var u = "https://www.wolframcloud.com/obj/x/Public/Example.nb";</script>',
+		)
+	);
+
+	cg_e2e_page( $content );
+	return true;
+}
+
+if ( '/page/companions-memory' === $uri ) {
+	// The same page with consent memory on. A companion must be activated BY
+	// its panel on the restore path too: activated independently, the inline
+	// call runs before the SDK it calls into and the embed never renders.
+	$content = implode(
+		"\n",
+		array(
+			'<div id="nb1"><link rel="stylesheet" href="https://www.wolframcloud.com/dist/a.css"></div>',
+			'<script src="https://www.wolframcloud.com/obj/redirect/notebook-embedder-oembed-lib"></script>',
+			'<script>window.cgWolframInlineRan = true;window.cgWolframInlineSawSdk = !! window.cgEmbedderLoaded;var u = "https://www.wolframcloud.com/obj/x/Public/Example.nb";</script>',
+		)
+	);
+
+	cg_e2e_page(
+		$content,
+		'',
+		'window.caluconEmbedGateConfig = {"memory":"session","scope":"provider","durationDays":180};'
+	);
+	return true;
+}
+
+if ( '/page/memory-inline' === $uri ) {
+	// Two inline loaders from DIFFERENT providers, remembered per embed.
+	// An inline payload has no src to key on, so both would collapse onto
+	// one grant — and consenting to one would load the other unasked.
+	$content = implode(
+		"\n",
+		array(
+			'<script>(function(){var s=document.createElement("script");s.src="https://www.scribd.com/javascripts/embed_code/inject.js";document.head.appendChild(s);})()</script>',
+			'<p>Between two embeds.</p>',
+			'<script>(function(){var pd=document.createElement("script");pd.src="https://app.crowdsignal.com/survey.js";document.body.appendChild(pd);}());</script>',
+		)
+	);
+
+	cg_e2e_page(
+		$content,
+		'',
+		'window.caluconEmbedGateConfig = {"memory":"session","scope":"embed","durationDays":180};'
+	);
+	return true;
+}
+
+if ( '/page/inline-write' === $uri ) {
+	// A provider loader that uses document.write. None of the bundled
+	// providers do, but running one after load would REPLACE the whole
+	// document — gate.js shims document.write while the deferred code runs.
+	$content = '<script>document.write(\'<p id="cg-written">written by the loader</p>\');'
+		. 'var loader = "https://www.scribd.com/javascripts/embed_code/inject.js";</script>';
+
+	cg_e2e_page( $content );
+	return true;
+}
+
+if ( '/page/narrow' === $uri ) {
+	// The panel must never be clipped by the box reserved from the embed's
+	// aspect ratio: on a phone the notice, button and links are taller than
+	// 9/16 of the width, and a scrollbar nobody sees hides the privacy link.
+	$content = '<iframe title="Video" width="560" height="315" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>';
+	// A roomy theme font, as on the showcase page: the panel then needs more
+	// height than 9/16 of a phone's width.
+	$css = '.cg-embed{font-size:18px;line-height:1.7;font-family:monospace}';
+
+	cg_e2e_page( $content, $css, '', array( 'privacy_link' => true ) );
+	return true;
+}
+
+if ( '/page/companion-hole' === $uri ) {
+	// A script-strategy embed whose companion is an EMPTY sized box (the
+	// Calendly inline widget): gated, it must not leave a tall blank gap.
+	$content = '<div class="calendly-inline-widget" data-url="https://calendly.com/placeholder" style="min-width:320px;height:580px;"></div>'
+		. '<script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>';
+
+	cg_e2e_page( $content );
+	return true;
+}
+
+if ( '/page/withdraw-layout' === $uri ) {
+	// A block theme's constrained layout, as WordPress emits it: the content
+	// wrapper is full width and its direct children are centred with
+	// margin-inline:auto. That does nothing to an inline-level <button>, so
+	// a bare control lands against the left edge of the page instead of
+	// lining up with the text.
+	$content = '<p class="cg-text">Consent memory is off here, so nothing is stored.</p>'
+		. '<span class="cg-withdraw-block"><button type="button" class="cg-withdraw" data-cg-withdraw aria-controls="cg-withdraw-status-1">Withdraw embed consents</button>'
+		. '<span id="cg-withdraw-status-1" class="cg-withdraw__status" role="status" aria-live="polite"></span></span>'
+		. '<p class="cg-text">Another paragraph after it.</p>';
+
+	$theme_css = 'main{width:100%;} main > *{max-width:645px;margin-left:auto !important;margin-right:auto !important;}';
+
+	cg_e2e_page( $content, $theme_css );
 	return true;
 }
 

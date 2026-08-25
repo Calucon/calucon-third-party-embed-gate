@@ -80,12 +80,18 @@ final class ScriptRule {
 			return $html;
 		}
 
+		$inline = array();
 		foreach ( array_reverse( $matches ) as $match ) {
 			$attributes = $match['attributes'];
 
-			// Inline scripts have no src and cause no request; scripts the
-			// site serves itself are the owner's own decision.
+			// Inline scripts cause no request by themselves — unless they
+			// inject a known provider's loader (Scribd, Crowdsignal surveys).
+			// Those are handled in a second pass, after every external script
+			// of the same provider has its panel, so the inline loader can
+			// attach to it silently. Scripts the site serves itself are the
+			// owner's own decision.
 			if ( ! isset( $attributes['src'] ) || ! is_string( $attributes['src'] ) ) {
+				$inline[] = $match;
 				continue;
 			}
 			$src = trim( $attributes['src'] );
@@ -108,10 +114,20 @@ final class ScriptRule {
 			if ( empty( $ctx['force_gate'] ) && false === $provider['enabled'] ) {
 				continue;
 			}
+			// A loader script that accompanies an iframe of the SAME provider
+			// (VideoPress pastes one after its player) is part of that embed,
+			// not a second one: gate it silently — no panel of its own — and
+			// gate.js injects it once the visible panel is activated. Only
+			// when that panel exists in this fragment (the iframe rule ran
+			// first); a lone loader keeps its own panel and fallback link.
+			$silent = 'iframe' === $provider['strategy']
+				&& false !== strpos( $html, 'data-cg-provider="' . $provider['id'] . '"' )
+				&& $this->has_adjacent_panel( $html, $provider['id'], $match['start'], $match['end'] );
+
 			$provider['strategy'] = 'script';
 			$provider['fallback'] = $this->resolve_fallback( $provider, $html, $match['start'], $match['end'], $host );
 
-			$placeholder = $this->renderer->render( $provider, $src, array(), $ctx );
+			$placeholder = $this->renderer->render( $provider, $src, array(), $silent ? $ctx + array( 'silent' => true ) : $ctx );
 
 			$html = substr( $html, 0, $match['start'] ) . $placeholder . substr( $html, $match['end'] );
 
@@ -120,6 +136,233 @@ final class ScriptRule {
 			}
 		}
 
+		return $this->apply_inline( $html, $inline, $ctx );
+	}
+
+	/**
+	 * Is there a visible panel for this provider NEXT TO this script?
+	 *
+	 * "Somewhere in the fragment" is not good enough. A post with two embeds
+	 * from one provider — a Crowdsignal poll and a Crowdsignal survey — has a
+	 * panel for the first, and the second's loader would then be silenced by
+	 * it: no panel, no fallback link, and it loads on the other embed's click.
+	 * One consent standing for two embeds, and a no-JS visitor left with no
+	 * link at all (invariant 2).
+	 *
+	 * Adjacency is structural, not a character count: the panel and the script
+	 * must sit in the same block, with no block-level tag and no blank line
+	 * between them. WordPress wraps each embed in its own <figure>, so the
+	 * boundary between two embeds is always crossed.
+	 *
+	 * Silent spans are skipped — a companion cannot vouch for a companion —
+	 * and anything unrecognised fails towards a panel of its own, which is the
+	 * safe direction: a visible extra panel, never a silenced embed.
+	 *
+	 * @param string $html         Fragment being rewritten.
+	 * @param string $provider_id  Provider whose panel to look for.
+	 * @param int    $script_start Start offset of the script tag.
+	 * @param int    $script_end   Offset just past the script tag.
+	 * @return bool
+	 */
+	private function has_adjacent_panel( string $html, string $provider_id, int $script_start, int $script_end ): bool {
+		foreach ( $this->scanner->find_tags( $html, 'div' ) as $tag ) {
+			$attributes = $tag['attributes'];
+			if ( ! isset( $attributes['data-cg-provider'] ) || $attributes['data-cg-provider'] !== $provider_id ) {
+				continue;
+			}
+			$class = isset( $attributes['class'] ) ? (string) $attributes['class'] : '';
+			if ( false === strpos( $class, 'cg-embed' ) || false !== strpos( $class, 'cg-embed--silent' ) ) {
+				continue;
+			}
+
+			if ( $tag['end'] <= $script_start ) {
+				$gap = substr( $html, $tag['end'], $script_start - $tag['end'] );
+			} elseif ( $tag['start'] >= $script_end ) {
+				$gap = substr( $html, $script_end, $tag['start'] - $script_end );
+			} else {
+				continue;
+			}
+
+			if ( ! self::block_boundary_between( $gap ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Does this text separate two blocks? Any block-level tag, or the blank
+	 * line that separates block-level content in classic (unwrapped) posts.
+	 *
+	 * @param string $gap Markup between a panel and a script.
+	 * @return bool
+	 */
+	private static function block_boundary_between( string $gap ): bool {
+		return 1 === preg_match( '#</?(?:figure|p|section|article|aside|main|h[1-6]|hr|table|ul|ol|blockquote)\b#i', $gap )
+			|| 1 === preg_match( '/\n\s*\n/', $gap );
+	}
+
+	/**
+	 * Does the provider host appear in this code as a STRING — the shape of a
+	 * URL something is about to fetch — rather than only in a comment?
+	 *
+	 * The injection probe alone ("this script calls createElement, and names a
+	 * provider host somewhere") is too generous: a site's own script that
+	 * assigns any `.src` and mentions a provider URL in a comment matched it,
+	 * and matching means the script is REMOVED and replaced by a "Load …"
+	 * panel — the site's own code silently stops running. Requiring the host
+	 * to sit inside a string literal separates "loads this" from "talks about
+	 * this" without narrowing which injection shapes count: a loader built any
+	 * of the four ways still carries its URL in a string.
+	 *
+	 * Tightened deliberately on WHERE the host appears, never on HOW it is
+	 * injected: the failure mode of a narrower injection list is a provider
+	 * loader running before the click (invariant 1), which is far worse than
+	 * a false positive.
+	 *
+	 * @param string $code Inline script body.
+	 * @param string $host Provider host the resolver matched.
+	 * @return bool
+	 */
+	private static function host_in_string_literal( string $code, string $host ): bool {
+		$needle = '//' . strtolower( $host ) . '/';
+		$size   = strlen( $needle );
+		$lower  = strtolower( $code );
+		$length = strlen( $lower );
+		$quote  = '';
+		$i      = 0;
+
+		while ( $i < $length ) {
+			$char = $lower[ $i ];
+
+			if ( '' !== $quote ) {
+				if ( '\\' === $char ) {
+					$i += 2;
+					continue;
+				}
+				if ( $char === $quote ) {
+					$quote = '';
+					++$i;
+					continue;
+				}
+				if ( $i + $size <= $length && 0 === substr_compare( $lower, $needle, $i, $size ) ) {
+					return true;
+				}
+				++$i;
+				continue;
+			}
+
+			// Outside a string, skip comments whole so a URL written in one
+			// never counts. A bare URL outside a string is not code anyone
+			// fetches either way, so reading `//` as a comment start here is
+			// safe.
+			if ( '/' === $char && $i + 1 < $length ) {
+				if ( '/' === $lower[ $i + 1 ] ) {
+					$end = strpos( $lower, "\n", $i );
+					$i   = false === $end ? $length : $end + 1;
+					continue;
+				}
+				if ( '*' === $lower[ $i + 1 ] ) {
+					$end = strpos( $lower, '*/', $i + 2 );
+					$i   = false === $end ? $length : $end + 2;
+					continue;
+				}
+			}
+
+			if ( "'" === $char || '"' === $char || '`' === $char ) {
+				$quote = $char;
+			}
+			++$i;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Second pass: inline scripts that inject a known provider's loader.
+	 * The offsets still hold because the first pass replaced later matches
+	 * first and we walk these from the end as well — but an earlier
+	 * replacement could have shifted nothing before it, so re-scan to be
+	 * safe: the scanner is cheap and the list is short.
+	 *
+	 * @param string  $html    Fragment after the external-script pass.
+	 * @param array[] $pending Inline matches from the first pass (ignored; re-scanned).
+	 * @param array   $ctx     Integration context.
+	 * @return string
+	 */
+	private function apply_inline( string $html, array $pending, array $ctx ): string {
+		if ( array() === $pending || false === stripos( $html, '<script' ) ) {
+			return $html;
+		}
+		foreach ( array_reverse( $this->scanner->find_tags( $html, 'script' ) ) as $match ) {
+			if ( isset( $match['attributes']['src'] ) ) {
+				continue;
+			}
+			$span = substr( $html, $match['start'], $match['end'] - $match['start'] );
+			if ( ! preg_match( '#^<script\b[^>]*>(.*)</script\s*>$#is', $span, $m ) ) {
+				continue;
+			}
+			$code = $m[1];
+			if ( '' === trim( $code ) ) {
+				continue;
+			}
+			$provider = $this->providers->resolve_for_inline_script( $code );
+			if ( null === $provider ) {
+				continue;
+			}
+			if ( empty( $ctx['force_gate'] ) && false === $provider['enabled'] ) {
+				continue;
+			}
+			$host = '';
+			foreach ( (array) $provider['match']['script_host'] as $candidate ) {
+				if ( false !== stripos( $code, '//' . $candidate . '/' ) ) {
+					$host = (string) $candidate;
+					break;
+				}
+			}
+			if ( empty( $ctx['force_gate'] ) && null !== $this->should_gate
+				&& ! call_user_func( $this->should_gate, true, 'https://' . $host . '/', $ctx ) ) {
+				continue;
+			}
+
+			// Two very different inline scripts name a provider host:
+			//
+			//  - one that INJECTS the provider's loader (Scribd's, and the
+			//    Crowdsignal survey bootstrap) — a request on load, so it is
+			//    gated wherever it appears, with its own panel if it is the
+			//    only thing standing for that embed;
+			//  - one that merely CALLS into an already-gated script (Wolfram's
+			//    embed() line) or just mentions a URL — no request by itself.
+			//    Gating that is only right as a silent companion of a panel
+			//    that already exists; a site's own script that happens to name
+			//    a provider URL must keep running, and must never sprout a
+			//    "Load content from …" panel of its own.
+			$silent  = false !== strpos( $html, 'data-cg-provider="' . $provider['id'] . '"' )
+				&& $this->has_adjacent_panel( $html, $provider['id'], $match['start'], $match['end'] );
+			$injects = 1 === preg_match( '/createElement|\.src\s*=|document\.write|insertAdjacentHTML/i', $code )
+				&& self::host_in_string_literal( $code, $host );
+			if ( ! $injects && ! $silent ) {
+				continue;
+			}
+
+			$provider['strategy'] = 'script';
+			$provider['fallback'] = $this->resolve_fallback( $provider, $html, $match['start'], $match['end'], $host );
+
+			$placeholder = $this->renderer->render(
+				$provider,
+				'https://' . $host . '/',
+				array(),
+				$silent ? $ctx + array( 'silent' => true ) : $ctx,
+				array( 'inline' => $code )
+			);
+
+			$html = substr( $html, 0, $match['start'] ) . $placeholder . substr( $html, $match['end'] );
+
+			if ( null !== $this->on_gated ) {
+				call_user_func( $this->on_gated, $provider, $ctx );
+			}
+		}
 		return $html;
 	}
 

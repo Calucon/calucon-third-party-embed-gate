@@ -514,12 +514,13 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	await expect( page.locator( 'h1' ) ).toContainText( 'Calucon Third-Party Embed Gate' );
 
 	// Providers is the default tab; the other panels are behind their tabs.
-	await expect( page.locator( 'td', { hasText: 'YouTube' } ).first() ).toBeVisible();
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="youtube"]' ) ).toHaveCount( 1 );
+	await expect( page.locator( '#cg-provider-filter' ) ).toBeVisible();
 	await expect( page.locator( '#cg-own-hosts' ) ).toBeHidden();
 
 	await page.click( '#cg-tabbtn-detection' );
 	await expect( page.locator( '#cg-own-hosts' ) ).toBeVisible();
-	await expect( page.locator( 'td', { hasText: 'YouTube' } ).first() ).toBeHidden();
+	await expect( page.locator( '#cg-provider-filter' ) ).toBeHidden();
 
 	await page.click( '#cg-tabbtn-consent' );
 	await expect( page.locator( '#cg-memory' ) ).toBeVisible();
@@ -541,6 +542,17 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&calucon-embed-gate-scan=1#cg-status' );
 	await expect( page.locator( '#cg-tabbtn-status' ) ).toHaveAttribute( 'aria-selected', 'true' );
 	await expect( page.locator( '#cg-status' ) ).toBeVisible();
+
+	// …and once a scan HAS run, Providers' "Check what is on my site" leads
+	// back to those results. Its href then differs from the current URL only
+	// in the fragment, so the browser changes the hash without reloading —
+	// which used to leave the button doing nothing at all.
+	await page.click( '#cg-tabbtn-providers' );
+	await expect( page.locator( '#cg-status' ) ).toBeHidden();
+	await page.click( '#cg-tab-providers a.button[href*="calucon-embed-gate-scan"]' );
+	await expect( page.locator( '#cg-tabbtn-status' ) ).toHaveAttribute( 'aria-selected', 'true' );
+	await expect( page.locator( '#cg-status' ) ).toBeVisible();
+	await expect( page.locator( '#cg-scan-results' ) ).toBeVisible();
 } );
 
 test( 'editor: the per-block gate control appears in the block inspector', async ( { page } ) => {
@@ -873,7 +885,7 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	await expect( added.locator( 'select option' ) ).toHaveCount( 10 );
 	await added.locator( 'select' ).selectOption( 'social' );
 	await expect( added.locator( '.cg-kind-glyph' ) ).toHaveAttribute( 'data-cg-kind', 'social' );
-	await expect( page.locator( '#cg-tab-providers table' ).first().locator( 'tbody tr', { hasText: 'YouTube' } ).locator( '.cg-kind-glyph' ) ).toHaveAttribute( 'data-cg-kind', 'video' );
+	await expect( page.locator( '.cg-provider-group[data-cg-kind-group="video"] .cg-provider[data-cg-provider-row="youtube"]' ) ).toHaveCount( 1 );
 	const glyphMask = await added.locator( '.cg-kind-glyph' ).evaluate( ( el ) => getComputedStyle( el ).maskImage || getComputedStyle( el ).webkitMaskImage );
 	expect( glyphMask ).toContain( 'data:image/svg+xml' );
 	await blank.locator( 'input[type="text"]' ).fill( 'Widget SDK' );
@@ -892,10 +904,10 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	// …and both appear in the main table, marked, always gated (no Gate
 	// checkbox: a custom row can name a host, never exempt it), with the
 	// usual note / button text / privacy-URL controls.
-	const mainRow = page.locator( '#cg-tab-providers table' ).first().locator( 'tbody tr', { hasText: 'Example Partner' } );
+	const mainRow = page.locator( '.cg-provider[data-cg-provider-row="custom-example-partner"]' );
 	await expect( mainRow.locator( '.cg-tag' ) ).toHaveText( 'added by you' );
 	await expect( mainRow.locator( 'input[name$="[enabled]"]' ) ).toHaveCount( 0 );
-	await expect( mainRow ).toContainText( 'always' );
+	await expect( mainRow ).toContainText( 'always gated' );
 
 	// A row claiming a built-in's hosts is refused with a notice; what it
 	// does not claim survives. YouTube keeps its host and nocookie load.
@@ -914,7 +926,11 @@ test( 'admin: an owner-defined provider names an unknown host, takes its own not
 	await thiefRow.locator( 'input[type="checkbox"][name$="[remove]"]' ).check();
 	await page.click( '#submit' );
 	await expect( page.locator( '#cg-custom-providers input[type="text"][value="Tube Thief"]' ) ).toHaveCount( 0 );
-	await expect( mainRow.locator( '.cg-kind-glyph' ) ).toHaveAttribute( 'data-cg-kind', 'social' );
+	await expect( page.locator( '.cg-provider-group[data-cg-kind-group="social"] .cg-provider[data-cg-provider-row="custom-example-partner"]' ) ).toHaveCount( 1 );
+	// The wording fields sit behind a per-provider disclosure, inside a
+	// group that is collapsed until something in it is customised.
+	await page.locator( '.cg-provider-group[data-cg-kind-group="social"]' ).evaluate( ( d ) => { d.open = true; } );
+	await mainRow.locator( '.cg-provider__more' ).evaluate( ( d ) => { d.open = true; } );
 	await mainRow.locator( 'input[name$="[note]"]' ).fill( 'Partner rules apply.' );
 	await mainRow.locator( 'input[name$="[privacy_url]"]' ).fill( 'https://example-partner.com/privacy' );
 	await page.check( 'input[name$="[display][privacy_link]"][type="checkbox"]' ); // the link is off by default
@@ -1024,4 +1040,218 @@ test( 'front end: per-embed block texts are stripped of markup and capped', asyn
 	expect( note.startsWith( 'Own notice.' ) ).toBe( true );
 	expect( note ).not.toContain( '<em>' );
 	expect( note.length ).toBe( 400 );
+} );
+
+test( 'admin: browsing the settings never claims unsaved changes; a real edit still does', async ( { page } ) => {
+	await login( page );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.waitForSelector( '.cg-tabs' );
+	await page.waitForTimeout( 1200 ); // let the colour pickers settle
+
+	const dirty = () => page.evaluate( () => document.body.classList.contains( 'cg-has-unsaved' ) );
+
+	// Reading the screen is not editing it: tabs, disclosures, scrolling and
+	// opening a colour menu must all leave the warning alone (Simon hit this
+	// twice — the old rule armed on any pointer event in the form).
+	for ( const tab of [ 'detection', 'appearance', 'consent', 'status', 'providers' ] ) {
+		await page.click( `#cg-tabbtn-${ tab }` );
+		await page.waitForTimeout( 250 );
+		expect( await dirty(), `switching to ${ tab } must not look like an edit` ).toBe( false );
+	}
+	await page.locator( '.cg-provider-group' ).first().locator( ':scope > summary' ).click();
+	await page.locator( '.cg-provider' ).first().locator( '.cg-provider__more > summary' ).click();
+	expect( await dirty(), 'opening disclosures must not look like an edit' ).toBe( false );
+
+	await page.click( '#cg-tabbtn-appearance' );
+	// Open every section explicitly — clicking the first summary would close
+	// the one the colour controls live in.
+	await page.evaluate( () => document.querySelectorAll( '#cg-tab-appearance details.cg-section' ).forEach( ( d ) => { d.open = true; } ) );
+	await page.locator( 'details[data-cg-color-key="bg"] > summary' ).click();
+	await page.mouse.wheel( 0, 400 );
+	await page.waitForTimeout( 400 );
+	expect( await dirty(), 'opening a colour menu must not look like an edit' ).toBe( false );
+	await expect( page.locator( '#cg-unsaved' ) ).toBeHidden();
+
+	// …but changing a value does.
+	await page.locator( 'details[data-cg-color-key="bg"] input[value^="preset:"]' ).first().check();
+	await expect( page.locator( 'body' ) ).toHaveClass( /cg-has-unsaved/ );
+	await expect( page.locator( '#cg-unsaved' ) ).toBeVisible();
+
+	// And undoing it by hand clears the warning again.
+	await page.locator( '#cg-undo' ).click();
+	await page.waitForTimeout( 300 );
+	expect( await dirty() ).toBe( false );
+} );
+
+test( 'admin: the provider list is grouped, filterable and fits a phone', async ( { page } ) => {
+	await login( page );
+	await page.setViewportSize( { width: 390, height: 844 } );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.waitForSelector( '.cg-tabs' );
+
+	// Thirty-six providers collapse to a handful of groups, and the page
+	// does not scroll sideways on a phone.
+	const groups = page.locator( '.cg-provider-group' );
+	expect( await groups.count() ).toBeGreaterThan( 5 );
+	await expect( page.locator( '.cg-provider-group[open]' ) ).toHaveCount( 0 );
+	const overflow = await page.evaluate( () => document.documentElement.scrollWidth <= document.documentElement.clientWidth );
+	expect( overflow, 'no horizontal overflow at 390px' ).toBe( true );
+
+	// Every provider is present, just folded away.
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="youtube"]' ) ).toHaveCount( 1 );
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="dailymotion"]' ) ).toHaveCount( 1 );
+
+	// The filter finds one wherever it lives, and opens its group.
+	await page.fill( '#cg-provider-filter', 'dailymo' );
+	await page.waitForTimeout( 300 );
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="dailymotion"]' ) ).toBeVisible();
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="youtube"]' ) ).toBeHidden();
+	await expect( page.locator( '#cg-provider-filter-count' ) ).toContainText( '1' );
+
+	// Clearing it puts the list back as it was.
+	await page.fill( '#cg-provider-filter', '' );
+	await page.waitForTimeout( 300 );
+	await expect( page.locator( '.cg-provider-group[open]' ) ).toHaveCount( 0 );
+	await expect( page.locator( '.cg-provider[data-cg-provider-row="youtube"]' ) ).toBeHidden();
+} );
+
+test( 'admin: every settings tab fits phone, tablet and desktop without sideways scrolling', async ( { page } ) => {
+	await login( page );
+
+	const VIEWPORTS = [
+		{ name: 'mobile-360', width: 360, height: 740 },
+		{ name: 'mobile-390', width: 390, height: 844 },
+		{ name: 'tablet-768', width: 768, height: 1024 },
+		{ name: 'tablet-1024', width: 1024, height: 768 },
+		{ name: 'desktop-1280', width: 1280, height: 800 },
+		{ name: 'desktop-1920', width: 1920, height: 1080 },
+	];
+	const TABS = [ 'providers', 'detection', 'appearance', 'consent', 'status' ];
+
+	for ( const vp of VIEWPORTS ) {
+		await page.setViewportSize( { width: vp.width, height: vp.height } );
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+		await page.waitForSelector( '.cg-tabs' );
+		// The admin bar is core's and collapses on its own; measure the
+		// settings screen itself.
+		await page.addStyleTag( { content: '#wpadminbar{display:none!important}' } );
+
+		for ( const tab of TABS ) {
+			await page.click( `#cg-tabbtn-${ tab }` );
+			await page.waitForTimeout( 150 );
+			// Open everything that folds away, so the widest state is measured.
+			await page.evaluate( () => {
+				document.querySelectorAll( '#cg-tab-providers details, #cg-tab-appearance details, #cg-tab-status details' )
+					.forEach( ( d ) => { d.open = true; } );
+			} );
+			await page.waitForTimeout( 200 );
+
+			const overflow = await page.evaluate( () => {
+				const root = document.documentElement;
+				const over = [];
+				document.querySelectorAll( '.cg-tab-panel:not([hidden]) *' ).forEach( ( el ) => {
+					if ( el.offsetParent !== null && el.getBoundingClientRect().right > root.clientWidth + 1 ) {
+						over.push( el.tagName.toLowerCase() + '.' + String( el.className ).split( ' ' )[ 0 ] );
+					}
+				} );
+				return { page: root.scrollWidth - root.clientWidth, widest: over.slice( 0, 3 ) };
+			} );
+
+			expect( overflow.page, `${ tab } @ ${ vp.name } scrolls sideways (widest: ${ overflow.widest.join( ', ' ) })` ).toBeLessThanOrEqual( 1 );
+		}
+	}
+} );
+
+test( 'admin: the scan turns a discovered host into a one-click exception, and nothing is written until Save', async ( { page } ) => {
+	// Every scanned load renders 50 posts through the_content; this walks the
+	// whole round trip several times.
+	test.setTimeout( 180000 );
+	await login( page );
+	// A fresh query each time: navigating to the same URL only moves the
+	// fragment, which would leave a staged (unsaved) value in the DOM. After
+	// staging, the hash points at the Detection tab, so ask for Status by name.
+	const scanUrl = () => `/wp-admin/options-general.php?page=calucon-embed-gate&calucon-embed-gate-scan=1&_=${ Date.now() }#cg-status`;
+	const partner = () => page.locator( '#cg-scan-results tbody tr', { hasText: 'widgets.example-partner.com' } ).first();
+	const neverGate = () => page.locator( '#cg-never-gate' );
+	const openScan = async () => {
+		await page.goto( scanUrl() );
+		await page.waitForSelector( '.cg-tabs' );
+		await page.click( '#cg-tabbtn-status' );
+	};
+
+	try {
+		await openScan();
+
+		// The seeded post carries an iframe from a host no descriptor claims,
+		// so it is gated generically — the case a novice cannot act on today.
+		await expect( partner() ).toContainText( 'Gated' );
+		// The safe action leads for an unknown host; the one that switches
+		// gating off is offered too, but quieter.
+		await expect( partner().locator( '[data-cg-name-host]' ) ).toBeVisible();
+		await expect( partner().locator( '[data-cg-except]' ) ).toBeVisible();
+
+		await partner().locator( '[data-cg-except]' ).click();
+
+		// The host is staged into the field it belongs to, on the tab that owns
+		// it, with the consequence spelled out — and the form is now dirty.
+		await expect( page.locator( '#cg-staged-note' ) ).toBeVisible();
+		await expect( page.locator( '.cg-staged__host' ) ).toHaveText( 'widgets.example-partner.com' );
+		await expect( page.locator( '.cg-staged__body' ) ).toBeVisible();
+		await expect( neverGate() ).toHaveValue( 'widgets.example-partner.com' );
+		await expect( page.locator( 'body' ) ).toHaveClass( /cg-has-unsaved/ );
+
+		// Nothing was written: reload without saving and it is gone. This is
+		// the assertion that proves there is no save-on-click endpoint.
+		await openScan();
+		await expect( neverGate() ).toHaveValue( '' );
+		await expect( partner() ).toContainText( 'Gated' );
+
+		// Stage again and save through the notice's own button.
+		await partner().locator( '[data-cg-except]' ).click();
+		await page.locator( '#cg-staged-note button[type="submit"]' ).click();
+		await page.waitForLoadState( 'load' );
+		await expect( neverGate() ).toHaveValue( 'widgets.example-partner.com' );
+
+		// The after-state is visible, and says who decided it.
+		await openScan();
+		await expect( page.locator( '.cg-let-through' ) ).toContainText( 'widgets.example-partner.com' );
+		await expect( partner() ).toContainText( 'Let through by you' );
+		await expect( partner().locator( '[data-cg-ungate]' ) ).toBeVisible();
+
+		// …and it is reversible in one click, with the opposite sentence.
+		await page.locator( '.cg-let-through [data-cg-ungate]' ).first().click();
+		await expect( page.locator( '.cg-staged__gate' ) ).toBeVisible();
+		await expect( page.locator( '.cg-staged__body' ) ).toBeHidden();
+		await page.locator( '#cg-staged-note button[type="submit"]' ).click();
+		await page.waitForLoadState( 'load' );
+		await expect( neverGate() ).toHaveValue( '' );
+
+		await openScan();
+		await expect( partner() ).toContainText( 'Gated' );
+
+		// The scan table carries an extra column now; loaded at phone width it
+		// must not push the page sideways.
+		await page.setViewportSize( { width: 360, height: 740 } );
+		await openScan();
+		await page.addStyleTag( { content: '#wpadminbar{display:none!important}' } );
+		const overflow = await page.evaluate( () => document.documentElement.scrollWidth - document.documentElement.clientWidth );
+		expect( overflow, 'the scanned Status tab scrolls sideways at 360px' ).toBeLessThanOrEqual( 1 );
+		await page.setViewportSize( { width: 1280, height: 800 } );
+
+		// The safe action names the host instead of ungating it.
+		await partner().locator( '[data-cg-name-host]' ).click();
+		const blank = page.locator( '#cg-custom-providers tr[data-cg-blank]' );
+		await expect( blank.locator( 'textarea' ).first() ).toHaveValue( 'widgets.example-partner.com' );
+		await expect( neverGate() ).toHaveValue( '', 'naming a host must never ungate it' );
+
+	} finally {
+		// Shared site state: leave the exception list as we found it.
+		await page.setViewportSize( { width: 1280, height: 800 } );
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-detection' );
+		await page.waitForSelector( '.cg-tabs' );
+		await page.locator( '#cg-never-gate' ).fill( '' );
+		await page.locator( '#cg-always-gate' ).fill( '' );
+		await page.click( '#submit' );
+		await page.waitForLoadState( 'load' );
+	}
 } );

@@ -97,3 +97,61 @@ test( 'persistent memory: localStorage, the identifier-free * key, cross-provide
 	await expect( page.locator( '.cg-embed__panel' ) ).toHaveCount( 2 );
 	await expect( page.locator( '.cg-embed iframe' ) ).toHaveCount( 0 );
 } );
+
+// Silent companions on the restore path. A companion belongs to a panel and
+// is activated by it, after the script it needs; remembered consent that
+// activated every container independently ran the inline call first, and the
+// embed never rendered for a returning visitor.
+async function stubThirdParty( page, attempted ) {
+	await page.route( '**', ( route ) => {
+		const url = route.request().url();
+		if ( url.startsWith( 'http://127.0.0.1' ) ) {
+			return route.continue();
+		}
+		attempted.push( url );
+		if ( url.endsWith( '.css' ) ) {
+			return route.fulfill( { contentType: 'text/css', body: '' } );
+		}
+		if ( url.endsWith( '.js' ) || url.includes( 'embedder' ) ) {
+			return route.fulfill( { contentType: 'application/javascript', body: 'window.cgEmbedderLoaded = true;' } );
+		}
+		return route.fulfill( { contentType: 'text/html', body: '<p>frame</p>' } );
+	} );
+}
+
+test( 'remembered consent runs a companion after its panel, never before', async ( { page } ) => {
+	const attempted = [];
+	await stubThirdParty( page, attempted );
+
+	await page.goto( '/page/companions-memory' );
+	await page.locator( '.cg-embed[data-cg-provider="wolfram-cloud"] button' ).click();
+	await expect.poll( () => page.evaluate( () => window.cgWolframInlineSawSdk ) ).toBe( true );
+
+	// Returning visitor: the grant is remembered, so nothing is clicked.
+	await page.reload();
+	await expect.poll( () => page.evaluate( () => window.cgWolframInlineRan ) ).toBe( true );
+	expect(
+		await page.evaluate( () => window.cgWolframInlineSawSdk ),
+		'the companion ran before the script it calls into'
+	).toBe( true );
+	await expect( page.locator( '.cg-embed--silent[data-cg-activated="1"]' ) ).toHaveCount( 2 );
+} );
+
+test( 'per-embed memory keeps two inline loaders apart', async ( { page } ) => {
+	const attempted = [];
+	await stubThirdParty( page, attempted );
+
+	await page.goto( '/page/memory-inline' );
+	await expect( page.locator( '.cg-embed[role="group"]' ) ).toHaveCount( 2 );
+
+	await page.locator( '.cg-embed[data-cg-provider="scribd"] button' ).click();
+	await expect.poll( () => attempted.filter( ( u ) => u.includes( 'inject.js' ) ).length ).toBe( 1 );
+
+	await page.reload();
+	await expect.poll( () => attempted.filter( ( u ) => u.includes( 'inject.js' ) ).length ).toBe( 2 );
+	expect(
+		attempted.filter( ( u ) => u.includes( 'crowdsignal' ) ),
+		'INVARIANT 1 — consent for one embed loaded another provider'
+	).toEqual( [] );
+	await expect( page.locator( '.cg-embed[data-cg-provider="crowdsignal"] button' ) ).toBeVisible();
+} );

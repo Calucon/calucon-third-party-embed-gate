@@ -136,6 +136,8 @@ final class PlaceholderRenderer {
 	 * @param array  $ctx        Integration context (post ID, block name, …).
 	 * @param array  $options    Optional: 'tag' => 'embed'|'object'|'img' when
 	 *                           the rebuilt element is not an iframe.
+	 *                           $ctx['noscript'] renders the panel without its
+	 *                           button (see below).
 	 * @return string HTML.
 	 */
 	public function render( array $provider, string $src, array $attributes, array $ctx = array(), array $options = array() ): string {
@@ -194,10 +196,29 @@ final class PlaceholderRenderer {
 			}
 		}
 
-		$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host, $poster, $privacy_url, $privacy_label );
+		// Inside <noscript> the panel is shown ONLY to visitors with
+		// scripting off — the one condition under which gate.js does not
+		// exist. Its button could therefore never do anything, and the
+		// accessibility contract (§8) is explicit that a fallback must never
+		// be a button that does nothing. Render the note and the real link,
+		// and leave the button out.
+		$show_button = empty( $ctx['noscript'] );
+
+		if ( ! empty( $ctx['silent'] ) ) {
+			// A companion loader script: no panel, no accessible name — the
+			// visible panel of the same provider stands for both. Hidden
+			// from everything until gate.js injects the script after that
+			// panel's activation (same consent, same click).
+			$html = '<span class="cg-embed cg-embed--silent" hidden'
+				. ' data-cg-provider="' . $this->esc( $provider['id'] ) . '"'
+				. ( '' !== $host ? ' data-cg-host="' . $this->esc( $host ) . '"' : '' )
+				. ' data-cg-payload="' . $this->esc_json( $payload ) . '"></span>';
+		} else {
+			$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host, $poster, $privacy_url, $privacy_label, $show_button );
+		}
 
 		if ( '' === $html ) {
-			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $host, $poster, $privacy_url, $privacy_label );
+			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $host, $poster, $privacy_url, $privacy_label, $show_button );
 		}
 
 		if ( null !== $this->filter_html ) {
@@ -219,7 +240,7 @@ final class PlaceholderRenderer {
 	 * @param string $poster         Site-origin poster image URL, '' for none.
 	 * @return string
 	 */
-	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '' ): string {
+	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '', bool $show_button = true ): string {
 		$aspect = $this->aspect_of( $provider, $payload );
 
 		return '<div class="cg-embed' . ( '' !== $poster ? ' cg-embed--poster' : '' ) . '"'
@@ -234,7 +255,7 @@ final class PlaceholderRenderer {
 			. ( '' !== $poster ? '<img class="cg-embed__poster" src="' . $this->esc( $poster ) . '" alt="" aria-hidden="true" loading="lazy">' : '' )
 			. '<div class="cg-embed__panel">'
 			. '<p class="cg-embed__note">' . $this->esc( $provider['note'] ) . '</p>'
-			. '<button type="button" class="cg-embed__button">' . $this->esc( $provider['action'] ) . '</button>'
+			. ( $show_button ? '<button type="button" class="cg-embed__button">' . $this->esc( $provider['action'] ) . '</button>' : '' )
 			. ( '' !== $fallback_url
 				? '<p class="cg-embed__fallback"><a href="' . $this->esc( $fallback_url ) . '" rel="noopener nofollow">' . $this->esc( $fallback_label ) . '</a></p>'
 				: '' )
@@ -256,9 +277,13 @@ final class PlaceholderRenderer {
 	 * @param array  $ctx            Integration context.
 	 * @param string $host           Host the embed will contact.
 	 * @param string $poster         Site-origin poster image URL, '' for none.
+	 * @param string $privacy_url    Provider privacy-policy URL, '' when off.
+	 * @param string $privacy_label  Link text for the privacy link.
+	 * @param bool   $show_button    False inside <noscript>, where a button
+	 *                               could never work.
 	 * @return string '' when no template applies.
 	 */
-	private function render_via_template( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, array $ctx, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '' ): string {
+	private function render_via_template( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, array $ctx, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '', bool $show_button = true ): string {
 		if ( null === $this->templates ) {
 			return '';
 		}
@@ -283,6 +308,7 @@ final class PlaceholderRenderer {
 				'aspect'         => $this->aspect_of( $provider, $payload ),
 				'host'           => $host,
 				'poster'         => $poster,
+				'show_button'    => $show_button,
 			)
 		);
 	}
@@ -367,13 +393,15 @@ final class PlaceholderRenderer {
 	private function build_payload( array $provider, string $src, array $attributes, array $options = array() ): array {
 		$attrs = array();
 
-		$tag = isset( $options['tag'] ) && in_array( $options['tag'], array( 'embed', 'object', 'img' ), true )
+		$tag = isset( $options['tag'] ) && in_array( $options['tag'], array( 'embed', 'object', 'img', 'link' ), true )
 			? $options['tag']
 			: 'iframe';
 		if ( 'iframe' === $tag ) {
 			$safelist = self::ATTRIBUTE_SAFELIST;
 		} elseif ( 'img' === $tag ) {
 			$safelist = self::ATTRIBUTE_SAFELIST_IMG;
+		} elseif ( 'link' === $tag ) {
+			$safelist = array(); // A stylesheet companion: rel and href only, both fixed.
 		} else {
 			$safelist = self::ATTRIBUTE_SAFELIST_MEDIA;
 		}
@@ -426,6 +454,14 @@ final class PlaceholderRenderer {
 
 		if ( 'iframe' !== $provider['strategy'] ) {
 			$payload['strategy'] = $provider['strategy'];
+		}
+
+		// An inline loader: gate.js re-runs the page's own script text after
+		// consent instead of loading a URL (there is none). The src passed in
+		// is only the provider origin, for the host attribute and fallback.
+		if ( isset( $options['inline'] ) && is_string( $options['inline'] ) ) {
+			unset( $payload['src'] );
+			$payload['inline'] = $options['inline'];
 		}
 
 		if ( null !== $this->filter_payload ) {

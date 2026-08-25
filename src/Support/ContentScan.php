@@ -87,7 +87,7 @@ final class ContentScan {
 	 *                         array( 'source' => string, 'rows' => array[] )
 	 *                         where rows are what scan() returns.
 	 * @return array[] Rows: tag, host, label, status, count, first_seen, url
-	 *                 (the first URL seen for the group).
+	 *                 (the first URL seen for the group), provider (its id).
 	 */
 	public static function aggregate( array $scanned ): array {
 		$groups = array();
@@ -106,6 +106,10 @@ final class ContentScan {
 						'count'      => 0,
 						'first_seen' => $source,
 						'url'        => $row['url'],
+						// Grouping is by tag|host|status, so in the rare case
+						// where one host resolves to two providers by path the
+						// group keeps the first one seen.
+						'provider'   => isset( $row['provider'] ) ? (string) $row['provider'] : '',
 					);
 				}
 				++$groups[ $key ]['count'];
@@ -139,11 +143,12 @@ final class ContentScan {
 	private function row( string $tag, string $url, string $rule_flag, bool $is_script = false ) {
 		if ( '' === $url ) {
 			return 'script' === $tag ? null : array(
-				'tag'    => $tag,
-				'url'    => '',
-				'host'   => '',
-				'status' => self::NO_USABLE_URL,
-				'label'  => '',
+				'tag'      => $tag,
+				'url'      => '',
+				'host'     => '',
+				'status'   => self::NO_USABLE_URL,
+				'label'    => '',
+				'provider' => '',
 			);
 		}
 
@@ -155,11 +160,12 @@ final class ContentScan {
 				return null;
 			}
 			return array(
-				'tag'    => $tag,
-				'url'    => $url,
-				'host'   => (string) $this->hosts->host_of( $url ),
-				'status' => HostMatcher::OWN === $class ? self::OWN_HOST : self::NO_USABLE_URL,
-				'label'  => '',
+				'tag'      => $tag,
+				'url'      => $url,
+				'host'     => (string) $this->hosts->host_of( $url ),
+				'status'   => HostMatcher::OWN === $class ? self::OWN_HOST : self::NO_USABLE_URL,
+				'label'    => '',
+				'provider' => '',
 			);
 		}
 
@@ -180,11 +186,16 @@ final class ContentScan {
 		}
 
 		return array(
-			'tag'    => $tag,
-			'url'    => $url,
-			'host'   => $host,
-			'status' => $status,
-			'label'  => (string) $provider['label'],
+			'tag'      => $tag,
+			'url'      => $url,
+			'host'     => $host,
+			'status'   => $status,
+			'label'    => (string) $provider['label'],
+			// The resolved provider id — 'generic'/'generic-script' for a host
+			// nobody described. The admin needs this to tell "unknown third
+			// party" from a named provider; the label cannot, because the
+			// generic fallback uses the host name AS the label.
+			'provider' => isset( $provider['id'] ) ? (string) $provider['id'] : '',
 		);
 	}
 }

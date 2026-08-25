@@ -124,7 +124,7 @@ final class Commands {
 		\WP_CLI\Utils\format_items(
 			isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table',
 			ContentScan::aggregate( $scanned ),
-			array( 'host', 'tag', 'label', 'status', 'count', 'first_seen', 'url' )
+			array( 'host', 'tag', 'label', 'provider', 'status', 'count', 'first_seen', 'url' )
 		);
 	}
 

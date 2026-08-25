@@ -5,11 +5,11 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.10.0
+Stable tag: 0.11.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Two-click embeds: third-party iframes and embed scripts load only after the visitor asks for them. No banner, no consent platform.
+YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click pattern. No request, no cookie, no banner.
 
 == Description ==
 
@@ -24,6 +24,7 @@ See it in action on the [live demo](https://calucon.de/third-party-embed-gate-sh
 * Gates third-party iframes, embed SDK scripts and legacy `<embed>`/`<object>` markup in post content, blocks, widgets, comments and archive descriptions — including HTML that has been minified by caching plugins, where most implementations silently fail, and lazy-loaded markup that parks the real URL in a `data-src` attribute.
 * Gates content delivered over AJAX and the REST API to visitors ("load more", infinite scroll), while editors always see the original markup.
 * Gates by host, not by a provider allowlist: an unknown third-party iframe is gated by default.
+* Ships a descriptor for almost every embed type WordPress offers out of the box — a proper name, an icon, a privacy-policy link and a working no-JavaScript link — plus the loader scripts and stylesheets those embeds bring with them. The few that are not named yet are listed in the FAQ; they are gated all the same.
 * Loads from privacy-preserving endpoints after the click where they exist: `youtube-nocookie.com` (measured: 0 cookies instead of 5), Vimeo with `dnt=1`.
 * Renders the placeholder server-side, so a visitor without JavaScript still gets a real, working link to the content.
 * Rebuilds embeds from an attribute safelist — `sandbox` is preserved, `autoplay` never survives, inline styles and event handlers are never copied.
@@ -43,11 +44,11 @@ Calucon Third-Party Embed Gate is a technical measure. It is not a consent manag
 
 **Customisation**
 
-* Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): your own providers (name + hosts, no code), per-provider on/off, privacy-variant on/off, custom note and button text, an optional provider privacy-policy link in every panel (off by default; one checkbox turns it on); own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets, corner styles with a custom radius, border width and colour, shadow, spacing, button size/style/width/hover, an optional kind-aware button icon, notice size, panel alignment, link colour, poster placement and dimming, withdraw-button styles and optional dark-mode colours — sectioned, with quick styles, colour pickers, a live preview (dark page, poster, phone width), a one-click reset and an automatic readability check, no CSS needed; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a read-only Status scan of recent content.
+* Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): your own providers (name + hosts, no code), per-provider on/off, privacy-variant on/off, custom note and button text, an optional provider privacy-policy link in every panel (off by default; one checkbox turns it on); own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets, corner styles with a custom radius, border width and colour, shadow, spacing, button size/style/width/hover, an optional kind-aware button icon, notice size, panel alignment, link colour, poster placement and dimming, withdraw-button styles and optional dark-mode colours — sectioned, with quick styles, colour pickers, a live preview (dark page, poster, phone width), a one-click reset and an automatic readability check, no CSS needed; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a Status scan of recent content that can name or let through any host it finds, without you typing an address and without writing anything until you save.
 * Theme override: copy `templates/placeholder.php` to `{your-theme}/calucon-embed-gate/placeholder.php`.
 * CSS custom properties on `.cg-embed` (`--cg-bg`, `--cg-fg`, `--cg-accent`, …) for restyling without specificity wars.
 * WP-CLI: `wp calucon-embed-gate scan` (is every embed gated? `--format=json` for CI and automation) and `wp calucon-embed-gate providers`; the shipped `docs/customizing.md` is a self-contained customization reference for developers and AI agents.
-* Documented filters: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, plus the `calucon_embed_gate_before_render` and `calucon_embed_gate_embed_gated` actions. Adding a provider is a ten-line filter in `functions.php`.
+* Documented filters: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority`, plus the `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` and `calucon_embed_gate_flush_caches` actions. Adding a provider is a ten-line filter in `functions.php`.
 
 == Installation ==
 
@@ -71,9 +72,13 @@ No plugin can claim that, and this one does not. Calucon Third-Party Embed Gate 
 
 Because there is nothing to announce at page load. If nothing third-party loads until the visitor asks for it, there is no third-party storage to consent to on page load. The consent is the click, given for the one embed it belongs to.
 
+= Does a visitor have to click every single time? =
+
+By default, yes: once per embed, on every page, and nothing is stored on the visitor's device to remember it. If that is more friction than you want, Settings → Calucon Third-Party Embed Gate → Consent memory can remember the choice in the visitor's browser — for that one embed, for everything from that provider, or for all embeds — either until the browser is closed or for a number of days you choose. It is off by default and stores nothing before the visitor's first click. When you turn it on, give visitors a way back: the "Withdraw consent" block, or the `[calucon_embed_gate_withdraw]` shortcode, clears what was remembered.
+
 = I already run a cookie banner (Complianz, Cookiebot, …). Do they fight? =
 
-No. Out of the box Calucon Third-Party Embed Gate ignores the banner and keeps gating — visitors see your banner for its categories and the embed placeholder for embeds, and nothing double-blocks (the placeholder contains no iframe or script for a banner's blocker to catch). If you prefer one decision instead of two, enable the consent platform bridge under Settings → Calucon Third-Party Embed Gate → Consent: a consent your visitor gives in the platform then loads the embeds automatically, and a withdrawal there re-gates them. The bridge works only with the platforms listed on that screen — with any other platform it stays out of the way and gating stands. If you would rather have your platform's own blocker handle a specific provider, disable that provider under Providers and Calucon Third-Party Embed Gate steps aside for it.
+No. Out of the box Calucon Third-Party Embed Gate ignores the banner and keeps gating — visitors see your banner for its categories and the embed placeholder for embeds, and nothing double-blocks (the placeholder contains no iframe or script for a banner's blocker to catch). If you prefer one decision instead of two, enable the consent platform bridge under Settings → Calucon Third-Party Embed Gate → Consent memory: a consent your visitor gives in the platform then loads the embeds automatically, and a withdrawal there re-gates them. The bridge works only with the platforms listed on that screen — with any other platform it stays out of the way and gating stands. If you would rather have your platform's own blocker handle a specific provider, disable that provider under Providers and Calucon Third-Party Embed Gate steps aside for it.
 
 = Is Google Consent Mode v2 supported? =
 
@@ -94,6 +99,22 @@ No. Lazy loading defers the request to scroll time — it is still made without 
 = How do I report a security issue? =
 
 Privately, please — through GitHub's private vulnerability reporting on the plugin repository (https://github.com/Calucon/calucon-third-party-embed-gate/security/advisories/new), not in a public issue or support topic. The repository's SECURITY.md describes what counts: besides the usual classes, any way to make a page contact a third party before the click is a vulnerability.
+
+= Which embeds does it recognise by name? =
+
+Videos: YouTube, Vimeo, Dailymotion, TED, VideoPress and WordPress.tv, TikTok. Audio: Spotify, SoundCloud, Apple Music, Mixcloud, Pocket Casts. Maps: Google Maps, OpenStreetMap. Social posts: X, Instagram, Facebook, Reddit, Tumblr, Bluesky, Pinterest, Imgur, GIPHY, Strava. Documents: Scribd, Speaker Deck, Issuu, Wolfram Cloud, Amazon Kindle, Kickstarter. Forms and calendars: Google Calendar, Google Forms, Typeform, Calendly, Crowdsignal. 3D: Matterport, Sketchfab.
+
+Everything else is gated too — that does not depend on a list. An embed from an unnamed host gets the same placeholder and the same button, named after the host it would contact, with a link to the content itself. What a named provider adds is the label, the icon, the privacy-policy link and a tidier "Open on …" link. A few of core's own embed blocks are not named yet (Flickr, SmugMug, Animoto, ReverbNation, Cloudup); you can name them yourself under Providers → Your own providers.
+
+Some of these embeds bring a loader script or stylesheets along with the player (VideoPress, Scribd, Wolfram Cloud). Those are gated together with the embed they belong to and load on the same click, not before it.
+
+= Something on my site is gated and I want it to load normally =
+
+Open Settings → Calucon Third-Party Embed Gate → Providers and press "Check what is on my site". The scan lists every embed it finds in your recent posts and pages with the address it would contact. Next to each one you can either name it — which keeps the gate on but gives the placeholder a proper label and icon — or let it through, which means its embeds load for every visitor with no placeholder. Either way you never have to work out a host name yourself, and nothing changes until you press Save. Hosts you have let through stay listed at the top of the same screen with a one-click undo.
+
+= A provider offers both an embed code and a script — which should I paste? =
+
+Either is gated, so this is not a privacy question. It is a rendering one: prefer the plain `<iframe>` embed code where the provider offers one. An iframe renders by itself; a loader script has to notice the embed and draw it, and some providers' scripts only do that while the page is first parsing, so they can come up empty after the visitor clicks — with or without this plugin. If a script-based embed stays blank after loading, try the provider's iframe embed code instead.
 
 = Can I add a provider that is not in the list? =
 
@@ -121,16 +142,41 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 
 1. A gated YouTube embed as a visitor sees it: a server-rendered placeholder with a named panel, a real "Load" button and a working fallback link. Nothing is requested from the provider until the visitor clicks.
 2. The Appearance settings — quick styles, colours that follow your theme's palette by name or your own, and sections for shape, button, poster image, withdraw button and dark mode — with a live preview of the real panel and an automatic readability check that flags any colour pair below the 4.5:1 contrast minimum.
-3. The Status &amp; tools tab: the Compatibility overview (which cache plugin, consent platform and page builder are detected), a read-only scan that reports whether every embed on your site is gated, and the Content-Security-Policy helper — a check of your own home page for an existing policy, the lines to add, and which provider needs which host.
-4. The Providers tab: per-provider on/off, privacy-preserving load variants, custom notice and button text, the privacy-policy link and its per-provider URL, and your own providers — no code required.
+3. The content scan on Status & tools: every embed found in your recent posts and pages, the address it would contact, and whether it is gated — with a one-click way to give an unknown host a proper name, or let it through, without working out an address yourself. Nothing changes until you save.
+4. The Providers tab: providers grouped by what the embed is, with a filter box — per-provider on/off, privacy-preserving load variants, custom notice and button text, the privacy-policy link and its per-provider URL, and your own providers — no code required.
 5. The per-embed control in the block editor: gate a specific embed always, never, or per the site default, set an optional poster image from your own media library, and give this one embed its own button and notice text.
+6. The Content-Security-Policy helper: what a policy is, a check of your own site for one, the exact lines to add for the providers you have enabled, and which provider needs which host.
 
 == Upgrade Notice ==
 
+= 0.11.0 =
+Names the rest of WordPress's built-in embed types, and the content scan can now name or let through any host it finds without you typing an address. Fixes Scribd and Wolfram Cloud embeds, which contacted their provider before the click. Everything here was already gated.
+
 = 0.10.0 =
-The panel's markup and look are unchanged unless you opt in: a provider privacy-policy link (Providers tab) and the new Appearance controls are all off by default. If a page cache serves your site, clear it once after updating so placeholders pick up the new markup. Adds your own providers, a CSP helper and a much larger Appearance tab.
+The panel looks and behaves as before unless you opt in: the privacy-policy link and the new Appearance controls are off by default. Clear your page cache once after updating. Adds your own providers, a CSP helper and a much larger Appearance tab.
 
 == Changelog ==
+
+= 0.11.0 =
+* New: page caches are flushed automatically when the plugin is activated and after it updates, not only when settings are saved or the plugin is deactivated — so a cached page cannot keep serving pre-update markup.
+* New: the Providers tab is grouped by what the embed is (video, audio, social, documents…) with a filter box, so a long list stays manageable — and it no longer scrolls sideways on a phone. Each provider's wording and privacy-policy link sit behind a per-provider toggle.
+* New: the content scan on Status & tools is now actionable. Every embed it finds can be named (so an unknown host gets a proper label and icon) or let through, without typing a host name anywhere — and hosts you have let through are listed with a one-click undo. Nothing changes until you press Save.
+* Changed: the Dailymotion test fixture pointed at a re-uploaded television series; test fixtures now use placeholder ids unless the target is the provider's own, an institution's own, or ours.
+* Fixed: the "Withdraw embed consents" control sat against the left edge of the page on block themes instead of lining up with the text around it.
+* Fixed: the settings screen's read-only tables (Compatibility, the content scan, the Content-Security-Policy host list) pushed the page sideways on a phone; they now scroll within their own box.
+* Fixed: on narrow screens the placeholder could be taller than the space reserved for the embed, hiding the fallback and privacy links behind a scrollbar that was easy to miss. The panel now grows to fit.
+* Fixed: an embed whose script reserves an empty box of its own (Calendly's inline widget) left a tall blank gap above the placeholder; the gap is gone while gated and comes back when the embed loads. Calendly placeholders now link the booking page instead of the script host.
+* Fixed: the settings screen could claim "unsaved changes" after merely switching tabs or opening a section. Only changing a value counts now.
+* Fixed: Scribd embeds (an inline script that fetches Scribd's loader), VideoPress embeds (a resize loader) and Wolfram Cloud notebooks (stylesheets and an inline call) requested their provider before the click; these companions are now gated with their panel and load only after it. Scripts of your own that merely mention a provider's address are left alone.
+* Fixed: a script of your own that merely names a provider's address in a comment could be removed and replaced with a placeholder, so the script stopped running. A provider address now only counts where a script actually loads it.
+* Fixed: a second embed from the same provider on one page lost its placeholder and its link, and loaded on the first embed's click. Each embed is its own again.
+* Fixed: a placeholder for a Scribd or Crowdsignal embed that came with no address to link to could show a broken "Open on …" link. It now links the provider's site.
+* Fixed: with consent memory or a consent platform enabled, a returning visitor could get an embed that stayed blank because its loader ran before the script it needs. Also, remembering consent "for this embed only" treated every script-built embed as the same one, so a click on one could load another provider's embed on the next page view.
+* Fixed: a placeholder inside a `<noscript>` block (Crowdsignal polls) offered a button that could never work, since that markup is only shown when scripting is off. It shows the notice and the link instead.
+* Fixed: "Name this host" put a host found as a script into the embed-hosts field, where it matched nothing.
+* Fixed: after running the content scan, the "Check what is on my site" button on the Providers tab did nothing — it now takes you back to the results.
+* Fixed: the block editor's script and stylesheet were the last ones not cache-busted per build, so a rebuilt same-version install could keep the previous editor script.
+* New: built-in providers for the rest of WordPress core's embed types — Dailymotion, TED, VideoPress and WordPress.tv, Mixcloud, Pocket Casts, Scribd, Speaker Deck, Issuu, Kickstarter, Wolfram Cloud and Amazon Kindle (players and documents), plus Imgur, Tumblr, Pinterest, Bluesky and Crowdsignal (script embeds, now with a real fallback link to the post instead of the script host). All of these were gated before under their host names; they now get a name, an icon, a privacy-policy link and a Providers-tab row.
 
 = 0.10.0 =
 * New: an optional privacy-policy link in each placeholder, pointing at the provider's own policy page (for the built-in providers that declare one; unknown embeds have no known policy). Off by default — a checkbox on the Providers tab turns it on.
