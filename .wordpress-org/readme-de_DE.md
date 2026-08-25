@@ -84,7 +84,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** Per-block override in the editor: gate a specific embed always, never, or per the site default.
 
-**DE:** Übersteuerung pro Block im Editor: eine bestimmte Einbettung immer sperren, nie sperren oder nach Website-Standard behandeln.
+**DE:** Überschreiben pro Block im Editor: eine bestimmte Einbettung immer sperren, nie sperren oder nach Website-Standard behandeln.
 
 **EN:** Optional poster image behind the consent panel, chosen per embed from your media library — served from your own site, never fetched from the provider. Per-embed button and notice text in the block editor, too.
 
@@ -204,7 +204,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Zählt `loading="lazy"` an einem Iframe als Einwilligung?
 
-**DE (Antwort):** Nein. Lazy Loading verschiebt die Anfrage auf den Moment des Scrollens – gestellt wird sie trotzdem ohne Einwilligung. Calucon Third-Party Embed Gate sperrt Lazy-Iframes wie jedes andere.
+**DE (Antwort):** Nein. Lazy Loading verschiebt die Anfrage auf den Moment des Scrollens – gestellt wird sie trotzdem ohne Einwilligung. Calucon Third-Party Embed Gate sperrt Lazy-Iframes wie alle anderen.
 
 **EN:** How do I report a security issue?
 
@@ -242,7 +242,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Können Platzhalter die Datenschutzerklärung des Anbieters verlinken?
 
-**DE (Antwort):** Ja: Ein Häkchen auf der Anbieter-Seite ergänzt in jedem Platzhalter einen Link auf die Datenschutzseite des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen.
+**DE (Antwort):** Ja: Ein Häkchen im Reiter „Anbieter“ ergänzt in jedem Platzhalter einen Link auf die Datenschutzseite des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen.
 
 **EN:** Do I need the Content-Security-Policy section?
 
@@ -327,7 +327,7 @@ Plugin-Name und bleibt unübersetzt.
 
 **EN:** Documented filters: `calucon_embed_gate_providers`, … Adding a provider is a ten-line filter in `functions.php`.
 
-**DE:** Dokumentierte Filter: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority` sowie die Aktionen `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` und `calucon_embed_gate_flush_caches`. Die Signatur jedes Hooks, wann er ausgelöst wird und was er zurückgeben soll, stehen in `docs/customizing.md`, die im Plugin mitgeliefert wird (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) und auf GitHub lesbar ist. Einen Anbieter hinzuzufügen ist ein Filter von zehn Zeilen in der `functions.php`.
+**DE:** Dokumentierte Filter: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority` sowie die Aktionen `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` und `calucon_embed_gate_flush_caches`. Zu jedem Hook sind Signatur, Auslösezeitpunkt und Rückgabewert in `docs/customizing.md` dokumentiert, die im Plugin mitgeliefert wird (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) und auf GitHub lesbar ist. Einen Anbieter hinzuzufügen ist ein Filter von zehn Zeilen in der `functions.php`.
 
 ---
 

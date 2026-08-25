@@ -23,7 +23,7 @@ msgstr "Calucon Third-Party Embed Gate"
 
 #. Found in faq paragraph.
 msgid "Either is gated, so this is not a privacy question. It is a rendering one: prefer the plain <code>&lt;iframe&gt;</code> embed code where the provider offers one. An iframe renders by itself; a loader script has to notice the embed and draw it, and some providers' scripts only do that while the page is first parsing, so they can come up empty after the visitor clicks — with or without this plugin. If a script-based embed stays blank after loading, try the provider's iframe embed code instead."
-msgstr "Gesperrt wird beides, es ist also keine Datenschutzfrage, sondern eine der Darstellung: Nimm den einfachen <code>&lt;iframe&gt;</code>-Einbettungscode, wo der Anbieter einen anbietet. Ein Iframe rendert sich selbst; ein Loader-Skript muss die Einbettung erst finden und zeichnen, und manche Anbieter-Skripte tun das nur, während die Seite geparst wird – nach dem Klick des Besuchers bleiben sie dann leer, mit oder ohne dieses Plugin. Bleibt eine skriptbasierte Einbettung nach dem Laden leer, probiere den Iframe-Code des Anbieters."
+msgstr "Gesperrt wird beides, es ist also keine Datenschutzfrage, sondern eine der Darstellung: Nehmen Sie den einfachen <code>&lt;iframe&gt;</code>-Einbettungscode, wo der Anbieter einen anbietet. Ein Iframe rendert sich selbst; ein Loader-Skript muss die Einbettung erst finden und zeichnen, und manche Anbieter-Skripte tun das nur, während die Seite geparst wird – nach dem Klick des Besuchers bleiben sie dann leer, mit oder ohne dieses Plugin. Bleibt eine skriptbasierte Einbettung nach dem Laden leer, probieren Sie den Iframe-Code des Anbieters."
 
 #. Found in faq paragraph.
 msgid "Open Settings → Calucon Third-Party Embed Gate → Providers and press \"Check what is on my site\". The scan lists every embed it finds in your recent posts and pages with the address it would contact. Next to each one you can either name it — which keeps the gate on but gives the placeholder a proper label and icon — or let it through, which means its embeds load for every visitor with no placeholder. Either way you never have to work out a host name yourself, and nothing changes until you press Save. Hosts you have let through stay listed at the top of the same screen with a one-click undo."
@@ -91,7 +91,7 @@ msgstr "Nur, wenn Ihre Website einen Content-Security-Policy-Header sendet – d
 
 #. Found in faq paragraph.
 msgid "Yes: one checkbox on the Providers tab adds a link to the provider's own policy page in every placeholder, so a visitor can read what loading the content means before asking for it. It is off by default. You can set a different URL per provider (for example a localised page). The link is plain markup — nothing is fetched from the provider by showing it."
-msgstr "Ja: Ein Häkchen auf der Anbieter-Seite ergänzt in jedem Platzhalter einen Link auf die Datenschutzseite des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen."
+msgstr "Ja: Ein Häkchen im Reiter „Anbieter“ ergänzt in jedem Platzhalter einen Link auf die Datenschutzseite des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen."
 
 #. Found in faq paragraph.
 msgid "Yes, without code: Providers → <em>Your own providers</em> takes a name, the embed hosts (one per line) and, optionally, script hosts and a kind for the button icon. After saving it appears in the provider table with its own notice, button text and privacy-policy link. Unknown hosts are gated either way — a provider of your own only gives such a host a proper name and texts. Hosts the built-in providers handle stay with them, and your own providers are always gated; the never-gate list under Detection is the place to exempt a host."
@@ -139,7 +139,7 @@ msgstr "Bitte vertraulich – über die private Sicherheitsmeldung („private v
 
 #. Found in faq paragraph.
 msgid "No. Lazy loading defers the request to scroll time — it is still made without consent. Calucon Third-Party Embed Gate gates lazy iframes like any other."
-msgstr "Nein. Lazy Loading verschiebt die Anfrage auf den Moment des Scrollens – gestellt wird sie trotzdem ohne Einwilligung. Calucon Third-Party Embed Gate sperrt Lazy-Iframes wie jedes andere."
+msgstr "Nein. Lazy Loading verschiebt die Anfrage auf den Moment des Scrollens – gestellt wird sie trotzdem ohne Einwilligung. Calucon Third-Party Embed Gate sperrt Lazy-Iframes wie alle anderen."
 
 #. Found in faq paragraph.
 msgid "If your minification setup serves CSS from a long-cached URL that does not change with the file contents, browsers can keep the old stylesheet for a long time. A hard reload fixes it; the plugin cannot."
@@ -147,7 +147,7 @@ msgstr "Wenn Ihre Minifizierung CSS von einer URL ausliefert, die sich mit dem D
 
 #. Found in faq paragraph.
 msgid "Page builders render outside WordPress's content filters. Enable \"Gate the whole page output\" under Settings → Calucon Third-Party Embed Gate → Detection. It is off by default because whole-page buffering can conflict with other buffering plugins."
-msgstr "Page-Builder rendern außerhalb der Inhaltsfilter von WordPress. Aktiviere „Die gesamte Seitenausgabe sperren“ unter Einstellungen → Calucon Third-Party Embed Gate → Erkennung. Die Option ist standardmäßig aus, weil das Puffern der gesamten Seite mit anderen puffernden Plugins kollidieren kann."
+msgstr "Page-Builder rendern außerhalb der Inhaltsfilter von WordPress. Aktivieren Sie „Die gesamte Seitenausgabe sperren“ unter Einstellungen → Calucon Third-Party Embed Gate → Erkennung. Die Option ist standardmäßig aus, weil das Puffern der gesamten Seite mit anderen puffernden Plugins kollidieren kann."
 
 #. Found in faq paragraph.
 msgid "Consent Mode is deliberately not read or written directly. It is a signal that consent platforms send to Google's tags; Google publishes no API for other scripts to read it, and no Consent Mode signal governs iframes such as YouTube embeds. The bridge instead connects to the consent platform itself — the same place Consent Mode gets its state from — which is the reliable way to honour the same visitor choice. Calucon Third-Party Embed Gate also never sends <code>gtag('consent', …)</code> updates: a click on one embed is consent for that embed, not a site-wide marketing consent, and misreporting that would be wrong."
@@ -287,7 +287,7 @@ msgstr "Optional, standardmäßig aus: die Einwilligung im Browser des Besuchers
 
 #. Found in description list item.
 msgid "Per-block override in the editor: gate a specific embed always, never, or per the site default."
-msgstr "Übersteuerung pro Block im Editor: eine bestimmte Einbettung immer sperren, nie sperren oder nach Website-Standard behandeln."
+msgstr "Überschreiben pro Block im Editor: eine bestimmte Einbettung immer sperren, nie sperren oder nach Website-Standard behandeln."
 
 #. Found in description list item.
 msgid "Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; a plain fallback link to the content stays for feed readers."

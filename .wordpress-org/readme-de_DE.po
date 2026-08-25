@@ -91,7 +91,7 @@ msgstr "Nur, wenn deine Website einen Content-Security-Policy-Header sendet – 
 
 #. Found in faq paragraph.
 msgid "Yes: one checkbox on the Providers tab adds a link to the provider's own policy page in every placeholder, so a visitor can read what loading the content means before asking for it. It is off by default. You can set a different URL per provider (for example a localised page). The link is plain markup — nothing is fetched from the provider by showing it."
-msgstr "Ja: Ein Häkchen auf der Anbieter-Seite ergänzt in jedem Platzhalter einen Link auf die Datenschutzseite des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen."
+msgstr "Ja: Ein Häkchen im Reiter „Anbieter“ ergänzt in jedem Platzhalter einen Link auf die Datenschutzseite des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen."
 
 #. Found in faq paragraph.
 msgid "Yes, without code: Providers → <em>Your own providers</em> takes a name, the embed hosts (one per line) and, optionally, script hosts and a kind for the button icon. After saving it appears in the provider table with its own notice, button text and privacy-policy link. Unknown hosts are gated either way — a provider of your own only gives such a host a proper name and texts. Hosts the built-in providers handle stay with them, and your own providers are always gated; the never-gate list under Detection is the place to exempt a host."
@@ -139,7 +139,7 @@ msgstr "Bitte vertraulich – über die private Sicherheitsmeldung („private v
 
 #. Found in faq paragraph.
 msgid "No. Lazy loading defers the request to scroll time — it is still made without consent. Calucon Third-Party Embed Gate gates lazy iframes like any other."
-msgstr "Nein. Lazy Loading verschiebt die Anfrage auf den Moment des Scrollens – gestellt wird sie trotzdem ohne Einwilligung. Calucon Third-Party Embed Gate sperrt Lazy-Iframes wie jedes andere."
+msgstr "Nein. Lazy Loading verschiebt die Anfrage auf den Moment des Scrollens – gestellt wird sie trotzdem ohne Einwilligung. Calucon Third-Party Embed Gate sperrt Lazy-Iframes wie alle anderen."
 
 #. Found in faq paragraph.
 msgid "If your minification setup serves CSS from a long-cached URL that does not change with the file contents, browsers can keep the old stylesheet for a long time. A hard reload fixes it; the plugin cannot."
@@ -287,7 +287,7 @@ msgstr "Optional, standardmäßig aus: die Einwilligung im Browser des Besuchers
 
 #. Found in description list item.
 msgid "Per-block override in the editor: gate a specific embed always, never, or per the site default."
-msgstr "Übersteuerung pro Block im Editor: eine bestimmte Einbettung immer sperren, nie sperren oder nach Website-Standard behandeln."
+msgstr "Überschreiben pro Block im Editor: eine bestimmte Einbettung immer sperren, nie sperren oder nach Website-Standard behandeln."
 
 #. Found in description list item.
 msgid "Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; a plain fallback link to the content stays for feed readers."
