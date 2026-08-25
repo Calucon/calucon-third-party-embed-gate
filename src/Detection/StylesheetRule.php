@@ -72,7 +72,10 @@ final class StylesheetRule {
 				continue;
 			}
 			$href = trim( $attributes['href'] );
-			if ( HostMatcher::FOREIGN !== $this->hosts->classify( $href ) ) {
+			// See ScriptRule: a buffer-rewriting CDN turns the site's own
+			// stylesheets into foreign URLs, and gating those breaks the page.
+			if ( HostMatcher::FOREIGN !== $this->hosts->classify( $href )
+				|| $this->hosts->is_exempt_own_asset( $href ) ) {
 				continue;
 			}
 			$host = $this->hosts->host_of( $href );

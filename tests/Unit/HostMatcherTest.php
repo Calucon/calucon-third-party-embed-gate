@@ -111,6 +111,79 @@ final class HostMatcherTest extends TestCase {
 		self::assertSame( 'evil.example', $matcher->host_of( 'https:/\\/evil.example/track' ) );
 	}
 
+	/**
+	 * The escape hatch for a CDN that rewrites the finished HTML: the site's
+	 * own asset tree on a foreign host is recognised by its path, so
+	 * ScriptRule and StylesheetRule can let it through instead of gating the
+	 * site's own JavaScript into a placeholder.
+	 */
+	public function test_own_asset_paths_are_recognised_on_any_host(): void {
+		self::assertTrue( HostMatcher::looks_like_own_asset_path( 'https://cdn.example.net/wp-includes/js/dist/i18n.min.js' ) );
+		self::assertTrue( HostMatcher::looks_like_own_asset_path( 'https://cdn.example.net/wp-content/themes/x/app.js' ) );
+		// WordPress in a subdirectory, and CDN pull-zone prefixes: substring,
+		// never prefix.
+		self::assertTrue( HostMatcher::looks_like_own_asset_path( 'https://cdn.example.net/zone7/blog/wp-content/plugins/x/a.js' ) );
+		// Protocol-relative and uppercase paths are the same URL to a browser.
+		self::assertTrue( HostMatcher::looks_like_own_asset_path( '//cdn.example.net/WP-INCLUDES/js/dist/i18n.min.js' ) );
+	}
+
+	/**
+	 * The exemption must stay narrow: anything that is not the WordPress asset
+	 * tree is still a third-party URL, including a query string that merely
+	 * mentions one.
+	 */
+	public function test_other_paths_are_not_own_assets(): void {
+		self::assertFalse( HostMatcher::looks_like_own_asset_path( 'https://cdn.example.net/sdk/embed.js' ) );
+		self::assertFalse( HostMatcher::looks_like_own_asset_path( 'https://tracker.example/t.js?from=/wp-content/x' ) );
+		self::assertFalse( HostMatcher::looks_like_own_asset_path( 'https://wp-content.example/track.js' ) );
+		self::assertFalse( HostMatcher::looks_like_own_asset_path( '' ) );
+		self::assertFalse( HostMatcher::looks_like_own_asset_path( 'data:text/javascript,alert(1)' ) );
+	}
+
+	/**
+	 * The authority-confusion rules apply here too: the path is read from the
+	 * URL a browser would request, not from what parse_url() alone reports.
+	 * 'https://evil.example\\@own.test/wp-content/x.js' connects to
+	 * evil.example, and the path exemption must not be the way it gets in
+	 * under a different guise.
+	 */
+	public function test_own_asset_path_uses_browser_authority_rules(): void {
+		$matcher = new HostMatcher( array( 'example.test' ) );
+
+		// Still FOREIGN by host — the exemption is a separate, additive check,
+		// and the rules combine it with classify(), never replace it.
+		self::assertSame(
+			HostMatcher::FOREIGN,
+			$matcher->classify( 'https://evil.example\\@example.test/wp-content/x.js' )
+		);
+		// Irregular authority slashes must not hide the path from this check.
+		self::assertTrue( HostMatcher::looks_like_own_asset_path( 'https:/\\/cdn.example.net/wp-content/x.js' ) );
+		self::assertTrue( HostMatcher::looks_like_own_asset_path( "https://cdn.example.net\t/wp-includes/x.js" ) );
+	}
+
+	/**
+	 * The owner's explicit instruction beats the heuristic. Without this,
+	 * typing a host into "Always gate these hosts" would silently do nothing
+	 * for anything that host serves under /wp-content/.
+	 */
+	public function test_always_gate_beats_the_asset_path_exemption(): void {
+		$url = 'https://cdn.example.net/wp-content/plugins/tracker/t.js';
+
+		$default = new HostMatcher( array( 'example.test' ) );
+		self::assertTrue( $default->is_exempt_own_asset( $url ) );
+
+		$forced = new HostMatcher( array( 'example.test' ), true, null, array( 'cdn.example.net' ) );
+		self::assertFalse( $forced->is_exempt_own_asset( $url ) );
+
+		// Wildcards work here exactly as they do everywhere else.
+		$wild = new HostMatcher( array( 'example.test' ), true, null, array( '*.example.net' ) );
+		self::assertFalse( $wild->is_exempt_own_asset( $url ) );
+
+		// A different host on the list leaves the exemption alone.
+		$other = new HostMatcher( array( 'example.test' ), true, null, array( 'other.example' ) );
+		self::assertTrue( $other->is_exempt_own_asset( $url ) );
+	}
+
 	public function test_is_own_filter_can_veto_and_approve(): void {
 		$matcher = new HostMatcher(
 			array( 'example.test' ),

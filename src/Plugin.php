@@ -398,7 +398,11 @@ final class Plugin {
 					return false;
 				}
 				return (bool) apply_filters( 'calucon_embed_gate_is_own_host', $own, $host );
-			}
+			},
+			// Also handed over whole: the asset-path exemption for scripts and
+			// stylesheets is a heuristic, and the owner's explicit list has to
+			// outrank it (HostMatcher::is_exempt_own_asset()).
+			$always_gate
 		);
 
 		$providers = $this->providers();
@@ -705,8 +709,32 @@ final class Plugin {
 	 * @return string[]
 	 */
 	private function own_hosts(): array {
+		$uploads = wp_upload_dir();
+
+		// The site's own asset bases, not just its pages. A CDN plugin that
+		// filters these functions (WP Offload Media, BunnyCDN, Cloudflare and
+		// most others) reports the CDN host here — so WordPress itself tells
+		// us the offloaded host is ours, and we stop treating the site's own
+		// scripts, stylesheets and uploads as third party. It can never let a
+		// third party through: these functions only ever answer "where do MY
+		// assets live". A CDN that rewrites the finished HTML instead is
+		// invisible here; HostMatcher::looks_like_own_asset_path() covers that.
+		$own_urls = array(
+			home_url(),
+			site_url(),
+			content_url(),
+			includes_url(),
+			plugins_url( '', CALUCON_EMBED_GATE_FILE ),
+			isset( $uploads['baseurl'] ) ? (string) $uploads['baseurl'] : '',
+			get_stylesheet_directory_uri(),
+			get_template_directory_uri(),
+		);
+
 		$hosts = array();
-		foreach ( array( home_url(), site_url() ) as $url ) {
+		foreach ( $own_urls as $url ) {
+			if ( ! is_string( $url ) || '' === $url ) {
+				continue;
+			}
 			$host = wp_parse_url( $url, PHP_URL_HOST );
 			if ( is_string( $host ) && '' !== $host ) {
 				$hosts[] = $host;

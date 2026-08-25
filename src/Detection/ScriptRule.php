@@ -96,7 +96,12 @@ final class ScriptRule {
 			}
 			$src = trim( $attributes['src'] );
 
-			if ( HostMatcher::FOREIGN !== $this->hosts->classify( $src ) ) {
+			// A CDN that rewrites the finished HTML makes the site's own
+			// scripts look third-party; gating those breaks the site instead
+			// of protecting anyone. Scripts and stylesheets only — see
+			// HostMatcher::looks_like_own_asset_path().
+			if ( HostMatcher::FOREIGN !== $this->hosts->classify( $src )
+				|| $this->hosts->is_exempt_own_asset( $src ) ) {
 				continue;
 			}
 

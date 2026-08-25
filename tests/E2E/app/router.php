@@ -180,6 +180,36 @@ if ( '/page/memory-persistent' === $uri ) {
 	return true;
 }
 
+// Caching and minification plugins reshape how scripts reach the browser:
+// they defer them, load them async, combine them into a bundle that runs long
+// after DOMContentLoaded, or reorder an inline block past the file it belongs
+// to. gate.js has to keep working through all of it, so each shape gets a page.
+foreach ( array( 'defer', 'async', 'late', 'delayed' ) as $cg_mode ) {
+	if ( '/page/loading-' . $cg_mode === $uri ) {
+		$content = '<iframe title="Video" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>';
+		cg_e2e_page( $content, '', '', array(), '', null, $cg_mode );
+		return true;
+	}
+}
+
+if ( '/page/loading-config-after' === $uri ) {
+	// A script combiner can emit the inline config AFTER gate.js. Consent
+	// memory is what depends on that config being readable at load, so this
+	// page mirrors /page/memory exactly, with only the order changed.
+	$content = '<iframe title="Video" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>';
+
+	cg_e2e_page(
+		$content,
+		'',
+		'window.caluconEmbedGateConfig = {"memory":"session","scope":"provider","durationDays":180};',
+		array(),
+		'',
+		null,
+		'config-after'
+	);
+	return true;
+}
+
 if ( '/page/light' === $uri ) {
 	// A light block theme: base/contrast presets defined, no accent-8 — the
 	// panel inverts to light while the button keeps the green accent fallback.
@@ -528,9 +558,48 @@ if ( 0 === strpos( $uri, '/page/cmp-' ) ) {
  * @param string $config_js     Inline config (what wp_add_inline_script emits).
  * @param array  $extra_ctx     Extra integration context (e.g. §5.4 poster).
  * @param string $extra_scripts Raw script tags after gate.js (CMP stubs + bridge).
+ * @param string $gate_mode     How gate.js is delivered, simulating what a
+ *                              caching/minification plugin does to it:
+ *                              '' (normal), 'defer', 'async', 'late' (injected
+ *                              after DOMContentLoaded has fired) or
+ *                              'config-after' (the inline config emitted after
+ *                              gate.js instead of before it, as a script
+ *                              combiner can reorder them).
  * @return void
  */
-function cg_e2e_page( string $content, string $extra_css = '', string $config_js = '', array $extra_ctx = array(), string $extra_scripts = '', ?array $providers = null ) {
+function cg_e2e_gate_tag( string $mode ): string {
+	if ( 'defer' === $mode || 'async' === $mode ) {
+		return '<script ' . $mode . ' src="/assets/gate.js"></script>';
+	}
+	if ( 'delayed' === $mode ) {
+		// What "delay JavaScript until interaction" does: nothing loads until
+		// the visitor touches the page, and the interaction that lifts the delay
+		// is consumed doing so. Modelled the way WP Rocket does it — a capture
+		// listener that removes itself and then injects the real script.
+		return '<script>(function () {'
+			. 'function cgLift() {'
+			. 'document.removeEventListener("click", cgLift, true);'
+			. 'var s = document.createElement("script");'
+			. 's.src = "/assets/gate.js";'
+			. 'document.body.appendChild(s);'
+			. '}'
+			. 'document.addEventListener("click", cgLift, true);'
+			. '}());</script>';
+	}
+	if ( 'late' === $mode ) {
+		// Later than any real optimizer would, on purpose: a combiner or a
+		// "delay JS until interaction" feature can run gate.js long after
+		// DOMContentLoaded, and the delegated click listener has to survive it.
+		return '<script>window.addEventListener("load", function () {'
+			. 'var s = document.createElement("script");'
+			. 's.src = "/assets/gate.js";'
+			. 'document.body.appendChild(s);'
+			. '});</script>';
+	}
+	return '<script src="/assets/gate.js"></script>';
+}
+
+function cg_e2e_page( string $content, string $extra_css = '', string $config_js = '', array $extra_ctx = array(), string $extra_scripts = '', ?array $providers = null, string $gate_mode = '' ) {
 	$gated = PipelineFactory::gate(
 		$content,
 		array( '127.0.0.1', 'localhost' ),
@@ -550,8 +619,9 @@ function cg_e2e_page( string $content, string $extra_css = '', string $config_js
 		. '<main><h1>Calucon Third-Party Embed Gate E2E</h1>'
 		. $gated
 		. '</main>'
-		. ( '' !== $config_js ? '<script>' . $config_js . '</script>' : '' )
-		. '<script src="/assets/gate.js"></script>'
+		. ( '' !== $config_js && 'config-after' !== $gate_mode ? '<script>' . $config_js . '</script>' : '' )
+		. cg_e2e_gate_tag( $gate_mode )
+		. ( '' !== $config_js && 'config-after' === $gate_mode ? '<script>' . $config_js . '</script>' : '' )
 		. $extra_scripts
 		. '</body></html>';
 }
