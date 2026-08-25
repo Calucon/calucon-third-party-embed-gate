@@ -207,4 +207,32 @@ final class TranslationTest extends TestCase {
 		// The source locales keep German-Germany orthography.
 		self::assertStringContainsString( 'ß', (string) file_get_contents( $dir . 'de_DE.po' ) );
 	}
+
+	/**
+	 * wp_set_script_translations() must be given the plugin's languages
+	 * directory. Without that third argument it looks only in
+	 * WP_LANG_DIR/plugins, where a file bundled with the plugin never lives —
+	 * so the block editor stays English on every WordPress before 6.7 while
+	 * the front end and the settings screen are translated.
+	 *
+	 * That combination is the reason this is a static check rather than a
+	 * behavioural one: recent WordPress finds the JSON anyway through its
+	 * textdomain registry, so the integration test passes on a current
+	 * install whether the path is there or not. It was only visible when the
+	 * suite was pointed at WordPress 6.6, which is inside the range this
+	 * plugin claims to support.
+	 */
+	public function test_script_translations_are_given_the_bundled_path(): void {
+		$source = (string) file_get_contents( dirname( __DIR__, 2 ) . '/src/Admin/BlockEditor.php' );
+
+		self::assertSame(
+			1,
+			preg_match(
+				'/wp_set_script_translations\(\s*[^;]*CALUCON_EMBED_GATE_DIR\s*\.\s*\x27\/languages\x27\s*\)/',
+				$source
+			),
+			'wp_set_script_translations() needs CALUCON_EMBED_GATE_DIR . \'/languages\' as its third argument, '
+				. 'or bundled editor translations are ignored on WordPress below 6.7'
+		);
+	}
 }
