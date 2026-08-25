@@ -247,6 +247,8 @@ final class Plugin {
 	private function providers(): array {
 		if ( null === $this->providers_cache ) {
 			$translate = $this->translator();
+			// Owner-typed texts, in the language of THIS page (see below).
+			$options   = $this->localized_options();
 			// 1. Built-ins, then code-registered ones via the filter.
 			$registered = (array) apply_filters( 'calucon_embed_gate_providers', Descriptors::all( $translate ) );
 			// 2. Owner-defined rows AFTER everything registered in code, with
@@ -255,8 +257,8 @@ final class Plugin {
 			//    from the provider that knows its privacy-preserving load
 			//    target. Nothing here can stop a gate — an unknown host is
 			//    gated generically with or without a row.
-			$rows = isset( $this->options['custom_providers'] ) && is_array( $this->options['custom_providers'] )
-				? $this->options['custom_providers'] : array();
+			$rows = isset( $options['custom_providers'] ) && is_array( $options['custom_providers'] )
+				? $options['custom_providers'] : array();
 			if ( array() !== $rows ) {
 				$registered = array_merge(
 					$registered,
@@ -265,9 +267,74 @@ final class Plugin {
 			}
 			// 3. The owner's per-provider settings last, so they apply to
 			//    code-registered providers too (the settings table lists them).
-			$this->providers_cache = Options::apply_provider_overrides( $registered, $this->options );
+			$this->providers_cache = Options::apply_provider_overrides( $registered, $options );
 		}
 		return $this->providers_cache;
+	}
+
+	/**
+	 * The options, with the owner-typed TEXTS re-read at render time.
+	 *
+	 * WPML and Polylang translate the strings named in wpml-config.xml — the
+	 * per-provider note, button label and privacy-policy URL, and the labels
+	 * of the owner's own providers — by filtering `option_…` as the page is
+	 * built, in whatever language that page is in. The constructor's snapshot
+	 * is taken on plugins_loaded, before either of them has resolved the
+	 * request's language, so it holds the default language's text and every
+	 * translation of a page would show it.
+	 *
+	 * Only the texts come from this late read. Structure and behaviour —
+	 * which providers are enabled, the host lists, every detection rule —
+	 * stay with the boot-time snapshot on purpose: a filter running late must
+	 * not be able to change WHAT IS GATED (invariant 6). The worst a hostile
+	 * or careless translation layer can do here is reword a panel.
+	 *
+	 * @return array
+	 */
+	private function localized_options(): array {
+		$options = $this->options;
+
+		// The same read as the constructor's, so a site that has never saved
+		// the settings goes through the same filters (WordPress applies
+		// default_option_… rather than option_… when no row exists).
+		$fresh = get_option( Options::OPTION, Options::defaults() );
+		if ( ! is_array( $fresh ) ) {
+			return $options;
+		}
+		$fresh = Options::sanitize( $fresh );
+
+		foreach ( $fresh['providers'] as $id => $row ) {
+			foreach ( array( 'note', 'action', 'privacy_url' ) as $key ) {
+				if ( ! isset( $row[ $key ] ) ) {
+					continue;
+				}
+				if ( ! isset( $options['providers'][ $id ] ) ) {
+					// A translated string may arrive for a provider the owner
+					// never overrode. Take the text; take nothing else, so
+					// the row cannot appear with an 'enabled' of its own.
+					$options['providers'][ $id ] = array();
+				}
+				$options['providers'][ $id ][ $key ] = $row[ $key ];
+			}
+		}
+
+		// The owner's own providers are a list, so match on the row's id
+		// rather than its position: a translation layer returns the same
+		// rows, but nothing guarantees the order survives a round trip.
+		$labels = array();
+		foreach ( $fresh['custom_providers'] as $row ) {
+			if ( isset( $row['id'], $row['label'] ) ) {
+				$labels[ (string) $row['id'] ] = (string) $row['label'];
+			}
+		}
+		foreach ( $options['custom_providers'] as $i => $row ) {
+			$id = isset( $row['id'] ) ? (string) $row['id'] : '';
+			if ( isset( $labels[ $id ] ) && '' !== $labels[ $id ] ) {
+				$options['custom_providers'][ $i ]['label'] = $labels[ $id ];
+			}
+		}
+
+		return $options;
 	}
 
 	/**

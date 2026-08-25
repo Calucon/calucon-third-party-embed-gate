@@ -168,6 +168,7 @@ The panel looks and behaves as before unless you opt in: the privacy-policy link
 = 0.12.0 =
 * New: German translations ship with the plugin, in both of WordPress's German locales — Deutsch (du) and Deutsch (Sie). Everything a person reads is covered: the placeholder your visitors see, all five settings tabs and the per-block controls in the editor. Set the site language to German and it follows; a translation from translate.wordpress.org still takes precedence over the bundled one.
 * Changed: the plugin now loads its own translation files. Nothing changes for sites running in English.
+* Fixed: on WPML and Polylang sites, the texts you type yourself — a provider's notice, button label or privacy-policy URL, and your own providers' names — showed in the site's default language on every translation. They are now read in the language of the page being built. Translate them in WPML's String Translation or Polylang's Strings screen; the shipped wpml-config.xml already registers them.
 
 = 0.11.0 =
 * New: page caches are flushed automatically when the plugin is activated and after it updates, not only when settings are saved or the plugin is deactivated — so a cached page cannot keep serving pre-update markup.

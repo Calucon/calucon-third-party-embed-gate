@@ -167,6 +167,17 @@ trap: `editor.js` strings go through `wp.i18n`, which never reads a `.mo` — th
 need `languages/{domain}-{locale}-{handle}.json`, rebuilt by
 `bin/make-json-translations.php`.
 
+**Owner-typed texts are re-read at render time** (`Plugin::localized_options()`).
+WPML and Polylang translate the strings named in `wpml-config.xml` by filtering
+`option_…`/`default_option_…` while the page is built, in that page's language —
+long after `plugins_loaded`, where the constructor takes its snapshot. Re-reading
+only `providers/*/{note,action,privacy_url}` and `custom_providers/*/label` is
+deliberate: structure and behaviour stay with the boot snapshot, so a late filter
+can reword a panel and can never ungate an embed (invariant 6). Both halves are
+pinned by the "multilingual" WP test, whose emulator hooks `default_option_` too
+— a site that never saved the settings has no option row, and WordPress then
+never applies `option_`.
+
 `load_plugin_textdomain()` in `Plugin.php` is not redundant: WordPress 6.7+
 finds bundled files through its textdomain registry, 5.9–6.6 (still supported)
 do not. A language pack from translate.wordpress.org lands in `WP_LANG_DIR` and

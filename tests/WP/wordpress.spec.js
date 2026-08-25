@@ -1291,3 +1291,28 @@ test( 'German: the visitor panel, the settings screen and the editor controls ar
 	);
 	expect( translated, 'editor.js strings need languages/*-{locale}-{handle}.json' ).toBe( 'Diese Einbettung sperren' );
 } );
+
+// Owner-typed texts on a multilingual site (§9.15). WPML and Polylang
+// translate the strings named in wpml-config.xml — per-provider note, button
+// label and privacy URL, and the owner's own provider labels — by filtering
+// the option while the page is built, in that page's language. That happens
+// long after plugins_loaded, where the plugin takes its options snapshot, so
+// the texts are re-read at render time. Only the texts: a filter arriving that
+// late must not be able to change what is gated.
+test( 'multilingual: translated provider texts reach the panel, and cannot ungate it', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+
+	await page.goto( '/gated-classic/?cg_translate=1' );
+	await page.waitForLoadState( 'networkidle' );
+
+	const panel = page.locator( '.cg-embed[data-cg-provider="youtube"]' ).first();
+	await expect( panel.locator( '.cg-embed__button' ) ).toHaveText( 'Video abspielen (übersetzt)' );
+	await expect( panel.locator( '.cg-embed__note' ) ).toHaveText( 'Übersetzter Hinweistext für dieses Video.' );
+
+	// The same late filter also disables the provider and adds its host to
+	// never-gate. Neither may take effect: gating is decided from the boot
+	// snapshot, so a translation layer can reword a panel and nothing else.
+	await expect( panel ).toHaveCount( 1 );
+	await expect( page.locator( 'iframe[src*="youtube"]' ) ).toHaveCount( 0 );
+	expect( offenders, 'INVARIANT 1 — a late option filter ungated an embed' ).toEqual( [] );
+} );

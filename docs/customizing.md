@@ -328,6 +328,62 @@ is where Consent Mode's state comes from. The plugin also never sends
 `gtag('consent', …)` updates; a click on one embed is not a site-wide
 marketing consent.
 
+## Bilingual and multilingual sites
+
+Two kinds of text live in this plugin, and they are translated in two
+different places.
+
+**The plugin's own strings** — every built-in provider's notice and button
+label, the whole settings screen, the editor controls — are gettext strings.
+German ships with the plugin (`de_DE` and `de_DE_formal`); any other language
+comes from translate.wordpress.org. Nothing to configure: WordPress serves
+each request in that request's language.
+
+The practical consequence is worth stating plainly: **on a bilingual site,
+leave the built-in wording alone and you get both languages for free.** The
+moment you type your own notice or button text for a provider, that one string
+is yours in every language until you translate it — you have traded a
+translated string for a fixed one.
+
+**The texts you type** — a per-provider notice, button label or
+privacy-policy URL, and the names of your own providers — are stored in the
+plugin's option, so they are content, not code. They are registered for
+translation in the shipped `wpml-config.xml`, and both WPML and Polylang read
+that file:
+
+| Text | Where you translate it |
+|---|---|
+| Per-provider notice / button label | WPML → String Translation, or Polylang → Translations → Strings |
+| Per-provider privacy-policy URL | same — a URL is just a string, so `…/privacy` and `…/privacy?hl=de` can differ per language |
+| Your own providers' names | same |
+| Per-block button and notice text | translated with the post, in the translated post's block |
+
+The plugin re-reads those texts while the page is being built, so the string
+your multilingual plugin returns for *that* page's language is the one the
+panel shows. Only the texts are re-read: which providers are enabled, the host
+lists and every detection rule come from the values loaded at startup, so a
+translation layer can reword a panel and can never ungate an embed.
+
+The settings screen deliberately keeps showing the original text you typed —
+that is the source string your translations hang off, and editing it there
+edits the original, not a translation.
+
+**Without WPML or Polylang** — two languages by hand, a language switcher of
+your own — use the filters instead, keyed off the current locale:
+
+```php
+add_filter( 'calucon_embed_gate_action_text', function ( $action, $provider ) {
+	if ( 'youtube' !== $provider['id'] || 'de_DE' !== determine_locale() ) {
+		return $action;
+	}
+	return 'Video von YouTube laden';
+}, 10, 2 );
+```
+
+`calucon_embed_gate_note_text` does the same for the notice, and
+`calucon_embed_gate_providers` can rewrite a whole descriptor — including
+`privacy_url` — per locale.
+
 ## Styling
 
 Prefer the Appearance tab (presets, corners, colour pickers, live preview

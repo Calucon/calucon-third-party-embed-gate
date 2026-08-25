@@ -152,6 +152,32 @@ add_filter( 'locale', function ( $locale ) {
 	$requested = isset( $_GET['cg_locale'] ) ? (string) $_GET['cg_locale'] : '';
 	return preg_match( '/^[a-z]{2}_[A-Z]{2}(?:_formal)?$/', $requested ) ? $requested : $locale;
 } );
+// Multilingual emulator: WPML and Polylang translate the strings named in
+// wpml-config.xml by filtering the option as the page is built, in that
+// page's language — long after plugins_loaded. ?cg_translate=1 does the same
+// thing, and also tries to switch OFF a provider, which a translation layer
+// must never be able to do from here.
+add_action( 'init', function () {
+	if ( ! isset( $_GET['cg_translate'] ) ) {
+		return;
+	}
+	$translate = function ( $value ) {
+		if ( ! is_array( $value ) ) {
+			return $value;
+		}
+		$value['providers']['youtube']['action']      = 'Video abspielen (übersetzt)';
+		$value['providers']['youtube']['note']        = 'Übersetzter Hinweistext für dieses Video.';
+		$value['providers']['youtube']['privacy_url'] = 'https://policies.google.com/privacy?hl=de';
+		$value['providers']['youtube']['enabled']     = false;
+		$value['detection']['never_gate']             = array( 'www.youtube.com' );
+		return $value;
+	};
+	// A site that never saved the settings has no option row, and WordPress
+	// then applies default_option_ instead of option_ — cover both, the way
+	// a translation layer has to.
+	add_filter( 'option_calucon_embed_gate_options', $translate );
+	add_filter( 'default_option_calucon_embed_gate_options', $translate );
+} );
 MUPLUGIN;
 if ( false === file_put_contents( $cg_mu_dir . '/cg-test-hints.php', $cg_mu_source . "\n" ) ) {
 	fwrite( STDERR, "seed: cannot write the hint emulator into $cg_mu_dir\n" );
