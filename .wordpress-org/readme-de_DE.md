@@ -108,7 +108,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** Accessible placeholder: named group, a real button, visible focus, sufficient contrast, focus kept after activation. Zero axe-core violations in CI.
 
-**DE:** Barrierearmer Platzhalter: benannte Gruppe, ein echter Button, sichtbarer Fokus, ausreichender Kontrast, Fokus bleibt nach der Aktivierung erhalten. Null axe-core-Verstöße in der CI.
+**DE:** Barrierefreier Platzhalter: benannte Gruppe, ein echter Button, sichtbarer Fokus, ausreichender Kontrast, Fokus bleibt nach der Aktivierung erhalten. Null axe-core-Verstöße in der CI.
 
 **EN:** Never phones home. The plugin makes no outbound request from your server or your visitors' browsers, on any path, for any reason.
 
@@ -186,7 +186,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Wird Google Consent Mode v2 unterstützt?
 
-**DE (Antwort):** Consent Mode wird bewusst weder gelesen noch geschrieben. Es ist ein Signal, das Consent-Plattformen an Googles Tags senden; Google veröffentlicht keine Schnittstelle, über die andere Skripte es lesen könnten, und kein Consent-Mode-Signal steuert Iframes wie YouTube-Einbettungen. Die Brücke verbindet sich stattdessen mit der Consent-Plattform selbst – also mit der Quelle, aus der Consent Mode seinen Zustand bezieht –, was der verlässliche Weg ist, dieselbe Entscheidung des Besuchers zu berücksichtigen. Calucon Third-Party Embed Gate sendet außerdem nie `gtag('consent', …)`-Updates: Ein Klick auf eine Einbettung ist eine Einwilligung für diese Einbettung, keine websiteweite Marketing-Einwilligung – das falsch zu melden wäre nicht richtig.
+**DE (Antwort):** Consent Mode wird bewusst weder gelesen noch geschrieben. Es ist ein Signal, das Consent-Plattformen an Googles Tags senden; Google veröffentlicht keine Schnittstelle, über die andere Skripte es lesen könnten, und kein Consent-Mode-Signal steuert Iframes wie YouTube-Einbettungen. Die Brücke verbindet sich stattdessen mit der Consent-Plattform selbst – also mit der Quelle, aus der Consent Mode seinen Zustand bezieht –, was der verlässliche Weg ist, dieselbe Entscheidung des Besuchers zu berücksichtigen. Calucon Third-Party Embed Gate sendet außerdem nie `gtag('consent', …)`-Updates: Ein Klick auf eine Einbettung ist eine Einwilligung für diese Einbettung, keine websiteweite Marketing-Einwilligung – sie als solche zu melden wäre schlicht falsch.
 
 **EN:** An embed from my page builder is not being gated
 
