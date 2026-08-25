@@ -150,7 +150,8 @@ add_action( 'wp_head', function () {
 // what the tests are there to prove.
 add_filter( 'locale', function ( $locale ) {
 	$requested = isset( $_GET['cg_locale'] ) ? (string) $_GET['cg_locale'] : '';
-	return preg_match( '/^[a-z]{2}_[A-Z]{2}(?:_formal)?$/', $requested ) ? $requested : $locale;
+	// de_DE, de_DE_formal, de_AT, de_CH, de_CH_informal.
+	return preg_match( '/^[a-z]{2}_[A-Z]{2}(?:_[a-z]+)?$/', $requested ) ? $requested : $locale;
 } );
 // WPML's presence is detected by the constant it defines. ?cg_wpml=1 makes
 // the Compatibility screen see one, without installing WPML.

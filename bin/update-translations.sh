@@ -24,10 +24,19 @@ POT="languages/$DOMAIN.pot"
 
 php tests/bin/generate-pot.php
 
+# The two locales that are written by hand.
+for locale in de_DE de_DE_formal; do
+	msgmerge --quiet --no-wrap --no-fuzzy-matching --backup=none --update \
+		"languages/$DOMAIN-$locale.po" "$POT"
+done
+
+# de_AT, de_CH and de_CH_informal are derived from those two — WordPress does
+# not fall back between German locales, so each one needs its own file.
+php bin/derive-german-locales.php
+
 for po in languages/"$DOMAIN"-*.po; do
 	locale=$(basename "$po" .po)
 	locale=${locale#"$DOMAIN"-}
-	msgmerge --quiet --no-wrap --no-fuzzy-matching --backup=none --update "$po" "$POT"
 	msgfmt --check --statistics -o "languages/$DOMAIN-$locale.mo" "$po"
 	printf '  %s\n' "$locale"
 done

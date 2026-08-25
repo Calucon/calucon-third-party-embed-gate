@@ -153,8 +153,14 @@ pins it; the `authority-backslash-*` fixtures prove it end-to-end.
 
 ## Translations
 
-German ships with the plugin in both WordPress locales — `de_DE` (du) and
-`de_DE_formal` (Sie) — because the plugin's market is Germany and the EU.
+German ships with the plugin for all five German locales WordPress has, because
+the plugin's market is Germany and the EU and **WordPress does not fall back
+between them** — without its own file, a `de_AT` site sees English. Two are
+written by hand — `de_DE` (du) and `de_DE_formal` (Sie) — and
+`bin/derive-german-locales.php` generates the rest: `de_AT` is `de_DE`
+verbatim, `de_CH` is `de_DE_formal` and `de_CH_informal` is `de_DE`, both with
+Swiss orthography (ß → ss, „…“ → «…»), which is the Swiss team's own documented
+workflow. Never edit a derived file; `TranslationTest` fails if one drifts.
 `bin/update-translations.sh` is the whole chain: regenerate the `.pot`,
 `msgmerge` every `.po` (unwrapped, one line per string, so a wording change is
 a one-line diff), compile every `.mo`, rebuild the block-editor JSON.

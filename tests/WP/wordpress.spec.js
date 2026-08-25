@@ -1295,6 +1295,35 @@ test( 'German: the visitor panel, the settings screen and the editor controls ar
 	expect( translated, 'editor.js strings need languages/*-{locale}-{handle}.json' ).toBe( 'Diese Einbettung sperren' );
 } );
 
+// WordPress does not fall back between German locales: without its own file, a
+// site set to de_AT or de_CH sees English. The three extra files are derived
+// from the two written by hand (bin/derive-german-locales.php) — Austria gets
+// de_DE verbatim, Switzerland gets it with Swiss orthography.
+test( 'German: Austria and Switzerland get their own files, with Swiss orthography', async ( { page } ) => {
+	// Austria — informal, standard German spelling, ß intact.
+	await page.goto( '/gated-classic/?cg_locale=de_AT' );
+	await expect( page.locator( '.cg-embed__button' ).first() ).toHaveText( 'Video von YouTube laden' );
+	await expect( page.locator( '.cg-embed__note' ).first() ).toContainText( 'deine IP-Adresse' );
+
+	// Switzerland — formal, and never a sharp S anywhere on the page.
+	await page.goto( '/gated-classic/?cg_locale=de_CH' );
+	await expect( page.locator( '.cg-embed__note' ).first() ).toContainText( 'Ihre IP-Adresse' );
+
+	await login( page );
+	for ( const [ locale, address ] of [ [ 'de_CH', 'Ihre' ], [ 'de_CH_informal', 'deine' ] ] ) {
+		await page.goto( `/wp-admin/options-general.php?page=calucon-embed-gate&cg_locale=${ locale }` );
+		await expect( page.locator( '#cg-tabbtn-providers' ) ).toHaveText( 'Anbieter' );
+		const body = await page.locator( '#wpbody' ).innerText();
+		expect( body, `${ locale } must not use the sharp S` ).not.toContain( 'ß' );
+		expect( body, `${ locale } quotes with guillemets` ).toContain( '«' );
+		expect( body ).toContain( address );
+	}
+
+	// Control: German-Germany still spells with ß, so the check above means something.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg_locale=de_DE' );
+	expect( await page.locator( '#wpbody' ).innerText() ).toContain( 'ß' );
+} );
+
 // Owner-typed texts on a multilingual site (§9.15). WPML and Polylang
 // translate the strings named in wpml-config.xml — per-provider note, button
 // label and privacy URL, and the owner's own provider labels — by filtering

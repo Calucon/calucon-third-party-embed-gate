@@ -32,7 +32,7 @@ See it in action on the [live demo](https://calucon.de/third-party-embed-gate-sh
 * Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; a plain fallback link to the content stays for feed readers.
 * Per-block override in the editor: gate a specific embed always, never, or per the site default.
 * Optional poster image behind the consent panel, chosen per embed from your media library — served from your own site, never fetched from the provider. Per-embed button and notice text in the block editor, too.
-* German included: the plugin's own texts ship translated in both WordPress German locales — Deutsch (du) and Deutsch (Sie) — placeholder wording, the settings screen and the block-editor controls alike.
+* German included: the plugin's own texts ship translated for every German locale WordPress offers — Germany (du and Sie), Austria, and Switzerland (with ss for ß) — placeholder wording, the settings screen and the block-editor controls alike.
 * Multilingual sites: the texts you type (per-provider and per-block notices and button labels, provider privacy-policy URLs, your own providers' names) are registered for WPML and Polylang via a shipped wpml-config.xml.
 * Optional, off by default: remember consent in the visitor's browser (per embed, per provider, or for all embeds; session or with an expiry), with a withdrawal control via the `[calucon_embed_gate_withdraw]` shortcode.
 * Optional, off by default: a bridge to your consent platform. When a tested platform (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner) reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state; with an untested platform, or when the platform gives no answer, gating stands unchanged.
@@ -75,7 +75,7 @@ Because there is nothing to announce at page load. If nothing third-party loads 
 
 = Is the plugin available in German? =
 
-Yes. German ships with the plugin in both of WordPress's German locales — Deutsch (du) and Deutsch (Sie, "de_DE_formal") — and it covers everything a person reads: the placeholder your visitors see, the settings screen and the block-editor controls. Set your site language and it follows. Other languages are welcome via translate.wordpress.org; a translation from there overrides the bundled one.
+Yes. German ships with the plugin for all five German locales WordPress offers — Deutschland informal and formal ("de_DE", "de_DE_formal"), Österreich ("de_AT"), and Schweiz formal and informal ("de_CH", "de_CH_informal", spelled with ss instead of ß) — and it covers everything a person reads: the placeholder your visitors see, the settings screen and the block-editor controls. Set your site language and it follows. Other languages are welcome via translate.wordpress.org; a translation from there overrides the bundled one.
 
 = Does a visitor have to click every single time? =
 
@@ -166,7 +166,7 @@ The panel looks and behaves as before unless you opt in: the privacy-policy link
 == Changelog ==
 
 = 0.12.0 =
-* New: German translations ship with the plugin, in both of WordPress's German locales — Deutsch (du) and Deutsch (Sie). Everything a person reads is covered: the placeholder your visitors see, all five settings tabs and the per-block controls in the editor. Set the site language to German and it follows; a translation from translate.wordpress.org still takes precedence over the bundled one.
+* New: German translations ship with the plugin, for all five German locales WordPress offers — Deutschland (du und Sie), Österreich, and Schweiz (Sie und du, written with ss instead of ß as Switzerland does). WordPress does not fall back between them, so each one needs its own file. Everything a person reads is covered: the placeholder your visitors see, all five settings tabs and the per-block controls in the editor. Set the site language to German and it follows; a translation from translate.wordpress.org still takes precedence over the bundled one.
 * Changed: the plugin now loads its own translation files. Nothing changes for sites running in English.
 * New: the Compatibility overview names a detected multilingual plugin (WPML, Polylang, TranslatePress, Weglot) and says where the texts you typed yourself are translated — for WPML and Polylang, the screen that holds them; the other two translate the finished page and need nothing.
 * New: the Compatibility overview names a detected multilingual plugin (WPML, Polylang, TranslatePress, Weglot) and says where the texts you typed yourself are translated — for WPML and Polylang, the screen that holds them; the other two translate the finished page and need nothing.

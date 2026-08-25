@@ -16,7 +16,10 @@ use PHPUnit\Framework\TestCase;
  */
 final class TranslationTest extends TestCase {
 
-	private const LOCALES = array( 'de_DE', 'de_DE_formal' );
+	/** Hand-written; every other German locale is derived from these. */
+	private const SOURCE_LOCALES = array( 'de_DE', 'de_DE_formal' );
+
+	private const LOCALES = array( 'de_DE', 'de_DE_formal', 'de_AT', 'de_CH', 'de_CH_informal' );
 
 	/**
 	 * msgid => msgstr for one PO file.
@@ -164,5 +167,44 @@ final class TranslationTest extends TestCase {
 			}
 			self::assertGreaterThan( 370, $count, "$locale: the .mo is out of date — run msgfmt over the .po" );
 		}
+	}
+	/**
+	 * The derived locales exist because WordPress does not fall back between
+	 * German variants: without its own file, a de_AT site sees English.
+	 * Regenerate with bin/derive-german-locales.php (bin/update-translations.sh
+	 * runs it) — never edit them by hand.
+	 */
+	public function test_derived_locales_match_the_locale_they_come_from(): void {
+		$dir = dirname( __DIR__, 2 ) . '/languages/calucon-third-party-embed-gate-';
+
+		$sources = array(
+			'de_AT'          => 'de_DE',
+			'de_CH'          => 'de_DE_formal',
+			'de_CH_informal' => 'de_DE',
+		);
+
+		foreach ( $sources as $locale => $source ) {
+			$from = $this->entries( "$dir$source.po" );
+			$to   = $this->entries( "$dir$locale.po" );
+
+			self::assertSame( array_keys( $from ), array_keys( $to ), "$locale covers different strings than $source" );
+
+			$swiss = 0 === strpos( $locale, 'de_CH' );
+			foreach ( $from as $msgid => $text ) {
+				// Switzerland writes ss for ß and quotes with guillemets;
+				// everything else is the source translation verbatim.
+				$expected = $swiss ? str_replace( array( 'ß', '„', '“' ), array( 'ss', '«', '»' ), $text ) : $text;
+				self::assertSame( $expected, $to[ $msgid ], "$locale drifted from $source" );
+			}
+
+			if ( $swiss ) {
+				$body = (string) file_get_contents( "$dir$locale.po" );
+				self::assertStringNotContainsString( 'ß', $body, "$locale must not contain a sharp S" );
+				self::assertStringNotContainsString( '„', $body, "$locale quotes with guillemets" );
+			}
+		}
+
+		// The source locales keep German-Germany orthography.
+		self::assertStringContainsString( 'ß', (string) file_get_contents( $dir . 'de_DE.po' ) );
 	}
 }

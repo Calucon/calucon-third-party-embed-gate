@@ -38,7 +38,8 @@ if ( array() === $wanted ) {
 }
 
 foreach ( glob( $root . '/languages/' . $domain . '-*.po' ) as $po ) {
-	$locale = (string) preg_replace( '/^.*-([a-z]{2}_[A-Z]{2}(?:_formal)?)\.po$/', '$1', $po );
+	// de_DE, de_DE_formal, de_CH_informal — the suffix is not always "formal".
+	$locale = (string) preg_replace( '/^.*?-([a-z]{2}_[A-Z]{2}(?:_[a-z]+)?)\.po$/', '$1', $po );
 	$body   = (string) file_get_contents( $po );
 
 	// A real (multi-line) PO reader: gettext wraps at 78 columns, and so do
