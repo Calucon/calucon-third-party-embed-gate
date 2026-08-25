@@ -184,13 +184,23 @@ pinned by the "multilingual" WP test, whose emulator hooks `default_option_` too
 — a site that never saved the settings has no option row, and WordPress then
 never applies `option_`.
 
-**The plugin's wp.org listing is translatable too, but never bundled**: the
-description, FAQ and screenshot captions live in the *Stable Readme* project on
-translate.wordpress.org, not in the repo. `.wordpress-org/readme-de.md` holds
-the German for those strings, chunk by chunk, ready to paste once someone has
-PTE rights — it ships nowhere (`.wordpress-org/` is excluded from the zip) and
-is the one German text that cannot be delivered by shipping a file. Keep it in
-step with `readme.txt` when the description changes.
+**Touching `readme.txt` means touching the German listing text — say so, every
+time.** The wp.org listing (short description, description, installation, FAQ,
+screenshot captions, upgrade notice) is translated on translate.wordpress.org
+and **cannot be bundled**, so nothing about a stale translation is visible from
+the repo: the plugin works, CI is green, and the German plugin page quietly
+describes a version that no longer exists. The German lives in
+`.wordpress-org/readme-de_DE.md` (du) and `.wordpress-org/readme-de_DE_formal.md`
+(Sie), chunk by chunk in readme.txt order with the English as the locator, and
+ships nowhere (`.wordpress-org/` is excluded from the zip).
+
+So: whenever a change edits `readme.txt` prose, update **both** German files in
+the same commit and **tell Simon in the response that the wp.org translations
+need re-uploading** — the repo cannot push them for him. `ReadmeTranslationTest`
+enforces the first half: it stamps the German files with a hash of the English
+they were written from, fails the moment that prose changes, and prints the new
+stamp to paste once the German is updated. Changelog entries are excluded from
+the stamp on purpose, so a release note does not fire it.
 
 `load_plugin_textdomain()` in `Plugin.php` is not redundant: WordPress 6.7+
 finds bundled files through its textdomain registry, 5.9–6.6 (still supported)

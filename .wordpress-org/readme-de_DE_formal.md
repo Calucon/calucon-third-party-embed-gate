@@ -1,12 +1,16 @@
-# readme.txt auf Deutsch (de_DE, „du“)
+# readme.txt auf Deutsch (de_DE_formal, „Sie“)
+
+<!-- readme.txt: 1a97166ecd9448cb -->
+<!-- Dieser Stempel bindet die Übersetzung an den englischen Stand.
+     tests/Unit/ReadmeTranslationTest.php schlägt fehl, sobald readme.txt sich ändert. -->
 
 Die Beschreibung eines Plugins wird nicht mitgeliefert, sondern auf
 translate.wordpress.org im Projekt **Stable Readme** übersetzt. Sobald die
 Übersetzung freigegeben ist, zeigt wordpress.org deutschen Besuchern die
 deutsche Plugin-Seite.
 
-**So benutzt du diese Datei:** GlotPress zeigt jeden Absatz als eigenen String.
-Suche links den englischen Text, kopiere hier den deutschen darunter. Die
+**So benutzen Sie diese Datei:** GlotPress zeigt jeden Absatz als eigenen String.
+Suchen Sie links den englischen Text und kopieren Sie hier den deutschen darunter. Die
 Reihenfolge entspricht der readme.txt.
 
 **Nicht ändern, ohne es zu wollen:** Die Antworten zu DSGVO, Cookie-Banner und
@@ -38,7 +42,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** See it in action on the [live demo](…), or read the details on the [plugin page](…).
 
-**DE:** Sieh es dir in der [Live-Demo](https://calucon.de/third-party-embed-gate-showcase/) an oder lies die Details auf der [Plugin-Seite](https://calucon.de/third-party-embed-gate/).
+**DE:** Sehen Sie sich die [Live-Demo](https://calucon.de/third-party-embed-gate-showcase/) an oder lesen Sie die Details auf der [Plugin-Seite](https://calucon.de/third-party-embed-gate/).
 
 ### Was es tut
 
@@ -84,7 +88,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** Optional poster image behind the consent panel, chosen per embed from your media library — served from your own site, never fetched from the provider. Per-embed button and notice text in the block editor, too.
 
-**DE:** Optionales Posterbild hinter dem Platzhalter, pro Einbettung aus deiner Mediathek gewählt – ausgeliefert von deiner eigenen Website, nie beim Anbieter geholt. Button- und Hinweistext lassen sich im Block-Editor ebenfalls pro Einbettung setzen.
+**DE:** Optionales Posterbild hinter dem Platzhalter, pro Einbettung aus Ihrer Mediathek gewählt – ausgeliefert von Ihrer eigenen Website, nie beim Anbieter geholt. Button- und Hinweistext lassen sich im Block-Editor ebenfalls pro Einbettung setzen.
 
 **EN:** German included: the plugin's own texts ship translated for every German locale WordPress offers …
 
@@ -92,7 +96,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** Multilingual sites: the texts you type (per-provider and per-block notices and button labels, provider privacy-policy URLs, your own providers' names) are registered for WPML and Polylang via a shipped wpml-config.xml.
 
-**DE:** Mehrsprachige Websites: Die Texte, die du selbst eingibst (Hinweise und Button-Beschriftungen pro Anbieter und pro Block, Datenschutz-URLs der Anbieter, Namen deiner eigenen Anbieter), sind über die mitgelieferte wpml-config.xml für WPML und Polylang zur Übersetzung angemeldet.
+**DE:** Mehrsprachige Websites: Die Texte, die Sie selbst eingeben (Hinweise und Button-Beschriftungen pro Anbieter und pro Block, Datenschutz-URLs der Anbieter, Namen Ihrer eigenen Anbieter), sind über die mitgelieferte wpml-config.xml für WPML und Polylang zur Übersetzung angemeldet.
 
 **EN:** Optional, off by default: remember consent in the visitor's browser (per embed, per provider, or for all embeds; session or with an expiry), with a withdrawal control via the `[calucon_embed_gate_withdraw]` shortcode.
 
@@ -100,7 +104,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** Optional, off by default: a bridge to your consent platform. When a tested platform (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner) reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state; with an untested platform, or when the platform gives no answer, gating stands unchanged.
 
-**DE:** Optional, standardmäßig aus: eine Brücke zu deiner Consent-Plattform. Meldet eine getestete Plattform (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner) eine Einwilligung für die Kategorie der Einbettungen, laden gesperrte Einbettungen ohne zweiten Klick – und ein Widerruf dort sperrt sie wieder. Die Brücke liest nur den Zustand der Plattform; bei einer nicht getesteten Plattform und immer dann, wenn die Plattform keine Antwort gibt, bleibt die Sperre unverändert bestehen.
+**DE:** Optional, standardmäßig aus: eine Brücke zu Ihrer Consent-Plattform. Meldet eine getestete Plattform (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner) eine Einwilligung für die Kategorie der Einbettungen, laden gesperrte Einbettungen ohne zweiten Klick – und ein Widerruf dort sperrt sie wieder. Die Brücke liest nur den Zustand der Plattform; bei einer nicht getesteten Plattform und immer dann, wenn die Plattform keine Antwort gibt, bleibt die Sperre unverändert bestehen.
 
 **EN:** Accessible placeholder: named group, a real button, visible focus, sufficient contrast, focus kept after activation. Zero axe-core violations in CI.
 
@@ -108,13 +112,13 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** Never phones home. The plugin makes no outbound request from your server or your visitors' browsers, on any path, for any reason.
 
-**DE:** Funkt nie nach Hause. Das Plugin stellt keine ausgehende Anfrage – weder von deinem Server noch aus den Browsern deiner Besucher, auf keinem Weg und aus keinem Grund.
+**DE:** Funkt nie nach Hause. Das Plugin stellt keine ausgehende Anfrage – weder von Ihrem Server noch aus den Browsern Ihrer Besucher, auf keinem Weg und aus keinem Grund.
 
 ### Was es nicht ist
 
 **EN:** Calucon Third-Party Embed Gate is a technical measure. It is not a consent management platform, it does not produce consent records for accountability purposes, it does not scan your site, and it does not make legal claims about your site. What it technically does: it prevents the embed providers' requests until the visitor acts, and the click is scoped to the embed (or, if you enable memory, the scope you configure). You remain responsible for your privacy policy, which still has to name the providers you embed from, and for your legal bases. If you need a documented consent record, you need a consent management platform.
 
-**DE:** Calucon Third-Party Embed Gate ist eine technische Maßnahme. Es ist keine Consent-Management-Plattform, es erzeugt keine Einwilligungsnachweise für Rechenschaftszwecke, es durchsucht deine Website nicht und es trifft keine rechtlichen Aussagen über deine Website. Was es technisch tut: Es verhindert die Anfragen der Einbettungsanbieter, bis der Besucher handelt, und der Klick gilt für die eine Einbettung (oder, wenn du das Merken aktivierst, für den von dir eingestellten Bereich). Verantwortlich bleibst du – für deine Datenschutzerklärung, die weiterhin die Anbieter nennen muss, von denen du einbettest, und für deine Rechtsgrundlagen. Wer einen dokumentierten Einwilligungsnachweis braucht, braucht eine Consent-Management-Plattform.
+**DE:** Calucon Third-Party Embed Gate ist eine technische Maßnahme. Es ist keine Consent-Management-Plattform, es erzeugt keine Einwilligungsnachweise für Rechenschaftszwecke, es durchsucht Ihre Website nicht und es trifft keine rechtlichen Aussagen über Ihre Website. Was es technisch tut: Es verhindert die Anfragen der Einbettungsanbieter, bis der Besucher handelt, und der Klick gilt für die eine Einbettung (oder, wenn Sie das Merken aktivieren, für den von Ihnen eingestellten Bereich). Verantwortlich bleiben Sie – für Ihre Datenschutzerklärung, die weiterhin die Anbieter nennen muss, von denen Sie einbetten, und für Ihre Rechtsgrundlagen. Wer einen dokumentierten Einwilligungsnachweis braucht, braucht eine Consent-Management-Plattform.
 
 ---
 
@@ -126,11 +130,11 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** 1. In your WordPress admin, go to **Plugins → Add New** …
 
-**DE:** 1. Gehe im WordPress-Adminbereich zu **Plugins → Installieren**, suche nach „Calucon Third-Party Embed Gate“, klicke auf **Jetzt installieren** und dann auf **Aktivieren**. Aus einer heruntergeladenen ZIP-Datei installierst du stattdessen über **Plugins → Installieren → Plugin hochladen**: Datei wählen, installieren, aktivieren.
+**DE:** 1. Gehen Sie im WordPress-Adminbereich zu **Plugins → Installieren**, suchen Sie nach „Calucon Third-Party Embed Gate“, klicken Sie auf **Jetzt installieren** und dann auf **Aktivieren**. Aus einer heruntergeladenen ZIP-Datei installieren Sie stattdessen über **Plugins → Installieren → Plugin hochladen**: Datei wählen, installieren, aktivieren.
 
 **EN:** 2. That is all that is required …
 
-**DE:** 2. Mehr ist nicht nötig. Deine bestehenden Einbettungen werden im Frontend jetzt durch einen Platzhalter zum Anklicken ersetzt, und vor dem Klick des Besuchers wird kein Drittanbieter kontaktiert. Redakteure sehen im Block-Editor weiterhin die normale Einbettung – am Schreiben ändert sich also nichts.
+**DE:** 2. Mehr ist nicht nötig. Ihre bestehenden Einbettungen werden im Frontend jetzt durch einen Platzhalter zum Anklicken ersetzt, und vor dem Klick des Besuchers wird kein Drittanbieter kontaktiert. Redakteure sehen im Block-Editor weiterhin die normale Einbettung – am Schreiben ändert sich also nichts.
 
 **EN:** 3. Optional: open **Settings → Calucon Third-Party Embed Gate** …
 
@@ -138,11 +142,11 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** If you turn on consent memory and want to offer visitors a way to take it back …
 
-**DE:** Wenn du das Merken der Einwilligung aktivierst und Besuchern einen Weg zurück anbieten möchtest, füge den Block „Einwilligungen widerrufen“ ein oder setze den Shortcode `[calucon_embed_gate_withdraw]` auf deine Datenschutzseite.
+**DE:** Wenn Sie das Merken der Einwilligung aktivieren und Besuchern einen Weg zurück anbieten möchten, fügen Sie den Block „Einwilligungen widerrufen“ ein oder setzen Sie den Shortcode `[calucon_embed_gate_withdraw]` auf Ihre Datenschutzseite.
 
 **EN:** **Requirements:** WordPress 5.9 or newer and PHP 7.4 or newer …
 
-**DE:** **Voraussetzungen:** WordPress 5.9 oder neuer und PHP 7.4 oder neuer. Kein Build-Schritt, keine Laufzeit-Abhängigkeiten und keine ausgehende Anfrage von deiner Website, auf keinem Weg.
+**DE:** **Voraussetzungen:** WordPress 5.9 oder neuer und PHP 7.4 oder neuer. Kein Build-Schritt, keine Laufzeit-Abhängigkeiten und keine ausgehende Anfrage von Ihrer Website, auf keinem Weg.
 
 ---
 
@@ -152,7 +156,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Macht das meine Website DSGVO-konform?
 
-**DE (Antwort):** Das kann kein Plugin behaupten, und dieses behauptet es nicht. Calucon Third-Party Embed Gate setzt eine technische Maßnahme um: Es verhindert Anfragen an Einbettungsanbieter – und die Speicherung, die diese auf dem Gerät des Besuchers auslösen –, bis der Besucher den Inhalt ausdrücklich anfordert. Ob die Verarbeitung auf deiner Website insgesamt rechtmäßig ist, hängt von Dingen ab, die ein Plugin nicht wissen kann. Der Hintergrund – § 25 TDDDG bzw. Art. 5 Abs. 3 ePrivacy-Richtlinie für die Speicherung auf Endgeräten, Art. 6 Abs. 1 lit. a DSGVO für die Verarbeitung nach dem Klick – ist in der Dokumentation beschrieben, und deine Datenschutzerklärung muss weiterhin die Anbieter nennen, die du einsetzt.
+**DE (Antwort):** Das kann kein Plugin behaupten, und dieses behauptet es nicht. Calucon Third-Party Embed Gate setzt eine technische Maßnahme um: Es verhindert Anfragen an Einbettungsanbieter – und die Speicherung, die diese auf dem Gerät des Besuchers auslösen –, bis der Besucher den Inhalt ausdrücklich anfordert. Ob die Verarbeitung auf Ihrer Website insgesamt rechtmäßig ist, hängt von Dingen ab, die ein Plugin nicht wissen kann. Der Hintergrund – § 25 TDDDG bzw. Art. 5 Abs. 3 ePrivacy-Richtlinie für die Speicherung auf Endgeräten, Art. 6 Abs. 1 lit. a DSGVO für die Verarbeitung nach dem Klick – ist in der Dokumentation beschrieben, und Ihre Datenschutzerklärung muss weiterhin die Anbieter nennen, die Sie einsetzen.
 
 **EN:** Why is there no cookie banner?
 
@@ -164,19 +168,19 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Gibt es das Plugin auf Deutsch?
 
-**DE (Antwort):** Ja. Deutsch wird für alle fünf deutschen Sprachvarianten mitgeliefert, die WordPress anbietet – Deutschland informell und formell („de_DE“, „de_DE_formal“), Österreich („de_AT“) sowie Schweiz formell und informell („de_CH“, „de_CH_informal“, mit ss statt ß) – und deckt alles ab, was ein Mensch liest: den Platzhalter, den deine Besucher sehen, die Einstellungsseite und die Steuerelemente im Block-Editor. Stell die Sprache deiner Website ein, der Rest folgt. Weitere Sprachen sind über translate.wordpress.org willkommen; eine Übersetzung von dort hat Vorrang vor der mitgelieferten.
+**DE (Antwort):** Ja. Deutsch wird für alle fünf deutschen Sprachvarianten mitgeliefert, die WordPress anbietet – Deutschland informell und formell („de_DE“, „de_DE_formal“), Österreich („de_AT“) sowie Schweiz formell und informell („de_CH“, „de_CH_informal“, mit ss statt ß) – und deckt alles ab, was ein Mensch liest: den Platzhalter, den Ihre Besucher sehen, die Einstellungsseite und die Steuerelemente im Block-Editor. Stellen Sie die Sprache Ihrer Website ein, der Rest folgt. Weitere Sprachen sind über translate.wordpress.org willkommen; eine Übersetzung von dort hat Vorrang vor der mitgelieferten.
 
 **EN:** Does a visitor have to click every single time?
 
 **DE:** Muss ein Besucher wirklich jedes Mal klicken?
 
-**DE (Antwort):** Standardmäßig ja: einmal pro Einbettung, auf jeder Seite, und es wird nichts auf dem Gerät des Besuchers gespeichert, um sich das zu merken. Wenn dir das zu viel Reibung ist, kann sich das Plugin die Entscheidung unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken im Browser des Besuchers merken – für die eine Einbettung, für alles von diesem Anbieter oder für alle Einbettungen – entweder bis der Browser geschlossen wird oder für eine von dir gewählte Anzahl Tage. Die Option ist standardmäßig aus und speichert nichts vor dem ersten Klick des Besuchers. Wenn du sie aktivierst, gib Besuchern einen Weg zurück: Der Block „Einwilligungen widerrufen“ oder der Shortcode `[calucon_embed_gate_withdraw]` löscht das Gemerkte.
+**DE (Antwort):** Standardmäßig ja: einmal pro Einbettung, auf jeder Seite, und es wird nichts auf dem Gerät des Besuchers gespeichert, um sich das zu merken. Wenn Ihnen das zu viel Reibung ist, kann sich das Plugin die Entscheidung unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken im Browser des Besuchers merken – für die eine Einbettung, für alles von diesem Anbieter oder für alle Einbettungen – entweder bis der Browser geschlossen wird oder für eine von Ihnen gewählte Anzahl Tage. Die Option ist standardmäßig aus und speichert nichts vor dem ersten Klick des Besuchers. Wenn Sie sie aktivieren, geben Sie Besuchern einen Weg zurück: Der Block „Einwilligungen widerrufen“ oder der Shortcode `[calucon_embed_gate_withdraw]` löscht das Gemerkte.
 
 **EN:** I already run a cookie banner (Complianz, Cookiebot, …). Do they fight?
 
 **DE:** Ich habe schon ein Cookie-Banner (Complianz, Cookiebot, …). Kommen sich die beiden in die Quere?
 
-**DE (Antwort):** Nein. Von Haus aus ignoriert Calucon Third-Party Embed Gate das Banner und sperrt weiter – Besucher sehen dein Banner für dessen Kategorien und den Platzhalter für Einbettungen, und nichts blockiert doppelt (der Platzhalter enthält kein Iframe und kein Skript, das der Blocker eines Banners abfangen könnte). Wenn dir eine Entscheidung statt zweier lieber ist, aktiviere die Brücke zur Consent-Plattform unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken: Eine Einwilligung, die dein Besucher in der Plattform gibt, lädt die Einbettungen dann automatisch, und ein Widerruf dort sperrt sie wieder. Die Brücke funktioniert nur mit den auf dieser Seite genannten Plattformen – bei jeder anderen hält sie sich heraus und die Sperre bleibt bestehen. Soll für einen bestimmten Anbieter lieber der Blocker deiner Plattform greifen, schalte diesen Anbieter unter „Anbieter“ ab, dann tritt Calucon Third-Party Embed Gate dafür zurück.
+**DE (Antwort):** Nein. Von Haus aus ignoriert Calucon Third-Party Embed Gate das Banner und sperrt weiter – Besucher sehen Ihr Banner für dessen Kategorien und den Platzhalter für Einbettungen, und nichts blockiert doppelt (der Platzhalter enthält kein Iframe und kein Skript, das der Blocker eines Banners abfangen könnte). Wenn Ihnen eine Entscheidung statt zweier lieber ist, aktivieren Sie die Brücke zur Consent-Plattform unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken: Eine Einwilligung, die Ihr Besucher in der Plattform gibt, lädt die Einbettungen dann automatisch, und ein Widerruf dort sperrt sie wieder. Die Brücke funktioniert nur mit den auf dieser Seite genannten Plattformen – bei jeder anderen hält sie sich heraus und die Sperre bleibt bestehen. Soll für einen bestimmten Anbieter lieber der Blocker Ihrer Plattform greifen, schalten Sie diesen Anbieter unter „Anbieter“ ab, dann tritt Calucon Third-Party Embed Gate dafür zurück.
 
 **EN:** Is Google Consent Mode v2 supported?
 
@@ -194,7 +198,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Der Platzhalter sieht nach einem Update ungestylt aus
 
-**DE (Antwort):** Wenn deine Minifizierung CSS von einer URL ausliefert, die sich mit dem Dateiinhalt nicht ändert, können Browser das alte Stylesheet lange behalten. Ein harter Reload behebt das; das Plugin kann es nicht.
+**DE (Antwort):** Wenn Ihre Minifizierung CSS von einer URL ausliefert, die sich mit dem Dateiinhalt nicht ändert, können Browser das alte Stylesheet lange behalten. Ein harter Reload behebt das; das Plugin kann es nicht.
 
 **EN:** Does `loading="lazy"` on an iframe count as consent?
 
@@ -220,7 +224,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Etwas auf meiner Website ist gesperrt und soll normal laden
 
-**DE (Antwort):** Öffne Einstellungen → Calucon Third-Party Embed Gate → Anbieter und klicke auf „Nachsehen, was auf meiner Website läuft“. Der Scan listet jede Einbettung auf, die er in deinen neuesten Beiträgen und Seiten findet, samt der Adresse, die sie kontaktieren würde. Neben jeder kannst du sie entweder benennen – die Sperre bleibt dann bestehen, der Platzhalter bekommt aber einen richtigen Namen und ein Symbol – oder durchlassen, womit ihre Einbettungen für jeden Besucher ohne Platzhalter laden. So oder so musst du nie selbst einen Hostnamen herausfinden, und nichts ändert sich, bis du speicherst. Durchgelassene Hosts stehen oben auf derselben Seite, mit einem Klick rückgängig zu machen.
+**DE (Antwort):** Öffnen Sie Einstellungen → Calucon Third-Party Embed Gate → Anbieter und klicken Sie auf „Nachsehen, was auf meiner Website läuft“. Der Scan listet jede Einbettung auf, die er in Ihren neuesten Beiträgen und Seiten findet, samt der Adresse, die sie kontaktieren würde. Neben jeder können Sie sie entweder benennen – die Sperre bleibt dann bestehen, der Platzhalter bekommt aber einen richtigen Namen und ein Symbol – oder durchlassen, womit ihre Einbettungen für jeden Besucher ohne Platzhalter laden. So oder so müssen Sie nie selbst einen Hostnamen herausfinden, und nichts ändert sich, bis Sie speichern. Durchgelassene Hosts stehen oben auf derselben Seite, mit einem Klick rückgängig zu machen.
 
 **EN:** A provider offers both an embed code and a script — which should I paste?
 
@@ -244,13 +248,13 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Brauche ich den Abschnitt zur Content-Security-Policy?
 
-**DE (Antwort):** Nur, wenn deine Website einen Content-Security-Policy-Header sendet – die meisten WordPress-Websites tun das nicht. Der Abschnitt unter Status und Werkzeuge kann deine eigene Startseite darauf prüfen (aus deinem Browser heraus, nichts verlässt deine Website) und sagt dir, ob die aktivierten Anbieter bereits erlaubt sind; falls nicht, listet er die Zeilen auf, die zu ergänzen sind.
+**DE (Antwort):** Nur, wenn Ihre Website einen Content-Security-Policy-Header sendet – die meisten WordPress-Websites tun das nicht. Der Abschnitt unter Status und Werkzeuge kann Ihre eigene Startseite darauf prüfen (aus Ihrem Browser heraus, nichts verlässt Ihre Website) und sagt Ihnen, ob die aktivierten Anbieter bereits erlaubt sind; falls nicht, listet er die Zeilen auf, die zu ergänzen sind.
 
 **EN:** Can I change how the placeholder looks without writing CSS?
 
 **DE:** Kann ich das Aussehen des Platzhalters ohne CSS ändern?
 
-**DE (Antwort):** Ja. Der Reiter „Darstellung“ bietet Schnellstile, Farben, die der Palette deines Themes folgen können, sowie Einstellungen für Ecken, Rahmen, Schatten, Abstände, Button, Posterbild und Dunkelmodus – mit Live-Vorschau und automatischer Lesbarkeitsprüfung. Eigenes CSS wirkt weiterhin darüber: Der Platzhalter stellt CSS-Custom-Properties bereit und lässt sich per Template überschreiben (siehe docs/customizing.md im Plugin-Ordner).
+**DE (Antwort):** Ja. Der Reiter „Darstellung“ bietet Schnellstile, Farben, die der Palette Ihres Themes folgen können, sowie Einstellungen für Ecken, Rahmen, Schatten, Abstände, Button, Posterbild und Dunkelmodus – mit Live-Vorschau und automatischer Lesbarkeitsprüfung. Eigenes CSS wirkt weiterhin darüber: Der Platzhalter stellt CSS-Custom-Properties bereit und lässt sich per Template überschreiben (siehe docs/customizing.md im Plugin-Ordner).
 
 ---
 
@@ -258,7 +262,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** This plugin makes no request to any external service, on any page, at any time …
 
-**DE:** Dieses Plugin stellt keine Anfrage an einen externen Dienst – auf keiner Seite, zu keinem Zeitpunkt. Es kontaktiert keine API, lädt kein entferntes Skript, keine Schrift, kein Bild und keine Update-Prüfung und sendet keine Telemetrie. Sein ganzer Zweck ist die Gegenrichtung: Es verhindert, dass deine Seiten Einbettungsanbieter kontaktieren.
+**DE:** Dieses Plugin stellt keine Anfrage an einen externen Dienst – auf keiner Seite, zu keinem Zeitpunkt. Es kontaktiert keine API, lädt kein entferntes Skript, keine Schrift, kein Bild und keine Update-Prüfung und sendet keine Telemetrie. Sein ganzer Zweck ist die Gegenrichtung: Es verhindert, dass Ihre Seiten Einbettungsanbieter kontaktieren.
 
 **EN:** Third-party content enters the picture only after a visitor explicitly clicks the "Load" button …
 
@@ -270,8 +274,8 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 1. **DE:** Eine gesperrte YouTube-Einbettung, wie ein Besucher sie sieht: ein serverseitig gerenderter Platzhalter mit benannter Gruppe, einem echten „Laden“-Button und einem funktionierenden Ersatzlink. Vor dem Klick des Besuchers wird beim Anbieter nichts angefragt.
 2. **DE:** Die Darstellungseinstellungen – Schnellstile, Farben, die der Theme-Palette folgen oder eigene sind, und Abschnitte für Form, Button, Posterbild, Widerrufs-Button und Dunkelmodus – mit Live-Vorschau des echten Platzhalters und automatischer Lesbarkeitsprüfung, die jedes Farbpaar unterhalb des Mindestkontrasts von 4,5:1 markiert.
-3. **DE:** Der Inhalts-Scan unter Status und Werkzeuge: jede Einbettung in deinen neuesten Beiträgen und Seiten, die Adresse, die sie kontaktieren würde, und ob sie gesperrt ist – mit einem Klick, um einem unbekannten Host einen richtigen Namen zu geben oder ihn durchzulassen, ohne selbst eine Adresse herauszufinden. Nichts ändert sich, bis du speicherst.
-4. **DE:** Der Reiter „Anbieter“: Anbieter gruppiert nach Art der Einbettung, mit Filterfeld – ein/aus pro Anbieter, datenschutzfreundliche Ladevarianten, eigene Hinweis- und Button-Texte, der Datenschutz-Link samt eigener URL pro Anbieter und deine eigenen Anbieter. Ohne Code.
+3. **DE:** Der Inhalts-Scan unter Status und Werkzeuge: jede Einbettung in Ihren neuesten Beiträgen und Seiten, die Adresse, die sie kontaktieren würde, und ob sie gesperrt ist – mit einem Klick, um einem unbekannten Host einen richtigen Namen zu geben oder ihn durchzulassen, ohne selbst eine Adresse herauszufinden. Nichts ändert sich, bis Sie speichern.
+4. **DE:** Der Reiter „Anbieter“: Anbieter gruppiert nach Art der Einbettung, mit Filterfeld – ein/aus pro Anbieter, datenschutzfreundliche Ladevarianten, eigene Hinweis- und Button-Texte, der Datenschutz-Link samt eigener URL pro Anbieter und Ihre eigenen Anbieter. Ohne Code.
 5. **DE:** Die Steuerung pro Einbettung im Block-Editor: eine bestimmte Einbettung immer sperren, nie sperren oder nach Website-Standard behandeln, ein optionales Posterbild aus der eigenen Mediathek setzen und dieser einen Einbettung eigenen Button- und Hinweistext geben.
 6. **DE:** Der Content-Security-Policy-Helfer: was eine Richtlinie ist, eine Prüfung der eigenen Website, die genauen Zeilen für die aktivierten Anbieter und welcher Anbieter welchen Host braucht.
 
@@ -279,4 +283,4 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 ## Upgrade Notice (0.12.0)
 
-**DE:** Bringt Deutsch für alle fünf deutschen Sprachvarianten – den Platzhalter, den deine Besucher sehen, die Einstellungsseite und die Editor-Steuerung. Stell die Sprache deiner Website auf Deutsch, der Rest folgt. Sonst ändert sich nichts.
+**DE:** Bringt Deutsch für alle fünf deutschen Sprachvarianten – den Platzhalter, den Ihre Besucher sehen, die Einstellungsseite und die Editor-Steuerung. Stellen Sie die Sprache Ihrer Website auf Deutsch, der Rest folgt. Sonst ändert sich nichts.
