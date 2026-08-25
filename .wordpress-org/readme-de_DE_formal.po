@@ -207,7 +207,7 @@ msgstr "Wenn Sie das Merken der Einwilligung aktivieren und Besuchern einen Weg 
 
 #. Found in installation paragraph.
 msgid "Calucon Third-Party Embed Gate works the moment it is activated — it gates third-party embeds by default, with no configuration, no account and no external service."
-msgstr "Calucon Third-Party Embed Gate"
+msgstr "Calucon Third-Party Embed Gate wirkt, sobald es aktiviert ist – es sperrt Einbettungen von Drittanbietern von Haus aus, ohne Konfiguration, ohne Konto und ohne externen Dienst."
 
 #. Found in installation list item.
 msgid "Optional: open <strong>Settings → Calucon Third-Party Embed Gate</strong> to adjust appearance, per-provider behaviour, detection rules, consent memory and the optional consent-platform bridge. None of it is needed to be protected — the defaults gate everything third-party."
@@ -235,7 +235,7 @@ msgstr "<strong>Anpassung</strong>"
 
 #. Found in description paragraph.
 msgid "Calucon Third-Party Embed Gate is a technical measure. It is not a consent management platform, it does not produce consent records for accountability purposes, it does not scan your site, and it does not make legal claims about your site. What it technically does: it prevents the embed providers' requests until the visitor acts, and the click is scoped to the embed (or, if you enable memory, the scope you configure). You remain responsible for your privacy policy, which still has to name the providers you embed from, and for your legal bases. If you need a documented consent record, you need a consent management platform."
-msgstr "Calucon Third-Party Embed Gate"
+msgstr "Calucon Third-Party Embed Gate ist eine technische Maßnahme. Es ist keine Consent-Management-Plattform, es erzeugt keine Einwilligungsnachweise für Rechenschaftszwecke, es durchsucht Ihre Website nicht und es trifft keine rechtlichen Aussagen über Ihre Website. Was es technisch tut: Es verhindert die Anfragen der Einbettungsanbieter, bis der Besucher handelt, und der Klick gilt für die eine Einbettung (oder, wenn Sie das Merken aktivieren, für den von Ihnen eingestellten Bereich). Verantwortlich bleiben Sie – für Ihre Datenschutzerklärung, die weiterhin die Anbieter nennen muss, von denen Sie einbetten, und für Ihre Rechtsgrundlagen. Wer einen dokumentierten Einwilligungsnachweis braucht, braucht eine Consent-Management-Plattform."
 
 #. Found in description paragraph.
 msgid "<strong>What it is not</strong>"
@@ -251,7 +251,7 @@ msgstr "Sehen Sie sich die <a href=\"https://calucon.de/third-party-embed-gate-s
 
 #. Found in description paragraph.
 msgid "Calucon Third-Party Embed Gate replaces third-party embeds with a server-rendered placeholder until the visitor clicks to load them — the two-click pattern (Zwei-Klick-Lösung). Nothing third-party is contacted before that click: no script, no iframe, no thumbnail, no preconnect. Nothing is stored on the visitor's device before that click either — including by this plugin."
-msgstr "Calucon Third-Party Embed Gate"
+msgstr "Calucon Third-Party Embed Gate ersetzt Einbettungen von Drittanbietern durch einen serverseitig gerenderten Platzhalter, bis der Besucher sie per Klick lädt – die Zwei-Klick-Lösung. Vor diesem Klick wird kein Drittanbieter kontaktiert: kein Skript, kein Iframe, kein Vorschaubild, kein Preconnect. Und vor diesem Klick wird auch nichts auf dem Gerät des Besuchers gespeichert – auch nicht von diesem Plugin."
 
 #. Found in description paragraph.
 msgid "When an editor pastes a YouTube URL, WordPress turns it into an iframe — and on every page view, before the visitor has been offered any choice, their browser contacts the provider. Measured on a plain GET to <code>www.youtube.com/embed/…</code> with no playback and no scripts run: five cookies, two of them ~18-month identifiers. The same request on <code>www.youtube-nocookie.com</code> sets zero."
