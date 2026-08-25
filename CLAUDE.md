@@ -184,6 +184,14 @@ pinned by the "multilingual" WP test, whose emulator hooks `default_option_` too
 — a site that never saved the settings has no option row, and WordPress then
 never applies `option_`.
 
+**The plugin's wp.org listing is translatable too, but never bundled**: the
+description, FAQ and screenshot captions live in the *Stable Readme* project on
+translate.wordpress.org, not in the repo. `.wordpress-org/readme-de.md` holds
+the German for those strings, chunk by chunk, ready to paste once someone has
+PTE rights — it ships nowhere (`.wordpress-org/` is excluded from the zip) and
+is the one German text that cannot be delivered by shipping a file. Keep it in
+step with `readme.txt` when the description changes.
+
 `load_plugin_textdomain()` in `Plugin.php` is not redundant: WordPress 6.7+
 finds bundled files through its textdomain registry, 5.9–6.6 (still supported)
 do not. A language pack from translate.wordpress.org lands in `WP_LANG_DIR` and
