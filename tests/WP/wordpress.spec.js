@@ -569,6 +569,22 @@ test( 'editor: the per-block gate control appears in the block inspector', async
 	await page.waitForFunction( () => window.wp && window.wp.data && window.wp.blocks && window.wp.hooks );
 	expect( await page.evaluate( () => window.wp.hooks.hasFilter( 'editor.BlockEdit', 'calucon-embed-gate/inspector' ) ) ).toBe( true );
 
+	// Everything below drives the inspector's own chrome, and Gutenberg has
+	// rearranged that repeatedly — the sidebar gained a Block/Post tablist
+	// somewhere after 5.9, so on the oldest WordPress this plugin supports
+	// these selectors find nothing. That is the test ageing, not the control
+	// breaking: what the plugin actually contributes is asserted above (the
+	// filter is registered) and by the sibling test below (the attributes
+	// exist and take values), both of which run on every version.
+	const wpVersion = await page.evaluate( () => {
+		const found = /(?:^|\s)version-(\d+)-(\d+)/.exec( document.body.className );
+		return found ? Number( found[ 1 ] ) + Number( found[ 2 ] ) / 100 : 0;
+	} );
+	test.skip(
+		wpVersion > 0 && wpVersion < 6.06,
+		`the block inspector's chrome differs too much on WordPress ${ wpVersion.toFixed( 2 ) }; registration is covered by the sibling test`
+	);
+
 	await page.evaluate( () => {
 		try {
 			window.wp.data.dispatch( 'core/preferences' ).set( 'core/edit-post', 'welcomeGuide', false );
@@ -630,6 +646,52 @@ test( 'editor: the per-block gate control appears in the block inspector', async
 	const attrs = await page.evaluate( () => window.wp.data.select( 'core/block-editor' ).getSelectedBlock().attributes );
 	expect( attrs.caluconEmbedGateAction ).toBe( 'Load the trailer' );
 	expect( attrs.caluconEmbedGateNote ).toBe( 'Custom notice.' );
+} );
+
+/**
+ * The version-proof half of the editor coverage: no sidebar chrome, no
+ * Gutenberg DOM, just the contract editor.js is responsible for. This is what
+ * keeps the oldest supported WordPress honestly covered when the chrome test
+ * above skips itself, and it is also the faster signal when Gutenberg moves
+ * its furniture again.
+ */
+test( 'editor: the per-block attributes are registered and take values on any WordPress', async ( { page } ) => {
+	await login( page );
+	await page.goto( '/wp-admin/post-new.php' );
+	await page.waitForFunction( () => window.wp && window.wp.data && window.wp.blocks && window.wp.hooks );
+
+	// The inspector filter, and the attributes it writes into.
+	expect( await page.evaluate( () => window.wp.hooks.hasFilter( 'editor.BlockEdit', 'calucon-embed-gate/inspector' ) ) ).toBe( true );
+
+	const attributes = await page.evaluate( () => {
+		const type = window.wp.blocks.getBlockType( 'core/html' );
+		return type ? Object.keys( type.attributes ) : [];
+	} );
+	expect( attributes ).toEqual(
+		expect.arrayContaining( [
+			'caluconEmbedGate',
+			'caluconEmbedGatePoster',
+			'caluconEmbedGatePosterUrl',
+			'caluconEmbedGateAction',
+			'caluconEmbedGateNote',
+		] )
+	);
+
+	// And they actually hold what the control would set, which is the part a
+	// renamed or dropped attribute would break silently.
+	const written = await page.evaluate( () => {
+		const block = window.wp.blocks.createBlock( 'core/html', {
+			content: '<iframe src="https://www.youtube.com/embed/y_pjE_p1HwE" title="T"></iframe>',
+		} );
+		window.wp.data.dispatch( 'core/block-editor' ).insertBlocks( block );
+		window.wp.data.dispatch( 'core/block-editor' ).updateBlockAttributes( block.clientId, {
+			caluconEmbedGate: 'always',
+			caluconEmbedGateAction: 'Load the trailer',
+		} );
+		const stored = window.wp.data.select( 'core/block-editor' ).getBlock( block.clientId ).attributes;
+		return { gate: stored.caluconEmbedGate, action: stored.caluconEmbedGateAction };
+	} );
+	expect( written ).toEqual( { gate: 'always', action: 'Load the trailer' } );
 } );
 
 test( 'admin: Plugins screen links to Settings; a tab hash does not scroll the tab bar away', async ( { page } ) => {

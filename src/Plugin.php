@@ -89,28 +89,41 @@ final class Plugin {
 	private function __construct() {
 		$this->options = Options::sanitize( get_option( Options::OPTION, Options::defaults() ) );
 
-		// The plugin ships German translations of its own (0.12.0). WordPress
-		// 6.7+ finds those by itself — its textdomain registry knows the
-		// plugin's Domain Path — but 5.9 to 6.6, which this plugin still
-		// supports, load just-in-time only from WP_LANG_DIR, where a bundled
-		// file never lives. Hence the explicit call; on 6.7+ it is a no-op
-		// that costs one already-cached path lookup.
+		// The plugin ships German translations of its own (0.12.0), and
+		// WordPress only finds files bundled inside a plugin from 6.8 onward.
+		// Before that, just-in-time loading looks in WP_LANG_DIR alone — which
+		// is where language packs land and where a bundled file never lives —
+		// so without this call a German site reads English.
 		//
-		// On init, which is where WordPress wants translations loaded
-		// (earlier trips the 6.7 just-in-time notice). A language pack in
-		// WP_LANG_DIR still wins: load_plugin_textdomain() looks there first,
-		// so a translation from translate.wordpress.org overrides the
-		// bundled one — which is what should happen once German lands there.
-		add_action(
-			'init',
-			static function (): void {
-				load_plugin_textdomain(
-					'calucon-third-party-embed-gate',
-					false,
-					dirname( plugin_basename( CALUCON_EMBED_GATE_FILE ) ) . '/languages'
-				);
-			}
-		);
+		// 6.8 is measured, not read off a changelog. The suite was pointed at
+		// real installs with this call skipped: 6.6 and 6.7 served an English
+		// panel, 6.8 and 6.9 served the German one. The 6.7 i18n release notes
+		// describe that version reworking translation loading, which makes 6.7
+		// the intuitive guess and the wrong one — the wordpress-old CI job runs
+		// 6.7 for exactly that reason.
+		//
+		// Gated on the version because for a plugin hosted on WordPress.org the
+		// call is redundant on anything current, and the directory's reviewers
+		// ask for it to be gone. This way it exists only on the installs that
+		// need it, and current sites run the code the reviewers expect.
+		//
+		// On init, which is where WordPress wants translations loaded (earlier
+		// trips the 6.7 just-in-time notice). A language pack in WP_LANG_DIR
+		// still wins: load_plugin_textdomain() looks there first, so a
+		// translation from translate.wordpress.org overrides the bundled one —
+		// which is what should happen once German lands there.
+		if ( version_compare( (string) get_bloginfo( 'version' ), '6.8', '<' ) ) {
+			add_action(
+				'init',
+				static function (): void {
+					load_plugin_textdomain(
+						'calucon-third-party-embed-gate',
+						false,
+						dirname( plugin_basename( CALUCON_EMBED_GATE_FILE ) ) . '/languages'
+					);
+				}
+			);
+		}
 
 		$this->assets = new Assets(
 			$this->options,

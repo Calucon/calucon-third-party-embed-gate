@@ -35,6 +35,16 @@ if ! wpcli core is-installed >/dev/null 2>&1; then
     --skip-email
 fi
 
+# The wp-cli container writes as a different user than the one that owns the
+# volume, and wp-content/mu-plugins does not exist in a fresh install at all.
+# seed.php needs both: it drops a small mu-plugin in to emulate resource hints.
+# Only these two directories — a recursive chown would hit the read-only bind
+# mount of the plugin itself and fail.
+compose exec -u root -T wordpress sh -c '
+  mkdir -p wp-content/mu-plugins wp-content/uploads &&
+  chmod 777 wp-content/mu-plugins wp-content/uploads
+' >/dev/null
+
 wpcli plugin activate calucon-third-party-embed-gate
 wpcli eval-file /var/www/html/wp-content/plugins/calucon-third-party-embed-gate/tests/wp/seed.php
 
