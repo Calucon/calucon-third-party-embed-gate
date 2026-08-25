@@ -1,6 +1,6 @@
 # readme.txt auf Deutsch (de_DE, „du“)
 
-<!-- readme.txt: 1a97166ecd9448cb -->
+<!-- readme.txt: c6fcef96ac3de224 -->
 <!-- Dieser Stempel bindet die Übersetzung an den englischen Stand.
      tests/Unit/ReadmeTranslationTest.php schlägt fehl, sobald readme.txt sich ändert. -->
 
@@ -327,7 +327,7 @@ Plugin-Name und bleibt unübersetzt.
 
 **EN:** Documented filters: `calucon_embed_gate_providers`, … Adding a provider is a ten-line filter in `functions.php`.
 
-**DE:** Dokumentierte Filter: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority` sowie die Aktionen `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` und `calucon_embed_gate_flush_caches`. Einen Anbieter hinzuzufügen ist ein Filter von zehn Zeilen in der `functions.php`.
+**DE:** Dokumentierte Filter: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority` sowie die Aktionen `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` und `calucon_embed_gate_flush_caches`. Die Signatur jedes Hooks, wann er ausgelöst wird und was er zurückgeben soll, stehen in `docs/customizing.md`, die im Plugin mitgeliefert wird (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) und auf GitHub lesbar ist. Einen Anbieter hinzuzufügen ist ein Filter von zehn Zeilen in der `functions.php`.
 
 ---
 
