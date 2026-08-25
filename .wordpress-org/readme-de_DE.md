@@ -284,3 +284,68 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 ## Upgrade Notice (0.12.0)
 
 **DE:** Bringt Deutsch für alle fünf deutschen Sprachvarianten – den Platzhalter, den deine Besucher sehen, die Einstellungsseite und die Editor-Steuerung. Stell die Sprache deiner Website auf Deutsch, der Rest folgt. Sonst ändert sich nichts.
+
+---
+
+## Abschnittsüberschriften
+
+Diese kurzen Strings listet GlotPress einzeln auf:
+
+**EN:** Description → **DE:** Beschreibung
+**EN:** **What it does** → **DE:** **Was es tut**
+**EN:** **What it is not** → **DE:** **Was es nicht ist**
+**EN:** **Customisation** → **DE:** **Anpassung**
+**EN:** Installation → **DE:** Installation
+**EN:** Frequently Asked Questions → **DE:** Häufige Fragen
+**EN:** External services → **DE:** Externe Dienste
+**EN:** Screenshots → **DE:** Screenshots
+**EN:** Upgrade Notice → **DE:** Update-Hinweis
+**EN:** Changelog → **DE:** Änderungsprotokoll
+
+Der String **„Calucon Third-Party Embed Gate“** (Priorität hoch) ist der
+Plugin-Name und bleibt unübersetzt.
+
+---
+
+## Anpassung (die fünf Aufzählungspunkte)
+
+**EN:** Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): …
+
+**DE:** Einstellungsseite mit Reitern (Anbieter / Erkennung / Darstellung / Einwilligung merken / Status und Werkzeuge): eigene Anbieter (Name + Hosts, ohne Code), ein/aus pro Anbieter, datenschutzfreundliche Variante ein/aus, eigener Hinweis- und Button-Text, ein optionaler Link zur Datenschutzerklärung des Anbieters in jedem Platzhalter (standardmäßig aus, ein Häkchen schaltet ihn ein); Listen für eigene Hosts, nie zu sperrende und immer zu sperrende Hosts; Regel-Schalter samt optionaler Sperre für Bilder von Drittanbietern; Darstellungs-Vorlagen, Eckenformen mit eigenem Radius, Rahmenbreite und -farbe, Schatten, Abstände, Button-Größe/-Stil/-Breite/-Hover, ein optionales Symbol passend zur Art der Einbettung, Größe des Hinweistexts, Ausrichtung des Platzhalters, Linkfarbe, Platzierung und Abdunkeln des Posterbilds, Stile für den Widerrufs-Button und optionale Farben für den Dunkelmodus – in Abschnitte gegliedert, mit Schnellstilen, Farbwählern, Live-Vorschau (dunkle Seite, Posterbild, Smartphone-Breite), Zurücksetzen mit einem Klick und automatischer Lesbarkeitsprüfung, ganz ohne CSS; optionales Puffern der gesamten Seite für Page-Builder; Einwilligung merken; ein erzeugter Content-Security-Policy-Schnipsel; eine Kompatibilitätsübersicht (erkanntes Cache-Plugin, Consent-Plattform, Page-Builder – und was das Plugin jeweils tut); ein Scan der aktuellen Inhalte, der jeden gefundenen Host benennen oder durchlassen kann, ohne dass du eine Adresse tippst und ohne dass vor dem Speichern etwas geschrieben wird.
+
+**EN:** Theme override: copy `templates/placeholder.php` to `{your-theme}/calucon-embed-gate/placeholder.php`.
+
+**DE:** Theme-Override: `templates/placeholder.php` nach `{your-theme}/calucon-embed-gate/placeholder.php` kopieren.
+
+**EN:** CSS custom properties on `.cg-embed` (`--cg-bg`, `--cg-fg`, `--cg-accent`, …) for restyling without specificity wars.
+
+**DE:** CSS-Custom-Properties auf `.cg-embed` (`--cg-bg`, `--cg-fg`, `--cg-accent`, …), um ohne Spezifitäts-Kämpfe umzugestalten.
+
+**EN:** WP-CLI: `wp calucon-embed-gate scan` … and `wp calucon-embed-gate providers`; the shipped `docs/customizing.md` …
+
+**DE:** WP-CLI: `wp calucon-embed-gate scan` (ist jede Einbettung gesperrt? `--format=json` für CI und Automatisierung) und `wp calucon-embed-gate providers`; die mitgelieferte `docs/customizing.md` ist eine in sich geschlossene Anpassungs-Referenz für Entwickler und KI-Agenten.
+
+**EN:** Documented filters: `calucon_embed_gate_providers`, … Adding a provider is a ten-line filter in `functions.php`.
+
+**DE:** Dokumentierte Filter: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority` sowie die Aktionen `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` und `calucon_embed_gate_flush_caches`. Einen Anbieter hinzuzufügen ist ein Filter von zehn Zeilen in der `functions.php`.
+
+---
+
+## „Welche Einbettungen erkennt es namentlich?“ – die beiden fehlenden Absätze
+
+**EN:** Videos: YouTube, Vimeo, Dailymotion, TED, VideoPress and WordPress.tv, TikTok. Audio: … 3D: Matterport, Sketchfab.
+
+**DE:** Videos: YouTube, Vimeo, Dailymotion, TED, VideoPress und WordPress.tv, TikTok. Audio: Spotify, SoundCloud, Apple Music, Mixcloud, Pocket Casts. Karten: Google Maps, OpenStreetMap. Social-Media-Beiträge: X, Instagram, Facebook, Reddit, Tumblr, Bluesky, Pinterest, Imgur, GIPHY, Strava. Dokumente: Scribd, Speaker Deck, Issuu, Wolfram Cloud, Amazon Kindle, Kickstarter. Formulare und Kalender: Google Kalender, Google Formulare, Typeform, Calendly, Crowdsignal. 3D: Matterport, Sketchfab.
+
+**EN:** Everything else is gated too — that does not depend on a list. …
+
+**DE:** Alles andere wird ebenfalls gesperrt – das hängt nicht an einer Liste. Eine Einbettung von einem unbenannten Host bekommt denselben Platzhalter und denselben Button, benannt nach dem Host, den sie kontaktieren würde, mit einem Link zum Inhalt selbst. Ein namentlich bekannter Anbieter ergänzt lediglich den Namen, das Symbol, den Link zur Datenschutzerklärung und einen aufgeräumteren „Auf … öffnen“-Link. Ein paar der Einbettungsblöcke von WordPress selbst sind noch nicht benannt (Flickr, SmugMug, Animoto, ReverbNation, Cloudup); du kannst sie unter Anbieter → Eigene Anbieter selbst benennen.
+
+---
+
+## Nicht übersetzt
+
+Das Änderungsprotokoll (der größte Teil der 166 Strings) und die älteren
+Update-Hinweise bleiben Englisch. Sie werden fast nie gelesen, altern mit jedem
+Release und kosten mehr Pflege, als sie einbringen. Unübersetzte Strings zeigt
+wordpress.org einfach im Original.
