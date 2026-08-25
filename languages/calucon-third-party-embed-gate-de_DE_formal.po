@@ -20,15 +20,15 @@ msgstr "Project-Id-Version: Calucon Third-Party Embed Gate 0.12.0\nReport-Msgid-
 
 #: src/Admin/SettingsPage.php:695
 msgid "%1$s is handled by the built-in %2$s provider, which takes precedence — this entry is ignored for that host. Remove it here to clear this note."
-msgstr "%1$s wird vom mitgelieferten Anbieter %2$s abgedeckt, der Vorrang hat – dieser Eintrag wird für diesen Host ignoriert. Entfernen Sie ihn hier, um den Hinweis loszuwerden."
+msgstr "%1$s wird vom mitgelieferten Anbieter %2$s abgedeckt, der Vorrang hat – dieser Eintrag wird für diesen Host ignoriert. Entfernen Sie ihn hier, um den Hinweis loszuwerden."
 
 #: src/Admin/SettingsPage.php:343
 msgid "%1$s: %2$s skipped — a built-in provider already handles these hosts, with its privacy-preserving load target and texts. Adjust that provider in the table instead."
-msgstr "%1$s: %2$s übersprungen – ein mitgelieferter Anbieter kümmert sich bereits um diese Hosts, samt datenschutzfreundlicher Ladeadresse und Texten. Passen Sie stattdessen diesen Anbieter in der Tabelle an."
+msgstr "%1$s: %2$s übersprungen – ein mitgelieferter Anbieter kümmert sich bereits um diese Hosts, samt datenschutzfreundlicher Ladeadresse und Texten. Passen Sie stattdessen diesen Anbieter in der Tabelle an."
 
 #: src/Admin/SettingsPage.php:263
 msgid "%1$s: %2$s — %3$s"
-msgstr "%1$s: %2$s – %3$s"
+msgstr "%1$s: %2$s – %3$s"
 
 #: src/Admin/SettingsPage.php:206
 msgid "%d shown"
@@ -60,7 +60,7 @@ msgstr "3D / virtuelle Tour"
 
 #: src/Admin/SettingsPage.php:1546
 msgid "A Content-Security-Policy (CSP) is a security setting some sites send to browsers. It lists which other websites a page is allowed to load anything from — and blocks the rest. Most WordPress sites do not send one. If you never set one up in a security plugin, your hosting panel or the web server, you can skip this section."
-msgstr "Eine Content-Security-Policy (CSP) ist eine Sicherheitseinstellung, die manche Websites an Browser senden. Sie legt fest, von welchen anderen Websites eine Seite überhaupt etwas laden darf – alles andere wird blockiert. Die meisten WordPress-Websites senden keine. Wenn Sie nie eine in einem Sicherheits-Plugin, im Hosting-Panel oder im Webserver eingerichtet haben, können Sie diesen Abschnitt überspringen."
+msgstr "Eine Content-Security-Policy (CSP) ist eine Sicherheitseinstellung, die manche Websites an Browser senden. Sie legt fest, von welchen anderen Websites eine Seite überhaupt etwas laden darf – alles andere wird blockiert. Die meisten WordPress-Websites senden keine. Wenn Sie nie eine in einem Sicherheits-Plugin, im Hosting-Panel oder im Webserver eingerichtet haben, können Sie diesen Abschnitt überspringen."
 
 #: assets/js/editor.js:181
 msgid "A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled."
@@ -96,7 +96,7 @@ msgstr "Fügen Sie die Zeilen unten dort zu Ihrer Richtlinie hinzu, wo sie defin
 
 #: src/Admin/SettingsPage.php:1561
 msgid "Add them wherever your policy is defined — a security plugin, your hosting panel or the web server configuration. Merge, do not replace: if the policy already has a frame-src line, add these hosts to that line instead of adding a second one. If it has neither frame-src nor script-src, the browser falls back to default-src — add the hosts there."
-msgstr "Ergänzen Sie sie dort, wo Ihre Richtlinie definiert ist – in einem Sicherheits-Plugin, im Hosting-Panel oder in der Webserver-Konfiguration. Zusammenführen statt ersetzen: Hat die Richtlinie bereits eine frame-src-Zeile, fügen Sie diese Hosts dieser Zeile hinzu, statt eine zweite anzulegen. Fehlen sowohl frame-src als auch script-src, greift im Browser default-src – dann gehören die Hosts dorthin."
+msgstr "Ergänzen Sie sie dort, wo Ihre Richtlinie definiert ist – in einem Sicherheits-Plugin, im Hosting-Panel oder in der Webserver-Konfiguration. Zusammenführen statt ersetzen: Hat die Richtlinie bereits eine frame-src-Zeile, fügen Sie diese Hosts dieser Zeile hinzu, statt eine zweite anzulegen. Fehlen sowohl frame-src als auch script-src, greift im Browser default-src – dann gehören die Hosts dorthin."
 
 #: src/Admin/SettingsPage.php:776
 msgid "Additional own hosts"
@@ -210,7 +210,7 @@ msgstr "Calucon Third-Party Embed Gate"
 
 #: src/Admin/SettingsPage.php:131
 msgid "Calucon Third-Party Embed Gate is free and open source — you can %s."
-msgstr "Calucon Third-Party Embed Gate ist kostenlos und Open Source – Sie können %s."
+msgstr "Calucon Third-Party Embed Gate ist kostenlos und Open Source – Sie können %s."
 
 #: src/Admin/SettingsPage.php:381
 msgid "Calucon Third-Party Embed Gate settings sections"
@@ -222,7 +222,7 @@ msgstr "Abbrechen"
 
 #: src/Admin/SettingsPage.php:1134
 msgid "Card — border, rounded corners, shadow"
-msgstr "Karte – Rahmen, runde Ecken, Schatten"
+msgstr "Karte – Rahmen, runde Ecken, Schatten"
 
 #: src/Admin/SettingsPage.php:1278
 msgid "Card, bottom-left"
@@ -246,7 +246,7 @@ msgstr "Nachsehen, was auf meiner Website läuft"
 
 #: src/Admin/SettingsPage.php:239
 msgid "Checked just now, as your browser sees the page. If you are sure a policy is set somewhere (some setups only send it on certain pages), add the lines below to it anyway — listing a host that is never loaded is harmless."
-msgstr "Gerade geprüft, so wie Ihr Browser die Seite sieht. Wenn Sie sicher sind, dass irgendwo eine Richtlinie gesetzt ist (manche Setups senden sie nur auf bestimmten Seiten), fügen Sie die Zeilen unten trotzdem hinzu – einen Host aufzuführen, der nie geladen wird, schadet nicht."
+msgstr "Gerade geprüft, so wie Ihr Browser die Seite sieht. Wenn Sie sicher sind, dass irgendwo eine Richtlinie gesetzt ist (manche Setups senden sie nur auf bestimmten Seiten), fügen Sie die Zeilen unten trotzdem hinzu – einen Host aufzuführen, der nie geladen wird, schadet nicht."
 
 #: src/Admin/SettingsPage.php:236
 msgid "Checking your home page…"
@@ -302,7 +302,7 @@ msgstr "Ecken"
 
 #: src/Admin/SettingsPage.php:247
 msgid "Could not copy — select the text and copy it by hand."
-msgstr "Kopieren nicht möglich – markieren Sie den Text und kopieren Sie ihn von Hand."
+msgstr "Kopieren nicht möglich – markieren Sie den Text und kopieren Sie ihn von Hand."
 
 #: src/Admin/SettingsPage.php:237
 msgid "Could not load your home page from this browser, so nothing could be checked. Try again; if it keeps failing, open the home page in a new tab and look for a Content-Security-Policy header in the browser's developer tools (Network panel)."
@@ -347,15 +347,15 @@ msgstr "Standard"
 
 #: src/Admin/SettingsPage.php:956
 msgid "Default — built-in"
-msgstr "Standard – mitgeliefert"
+msgstr "Standard – mitgeliefert"
 
 #: src/Admin/SettingsPage.php:934
 msgid "Default — same as panel text"
-msgstr "Standard – wie der Platzhalter-Text"
+msgstr "Standard – wie der Platzhalter-Text"
 
 #: src/Admin/SettingsPage.php:950
 msgid "Default — theme %s"
-msgstr "Standard – Theme-Farbe %s"
+msgstr "Standard – Theme-Farbe %s"
 
 #: src/Admin/SettingsPage.php:1623
 msgid "Detected"
@@ -363,7 +363,7 @@ msgstr "Erkannt"
 
 #: src/Admin/SettingsPage.php:1614
 msgid "Detected and tested for interoperation. Gating currently ignores its choices — the fail-closed default. Enable the consent platform bridge under Consent to load embeds automatically once this platform reports consent for them."
-msgstr "Erkannt und auf Zusammenspiel getestet. Die Sperre ignoriert die Entscheidungen dieser Plattform derzeit – die Voreinstellung „fail closed“. Aktivieren Sie die Brücke zur Consent-Plattform unter „Einwilligung merken“, damit Einbettungen automatisch laden, sobald diese Plattform eine Einwilligung dafür meldet."
+msgstr "Erkannt und auf Zusammenspiel getestet. Die Sperre ignoriert die Entscheidungen dieser Plattform derzeit – die Voreinstellung „fail closed“. Aktivieren Sie die Brücke zur Consent-Plattform unter „Einwilligung merken“, damit Einbettungen automatisch laden, sobald diese Plattform eine Einwilligung dafür meldet."
 
 #: src/Admin/SettingsPage.php:1487
 msgid "Detected now: %s."
@@ -375,11 +375,11 @@ msgstr "Erkannt, Brücke aktiv: Meldet diese Plattform eine Einwilligung für di
 
 #: src/Admin/SettingsPage.php:1615
 msgid "Detected. Calucon Third-Party Embed Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
-msgstr "Erkannt. Calucon Third-Party Embed Gate hat keine getestete Brücke zu dieser Consent-Plattform und sperrt unabhängig von deren Entscheidungen weiter – die Voreinstellung „fail closed“. Vor dem Klick auf die Einbettung lädt nichts."
+msgstr "Erkannt. Calucon Third-Party Embed Gate hat keine getestete Brücke zu dieser Consent-Plattform und sperrt unabhängig von deren Entscheidungen weiter – die Voreinstellung „fail closed“. Vor dem Klick auf die Einbettung lädt nichts."
 
 #: src/Admin/SettingsPage.php:1608
 msgid "Detected. It translates the finished page, so the placeholder texts are translated there like any other text on the page. Nothing to configure here."
-msgstr "Erkannt. Dieses Plugin übersetzt die fertige Seite – die Texte des Platzhalters werden dort also wie jeder andere Text auf der Seite übersetzt. Hier ist nichts einzustellen."
+msgstr "Erkannt. Dieses Plugin übersetzt die fertige Seite – die Texte des Platzhalters werden dort also wie jeder andere Text auf der Seite übersetzt. Hier ist nichts einzustellen."
 
 #: src/Admin/SettingsPage.php:1597
 msgid "Detected. Its page cache is flushed automatically when Calucon Third-Party Embed Gate settings change and when the plugin is activated, deactivated or updated. If pages still look stale, clear it once by hand."
@@ -387,11 +387,11 @@ msgstr "Erkannt. Sein Seiten-Cache wird automatisch geleert, wenn sich die Einst
 
 #: src/Admin/SettingsPage.php:1600
 msgid "Detected. Page builders render outside the content filters — if its embeds are not being gated, enable \"Gate the whole page output\" under Detection."
-msgstr "Erkannt. Page-Builder rendern außerhalb der Inhaltsfilter – falls dessen Einbettungen nicht gesperrt werden, aktivieren Sie unter Erkennung „Die gesamte Seitenausgabe sperren“."
+msgstr "Erkannt. Page-Builder rendern außerhalb der Inhaltsfilter – falls dessen Einbettungen nicht gesperrt werden, aktivieren Sie unter Erkennung „Die gesamte Seitenausgabe sperren“."
 
 #: src/Admin/SettingsPage.php:1607
 msgid "Detected. The texts you type here — a provider's notice and button label, its privacy-policy URL, and the names of your own providers — are registered for translation and are read in the language of the page being shown. Translate them under %s. Everything else is translated by language pack and needs nothing from you; note that typing your own text for a provider replaces a wording that was already translated."
-msgstr "Erkannt. Die Texte, die Sie hier selbst eingeben – Hinweis und Button-Beschriftung eines Anbieters, dessen Datenschutz-URL und die Namen Ihrer eigenen Anbieter – sind zur Übersetzung angemeldet und werden in der Sprache der jeweils angezeigten Seite gelesen. Übersetzen Sie sie unter %s. Alles Übrige wird per Sprachpaket übersetzt und braucht nichts von Ihnen; beachten Sie dabei: Ein eigener Text für einen Anbieter ersetzt eine Formulierung, die bereits übersetzt war."
+msgstr "Erkannt. Die Texte, die Sie hier selbst eingeben – Hinweis und Button-Beschriftung eines Anbieters, dessen Datenschutz-URL und die Namen Ihrer eigenen Anbieter – sind zur Übersetzung angemeldet und werden in der Sprache der jeweils angezeigten Seite gelesen. Übersetzen Sie sie unter %s. Alles Übrige wird per Sprachpaket übersetzt und braucht nichts von Ihnen; beachten Sie dabei: Ein eigener Text für einen Anbieter ersetzt eine Formulierung, die bereits übersetzt war."
 
 #: src/Admin/SettingsPage.php:1599
 msgid "Detected. Whole-page gating is enabled, so this builder's embeds are covered."
@@ -427,15 +427,15 @@ msgstr "Eingebetteter Inhalt von %s"
 
 #: src/Admin/SettingsPage.php:649
 msgid "Embeds from hosts nobody listed are already gated, under their host name. Add a provider here to give such a host a proper name and a kind (for the button icon); after saving it appears in the list above, where you can set its wording and privacy-policy link like for any other provider. Hosts must match exactly — list www. and bare variants separately. Adding a provider never changes what is gated: unknown hosts are gated either way, and hosts a built-in provider handles stay with that provider (they are skipped here). Your own providers are always gated; to let a host through, use the never-gate list under Detection."
-msgstr "Einbettungen von Hosts, die niemand aufgeführt hat, werden bereits gesperrt – unter ihrem Hostnamen. Fügen Sie hier einen Anbieter hinzu, um einem solchen Host einen richtigen Namen und eine Art (für das Button-Symbol) zu geben; nach dem Speichern erscheint er in der Liste oben, wo Sie wie bei jedem anderen Anbieter Texte und Datenschutz-Link festlegen können. Hosts müssen exakt übereinstimmen – führen Sie www.- und Kurzform getrennt auf. Einen Anbieter hinzuzufügen ändert nie, was gesperrt wird: Unbekannte Hosts werden ohnehin gesperrt, und Hosts, um die sich ein mitgelieferter Anbieter kümmert, bleiben bei diesem (sie werden hier übersprungen). Eigene Anbieter sind immer gesperrt; um einen Host durchzulassen, nutzen Sie die Liste „Diese Hosts nie sperren“ unter Erkennung."
+msgstr "Einbettungen von Hosts, die niemand aufgeführt hat, werden bereits gesperrt – unter ihrem Hostnamen. Fügen Sie hier einen Anbieter hinzu, um einem solchen Host einen richtigen Namen und eine Art (für das Button-Symbol) zu geben; nach dem Speichern erscheint er in der Liste oben, wo Sie wie bei jedem anderen Anbieter Texte und Datenschutz-Link festlegen können. Hosts müssen exakt übereinstimmen – führen Sie www.- und Kurzform getrennt auf. Einen Anbieter hinzuzufügen ändert nie, was gesperrt wird: Unbekannte Hosts werden ohnehin gesperrt, und Hosts, um die sich ein mitgelieferter Anbieter kümmert, bleiben bei diesem (sie werden hier übersprungen). Eigene Anbieter sind immer gesperrt; um einen Host durchzulassen, nutzen Sie die Liste „Diese Hosts nie sperren“ unter Erkennung."
 
 #: src/Admin/SettingsPage.php:1685
 msgid "Embeds from these hosts load for every visitor as soon as the page opens, with no placeholder. This plugin does not stop them being contacted."
-msgstr "Einbettungen von diesen Hosts laden für jeden Besucher, sobald die Seite geöffnet wird – ohne Platzhalter. Dieses Plugin verhindert nicht, dass sie kontaktiert werden."
+msgstr "Einbettungen von diesen Hosts laden für jeden Besucher, sobald die Seite geöffnet wird – ohne Platzhalter. Dieses Plugin verhindert nicht, dass sie kontaktiert werden."
 
 #: src/Admin/SettingsPage.php:786
 msgid "Embeds from these hosts load without a placeholder. Use only for third parties you have covered elsewhere — this plugin then no longer prevents their requests. You can paste a whole web address; only the site name is kept."
-msgstr "Einbettungen von diesen Hosts laden ohne Platzhalter. Nutzen Sie das nur für Drittanbieter, die Sie anderweitig abgedeckt haben – dieses Plugin verhindert deren Anfragen dann nicht mehr. Sie können eine ganze Webadresse einfügen; behalten wird nur der Hostname."
+msgstr "Einbettungen von diesen Hosts laden ohne Platzhalter. Nutzen Sie das nur für Drittanbieter, die Sie anderweitig abgedeckt haben – dieses Plugin verhindert deren Anfragen dann nicht mehr. Sie können eine ganze Webadresse einfügen; behalten wird nur der Hostname."
 
 #: src/Admin/SettingsPage.php:1569
 msgid "Embeds load from (frame-src)"
@@ -447,7 +447,7 @@ msgstr "Leer: Der Platzhalter-Stil entscheidet. 0 entfernt den Rahmen."
 
 #: src/Admin/SettingsPage.php:462
 msgid "Every third-party embed is gated, listed here or not. These entries add the provider's name, icon and privacy-policy link, and let you word the panel yourself. Turning one off stops gating its embeds — they then load exactly as WordPress renders them."
-msgstr "Jede Einbettung von Drittanbietern wird gesperrt – ob sie hier steht oder nicht. Diese Einträge ergänzen Name, Symbol und Datenschutz-Link des Anbieters und lassen Sie den Text des Platzhalters selbst formulieren. Schalten Sie einen Eintrag ab, werden dessen Einbettungen nicht mehr gesperrt: Sie laden dann genau so, wie WordPress sie ausgibt."
+msgstr "Jede Einbettung von Drittanbietern wird gesperrt – ob sie hier steht oder nicht. Diese Einträge ergänzen Name, Symbol und Datenschutz-Link des Anbieters und lassen Sie den Text des Platzhalters selbst formulieren. Schalten Sie einen Eintrag ab, werden dessen Einbettungen nicht mehr gesperrt: Sie laden dann genau so, wie WordPress sie ausgibt."
 
 #: src/Plugin.php:477
 msgid "Example embed"
@@ -467,7 +467,7 @@ msgstr "Gefülltes Panel"
 
 #: src/Admin/SettingsPage.php:1308
 msgid "Filled — like the load button"
-msgstr "Gefüllt – wie der Lade-Button"
+msgstr "Gefüllt – wie der Lade-Button"
 
 #: src/Admin/SettingsPage.php:475
 msgid "Filter providers by name"
@@ -575,7 +575,7 @@ msgstr "Symbol"
 
 #: src/Admin/SettingsPage.php:1453
 msgid "If a consent platform (cookie banner) runs on this site, Calucon Third-Party Embed Gate can honour its decision: once the platform reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state, stores nothing itself, and works only with platforms it was tested against; with any other platform, and whenever the platform gives no answer, gating stands unchanged (fail closed)."
-msgstr "Läuft auf dieser Website eine Consent-Plattform (Cookie-Banner), kann Calucon Third-Party Embed Gate deren Entscheidung übernehmen: Sobald die Plattform eine Einwilligung für die Kategorie der Einbettungen meldet, laden gesperrte Einbettungen ohne zweiten Klick – und ein Widerruf dort sperrt sie wieder. Die Brücke liest nur den Zustand der Plattform, speichert selbst nichts und funktioniert nur mit Plattformen, gegen die sie getestet wurde; bei jeder anderen Plattform und immer dann, wenn die Plattform keine Antwort gibt, bleibt die Sperre unverändert bestehen (fail closed)."
+msgstr "Läuft auf dieser Website eine Consent-Plattform (Cookie-Banner), kann Calucon Third-Party Embed Gate deren Entscheidung übernehmen: Sobald die Plattform eine Einwilligung für die Kategorie der Einbettungen meldet, laden gesperrte Einbettungen ohne zweiten Klick – und ein Widerruf dort sperrt sie wieder. Die Brücke liest nur den Zustand der Plattform, speichert selbst nichts und funktioniert nur mit Plattformen, gegen die sie getestet wurde; bei jeder anderen Plattform und immer dann, wenn die Plattform keine Antwort gibt, bleibt die Sperre unverändert bestehen (fail closed)."
 
 #: src/Admin/SettingsPage.php:244
 msgid "If you later switch it to an enforced policy, it would need these hosts:"
@@ -607,7 +607,7 @@ msgstr "Links"
 
 #: src/Admin/SettingsPage.php:1774
 msgid "Let through by you — not gated"
-msgstr "Von Ihnen durchgelassen – nicht gesperrt"
+msgstr "Von Ihnen durchgelassen – nicht gesperrt"
 
 #: src/Admin/SettingsPage.php:1096
 msgid "Light minimal"
@@ -952,15 +952,15 @@ msgstr "Karte"
 
 #: src/Admin/SettingsPage.php:1133
 msgid "Minimal — transparent with a border"
-msgstr "Minimal – transparent mit Rahmen"
+msgstr "Minimal – transparent mit Rahmen"
 
 #: src/Admin/SettingsPage.php:1729
 msgid "NOT gated — its detection rule is disabled"
-msgstr "NICHT gesperrt – die zugehörige Erkennungsregel ist abgeschaltet"
+msgstr "NICHT gesperrt – die zugehörige Erkennungsregel ist abgeschaltet"
 
 #: src/Admin/SettingsPage.php:1730
 msgid "NOT gated — provider disabled in the table above"
-msgstr "NICHT gesperrt – Anbieter in der Tabelle oben abgeschaltet"
+msgstr "NICHT gesperrt – Anbieter in der Tabelle oben abgeschaltet"
 
 #: src/Admin/SettingsPage.php:653 src/Admin/SettingsPage.php:684
 msgid "Name"
@@ -988,7 +988,7 @@ msgstr "Nein"
 
 #: src/Admin/SettingsPage.php:1364
 msgid "No (default) — ask on every page view"
-msgstr "Nein (Standard) – bei jedem Seitenaufruf fragen"
+msgstr "Nein (Standard) – bei jedem Seitenaufruf fragen"
 
 #: src/Admin/SettingsPage.php:1620
 msgid "No cache plugin, consent platform, multilingual plugin or page builder detected."
@@ -1004,7 +1004,7 @@ msgstr "In den gescannten Inhalten wurden keine Einbettungen von Drittanbietern 
 
 #: src/Admin/SettingsPage.php:1728
 msgid "No usable URL — passes through"
-msgstr "Keine verwertbare URL – wird durchgelassen"
+msgstr "Keine verwertbare URL – wird durchgelassen"
 
 #: src/Admin/SettingsPage.php:1170 src/Admin/SettingsPage.php:1252
 msgid "None"
@@ -1028,7 +1028,7 @@ msgstr "Größe des Hinweistexts"
 
 #: src/Admin/SettingsPage.php:1358
 msgid "Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor's browser only — after their first click, never before — and a withdrawal control becomes available via the [calucon_embed_gate_withdraw] shortcode for your privacy policy page."
-msgstr "Standardmäßig aus: Die Einwilligung gilt für die eine angeklickte Einbettung und wird nirgends gespeichert. Ist die Option aktiv, wird die Entscheidung ausschließlich im Browser des Besuchers gespeichert – nach dessen erstem Klick, nie davor – und über den Shortcode [calucon_embed_gate_withdraw] steht eine Widerrufsmöglichkeit für Ihre Datenschutzseite bereit."
+msgstr "Standardmäßig aus: Die Einwilligung gilt für die eine angeklickte Einbettung und wird nirgends gespeichert. Ist die Option aktiv, wird die Entscheidung ausschließlich im Browser des Besuchers gespeichert – nach dessen erstem Klick, nie davor – und über den Shortcode [calucon_embed_gate_withdraw] steht eine Widerrufsmöglichkeit für Ihre Datenschutzseite bereit."
 
 #: src/Admin/SettingsPage.php:779
 msgid "One host per line, e.g. cdn.example.com or *.example.com. These are treated as the site itself and never gated. You can paste a whole web address; only the site name is kept."
@@ -1036,7 +1036,7 @@ msgstr "Ein Host pro Zeile, z. B. cdn.example.com oder *.example.com. Diese gelt
 
 #: src/Admin/SettingsPage.php:772
 msgid "One host per line. These are gated even when they would otherwise count as the site itself — for example a subdomain of your own domain that serves third-party widgets. You can paste a whole web address; only the site name is kept."
-msgstr "Ein Host pro Zeile. Diese werden auch dann gesperrt, wenn sie sonst als Teil der eigenen Website gälten – etwa eine Subdomain Ihrer eigenen Domain, die Widgets von Drittanbietern ausliefert. Sie können eine ganze Webadresse einfügen; behalten wird nur der Hostname."
+msgstr "Ein Host pro Zeile. Diese werden auch dann gesperrt, wenn sie sonst als Teil der eigenen Website gälten – etwa eine Subdomain Ihrer eigenen Domain, die Widgets von Drittanbietern ausliefert. Sie können eine ganze Webadresse einfügen; behalten wird nur der Hostname."
 
 #: src/Admin/SettingsPage.php:794
 msgid "Only enable this if embeds from a page builder are not being gated. It buffers the entire page, which can conflict with other buffering or streaming plugins. Any error inside the buffer returns the page unmodified."
@@ -1077,7 +1077,7 @@ msgstr "Überschreibt die websiteweite Einstellung nur für diesen Block."
 
 #: src/Admin/SettingsPage.php:1727
 msgid "Own host — not gated"
-msgstr "Eigener Host – nicht gesperrt"
+msgstr "Eigener Host – nicht gesperrt"
 
 #: src/Admin/SettingsPage.php:790
 msgid "Page builders"
@@ -1269,7 +1269,7 @@ msgstr "Form und Layout"
 
 #: src/Admin/SettingsPage.php:1262
 msgid "Show an icon that matches what the embed is — play for videos, a pin for maps, a note for audio, and so on"
-msgstr "Ein Symbol passend zum Inhalt anzeigen – Play für Videos, eine Nadel für Karten, eine Note für Audio und so weiter"
+msgstr "Ein Symbol passend zum Inhalt anzeigen – Play für Videos, eine Nadel für Karten, eine Note für Audio und so weiter"
 
 #: src/Admin/SettingsPage.php:1564
 msgid "Show which provider needs which host"
@@ -1329,7 +1329,7 @@ msgstr "Status"
 
 #: src/Admin/SettingsPage.php:378
 msgid "Status & tools"
-msgstr "Status & Werkzeuge"
+msgstr "Status und Werkzeuge"
 
 #: src/Integration/Assets.php:142
 msgid "Stored embed consents have been removed. Embeds will ask again."
@@ -1437,7 +1437,7 @@ msgstr "Was Calucon Third-Party Embed Gate tut"
 
 #: src/Admin/SettingsPage.php:746
 msgid "When you save, embeds from this host will load as soon as the page opens — for every visitor, with no placeholder and no click. This plugin will no longer stop that host from being contacted. Only do this for third parties you have covered another way."
-msgstr "Nach dem Speichern laden Einbettungen von diesem Host, sobald die Seite geöffnet wird – für jeden Besucher, ohne Platzhalter und ohne Klick. Dieses Plugin verhindert dann nicht mehr, dass dieser Host kontaktiert wird. Tun Sie das nur für Drittanbieter, die Sie anderweitig abgedeckt haben."
+msgstr "Nach dem Speichern laden Einbettungen von diesem Host, sobald die Seite geöffnet wird – für jeden Besucher, ohne Platzhalter und ohne Klick. Dieses Plugin verhindert dann nicht mehr, dass dieser Host kontaktiert wird. Tun Sie das nur für Drittanbieter, die Sie anderweitig abgedeckt haben."
 
 #: src/Admin/SettingsPage.php:747
 msgid "When you save, this host will be gated again: its embeds go back to asking the visitor first."
@@ -1445,7 +1445,7 @@ msgstr "Nach dem Speichern wird dieser Host wieder gesperrt: Seine Einbettungen 
 
 #: src/Admin/SettingsPage.php:1547
 msgid "Why it matters here: when a policy does not list a provider, that provider's embed stays empty after the visitor clicks Load, and the browser console reports “Refused to frame …”. Listing a host only grants permission; it does not load anything — nothing is contacted before the click either way."
-msgstr "Warum das hier zählt: Führt eine Richtlinie einen Anbieter nicht auf, bleibt dessen Einbettung leer, nachdem der Besucher auf „Laden“ geklickt hat, und die Browser-Konsole meldet „Refused to frame …“. Einen Host aufzuführen erteilt nur eine Erlaubnis; geladen wird dadurch nichts – vor dem Klick wird so oder so niemand kontaktiert."
+msgstr "Warum das hier zählt: Führt eine Richtlinie einen Anbieter nicht auf, bleibt dessen Einbettung leer, nachdem der Besucher auf „Laden“ geklickt hat, und die Browser-Konsole meldet „Refused to frame …“. Einen Host aufzuführen erteilt nur eine Erlaubnis; geladen wird dadurch nichts – vor dem Klick wird so oder so niemand kontaktiert."
 
 #: src/Admin/SettingsPage.php:1239
 msgid "Width"
@@ -1470,7 +1470,7 @@ msgstr "Texte und Datenschutz-Link"
 
 #: src/Admin/SettingsPage.php:752
 msgid "You can undo it later under Status & tools."
-msgstr "Sie können das später unter Status & Werkzeuge rückgängig machen."
+msgstr "Sie können das später unter Status und Werkzeuge rückgängig machen."
 
 #: src/Admin/SettingsPage.php:280
 msgid "You have unsaved appearance changes."
@@ -1494,7 +1494,7 @@ msgstr "Eigene Anbieter sind immer gesperrt. Um einen Host durchzulassen, nutzen
 
 #: src/Admin/SettingsPage.php:241
 msgid "Your site sends a Content-Security-Policy that does not yet allow these hosts — their embeds would stay empty after the visitor clicks Load:"
-msgstr "Ihre Website sendet eine Content-Security-Policy, die diese Hosts noch nicht erlaubt – deren Einbettungen blieben leer, nachdem der Besucher auf „Laden“ geklickt hat:"
+msgstr "Ihre Website sendet eine Content-Security-Policy, die diese Hosts noch nicht erlaubt – deren Einbettungen blieben leer, nachdem der Besucher auf „Laden“ geklickt hat:"
 
 #: src/Admin/SettingsPage.php:240
 msgid "Your site sends a Content-Security-Policy, and it already allows every enabled provider. Nothing to do."
@@ -1502,11 +1502,11 @@ msgstr "Ihre Website sendet eine Content-Security-Policy, und sie erlaubt bereit
 
 #: src/Admin/SettingsPage.php:243
 msgid "Your site sends a report-only policy (Content-Security-Policy-Report-Only). It logs violations but blocks nothing, so embeds still load."
-msgstr "Ihre Website sendet eine reine Melde-Richtlinie (Content-Security-Policy-Report-Only). Sie protokolliert Verstöße, blockiert aber nichts – Einbettungen laden also weiterhin."
+msgstr "Ihre Website sendet eine reine Melde-Richtlinie (Content-Security-Policy-Report-Only). Sie protokolliert Verstöße, blockiert aber nichts – Einbettungen laden also weiterhin."
 
 #: src/Admin/SettingsPage.php:1652
 msgid "Your theme references these third-party asset hosts (found by reading its files — nothing was fetched). Fonts and CDN assets load on every page view without consent, outside what an embed gate can cover. Consider serving them locally; your theme or a localisation plugin can usually do this."
-msgstr "Ihr Theme verweist auf diese Drittanbieter-Hosts (ermittelt durch Lesen seiner Dateien – es wurde nichts abgerufen). Schriften und CDN-Dateien laden bei jedem Seitenaufruf ohne Einwilligung, außerhalb dessen, was eine Einbettungssperre abdecken kann. Liefern Sie sie möglichst lokal aus; Ihr Theme oder ein entsprechendes Plugin kann das meist."
+msgstr "Ihr Theme verweist auf diese Drittanbieter-Hosts (ermittelt durch Lesen seiner Dateien – es wurde nichts abgerufen). Schriften und CDN-Dateien laden bei jedem Seitenaufruf ohne Einwilligung, außerhalb dessen, was eine Einbettungssperre abdecken kann. Liefern Sie sie möglichst lokal aus; Ihr Theme oder ein entsprechendes Plugin kann das meist."
 
 #: src/Admin/SettingsPage.php:521
 msgid "added by you"
@@ -1526,7 +1526,7 @@ msgstr "frame-src (eingebettete Player, Karten und andere Iframes)"
 
 #: src/Admin/SettingsPage.php:282
 msgid "hard to read — below the 4.5:1 minimum. Pick a lighter or darker colour for this pair."
-msgstr "schwer lesbar – unter dem Mindestwert 4,5:1. Wählen Sie für dieses Paar eine hellere oder dunklere Farbe."
+msgstr "schwer lesbar – unter dem Mindestwert 4,5:1. Wählen Sie für dieses Paar eine hellere oder dunklere Farbe."
 
 #: src/Admin/SettingsPage.php:665
 msgid "new provider"

@@ -1282,7 +1282,7 @@ test( 'German: the visitor panel, the settings screen and the editor controls ar
 	await login( page );
 	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg_locale=de_DE' );
 	await expect( page.locator( '#cg-tabbtn-providers' ) ).toHaveText( 'Anbieter' );
-	await expect( page.locator( '#cg-tabbtn-status' ) ).toHaveText( 'Status & Werkzeuge' );
+	await expect( page.locator( '#cg-tabbtn-status' ) ).toHaveText( 'Status und Werkzeuge' );
 	await page.click( '#cg-tabbtn-detection' );
 	await expect( page.locator( 'label[for="cg-never-gate"]' ) ).toHaveText( 'Diese Hosts nie sperren' );
 
