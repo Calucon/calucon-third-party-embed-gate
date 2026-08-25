@@ -1255,3 +1255,39 @@ test( 'admin: the scan turns a discovered host into a one-click exception, and n
 		await page.waitForLoadState( 'load' );
 	}
 } );
+
+// German translations (0.12.0). Three separate loading paths have to work, and
+// each fails independently: the front-end panel and the admin screens read the
+// bundled .mo (which needs load_plugin_textdomain — bundled files are NOT
+// picked up automatically), while the block-editor controls read a JSON file
+// that wp_set_script_translations resolves by handle. The seeded site switches
+// locale per request via ?cg_locale=, so this needs no core language pack.
+test( 'German: the visitor panel, the settings screen and the editor controls are translated', async ( { page } ) => {
+	// 1. Front end — the visitor-facing half, where the wording matters most.
+	await page.goto( '/gated-classic/?cg_locale=de_DE' );
+	const panel = page.locator( '.cg-embed' ).first();
+	await expect( panel.locator( '.cg-embed__button' ) ).toHaveText( 'Video von YouTube laden' );
+	await expect( panel.locator( '.cg-embed__note' ) ).toContainText( 'Beim Laden dieses Videos wird YouTube (Google) kontaktiert' );
+	await expect( panel.locator( '.cg-embed__note' ) ).toContainText( 'deine IP-Adresse' );
+	await expect( panel ).toHaveAttribute( 'aria-label', /^Eingebetteter Inhalt von / );
+
+	// The formal locale is the same translation with Sie-forms.
+	await page.goto( '/gated-classic/?cg_locale=de_DE_formal' );
+	await expect( page.locator( '.cg-embed__note' ).first() ).toContainText( 'Ihre IP-Adresse' );
+
+	// 2. Admin — tabs, headings and help text come from the same .mo.
+	await login( page );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg_locale=de_DE' );
+	await expect( page.locator( '#cg-tabbtn-providers' ) ).toHaveText( 'Anbieter' );
+	await expect( page.locator( '#cg-tabbtn-status' ) ).toHaveText( 'Status & Werkzeuge' );
+	await page.click( '#cg-tabbtn-detection' );
+	await expect( page.locator( 'label[for="cg-never-gate"]' ) ).toHaveText( 'Diese Hosts nie sperren' );
+
+	// 3. Block editor — wp.i18n reads the JSON, not the .mo.
+	await page.goto( '/wp-admin/post-new.php?cg_locale=de_DE' );
+	await page.waitForFunction( () => window.wp && window.wp.i18n && window.wp.data && window.wp.blocks );
+	const translated = await page.evaluate( () =>
+		window.wp.i18n.__( 'Gate this embed', 'calucon-third-party-embed-gate' )
+	);
+	expect( translated, 'editor.js strings need languages/*-{locale}-{handle}.json' ).toBe( 'Diese Einbettung sperren' );
+} );

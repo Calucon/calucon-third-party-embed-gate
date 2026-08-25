@@ -5,7 +5,7 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.11.0
+Stable tag: 0.12.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,7 @@ See it in action on the [live demo](https://calucon.de/third-party-embed-gate-sh
 * Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; a plain fallback link to the content stays for feed readers.
 * Per-block override in the editor: gate a specific embed always, never, or per the site default.
 * Optional poster image behind the consent panel, chosen per embed from your media library — served from your own site, never fetched from the provider. Per-embed button and notice text in the block editor, too.
+* German included: the plugin's own texts ship translated in both WordPress German locales — Deutsch (du) and Deutsch (Sie) — placeholder wording, the settings screen and the block-editor controls alike.
 * Multilingual sites: the texts you type (per-provider and per-block notices and button labels, provider privacy-policy URLs, your own providers' names) are registered for WPML and Polylang via a shipped wpml-config.xml.
 * Optional, off by default: remember consent in the visitor's browser (per embed, per provider, or for all embeds; session or with an expiry), with a withdrawal control via the `[calucon_embed_gate_withdraw]` shortcode.
 * Optional, off by default: a bridge to your consent platform. When a tested platform (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner) reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state; with an untested platform, or when the platform gives no answer, gating stands unchanged.
@@ -71,6 +72,10 @@ No plugin can claim that, and this one does not. Calucon Third-Party Embed Gate 
 = Why is there no cookie banner? =
 
 Because there is nothing to announce at page load. If nothing third-party loads until the visitor asks for it, there is no third-party storage to consent to on page load. The consent is the click, given for the one embed it belongs to.
+
+= Is the plugin available in German? =
+
+Yes. German ships with the plugin in both of WordPress's German locales — Deutsch (du) and Deutsch (Sie, "de_DE_formal") — and it covers everything a person reads: the placeholder your visitors see, the settings screen and the block-editor controls. Set your site language and it follows. Other languages are welcome via translate.wordpress.org; a translation from there overrides the bundled one.
 
 = Does a visitor have to click every single time? =
 
@@ -149,6 +154,9 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 
 == Upgrade Notice ==
 
+= 0.12.0 =
+Adds German, in both the du and the Sie variant — the placeholder your visitors see, the settings screen and the editor controls. Set your site language to German and it follows. Nothing else changes; English sites see no difference.
+
 = 0.11.0 =
 Names the rest of WordPress's built-in embed types, and the content scan can now name or let through any host it finds without you typing an address. Fixes Scribd and Wolfram Cloud embeds, which contacted their provider before the click. Everything here was already gated.
 
@@ -156,6 +164,10 @@ Names the rest of WordPress's built-in embed types, and the content scan can now
 The panel looks and behaves as before unless you opt in: the privacy-policy link and the new Appearance controls are off by default. Clear your page cache once after updating. Adds your own providers, a CSP helper and a much larger Appearance tab.
 
 == Changelog ==
+
+= 0.12.0 =
+* New: German translations ship with the plugin, in both of WordPress's German locales — Deutsch (du) and Deutsch (Sie). Everything a person reads is covered: the placeholder your visitors see, all five settings tabs and the per-block controls in the editor. Set the site language to German and it follows; a translation from translate.wordpress.org still takes precedence over the bundled one.
+* Changed: the plugin now loads its own translation files. Nothing changes for sites running in English.
 
 = 0.11.0 =
 * New: page caches are flushed automatically when the plugin is activated and after it updates, not only when settings are saved or the plugin is deactivated — so a cached page cannot keep serving pre-update markup.

@@ -89,9 +89,28 @@ final class Plugin {
 	private function __construct() {
 		$this->options = Options::sanitize( get_option( Options::OPTION, Options::defaults() ) );
 
-		// No load_plugin_textdomain() call: WordPress ≥ 4.6 loads the
-		// wordpress.org language packs for the plugin's text domain
-		// automatically, and the plugin ships no .mo files of its own.
+		// The plugin ships German translations of its own (0.12.0). WordPress
+		// 6.7+ finds those by itself — its textdomain registry knows the
+		// plugin's Domain Path — but 5.9 to 6.6, which this plugin still
+		// supports, load just-in-time only from WP_LANG_DIR, where a bundled
+		// file never lives. Hence the explicit call; on 6.7+ it is a no-op
+		// that costs one already-cached path lookup.
+		//
+		// On init, which is where WordPress wants translations loaded
+		// (earlier trips the 6.7 just-in-time notice). A language pack in
+		// WP_LANG_DIR still wins: load_plugin_textdomain() looks there first,
+		// so a translation from translate.wordpress.org overrides the
+		// bundled one — which is what should happen once German lands there.
+		add_action(
+			'init',
+			static function (): void {
+				load_plugin_textdomain(
+					'calucon-third-party-embed-gate',
+					false,
+					dirname( plugin_basename( CALUCON_EMBED_GATE_FILE ) ) . '/languages'
+				);
+			}
+		);
 
 		$this->assets = new Assets(
 			$this->options,

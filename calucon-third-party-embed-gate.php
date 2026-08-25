@@ -3,7 +3,7 @@
  * Plugin Name:       Calucon Third-Party Embed Gate
  * Plugin URI:        https://calucon.de/third-party-embed-gate/
  * Description:       YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click pattern. No third-party request, no cookie and no banner before that.
- * Version:           0.11.0
+ * Version:           0.12.0
  * Requires at least: 5.9
  * Requires PHP:      7.4
  * Author:            Calucon
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'CALUCON_EMBED_GATE_VERSION', '0.11.0' );
+define( 'CALUCON_EMBED_GATE_VERSION', '0.12.0' );
 define( 'CALUCON_EMBED_GATE_FILE', __FILE__ );
 define( 'CALUCON_EMBED_GATE_DIR', __DIR__ );
 

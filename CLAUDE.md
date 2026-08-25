@@ -151,6 +151,35 @@ detection path without this preprocessing: the failure mode is a tracker
 through, invisibly. `HostMatcherTest::test_authority_confusion_is_gated_not_own`
 pins it; the `authority-backslash-*` fixtures prove it end-to-end.
 
+## Translations
+
+German ships with the plugin in both WordPress locales — `de_DE` (du) and
+`de_DE_formal` (Sie) — because the plugin's market is Germany and the EU.
+`bin/update-translations.sh` is the whole chain: regenerate the `.pot`,
+`msgmerge` every `.po` (unwrapped, one line per string, so a wording change is
+a one-line diff), compile every `.mo`, rebuild the block-editor JSON.
+
+**A new user-facing string is not done until it is translated.**
+`TranslationTest` fails while any `.pot` entry is untranslated in either
+locale, while a printf placeholder differs between source and translation, and
+while an `editor.js` string is missing from the JSON. That last one is its own
+trap: `editor.js` strings go through `wp.i18n`, which never reads a `.mo` — they
+need `languages/{domain}-{locale}-{handle}.json`, rebuilt by
+`bin/make-json-translations.php`.
+
+`load_plugin_textdomain()` in `Plugin.php` is not redundant: WordPress 6.7+
+finds bundled files through its textdomain registry, 5.9–6.6 (still supported)
+do not. A language pack from translate.wordpress.org lands in `WP_LANG_DIR` and
+takes precedence over the bundled file, which is the intended order.
+
+Glossary, kept consistent across 378 strings: gate/gated = *sperren/gesperrt*,
+embed = *Einbettung*, placeholder = *Platzhalter*, provider = *Anbieter*,
+consent = *Einwilligung*, third party = *Drittanbieter*. The 36 provider
+notices share one sentence template. **"may set cookies" stays hedged** —
+*es können Cookies gesetzt werden* — the German may never promise more than
+the English (see the legal-copy rule above: reword these with Simon, not
+alone).
+
 ## Commands
 
 ```sh

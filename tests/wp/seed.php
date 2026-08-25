@@ -143,6 +143,15 @@ add_action( 'wp_head', function () {
 	echo '<link rel="preconnect" href="https://www.youtube.com">' . "\n";
 	echo '<link rel="preconnect" href="https://cdn.literal-safe.example">' . "\n";
 }, 99 );
+// Locale switch for the translation tests: ?cg_locale=de_DE renders that one
+// request in German. Switching the site language would need core's German
+// language pack, which the offline Playground image does not have — this
+// needs only the plugin's own bundled .mo and .json files, which is exactly
+// what the tests are there to prove.
+add_filter( 'locale', function ( $locale ) {
+	$requested = isset( $_GET['cg_locale'] ) ? (string) $_GET['cg_locale'] : '';
+	return preg_match( '/^[a-z]{2}_[A-Z]{2}(?:_formal)?$/', $requested ) ? $requested : $locale;
+} );
 MUPLUGIN;
 if ( false === file_put_contents( $cg_mu_dir . '/cg-test-hints.php', $cg_mu_source . "\n" ) ) {
 	fwrite( STDERR, "seed: cannot write the hint emulator into $cg_mu_dir\n" );
