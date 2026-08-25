@@ -151,4 +151,55 @@ final class SilentCompanionTest extends TestCase {
 		self::assertStringContainsString( 'role="group"', $html, 'alone, it gets its own panel' );
 		self::assertStringNotContainsString( 'createElement("script")', $html, 'and no longer runs on load' );
 	}
+	/**
+	 * A site's own script that assigns any `.src` and happens to NAME a
+	 * provider URL in a comment used to match the injection probe — and
+	 * matching means the script is removed and replaced by a "Load …" panel,
+	 * so the site's own code silently stops running. The host has to appear
+	 * where a URL gets fetched, not where a human wrote a note.
+	 */
+	public function test_an_own_script_naming_a_provider_in_a_comment_still_runs(): void {
+		$own = '<script>/* hero images, see https://www.instagram.com/ourbrand/ */'
+			. 'var img=new Image();img.src="/wp-content/uploads/hero.jpg";document.body.appendChild(img);</script>';
+
+		self::assertSame( $own, PipelineFactory::gate( $own ), 'not gated, not rewritten' );
+	}
+
+	/**
+	 * Inline code carries the loader, not the embed address, so there is no
+	 * id to capture. A fallback template still holding {id} must be dropped,
+	 * never shipped into a visitor-facing link (invariant 2 — the link is the
+	 * whole panel for a no-JS visitor).
+	 */
+	public function test_a_lone_inline_injector_never_renders_a_literal_placeholder_in_its_link(): void {
+		$html = PipelineFactory::gate(
+			'<script>var s=document.createElement("script");s.src="https://www.scribd.com/javascripts/embed_code/inject.js";document.body.appendChild(s);</script>'
+		);
+
+		self::assertStringNotContainsString( '{id}', $html );
+		self::assertMatchesRegularExpression( '#<a href="https://www\.scribd\.com/"#', $html );
+	}
+
+	/**
+	 * Two embeds from ONE provider are two embeds: the second one's loader
+	 * must not be silenced by the first one's panel, or it renders nothing,
+	 * offers no link, and loads on the other embed's click.
+	 */
+	public function test_a_second_embed_of_the_same_provider_keeps_its_own_panel(): void {
+		$first  = '<figure class="wp-block-embed"><div class="wp-block-embed__wrapper">'
+			. '<script src="https://secure.polldaddy.com/p/7451882.js"></script>'
+			. '</div></figure>';
+		$second = '<figure class="wp-block-embed"><div class="wp-block-embed__wrapper">'
+			. '<div class="pd-embed" data-settings="{}"></div>'
+			. '<script>(function(){var pd=document.createElement("script");pd.src="https://app.crowdsignal.com/survey.js";document.body.appendChild(pd);}());</script>'
+			. '</div></figure>';
+
+		$html  = PipelineFactory::gate( $first . "\n" . $second );
+		$found = $this->payloads( $html );
+
+		self::assertCount( 2, $found );
+		self::assertFalse( $found[0]['silent'] );
+		self::assertFalse( $found[1]['silent'], 'a different embed, not a companion' );
+		self::assertSame( 2, substr_count( $html, 'cg-embed__fallback' ), 'each embed keeps a working link' );
+	}
 }

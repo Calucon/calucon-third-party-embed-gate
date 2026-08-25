@@ -317,12 +317,17 @@ Ship as separate, individually-toggleable rules:
   Giphy, Typeform, Calendly. The script must be *removed*, not deferred;
   a `type="text/plain"` rewrite is the conventional trick and is preferable to
   deletion because it round-trips cleanly on activation.
-- **Stylesheets and fonts** — `fonts.googleapis.com` and `fonts.gstatic.com`.
-  In Germany this is the single most-litigated third-party request (the LG
-  München I decision of 20 January 2022, and the mass-mailing wave that
-  followed). Gating a font behind a click is poor UX, so the correct product
-  behaviour here is different: **detect and warn in the admin, and offer a
-  "localise" action**, not a placeholder.
+- **Stylesheets** — a provider's own stylesheets next to a gated embed
+  (Wolfram Cloud ships three). `Detection/StylesheetRule` gates them as
+  **silent companions**: no panel of their own, hidden until gate.js re-adds
+  them after the panel they belong to is activated. Shipped in 0.11.0.
+- **Fonts** — `fonts.googleapis.com` and `fonts.gstatic.com`. In Germany this
+  is the single most-litigated third-party request (the LG München I decision
+  of 20 January 2022, and the mass-mailing wave that followed). A **"localise"
+  downloader is REJECTED and must not be proposed again**: downloading a font
+  is an outbound request from the site's own server, which invariant 9 forbids
+  outright. A theme's fonts are the theme's business; this plugin gates
+  embeds.
 - **Images** — Gravatar, `i.ytimg.com`, remote hotlinked images. Gate or
   proxy-cache locally; make it opt-in because it can break layouts.
 - **Resource hints** — see §9.14.
@@ -383,7 +388,6 @@ returning an array, so a site can add one from `functions.php` in ten lines.
     'controller'    => 'Google Ireland Limited, Dublin, Ireland',
     'note'          => __( 'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.', 'calucon-embed-gate' ),
     'action'        => __( 'Load video from YouTube', 'calucon-embed-gate' ),
-    'thumbnail'     => 'https://i.ytimg.com/vi/{id}/maxresdefault.jpg',
     'aspect'        => '16:9',
     'iframe_allow'  => 'accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share',
     'strategy'      => 'iframe',   // iframe | script | element | callback
@@ -391,8 +395,22 @@ returning an array, so a site can add one from `functions.php` in ten lines.
 ```
 
 `{id}` and any other named capture from `iframe_path` interpolate into
-`load_path`, `fallback` and `thumbnail`. Every interpolation is URL-encoded at
-substitution time, never at template-authoring time.
+`load_path` and `fallback`. Every interpolation is URL-encoded at substitution
+time, never at template-authoring time. A template still holding a placeholder
+after interpolation is dropped, never shipped literally into a link.
+
+There is **no `thumbnail` key** — it was removed in 0.9.4 with the §5.4
+auto-fetch. A descriptor must never name a provider CDN: fetching from one is
+the request invariant 1 exists to prevent.
+
+The other keys a descriptor may carry: `kind` (drives the button glyph and the
+Providers grouping; one of `AppearanceCss::KINDS`), `load_query`,
+`iframe_query` (captures from the query string — a single pattern or a list,
+one per parameter, since providers order and interleave them freely),
+`script_host`/`script_path` (the provider's loader script), `companion_class`
+and `companion_fallback` (the element a loader belongs to, and how to read a
+human URL out of it), `scrub_hint_hosts` (CDN hosts to strip from resource
+hints) and `iframe_allow`.
 
 **Owner-defined providers (settings, 0.10.0).** The Providers tab stores
 `custom_providers[]` rows — `id` (`custom-<slug>`, generated once from the
@@ -433,8 +451,25 @@ Ship enough that a typical site needs no configuration.
 | Google Forms | iframe | — | |
 | Typeform, Calendly | script/iframe | — | |
 | Matterport, Sketchfab | iframe | — | |
+| Reddit, GIPHY | script | — | |
+| Dailymotion, TED | iframe | — | Dailymotion carries its id in the query |
+| VideoPress | iframe + **companion** | — | Loader script beside the player |
+| Mixcloud, Pocket Casts | iframe | — | |
+| Pinterest | script | — | `pinit.js` |
+| Imgur, Tumblr, Bluesky | script/iframe | — | |
+| Crowdsignal | script + `<noscript>` iframe | — | Survey ships an inline loader |
+| Scribd | iframe + **companion** | — | Inline injector beside the frame |
+| Speaker Deck, Issuu | iframe | — | Issuu captures two query parameters |
+| Kickstarter | iframe | — | |
+| Wolfram Cloud | script + **companions** | — | Stylesheets and an inline call |
+| Amazon Kindle | iframe | — | One descriptor, five marketplaces |
 | WordPress oEmbed | iframe | — | The `wp-embedded-content` pair, §9.7 |
 | **Generic fallback** | iframe | — | Any unknown cross-origin iframe |
+
+36 descriptors in total (`Providers/Builtin/Descriptors.php` is the list of
+record). **Companion** marks a provider whose embed drags a loader script,
+inline code or stylesheets along with it: those are gated silently and run on
+the panel's click, never before and never as a second panel — see §3.5.
 
 The generic fallback is what makes invariant 6 real. Its label is the host name;
 its fallback URL is derived by stripping a trailing `/embed/` (and preferring
@@ -464,11 +499,36 @@ public API and version it.
 </div>
 ```
 
+A **silent companion** (0.11.0) — a loader script, inline injector or provider
+stylesheet that belongs to the panel above it — is part of this contract too:
+
+```html
+<span class="cg-embed cg-embed--silent" hidden
+      data-cg-provider="wolfram-cloud"
+      data-cg-host="www.wolframcloud.com"
+      data-cg-payload="{json}"></span>
+```
+
+No panel, no accessible name, no fallback link: the visible panel of the same
+provider stands for both, and gate.js activates the companion **after** that
+panel's script has loaded. Anything sweeping the page for
+`.cg-embed[data-cg-payload]` (consent-memory restore, the CMP bridge, a site's
+own adapter) must skip `.cg-embed--silent`, or the companion runs before the
+script it calls into.
+
 `cg-embed__privacy` (0.10.0) is present only for providers that declare a
 `privacy_url` and only while `display.privacy_link` is on (off by default); the template exposes
 it as `$privacy_url` / `$privacy_label`. Scripts must find the fallback
 link **by its class**, never as "the last link in the panel" — the privacy
 link now follows it (gate.js `removePanel` was fixed for exactly this).
+
+**Inside `<noscript>`, the panel has no button** (0.11.0). Core's Crowdsignal
+oEmbed ships a `<noscript>` iframe; gating it is right — with scripting off it
+would otherwise load unbidden — but that markup renders *only* when scripting
+is off, which is precisely when gate.js does not exist. A button there could
+never do anything, and §8 forbids exactly that. The note and the fallback link
+are rendered; the template receives `$show_button` and older overrides that
+ignore it simply keep the button.
 
 **The reserved box is a minimum.** `--cg-aspect` keeps the page from jumping
 when the embed loads, but it must never cage the panel: with roomy theme
@@ -630,8 +690,16 @@ Information architecture:
   builder, and what the plugin decided to do about each. This screen is the
   support-load reducer; make it good.
 - **Status** — a scan of the current site's content reporting which third-party
-  hosts appear and whether each is currently gated. Read-only, no outbound
-  requests.
+  hosts appear and whether each is currently gated. No outbound requests, and
+  since 0.11.0 the rows are actionable: name a host (it stays gated, and gains
+  a label and icon) or let it through. The buttons **stage** into the Detection
+  fields of the one settings form — they never write. That is not only
+  convenience: the screen holds the whole option tree in one form, so anything
+  writing `never_gate` behind the form's back would be reverted by the owner's
+  next Save. Staging makes the exception and the field the same submission, and
+  every write keeps going through `options.php` → `Options::sanitize_report()`.
+  Hosts already let through are listed above the scan with a one-click undo,
+  because an excepted host disappears from the scan itself.
 
 Settings are stored as a **single option array**, typed and sanitised through
 `Support/Options.php`, with a schema and defaults in one place.
@@ -1097,8 +1165,10 @@ aspect-ratio preservation with measured assertions, i18n and `.pot`.
 **M5 — Compatibility.** Output-buffer integration, CMP bridges, cache-plugin
 flushing, multisite, compatibility screen.
 
-**M6 — Optional extras.** Local thumbnails, consent memory with withdrawal
-control, Google Fonts localisation helper, CSP snippet generator.
+**M6 — Optional extras.** Consent memory with withdrawal control, CSP snippet
+generator, owner-supplied poster images. (Local thumbnails and the Google
+Fonts localiser were considered here and are **rejected** — both are outbound
+requests; see §2.2 and §3.5.)
 
 **M7 — Distribution.** `readme.txt`, screenshots, WordPress.org submission,
 documentation site.

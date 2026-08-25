@@ -194,7 +194,7 @@ final class Descriptors {
 					'iframe_host' => array( 'my.matterport.com' ),
 					'iframe_path' => '#^/show#',
 				),
-				'privacy_url' => 'https://matterport.com/legal/privacy-policy',
+				'privacy_url' => 'https://www.costar.com/about/privacy-notice',
 				'controller'  => 'Matterport, Inc., Sunnyvale, USA',
 				'note'        => $t( 'Loading this tour contacts Matterport, which receives your IP address and which page you are on.' ),
 				'action'      => $t( 'Load tour from Matterport' ),
@@ -579,6 +579,7 @@ final class Descriptors {
 					// Surveys use an inline loader the script rule cannot see
 					// (documented limitation).
 					'iframe_host' => array( 'poll.fm' ),
+					'iframe_path' => '#^/(?P<id>[0-9]+)/embed#',
 					'script_host' => array( 'secure.polldaddy.com', 'app.crowdsignal.com' ),
 					'script_path' => '#^/p/(?P<id>[0-9]+)\\.js$#',
 				),
@@ -649,7 +650,12 @@ final class Descriptors {
 				'match'        => array(
 					'iframe_host'  => array( 'e.issuu.com' ),
 					'iframe_path'  => '#^/embed\\.html$#',
-					'iframe_query' => '/(?:^|&)u=(?P<u>[a-z0-9_.-]+)&d=(?P<d>[a-z0-9_.-]+)/i',
+					// One pattern per parameter: Issuu writes them in either
+					// order and inserts its own between them.
+					'iframe_query' => array(
+						'/(?:^|&)u=(?P<u>[a-z0-9_.-]+)/i',
+						'/(?:^|&)d=(?P<d>[a-z0-9_.-]+)/i',
+					),
 				),
 				'fallback'     => 'https://issuu.com/{u}/docs/{d}',
 				'privacy_url'  => 'https://issuu.com/legal/privacy',
@@ -661,6 +667,7 @@ final class Descriptors {
 			),
 			array(
 				'id'          => 'kickstarter',
+				'kind'        => 'video',
 				'label'       => 'Kickstarter',
 				'match'       => array(
 					'iframe_host' => array( 'www.kickstarter.com', 'kickstarter.com' ),

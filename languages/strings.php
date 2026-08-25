@@ -19,21 +19,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 return array(
-	// Defined at src/Rendering/PlaceholderRenderer.php:193.
+	// Defined at src/Rendering/PlaceholderRenderer.php:195.
 	'%s privacy policy' => __( '%s privacy policy', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Rendering/PlaceholderRenderer.php:167.
+	// Defined at src/Rendering/PlaceholderRenderer.php:169.
 	'Embedded content from %s' => __( 'Embedded content from %s', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:263.
 	'Load activity from Strava' => __( 'Load activity from Strava', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:172.
 	'Load calendar from Google' => __( 'Load calendar from Google', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/CustomProviders.php:82.
-	// Defined at src/Providers/Registry.php:179.
-	// Defined at src/Providers/Registry.php:254.
+	// Defined at src/Providers/Registry.php:186.
+	// Defined at src/Providers/Registry.php:265.
 	'Load content from %s' => __( 'Load content from %s', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:343.
 	'Load content from Facebook' => __( 'Load content from Facebook', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:623.
+	// Defined at src/Providers/Builtin/Descriptors.php:624.
 	'Load document from Scribd' => __( 'Load document from Scribd', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:186.
 	'Load form from Google' => __( 'Load form from Google', 'calucon-third-party-embed-gate' ),
@@ -47,7 +47,7 @@ return array(
 	'Load map from OpenStreetMap' => __( 'Load map from OpenStreetMap', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:214.
 	'Load model from Sketchfab' => __( 'Load model from Sketchfab', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:691.
+	// Defined at src/Providers/Builtin/Descriptors.php:698.
 	'Load notebook from Wolfram Cloud' => __( 'Load notebook from Wolfram Cloud', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:504.
 	'Load pin from Pinterest' => __( 'Load pin from Pinterest', 'calucon-third-party-embed-gate' ),
@@ -61,7 +61,7 @@ return array(
 	'Load player from SoundCloud' => __( 'Load player from SoundCloud', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:131.
 	'Load player from Spotify' => __( 'Load player from Spotify', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:589.
+	// Defined at src/Providers/Builtin/Descriptors.php:590.
 	'Load poll from Crowdsignal' => __( 'Load poll from Crowdsignal', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:558.
 	'Load post from Bluesky' => __( 'Load post from Bluesky', 'calucon-third-party-embed-gate' ),
@@ -75,13 +75,13 @@ return array(
 	'Load post from Tumblr' => __( 'Load post from Tumblr', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:296.
 	'Load post from X (Twitter)' => __( 'Load post from X (Twitter)', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:640.
+	// Defined at src/Providers/Builtin/Descriptors.php:641.
 	'Load presentation from Speaker Deck' => __( 'Load presentation from Speaker Deck', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:707.
+	// Defined at src/Providers/Builtin/Descriptors.php:714.
 	'Load preview from Amazon Kindle' => __( 'Load preview from Amazon Kindle', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:673.
+	// Defined at src/Providers/Builtin/Descriptors.php:680.
 	'Load project from Kickstarter' => __( 'Load project from Kickstarter', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:658.
+	// Defined at src/Providers/Builtin/Descriptors.php:664.
 	'Load publication from Issuu' => __( 'Load publication from Issuu', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:250.
 	'Load scheduler from Calendly' => __( 'Load scheduler from Calendly', 'calucon-third-party-embed-gate' ),
@@ -104,14 +104,14 @@ return array(
 	// Defined at src/Providers/Builtin/Descriptors.php:171.
 	'Loading this calendar contacts Google, which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this calendar contacts Google, which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/CustomProviders.php:80.
-	// Defined at src/Providers/Registry.php:252.
+	// Defined at src/Providers/Registry.php:263.
 	'Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies.' => __( 'Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:342.
 	'Loading this content contacts Facebook (Meta), which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this content contacts Facebook (Meta), which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/CustomProviders.php:78.
-	// Defined at src/Providers/Registry.php:177.
+	// Defined at src/Providers/Registry.php:184.
 	'Loading this content runs a script from %s, which receives your IP address and which page you are on, and may set cookies.' => __( 'Loading this content runs a script from %s, which receives your IP address and which page you are on, and may set cookies.', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:622.
+	// Defined at src/Providers/Builtin/Descriptors.php:623.
 	'Loading this document contacts Scribd, which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this document contacts Scribd, which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:185.
 	'Loading this form contacts Google, which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this form contacts Google, which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
@@ -125,7 +125,7 @@ return array(
 	'Loading this map contacts OpenStreetMap, which receives your IP address and which page you are on.' => __( 'Loading this map contacts OpenStreetMap, which receives your IP address and which page you are on.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:213.
 	'Loading this model contacts Sketchfab, which receives your IP address and which page you are on.' => __( 'Loading this model contacts Sketchfab, which receives your IP address and which page you are on.', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:690.
+	// Defined at src/Providers/Builtin/Descriptors.php:697.
 	'Loading this notebook contacts Wolfram, which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this notebook contacts Wolfram, which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:503.
 	'Loading this pin contacts Pinterest, which receives your IP address and which page you are on, and may set cookies.' => __( 'Loading this pin contacts Pinterest, which receives your IP address and which page you are on, and may set cookies.', 'calucon-third-party-embed-gate' ),
@@ -139,7 +139,7 @@ return array(
 	'Loading this player contacts SoundCloud, which receives your IP address and which page you are on, and may set cookies.' => __( 'Loading this player contacts SoundCloud, which receives your IP address and which page you are on, and may set cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:130.
 	'Loading this player contacts Spotify, which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this player contacts Spotify, which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:588.
+	// Defined at src/Providers/Builtin/Descriptors.php:589.
 	'Loading this poll contacts Crowdsignal (Automattic), which receives your IP address and which page you are on, and may set cookies.' => __( 'Loading this poll contacts Crowdsignal (Automattic), which receives your IP address and which page you are on, and may set cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:557.
 	'Loading this post contacts Bluesky, which receives your IP address and which page you are on, and may set cookies.' => __( 'Loading this post contacts Bluesky, which receives your IP address and which page you are on, and may set cookies.', 'calucon-third-party-embed-gate' ),
@@ -153,13 +153,13 @@ return array(
 	'Loading this post contacts Tumblr (Automattic), which receives your IP address and which page you are on, and may set cookies.' => __( 'Loading this post contacts Tumblr (Automattic), which receives your IP address and which page you are on, and may set cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:295.
 	'Loading this post contacts X (Twitter), which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this post contacts X (Twitter), which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:639.
+	// Defined at src/Providers/Builtin/Descriptors.php:640.
 	'Loading this presentation contacts Speaker Deck, which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this presentation contacts Speaker Deck, which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:706.
+	// Defined at src/Providers/Builtin/Descriptors.php:713.
 	'Loading this preview contacts Amazon, which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this preview contacts Amazon, which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:672.
+	// Defined at src/Providers/Builtin/Descriptors.php:679.
 	'Loading this project contacts Kickstarter, which receives your IP address and which page you are on, and may set cookies.' => __( 'Loading this project contacts Kickstarter, which receives your IP address and which page you are on, and may set cookies.', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Providers/Builtin/Descriptors.php:657.
+	// Defined at src/Providers/Builtin/Descriptors.php:663.
 	'Loading this publication contacts Issuu, which receives your IP address and which page you are on, and may set cookies.' => __( 'Loading this publication contacts Issuu, which receives your IP address and which page you are on, and may set cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:249.
 	'Loading this scheduler contacts Calendly, which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this scheduler contacts Calendly, which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
@@ -178,6 +178,6 @@ return array(
 	// Defined at src/Providers/Builtin/Descriptors.php:57.
 	'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Detection/EmbedStripper.php:146.
-	// Defined at src/Rendering/PlaceholderRenderer.php:169.
+	// Defined at src/Rendering/PlaceholderRenderer.php:171.
 	'Open on %s' => __( 'Open on %s', 'calucon-third-party-embed-gate' ),
 );

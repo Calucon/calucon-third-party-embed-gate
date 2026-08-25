@@ -41,10 +41,11 @@ read-only and make no outbound request):
 wp calucon-embed-gate scan --format=json     # every embed found in recent
                                        # content + whether it is gated
 wp calucon-embed-gate providers --format=json # providers as the gate resolves
-# `scan` also reports a `provider` column: the resolved provider id, or
-# `generic`/`generic-script` for a host no descriptor claims.
                                         # them (builtins + your filter)
 ```
+
+`scan` also reports a `provider` column: the resolved provider id, or
+`generic`/`generic-script` for a host no descriptor claims.
 
 In `scan` output, every third-party row should read `status: gated`.
 Other statuses mean "loads without consent, because a setting says so":
@@ -81,8 +82,8 @@ Shape (see `src/Support/Options.php` for the authoritative schema):
   wildcards allowed), `www_equivalence`, `output_buffer` (bool)
 - `appearance`: `preset` (`default|minimal|card`), `corners`
   (`''|square|rounded|pill|custom`) + `radius` (0–48 px, with `custom`),
-  `border_width` (`''` or `'0'`–`'10'`), `shadow` (`''|soft|strong`),
-  `density` (`''|compact|airy`), `button_size` (`''|small|large`),
+  `border_width` (`''` or `'0'`–`'10'`), `shadow` (`''|none|soft|strong`),
+  `density` (`''|compact|spacious`), `button_size` (`''|small|large`),
   `button_style` (`''|outline`), `button_width` (`''|full`), `hover`
   (`''|strong|none`), `play_icon` (bool; kind-aware glyph), `note_size`
   (`''|small`), `align` (`''|center`), `poster_panel` (`''|center|bar`),
@@ -138,12 +139,17 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 			// Optional: captures from the query string (Dailymotion keeps the
 			// id in ?video=). Never decides the match; a template whose
 			// placeholder finds no capture is dropped, never shipped literally.
+			// One pattern, or a LIST of them (one per parameter) when the
+			// provider writes them in any order: 'iframe_query' => array(
+			// '/(?:^|&)u=(?<u>[a-z0-9_.-]+)/i', '/(?:^|&)d=(?<d>…)/i' ).
 			'iframe_query' => '/(?:^|&)video=(?<id>[A-Za-z0-9]+)/',
 			// Script-strategy providers: 'script_host' (+ optional 'script_path'
 			// with captures, e.g. Crowdsignal's /p/{id}.js) and 'companion_class'.
 			// A script, inline loader or stylesheet from these hosts that sits
 			// next to a panel of the same provider becomes a SILENT companion:
 			// gated without a panel, loaded by gate.js after that panel's click.
+			// "Next to" is literal — same block, no blank line between them —
+			// so a second embed from the same provider keeps its own panel.
 		),
 		// Optional privacy-preserving load target used after the click.
 		'load_host'   => 'embed-nocookie.example-videos.com',
@@ -346,6 +352,19 @@ minimum contract it must keep (container classes/attributes, a real
 `<button type="button">`, the server-rendered fallback link). Keep the
 panel's name on `role="group"` + `aria-label` — do not substitute a
 heading; the correct heading level cannot be known from inside an embed.
+
+`$show_button` is `false` when the panel sits inside `<noscript>` — markup a
+browser renders only with scripting off, where no script could ever wire a
+button up. Render the note and the link there, not the button; a template that
+ignores the variable keeps its button, which is what older overrides do.
+
+The template also receives `$privacy_url` and `$privacy_label` — the
+provider's own policy page and its link text, both `''` unless the site
+enabled the privacy link. If your template renders them, keep the
+`cg-embed__privacy` class: scripts (this plugin's and other people's) find
+the fallback and privacy links by class, never as "the last link in the
+panel". A template copied from 0.9.x has no such block, so the link stays
+invisible however the setting is configured — add it when you update.
 
 The template receives a `$poster` variable — the site-origin poster image
 chosen in the block editor ('' when none). If your template renders it,

@@ -159,7 +159,7 @@
 				stage( alwaysGate, normalise( always ), 'add', true );
 			} else if ( name ) {
 				event.preventDefault();
-				nameHost( normalise( name ) );
+				nameHost( normalise( name ), 'script' === el.getAttribute( 'data-cg-name-kind' ) );
 			} else if ( 'cg-staged-cancel' === el.id ) {
 				event.preventDefault();
 				if ( undo ) {
@@ -176,13 +176,17 @@
 
 		// Naming a host keeps the gate on, so it needs no warning: fill the
 		// blank custom-provider row and let the owner type a label.
-		function nameHost( host ) {
+		function nameHost( host, isScript ) {
 			var blank = document.querySelector( '#cg-custom-providers tr[data-cg-blank]' );
 			if ( ! blank ) {
 				window.alert( i18n.noBlank || 'Add a provider row first, then try again.' );
 				return;
 			}
-			var hosts = blank.querySelectorAll( 'textarea' )[ 0 ];
+			// A host found as a third-party SCRIPT belongs in Script hosts:
+			// put into Embed hosts it would match nothing, and the scan would
+			// keep listing the same bare host as if the owner had done
+			// nothing. Select by field name, never by column order.
+			var hosts = blank.querySelector( isScript ? 'textarea[name$="[script_hosts]"]' : 'textarea[name$="[hosts]"]' );
 			var label = blank.querySelector( 'input[type="text"]' );
 			if ( hosts ) {
 				hosts.value = host;

@@ -43,4 +43,36 @@ final class AssetVersionTest extends TestCase {
 		// A coarse cache key beats none at all.
 		self::assertSame( '0.11.0', AssetVersion::for_file( '/no/such/file.css', '0.11.0' ) );
 	}
+	/**
+	 * The rule is only worth anything if every enqueue follows it: one file
+	 * still keyed on the bare release is one file a tester keeps seeing the
+	 * old version of, which is exactly the bug this class exists to fix.
+	 */
+	public function test_every_bundled_asset_is_enqueued_through_this_class(): void {
+		$offenders = array();
+		$root      = dirname( __DIR__, 2 ) . '/src';
+		$files     = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $root ) );
+
+		foreach ( $files as $file ) {
+			if ( 'php' !== $file->getExtension() ) {
+				continue;
+			}
+			$code = (string) file_get_contents( $file->getPathname() );
+			if ( ! preg_match_all( '/wp_(?:enqueue|register)_(?:script|style)\s*\((.*?)\);/s', $code, $calls ) ) {
+				continue;
+			}
+			foreach ( $calls[1] as $arguments ) {
+				// Handle-only enqueues (a script registered elsewhere) carry
+				// no version argument at all.
+				if ( false === strpos( $arguments, 'plugins_url' ) ) {
+					continue;
+				}
+				if ( false === strpos( $arguments, 'AssetVersion::of(' ) ) {
+					$offenders[] = basename( $file->getPathname() ) . ': ' . trim( preg_split( '/\R/', trim( $arguments ) )[0] );
+				}
+			}
+		}
+
+		self::assertSame( array(), $offenders, 'enqueue these through AssetVersion::of()' );
+	}
 }

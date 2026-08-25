@@ -33,7 +33,7 @@ msgstr ""
 msgid "%s is ready to be named below. Give it a label, then save."
 msgstr ""
 
-#: src/Rendering/PlaceholderRenderer.php:193
+#: src/Rendering/PlaceholderRenderer.php:195
 msgid "%s privacy policy"
 msgstr ""
 
@@ -412,7 +412,7 @@ msgstr ""
 msgid "Embed hosts of %s"
 msgstr ""
 
-#: src/Rendering/PlaceholderRenderer.php:167
+#: src/Rendering/PlaceholderRenderer.php:169
 msgid "Embedded content from %s"
 msgstr ""
 
@@ -632,8 +632,8 @@ msgid "Load calendar from Google"
 msgstr ""
 
 #: src/Providers/CustomProviders.php:82
-#: src/Providers/Registry.php:179
-#: src/Providers/Registry.php:254
+#: src/Providers/Registry.php:186
+#: src/Providers/Registry.php:265
 msgid "Load content from %s"
 msgstr ""
 
@@ -641,7 +641,7 @@ msgstr ""
 msgid "Load content from Facebook"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:623
+#: src/Providers/Builtin/Descriptors.php:624
 msgid "Load document from Scribd"
 msgstr ""
 
@@ -673,7 +673,7 @@ msgstr ""
 msgid "Load model from Sketchfab"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:691
+#: src/Providers/Builtin/Descriptors.php:698
 msgid "Load notebook from Wolfram Cloud"
 msgstr ""
 
@@ -701,7 +701,7 @@ msgstr ""
 msgid "Load player from Spotify"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:589
+#: src/Providers/Builtin/Descriptors.php:590
 msgid "Load poll from Crowdsignal"
 msgstr ""
 
@@ -729,19 +729,19 @@ msgstr ""
 msgid "Load post from X (Twitter)"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:640
+#: src/Providers/Builtin/Descriptors.php:641
 msgid "Load presentation from Speaker Deck"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:707
+#: src/Providers/Builtin/Descriptors.php:714
 msgid "Load preview from Amazon Kindle"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:673
+#: src/Providers/Builtin/Descriptors.php:680
 msgid "Load project from Kickstarter"
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:658
+#: src/Providers/Builtin/Descriptors.php:664
 msgid "Load publication from Issuu"
 msgstr ""
 
@@ -777,7 +777,7 @@ msgstr ""
 msgid "Load video from YouTube"
 msgstr ""
 
-#: src/Integration/Assets.php:146
+#: src/Integration/Assets.php:143
 msgid "Loading embedded content…"
 msgstr ""
 
@@ -790,7 +790,7 @@ msgid "Loading this calendar contacts Google, which receives your IP address and
 msgstr ""
 
 #: src/Providers/CustomProviders.php:80
-#: src/Providers/Registry.php:252
+#: src/Providers/Registry.php:263
 msgid "Loading this content connects your browser to %s, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
@@ -799,11 +799,11 @@ msgid "Loading this content contacts Facebook (Meta), which receives your IP add
 msgstr ""
 
 #: src/Providers/CustomProviders.php:78
-#: src/Providers/Registry.php:177
+#: src/Providers/Registry.php:184
 msgid "Loading this content runs a script from %s, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:622
+#: src/Providers/Builtin/Descriptors.php:623
 msgid "Loading this document contacts Scribd, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
@@ -831,7 +831,7 @@ msgstr ""
 msgid "Loading this model contacts Sketchfab, which receives your IP address and which page you are on."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:690
+#: src/Providers/Builtin/Descriptors.php:697
 msgid "Loading this notebook contacts Wolfram, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
@@ -859,7 +859,7 @@ msgstr ""
 msgid "Loading this player contacts Spotify, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:588
+#: src/Providers/Builtin/Descriptors.php:589
 msgid "Loading this poll contacts Crowdsignal (Automattic), which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
@@ -887,19 +887,19 @@ msgstr ""
 msgid "Loading this post contacts X (Twitter), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:639
+#: src/Providers/Builtin/Descriptors.php:640
 msgid "Loading this presentation contacts Speaker Deck, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:706
+#: src/Providers/Builtin/Descriptors.php:713
 msgid "Loading this preview contacts Amazon, which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:672
+#: src/Providers/Builtin/Descriptors.php:679
 msgid "Loading this project contacts Kickstarter, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
-#: src/Providers/Builtin/Descriptors.php:657
+#: src/Providers/Builtin/Descriptors.php:663
 msgid "Loading this publication contacts Issuu, which receives your IP address and which page you are on, and may set cookies."
 msgstr ""
 
@@ -1057,12 +1057,12 @@ msgstr ""
 msgid "Only used with Borlabs Cookie, whose consent groups are defined per site: the ID of the group that covers embedded content. The default installation calls it \"external-media\"."
 msgstr ""
 
-#: src/Integration/Assets.php:148
+#: src/Integration/Assets.php:145
 msgid "Open it on the provider’s site."
 msgstr ""
 
 #: src/Detection/EmbedStripper.php:146
-#: src/Rendering/PlaceholderRenderer.php:169
+#: src/Rendering/PlaceholderRenderer.php:171
 msgid "Open on %s"
 msgstr ""
 
@@ -1338,7 +1338,7 @@ msgstr ""
 msgid "Status & tools"
 msgstr ""
 
-#: src/Integration/Assets.php:145
+#: src/Integration/Assets.php:142
 msgid "Stored embed consents have been removed. Embeds will ask again."
 msgstr ""
 
@@ -1384,7 +1384,7 @@ msgstr ""
 msgid "The \"Withdraw embed consents\" block or shortcode. It uses the colours and corners above."
 msgstr ""
 
-#: src/Integration/Assets.php:147
+#: src/Integration/Assets.php:144
 msgid "The embedded content could not be loaded."
 msgstr ""
 

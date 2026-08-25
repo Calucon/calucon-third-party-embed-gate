@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Calucon Third-Party Embed Gate
  * Plugin URI:        https://calucon.de/third-party-embed-gate/
- * Description:       Two-click embeds: third-party iframes load only after the visitor asks for them. No banner, no consent platform, no third-party request before the click.
+ * Description:       YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click pattern. No third-party request, no cookie and no banner before that.
  * Version:           0.11.0
  * Requires at least: 5.9
  * Requires PHP:      7.4

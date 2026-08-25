@@ -107,4 +107,40 @@ final class RegistryCapturesTest extends TestCase {
 		self::assertSame( 'a', $registry->resolve_for_asset_host( 'cdn.a.example' )['id'] );
 		self::assertNull( $registry->resolve_for_asset_host( 'fonts.example' ) );
 	}
+	/**
+	 * Query parameters have no defined order and providers interleave their
+	 * own, so one pattern spanning two of them breaks on a URL that is
+	 * equally valid — and the "Open on …" link then points at a bare embed
+	 * frame instead of the document.
+	 */
+	public function test_query_captures_do_not_depend_on_parameter_order(): void {
+		$registry = new Registry(
+			array(
+				array(
+					'id'       => 'docs',
+					'label'    => 'Docs',
+					'match'    => array(
+						'iframe_host'  => array( 'e.docs.example' ),
+						'iframe_path'  => '#^/embed\\.html$#',
+						'iframe_query' => array(
+							'/(?:^|&)u=(?P<u>[a-z0-9_.-]+)/i',
+							'/(?:^|&)d=(?P<d>[a-z0-9_.-]+)/i',
+						),
+					),
+					'fallback' => 'https://docs.example/{u}/docs/{d}',
+				),
+			)
+		);
+
+		$expected = 'https://docs.example/acme/docs/report';
+		foreach (
+			array(
+				'https://e.docs.example/embed.html?u=acme&d=report',
+				'https://e.docs.example/embed.html?d=report&u=acme',
+				'https://e.docs.example/embed.html?u=acme&hideLogo=true&d=report',
+			) as $url
+		) {
+			self::assertSame( $expected, $registry->resolve_for_url( $url, 'e.docs.example' )['fallback'], $url );
+		}
+	}
 }

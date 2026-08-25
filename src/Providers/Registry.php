@@ -93,11 +93,18 @@ final class Registry {
 			// Some players carry the content id in the query string, not the
 			// path (Dailymotion's ?video=ID). iframe_query adds captures from
 			// there; it never decides the match — the host (and path) do.
+			//
+			// Query parameters have no defined order and providers interleave
+			// their own, so a pattern spanning two of them ("u=…&d=…") breaks
+			// on a URL that is equally valid. Accept a LIST of patterns, one
+			// per capture, and let each contribute what it finds.
 			if ( ! empty( $match['iframe_query'] ) ) {
 				// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2).
 				$query = (string) parse_url( $url, PHP_URL_QUERY );
-				if ( preg_match( $match['iframe_query'], $query, $q ) ) {
-					$captures += array_filter( $q, 'is_string', ARRAY_FILTER_USE_KEY );
+				foreach ( (array) $match['iframe_query'] as $pattern ) {
+					if ( preg_match( $pattern, $query, $q ) ) {
+						$captures += array_filter( $q, 'is_string', ARRAY_FILTER_USE_KEY );
+					}
 				}
 			}
 			$descriptor = self::interpolated( $descriptor, $captures );
@@ -201,7 +208,11 @@ final class Registry {
 			$hosts = isset( $descriptor['match']['script_host'] ) ? (array) $descriptor['match']['script_host'] : array();
 			foreach ( $hosts as $host ) {
 				if ( false !== stripos( $code, '//' . $host . '/' ) ) {
-					return $this->filtered( $descriptor, 'https://' . $host . '/', $host );
+					// No URL to capture an id from — inline code carries the
+					// loader, not the embed address. Interpolate with nothing
+					// so a template still holding {id} is dropped rather than
+					// shipped literally into a visitor-facing link.
+					return $this->filtered( self::interpolated( $descriptor, array() ), 'https://' . $host . '/', $host );
 				}
 			}
 		}

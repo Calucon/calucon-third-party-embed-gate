@@ -299,11 +299,53 @@ if ( '/page/companions' === $uri ) {
 			'<script>(function(){var s=document.createElement("script");s.src="https://www.scribd.com/javascripts/embed_code/inject.js";document.head.appendChild(s);})()</script>',
 			'<div id="nb1"><link rel="stylesheet" href="https://www.wolframcloud.com/dist/a.css"><link rel="stylesheet" href="https://www.wolframcloud.com/dist/b.css"></div>',
 			'<script src="https://www.wolframcloud.com/obj/redirect/notebook-embedder-oembed-lib"></script>',
-			'<script>window.cgWolframInlineRan = true;var u = "https://www.wolframcloud.com/obj/x/Public/Example.nb";</script>',
+			'<script>window.cgWolframInlineRan = true;window.cgWolframInlineSawSdk = !! window.cgEmbedderLoaded;var u = "https://www.wolframcloud.com/obj/x/Public/Example.nb";</script>',
 		)
 	);
 
 	cg_e2e_page( $content );
+	return true;
+}
+
+if ( '/page/companions-memory' === $uri ) {
+	// The same page with consent memory on. A companion must be activated BY
+	// its panel on the restore path too: activated independently, the inline
+	// call runs before the SDK it calls into and the embed never renders.
+	$content = implode(
+		"\n",
+		array(
+			'<div id="nb1"><link rel="stylesheet" href="https://www.wolframcloud.com/dist/a.css"></div>',
+			'<script src="https://www.wolframcloud.com/obj/redirect/notebook-embedder-oembed-lib"></script>',
+			'<script>window.cgWolframInlineRan = true;window.cgWolframInlineSawSdk = !! window.cgEmbedderLoaded;var u = "https://www.wolframcloud.com/obj/x/Public/Example.nb";</script>',
+		)
+	);
+
+	cg_e2e_page(
+		$content,
+		'',
+		'window.caluconEmbedGateConfig = {"memory":"session","scope":"provider","durationDays":180};'
+	);
+	return true;
+}
+
+if ( '/page/memory-inline' === $uri ) {
+	// Two inline loaders from DIFFERENT providers, remembered per embed.
+	// An inline payload has no src to key on, so both would collapse onto
+	// one grant — and consenting to one would load the other unasked.
+	$content = implode(
+		"\n",
+		array(
+			'<script>(function(){var s=document.createElement("script");s.src="https://www.scribd.com/javascripts/embed_code/inject.js";document.head.appendChild(s);})()</script>',
+			'<p>Between two embeds.</p>',
+			'<script>(function(){var pd=document.createElement("script");pd.src="https://app.crowdsignal.com/survey.js";document.body.appendChild(pd);}());</script>',
+		)
+	);
+
+	cg_e2e_page(
+		$content,
+		'',
+		'window.caluconEmbedGateConfig = {"memory":"session","scope":"embed","durationDays":180};'
+	);
 	return true;
 }
 

@@ -164,7 +164,17 @@
 			return [ '*' ];
 		}
 		if ( config.scope === 'embed' ) {
-			return [ 'e:' + String( payload.src || payload.srcdoc || '' ) ];
+			var self = String( payload.src || payload.srcdoc || '' );
+			// An inline loader has neither: its payload is the page's own
+			// script text. Keying on '' would make EVERY inline embed share
+			// one grant, so consenting to a Crowdsignal survey would load a
+			// Scribd document unasked (invariant 1). Fall back to what does
+			// identify it — provider and host, as the generic branch below.
+			if ( ! self ) {
+				self = String( container.getAttribute( 'data-cg-provider' ) || '' ) +
+					'@' + String( container.getAttribute( 'data-cg-host' ) || '' );
+			}
+			return [ 'e:' + self ];
 		}
 		var providerId = String( container.getAttribute( 'data-cg-provider' ) || '' );
 		var key = 'p:' + providerId;
@@ -491,9 +501,6 @@
 		} );
 	}
 
-	function hasClass( el, name ) {
-		return ( ' ' + ( el.className || '' ) + ' ' ).indexOf( ' ' + name + ' ' ) !== -1;
-	}
 	// Re-run the page's own inline loader (Scribd, Crowdsignal) — the same
 	// text the browser would have executed on load, just after consent.
 	//
@@ -651,6 +658,12 @@
 		var containers = document.querySelectorAll( '.cg-embed[data-cg-payload]' );
 		for ( var i = 0; i < containers.length; i++ ) {
 			var container = containers[ i ];
+			// Silent companions belong to a panel and are activated by it,
+			// in order, after its script has loaded. Reaching one here would
+			// run a provider's inline code before its SDK exists.
+			if ( hasClass( container, 'cg-embed--silent' ) ) {
+				continue;
+			}
 			var payload;
 			try {
 				payload = JSON.parse( container.getAttribute( 'data-cg-payload' ) || '' );
@@ -722,6 +735,11 @@
 		for ( var i = 0; i < containers.length; i++ ) {
 			var container = containers[ i ];
 			if ( container.getAttribute( 'data-cg-activated' ) === '1' ) {
+				continue;
+			}
+			// As in restoreFromMemory: a companion is its panel's business,
+			// never the bridge's, or it runs before the SDK it needs.
+			if ( hasClass( container, 'cg-embed--silent' ) ) {
 				continue;
 			}
 			var payload;

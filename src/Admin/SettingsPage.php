@@ -1778,7 +1778,7 @@ final class SettingsPage {
 							<?php elseif ( ContentScan::GATED === $row['status'] ) : ?>
 								<?php if ( $is_generic ) : ?>
 									<?php // The safe action leads: naming a host keeps the gate on. ?>
-									<button type="button" class="button button-small cg-scan-action" data-cg-name-host="<?php echo esc_attr( $host ); ?>" hidden><?php esc_html_e( 'Name this host', 'calucon-third-party-embed-gate' ); ?></button>
+									<button type="button" class="button button-small cg-scan-action" data-cg-name-host="<?php echo esc_attr( $host ); ?>" data-cg-name-kind="<?php echo esc_attr( 'generic-script' === ( $row['provider'] ?? '' ) ? 'script' : 'iframe' ); ?>" hidden><?php esc_html_e( 'Name this host', 'calucon-third-party-embed-gate' ); ?></button>
 								<?php endif; ?>
 								<button type="button" class="button-link cg-scan-action cg-scan-through" data-cg-except="<?php echo esc_attr( $host ); ?>" hidden><?php esc_html_e( 'Always load this', 'calucon-third-party-embed-gate' ); ?></button>
 							<?php else : ?>

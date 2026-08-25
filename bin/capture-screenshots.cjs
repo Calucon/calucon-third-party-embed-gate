@@ -79,7 +79,17 @@ async function settings( page ) {
 		document.querySelectorAll( '.cg-color[open]' ).forEach( ( el ) => el.removeAttribute( 'open' ) );
 	} );
 	await page.waitForTimeout( 700 );
-	await page.locator( '#cg-tab-appearance' ).screenshot( { path: path.join( OUT, 'screenshot-2.png' ) } );
+	// Cap the height: the whole Appearance tab is ~2500 CSS px tall, and a
+	// 1:2.2 strip renders as an unreadable sliver in the .org gallery. Stop
+	// at the end of the Colours section — quick styles, colours, the live
+	// preview and the readability check, which is what the caption leads on.
+	{
+		const box = await page.locator( '#cg-tab-appearance' ).boundingBox();
+		await page.screenshot( {
+			path: path.join( OUT, 'screenshot-2.png' ),
+			clip: { x: box.x, y: box.y, width: box.width, height: Math.min( box.height, 960 ) },
+		} );
+	}
 
 	// 3 — Status & tools with the scan actually run, so the listing shows the
 	// thing a novice needs: every embed found, and a button to name it or let

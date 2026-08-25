@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use CaluconEmbedGate\Integration\WithdrawShortcode;
+use CaluconEmbedGate\Support\AssetVersion;
 
 /**
  * Registers editor assets and the calucon-embed-gate/withdraw dynamic block.
@@ -45,7 +46,7 @@ final class BlockEditor {
 			'calucon-embed-gate-editor',
 			plugins_url( 'assets/js/editor.js', CALUCON_EMBED_GATE_FILE ),
 			array( 'wp-hooks', 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-compose', 'wp-i18n' ),
-			CALUCON_EMBED_GATE_VERSION,
+			AssetVersion::of( 'assets/js/editor.js' ),
 			true
 		);
 		wp_set_script_translations( 'calucon-embed-gate-editor', 'calucon-third-party-embed-gate' );
@@ -53,7 +54,7 @@ final class BlockEditor {
 			'calucon-embed-gate-editor',
 			plugins_url( 'assets/css/editor.css', CALUCON_EMBED_GATE_FILE ),
 			array(),
-			CALUCON_EMBED_GATE_VERSION
+			AssetVersion::of( 'assets/css/editor.css' )
 		);
 	}
 

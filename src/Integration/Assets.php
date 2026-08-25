@@ -90,14 +90,11 @@ final class Assets {
 
 		// Consent-memory config (§6.2): only shipped when the site enabled
 		// memory. The default build stores nothing and needs no config.
-		$config = $this->inline_config_json();
-		if ( null !== $config ) {
-			wp_add_inline_script(
-				'calucon-embed-gate',
-				'window.caluconEmbedGateConfig = ' . $config . ';',
-				'before'
-			);
-		}
+		wp_add_inline_script(
+			'calucon-embed-gate',
+			'window.caluconEmbedGateConfig = ' . $this->inline_config_json() . ';',
+			'before'
+		);
 
 		// Resolve providers (fires the providers filter) and the theme
 		// palette only when the CSS will actually use them — both cost a
@@ -136,9 +133,9 @@ final class Assets {
 	 * inline before-script. Always present: the loading/error announcements
 	 * (§8) must be translatable even when consent memory is off.
 	 *
-	 * @return string|null
+	 * @return string
 	 */
-	private function inline_config_json(): ?string {
+	private function inline_config_json(): string {
 		$consent = $this->options['consent'];
 		$config  = array(
 			'i18n' => array(

@@ -221,6 +221,26 @@ final class PlaceholderRendererTest extends TestCase {
 		self::assertStringContainsString( 'href="https://www.youtube.com/embed/x"', $html );
 	}
 
+
+	/**
+	 * Inside <noscript> the panel reaches only visitors with scripting off —
+	 * the one condition under which gate.js does not exist, so its button
+	 * could never do anything. The accessibility contract (§8) is explicit:
+	 * never a button that does nothing. The link, which works without
+	 * JavaScript, stays.
+	 */
+	public function test_a_panel_inside_noscript_offers_the_link_and_no_button(): void {
+		$html = $this->render_with_ctx( array( 'noscript' => true ) );
+
+		self::assertStringNotContainsString( '<button', $html );
+		self::assertStringContainsString( 'cg-embed__note', $html );
+		self::assertStringContainsString( 'href="https://www.youtube.com/embed/x"', $html );
+	}
+
+	public function test_the_button_is_there_everywhere_else(): void {
+		self::assertStringContainsString( '<button type="button" class="cg-embed__button">', $this->render_with_ctx( array() ) );
+	}
+
 	private function render_with_ctx( array $ctx ): string {
 		$provider = Provider::normalize(
 			array(
