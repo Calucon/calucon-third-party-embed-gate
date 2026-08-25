@@ -542,6 +542,17 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&calucon-embed-gate-scan=1#cg-status' );
 	await expect( page.locator( '#cg-tabbtn-status' ) ).toHaveAttribute( 'aria-selected', 'true' );
 	await expect( page.locator( '#cg-status' ) ).toBeVisible();
+
+	// …and once a scan HAS run, Providers' "Check what is on my site" leads
+	// back to those results. Its href then differs from the current URL only
+	// in the fragment, so the browser changes the hash without reloading —
+	// which used to leave the button doing nothing at all.
+	await page.click( '#cg-tabbtn-providers' );
+	await expect( page.locator( '#cg-status' ) ).toBeHidden();
+	await page.click( '#cg-tab-providers a.button[href*="calucon-embed-gate-scan"]' );
+	await expect( page.locator( '#cg-tabbtn-status' ) ).toHaveAttribute( 'aria-selected', 'true' );
+	await expect( page.locator( '#cg-status' ) ).toBeVisible();
+	await expect( page.locator( '#cg-scan-results' ) ).toBeVisible();
 } );
 
 test( 'editor: the per-block gate control appears in the block inspector', async ( { page } ) => {
