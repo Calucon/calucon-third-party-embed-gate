@@ -235,7 +235,7 @@ msgstr "Abbrechen"
 
 #: src/Admin/SettingsPage.php:1134
 msgid "Card — border, rounded corners, shadow"
-msgstr "Karte – Rahmen, runde Ecken, Schatten"
+msgstr "Karte – Rand, runde Ecken, Schatten"
 
 #: src/Admin/SettingsPage.php:1278
 msgid "Card, bottom-left"
@@ -989,7 +989,7 @@ msgstr "Karte"
 
 #: src/Admin/SettingsPage.php:1133
 msgid "Minimal — transparent with a border"
-msgstr "Minimal – transparent mit Rahmen"
+msgstr "Minimal – transparent mit Rand"
 
 #: src/Admin/SettingsPage.php:1760
 msgid "NOT gated — its detection rule is disabled"

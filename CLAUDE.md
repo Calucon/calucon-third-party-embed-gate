@@ -184,6 +184,24 @@ pinned by the "multilingual" WP test, whose emulator hooks `default_option_` too
 — a site that never saved the settings has no option row, and WordPress then
 never applies `option_`.
 
+**The de_DE glossary is not optional, and structure tests cannot see it.**
+A reviewer at translate.wordpress.org flagged six terms that were structurally
+perfect and lexically wrong — `Reiter` for tab, `Rahmen` for border, `Eigene`
+for custom, `Positivliste` for safelist, `Auszüge` for excerpts, `Umfrage` for
+survey. Two tools now cover that, and they trade off in opposite directions:
+`GlossaryTest` forbids a curated list of known-wrong words (no false positives,
+so it can fail the build, but blind to a term nobody has got wrong yet), and
+`php bin/glossary-report.php` sweeps the whole glossary and prints every
+departure for a human (finds new ones, ~100 lines of mostly-legitimate noise).
+Run the report after translating; when it finds a real miss, fix the wording
+**and** add the wrong word to `GlossaryTest::FORBIDDEN`. The glossary itself is
+vendored at `tests/Support/data/de-glossary.csv`; refresh it from the Export
+link on translate.wordpress.org and expect new hits. Note the two traps that
+already cost time: a **non-breaking space** before a dash makes literal
+search-and-replace miss silently (assert every edit), and `eigen…` is *correct*
+for "your own" — only the strings whose English says "custom" take
+`individuell`.
+
 **Touching `readme.txt` means touching the German listing text — say so, every
 time.** The wp.org listing (short description, description, installation, FAQ,
 screenshot captions, upgrade notice) is translated on translate.wordpress.org
