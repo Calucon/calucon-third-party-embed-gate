@@ -87,4 +87,97 @@ final class ReadmeTranslationTest extends TestCase {
 		self::assertStringContainsString( 'Ihre Datenschutzerklärung', $sie );
 		self::assertStringContainsString( 'deine Datenschutzerklärung', $du );
 	}
+
+	/**
+	 * The Austrian and Swiss listing translations are derived, not authored:
+	 * de_AT is the du text verbatim, the Swiss pair is the same text with ss
+	 * for ß and «…» for „…“. bin/derive-readme-locales.php regenerates them,
+	 * and this fails if someone hand-edits a derived file or forgets to
+	 * re-run it after changing a source.
+	 *
+	 * The two rules are the Swiss team's own: the output was checked against
+	 * their converter at po.wpswitzerland.ch and matched entry for entry.
+	 */
+	public function test_derived_readme_locales_match_their_source(): void {
+		$dir = dirname( __DIR__, 2 ) . '/.wordpress-org/';
+
+		$swiss = static function ( string $text ): string {
+			return str_replace( array( 'ß', '„', '“' ), array( 'ss', '«', '»' ), $text );
+		};
+
+		$cases = array(
+			'de_AT'          => array( 'de_DE', false ),
+			'de_CH'          => array( 'de_DE_formal', true ),
+			'de_CH_informal' => array( 'de_DE', true ),
+		);
+
+		foreach ( $cases as $locale => list( $source, $is_swiss ) ) {
+			$path = $dir . 'readme-' . $locale . '.po';
+			self::assertFileExists( $path, "run bin/derive-readme-locales.php to create readme-$locale.po" );
+
+			$expected = self::translations_of( $dir . 'readme-' . $source . '.po' );
+			$actual   = self::translations_of( $path );
+
+			if ( $is_swiss ) {
+				$expected = array_map( $swiss, $expected );
+			}
+
+			self::assertSame(
+				$expected,
+				$actual,
+				"readme-$locale.po is out of step with readme-$source.po — re-run bin/derive-readme-locales.php"
+			);
+		}
+	}
+
+	/**
+	 * msgid => msgstr for one PO file, unwrapped.
+	 *
+	 * @param string $path PO file.
+	 * @return array<string,string>
+	 */
+	private static function translations_of( string $path ): array {
+		$out     = array();
+		$msgid   = null;
+		$target  = null;
+		$current = '';
+
+		foreach ( explode( "\n", (string) file_get_contents( $path ) ) as $line ) {
+			if ( 0 === strpos( $line, 'msgid ' ) ) {
+				if ( 'msgstr' === $target && null !== $msgid ) {
+					$out[ $msgid ] = $current;
+				}
+				$msgid   = self::po_string( substr( $line, 6 ) );
+				$target  = 'msgid';
+				$current = '';
+			} elseif ( 0 === strpos( $line, 'msgstr ' ) ) {
+				$target  = 'msgstr';
+				$current = self::po_string( substr( $line, 7 ) );
+			} elseif ( '"' === substr( $line, 0, 1 ) ) {
+				if ( 'msgstr' === $target ) {
+					$current .= self::po_string( $line );
+				} else {
+					$msgid .= self::po_string( $line );
+				}
+			}
+		}
+		if ( 'msgstr' === $target && null !== $msgid ) {
+			$out[ $msgid ] = $current;
+		}
+		unset( $out[''] ); // The header entry.
+
+		return $out;
+	}
+
+	/**
+	 * @param string $quoted A quoted PO fragment.
+	 * @return string
+	 */
+	private static function po_string( string $quoted ): string {
+		$quoted = trim( $quoted );
+		if ( '"' !== substr( $quoted, 0, 1 ) ) {
+			return '';
+		}
+		return stripcslashes( substr( $quoted, 1, -1 ) );
+	}
 }
