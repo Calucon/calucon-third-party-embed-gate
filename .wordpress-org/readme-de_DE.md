@@ -236,7 +236,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Kann ich einen Anbieter ergänzen, der nicht in der Liste steht?
 
-**DE (Antwort):** Ja, ohne Code: Anbieter → *Eigene Anbieter* nimmt einen Namen, die Einbettungs-Hosts (einen pro Zeile) und optional Skript-Hosts sowie eine Art für das Button-Symbol entgegen. Nach dem Speichern erscheint der Eintrag in der Anbietertabelle mit eigenem Hinweistext, Button-Text und Datenschutz-Link. Unbekannte Hosts werden ohnehin gesperrt – ein eigener Anbieter gibt einem solchen Host nur einen richtigen Namen und eigene Texte. Hosts, um die sich die mitgelieferten Anbieter kümmern, bleiben bei diesen, und eigene Anbieter sind immer gesperrt; um einen Host durchzulassen, ist die Liste „Diese Hosts nie sperren“ unter Erkennung der richtige Ort.
+**DE (Antwort):** Ja, ohne Code: Anbieter → *Eigene Anbieter* nimmt einen Namen, die Einbettungs-Hosts (einen pro Zeile) und optional Skript-Hosts sowie die Art der Einbettung entgegen, die das Button-Symbol bestimmt. Nach dem Speichern erscheint der Eintrag in der Anbietertabelle mit eigenem Hinweistext, Button-Text und Datenschutz-Link. Unbekannte Hosts werden ohnehin gesperrt – ein eigener Anbieter gibt einem solchen Host nur einen richtigen Namen und eigene Texte. Hosts, um die sich die mitgelieferten Anbieter kümmern, bleiben bei diesen, und eigene Anbieter sind immer gesperrt; um einen Host durchzulassen, ist die Liste „Diese Hosts nie sperren“ unter Erkennung der richtige Ort.
 
 **EN:** Can placeholders link the provider's privacy policy?
 
