@@ -143,6 +143,47 @@ add_action( 'wp_head', function () {
 	echo '<link rel="preconnect" href="https://www.youtube.com">' . "\n";
 	echo '<link rel="preconnect" href="https://cdn.literal-safe.example">' . "\n";
 }, 99 );
+// Locale switch for the translation tests: ?cg_locale=de_DE renders that one
+// request in German. Switching the site language would need core's German
+// language pack, which the offline Playground image does not have — this
+// needs only the plugin's own bundled .mo and .json files, which is exactly
+// what the tests are there to prove.
+add_filter( 'locale', function ( $locale ) {
+	$requested = isset( $_GET['cg_locale'] ) ? (string) $_GET['cg_locale'] : '';
+	// de_DE, de_DE_formal, de_AT, de_CH, de_CH_informal.
+	return preg_match( '/^[a-z]{2}_[A-Z]{2}(?:_[a-z]+)?$/', $requested ) ? $requested : $locale;
+} );
+// WPML's presence is detected by the constant it defines. ?cg_wpml=1 makes
+// the Compatibility screen see one, without installing WPML.
+if ( isset( $_GET['cg_wpml'] ) && ! defined( 'ICL_SITEPRESS_VERSION' ) ) {
+	define( 'ICL_SITEPRESS_VERSION', '4.6.13' );
+}
+// Multilingual emulator: WPML and Polylang translate the strings named in
+// wpml-config.xml by filtering the option as the page is built, in that
+// page's language — long after plugins_loaded. ?cg_translate=1 does the same
+// thing, and also tries to switch OFF a provider, which a translation layer
+// must never be able to do from here.
+add_action( 'init', function () {
+	if ( ! isset( $_GET['cg_translate'] ) ) {
+		return;
+	}
+	$translate = function ( $value ) {
+		if ( ! is_array( $value ) ) {
+			return $value;
+		}
+		$value['providers']['youtube']['action']      = 'Video abspielen (übersetzt)';
+		$value['providers']['youtube']['note']        = 'Übersetzter Hinweistext für dieses Video.';
+		$value['providers']['youtube']['privacy_url'] = 'https://policies.google.com/privacy?hl=de';
+		$value['providers']['youtube']['enabled']     = false;
+		$value['detection']['never_gate']             = array( 'www.youtube.com' );
+		return $value;
+	};
+	// A site that never saved the settings has no option row, and WordPress
+	// then applies default_option_ instead of option_ — cover both, the way
+	// a translation layer has to.
+	add_filter( 'option_calucon_embed_gate_options', $translate );
+	add_filter( 'default_option_calucon_embed_gate_options', $translate );
+} );
 MUPLUGIN;
 if ( false === file_put_contents( $cg_mu_dir . '/cg-test-hints.php', $cg_mu_source . "\n" ) ) {
 	fwrite( STDERR, "seed: cannot write the hint emulator into $cg_mu_dir\n" );

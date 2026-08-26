@@ -22,9 +22,10 @@ use CaluconEmbedGate\Cmp\Detector;
 final class Compatibility {
 
 	/**
-	 * @return array[] Rows: name, kind ('cache'|'cmp'|'builder'); CMP rows
-	 *                 carry 'tested' — whether the platform is on the §6.4
-	 *                 bridge list.
+	 * @return array[] Rows: name, kind ('cache'|'cmp'|'multilingual'|'builder');
+	 *                 CMP rows carry 'tested' — whether the platform is on the
+	 *                 §6.4 bridge list — and multilingual rows carry 'mode' and
+	 *                 'where' (see multilingual_plugins()).
 	 */
 	public static function detect(): array {
 		$found = array();
@@ -65,6 +66,17 @@ final class Compatibility {
 			);
 		}
 
+		foreach ( self::multilingual_plugins() as $name => $spec ) {
+			if ( call_user_func( $spec['signal'] ) ) {
+				$found[] = array(
+					'name'  => $name,
+					'kind'  => 'multilingual',
+					'mode'  => $spec['mode'],
+					'where' => $spec['where'],
+				);
+			}
+		}
+
 		$builders = array(
 			'Elementor'      => defined( 'ELEMENTOR_VERSION' ),
 			'WPBakery'       => defined( 'WPB_VC_VERSION' ),
@@ -83,6 +95,57 @@ final class Compatibility {
 		}
 
 		return $found;
+	}
+
+	/**
+	 * The multilingual plugins worth telling the owner about, and how each
+	 * one gets at the texts the owner typed.
+	 *
+	 * Two models, and the difference decides what the Compatibility row says:
+	 *
+	 *  - 'registry' — WPML and Polylang translate registered option strings.
+	 *    The plugin registers them in wpml-config.xml, which both read, but
+	 *    the owner still has to go and translate them in a screen they may
+	 *    never have opened. That screen is what 'where' names.
+	 *  - 'output' — TranslatePress and Weglot translate the finished page, so
+	 *    the panel's text is translated like any other text on it, and there
+	 *    is nothing to register or configure.
+	 *
+	 * Kept as data so the unit suite can check it without WordPress.
+	 *
+	 * @return array[] name => array{ mode: string, where: string, signal: callable }
+	 */
+	public static function multilingual_plugins(): array {
+		return array(
+			'WPML'           => array(
+				'mode'   => 'registry',
+				'where'  => 'WPML → String Translation',
+				'signal' => static function (): bool {
+					return defined( 'ICL_SITEPRESS_VERSION' );
+				},
+			),
+			'Polylang'       => array(
+				'mode'   => 'registry',
+				'where'  => 'Languages → Translations → Strings',
+				'signal' => static function (): bool {
+					return defined( 'POLYLANG_VERSION' ) || function_exists( 'pll_the_languages' );
+				},
+			),
+			'TranslatePress' => array(
+				'mode'   => 'output',
+				'where'  => '',
+				'signal' => static function (): bool {
+					return defined( 'TRP_PLUGIN_VERSION' );
+				},
+			),
+			'Weglot'         => array(
+				'mode'   => 'output',
+				'where'  => '',
+				'signal' => static function (): bool {
+					return defined( 'WEGLOT_VERSION' );
+				},
+			),
+		);
 	}
 
 	/**

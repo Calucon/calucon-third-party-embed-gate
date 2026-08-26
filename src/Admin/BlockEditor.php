@@ -49,7 +49,19 @@ final class BlockEditor {
 			AssetVersion::of( 'assets/js/editor.js' ),
 			true
 		);
-		wp_set_script_translations( 'calucon-embed-gate-editor', 'calucon-third-party-embed-gate' );
+		// The third argument is not optional for a plugin that ships its own
+		// JSON: without a path, wp_set_script_translations() looks only in
+		// WP_LANG_DIR/plugins, where a bundled file never lives. Recent
+		// WordPress finds ours anyway through the textdomain registry, which is
+		// why this was invisible — but on 5.9 to 6.6, which this plugin
+		// supports, the block editor silently stayed English while the front end
+		// and the settings screen were translated. A language pack in
+		// WP_LANG_DIR still takes precedence over the path given here.
+		wp_set_script_translations(
+			'calucon-embed-gate-editor',
+			'calucon-third-party-embed-gate',
+			CALUCON_EMBED_GATE_DIR . '/languages'
+		);
 		wp_enqueue_style(
 			'calucon-embed-gate-editor',
 			plugins_url( 'assets/css/editor.css', CALUCON_EMBED_GATE_FILE ),

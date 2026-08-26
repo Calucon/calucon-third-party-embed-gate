@@ -151,6 +151,70 @@ detection path without this preprocessing: the failure mode is a tracker
 through, invisibly. `HostMatcherTest::test_authority_confusion_is_gated_not_own`
 pins it; the `authority-backslash-*` fixtures prove it end-to-end.
 
+## Translations
+
+German ships with the plugin for all five German locales WordPress has, because
+the plugin's market is Germany and the EU and **WordPress does not fall back
+between them** — without its own file, a `de_AT` site sees English. Two are
+written by hand — `de_DE` (du) and `de_DE_formal` (Sie) — and
+`bin/derive-german-locales.php` generates the rest: `de_AT` is `de_DE`
+verbatim, `de_CH` is `de_DE_formal` and `de_CH_informal` is `de_DE`, both with
+Swiss orthography (ß → ss, „…“ → «…»), which is the Swiss team's own documented
+workflow. Never edit a derived file; `TranslationTest` fails if one drifts.
+`bin/update-translations.sh` is the whole chain: regenerate the `.pot`,
+`msgmerge` every `.po` (unwrapped, one line per string, so a wording change is
+a one-line diff), compile every `.mo`, rebuild the block-editor JSON.
+
+**A new user-facing string is not done until it is translated.**
+`TranslationTest` fails while any `.pot` entry is untranslated in either
+locale, while a printf placeholder differs between source and translation, and
+while an `editor.js` string is missing from the JSON. That last one is its own
+trap: `editor.js` strings go through `wp.i18n`, which never reads a `.mo` — they
+need `languages/{domain}-{locale}-{handle}.json`, rebuilt by
+`bin/make-json-translations.php`.
+
+**Owner-typed texts are re-read at render time** (`Plugin::localized_options()`).
+WPML and Polylang translate the strings named in `wpml-config.xml` by filtering
+`option_…`/`default_option_…` while the page is built, in that page's language —
+long after `plugins_loaded`, where the constructor takes its snapshot. Re-reading
+only `providers/*/{note,action,privacy_url}` and `custom_providers/*/label` is
+deliberate: structure and behaviour stay with the boot snapshot, so a late filter
+can reword a panel and can never ungate an embed (invariant 6). Both halves are
+pinned by the "multilingual" WP test, whose emulator hooks `default_option_` too
+— a site that never saved the settings has no option row, and WordPress then
+never applies `option_`.
+
+**Touching `readme.txt` means touching the German listing text — say so, every
+time.** The wp.org listing (short description, description, installation, FAQ,
+screenshot captions, upgrade notice) is translated on translate.wordpress.org
+and **cannot be bundled**, so nothing about a stale translation is visible from
+the repo: the plugin works, CI is green, and the German plugin page quietly
+describes a version that no longer exists. The German lives in
+`.wordpress-org/readme-de_DE.md` (du) and `.wordpress-org/readme-de_DE_formal.md`
+(Sie), chunk by chunk in readme.txt order with the English as the locator, and
+ships nowhere (`.wordpress-org/` is excluded from the zip).
+
+So: whenever a change edits `readme.txt` prose, update **both** German files in
+the same commit and **tell Simon in the response that the wp.org translations
+need re-uploading** — the repo cannot push them for him. `ReadmeTranslationTest`
+enforces the first half: it stamps the German files with a hash of the English
+they were written from, fails the moment that prose changes, and prints the new
+stamp to paste once the German is updated. Changelog entries are excluded from
+the stamp on purpose, so a release note does not fire it.
+
+`load_plugin_textdomain()` in `Plugin.php` is not redundant: WordPress 6.7+
+finds bundled files through its textdomain registry, 5.9–6.6 (still supported)
+do not. A language pack from translate.wordpress.org lands in `WP_LANG_DIR` and
+takes precedence over the bundled file, which is the intended order.
+
+Glossary, kept consistent across 378 strings: gate/gated = *sperren/gesperrt*,
+embed = *Einbettung*, placeholder = *Platzhalter*, provider = *Anbieter*,
+consent = *Einwilligung*, third party = *Drittanbieter*. The 36 provider
+notices share one sentence template. **"may set cookies" stays hedged** —
+*es können Cookies gesetzt werden* — the German may never promise more than
+the English (see the legal-copy rule above: reword these with Simon, not
+alone).
+
 ## Commands
 
 ```sh

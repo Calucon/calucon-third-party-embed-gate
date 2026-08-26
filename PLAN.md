@@ -998,6 +998,31 @@ The note text names the provider, so it must be built with `sprintf` and a
 `load_plugin_textdomain`; remember WordPress 6.5+ prefers PHP translation files.
 Provider names are proper nouns and are **not** translated.
 
+**German ships with the plugin (0.12.0)**, in both locales WordPress offers:
+`de_DE` (du) and `de_DE_formal` (Sie). It is the market the plugin is built
+for, and a German site that shows its visitors an English "Load video from
+YouTube" has half a product. `bin/update-translations.sh` runs the whole chain
+— regenerate the `.pot`, `msgmerge` each `.po`, compile each `.mo`, rebuild the
+block-editor JSON — and `TranslationTest` fails while any source string is
+untranslated, so German cannot quietly fall behind English.
+
+Three loading paths, each of which can break alone, and all three are asserted
+against a real WordPress in `tests/WP/wordpress.spec.js`:
+
+- the **front-end panel** and the **admin screens** read the `.mo`;
+- the **block-editor controls** read `languages/{domain}-{locale}-{handle}.json`,
+  because a `.mo` never reaches `wp.i18n`;
+- a bundled `.mo` is found automatically only on WordPress 6.7+, whose
+  textdomain registry knows the plugin's Domain Path — 5.9 to 6.6 need the
+  explicit `load_plugin_textdomain()` call in `Plugin.php`.
+
+Wording rules that outlive any one string: gate/gated is *sperren/gesperrt*,
+embed is *Einbettung*, provider is *Anbieter*, consent is *Einwilligung*, and
+the hedge in "may set cookies" stays hedged (*es können Cookies gesetzt
+werden*) — the German must never promise more than the English. The provider
+notices follow one sentence template for all 36 providers, so a visitor who
+meets two of them reads the same shape twice.
+
 ### 9.16 Performance
 
 `render_block` runs on every block of every page. Order the work: cheap

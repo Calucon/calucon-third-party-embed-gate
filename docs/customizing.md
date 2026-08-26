@@ -273,14 +273,66 @@ add_filter( 'calucon_embed_gate_should_gate', fn( $gate, $url, $ctx ) =>
 	false !== strpos( $url, 'widgets.already-covered.example' ) ? false : $gate, 10, 3 );
 ```
 
-All hooks: `calucon_embed_gate_asset_version`, `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`,
-`calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`,
-`calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`,
-`calucon_embed_gate_payload`, `calucon_embed_gate_note_text`,
-`calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`,
-`calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`,
-`calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority`; actions
-`calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated`, `calucon_embed_gate_flush_caches`.
+### Every hook, with its signature
+
+`$ctx` is the integration context, the same array everywhere: `integration`
+(`the_content`, `render_block`, `widget`, `comment`, `description`,
+`output_buffer`, `admin-preview`), plus — where the integration knows them —
+`post_id`, `block` (block name), `force_gate` (the per-block "always" override),
+`poster`, `note_text` and `action_text` (the per-block texts), and `noscript`
+inside a `<noscript>` element. Treat a key as possibly absent.
+
+`$provider` is the resolved descriptor (PLAN.md §4.1): `id`, `label`, `note`,
+`action`, `fallback`, `privacy_url`, `kind`, `match`, `strategy`, `enabled` …
+
+**Deciding what is gated** — the two that can turn gating off. A `false` here
+means the third party is contacted on page load, for every visitor.
+
+| Hook | Signature | Fires |
+|---|---|---|
+| `calucon_embed_gate_should_gate` | `( bool $gate, string $url, array $ctx ): bool` | once per candidate embed, before anything is replaced |
+| `calucon_embed_gate_is_own_host` | `( bool $own, string $host ): bool` | when classifying a host as the site's own |
+| `calucon_embed_gate_own_hosts` | `( string[] $hosts ): string[]` | once per request, building the own-host list (own hosts + never-gate) |
+| `calucon_embed_gate_www_equivalence` | `( bool $equivalent ): bool` | when deciding whether `example.com` and `www.example.com` are one site |
+
+**Describing a provider**
+
+| Hook | Signature | Fires |
+|---|---|---|
+| `calucon_embed_gate_providers` | `( array[] $descriptors ): array[]` | once per request, after the built-ins are built — add or replace descriptors here |
+| `calucon_embed_gate_provider_for_url` | `( array $provider, string $url, string $host ): array` | after a URL resolved to a descriptor, before rendering |
+
+**Wording and links** — plain text in, plain text out; escaping happens after.
+
+| Hook | Signature | Fires |
+|---|---|---|
+| `calucon_embed_gate_note_text` | `( string $note, array $provider, array $ctx ): string` | per placeholder |
+| `calucon_embed_gate_action_text` | `( string $action, array $provider, array $ctx ): string` | per placeholder |
+| `calucon_embed_gate_fallback_url` | `( string $url, array $provider, array $ctx ): string` | per placeholder; a non-navigable scheme is rejected afterwards |
+
+**Markup and payload** — the §5.1 contract is public API; keep its shape.
+
+| Hook | Signature | Fires |
+|---|---|---|
+| `calucon_embed_gate_placeholder_html` | `( string $html, array $provider, array $ctx ): string` | after the placeholder is rendered (template override included) |
+| `calucon_embed_gate_payload` | `( array $payload, array $provider ): array` | before the payload is JSON-encoded into `data-cg-payload` |
+
+**Plumbing**
+
+| Hook | Signature | Fires |
+|---|---|---|
+| `calucon_embed_gate_asset_version` | `( string $version, string $relative ): string` | per enqueued bundled file — for a build hash instead of the default key |
+| `calucon_embed_gate_cmp_config` | `( array\|null $config, array $cmp_options ): array\|null` | when the CMP bridge config is built; `null` disables the bridge |
+| `calucon_embed_gate_the_content_priority` | `( int $priority ): int` | at registration; default `20` |
+| `calucon_embed_gate_render_block_priority` | `( int $priority ): int` | at registration; default `10` |
+
+**Actions**
+
+| Hook | Signature | Fires |
+|---|---|---|
+| `calucon_embed_gate_before_render` | `( array $provider, array $ctx )` | just before a placeholder is rendered |
+| `calucon_embed_gate_embed_gated` | `( array $provider, array $ctx )` | after an embed has been replaced — counting, logging |
+| `calucon_embed_gate_flush_caches` | `()` | whenever the plugin flushes caches; hook your own cache here |
 
 ## The consent platform bridge
 
@@ -327,6 +379,70 @@ no consent-mode signal governs iframes. Bridge the platform instead — it
 is where Consent Mode's state comes from. The plugin also never sends
 `gtag('consent', …)` updates; a click on one embed is not a site-wide
 marketing consent.
+
+## Bilingual and multilingual sites
+
+Two kinds of text live in this plugin, and they are translated in two
+different places.
+
+**The plugin's own strings** — every built-in provider's notice and button
+label, the whole settings screen, the editor controls — are gettext strings.
+German ships with the plugin (`de_DE` and `de_DE_formal`); any other language
+comes from translate.wordpress.org. Nothing to configure: WordPress serves
+each request in that request's language.
+
+The practical consequence is worth stating plainly: **on a bilingual site,
+leave the built-in wording alone and you get both languages for free.** The
+moment you type your own notice or button text for a provider, that one string
+is yours in every language until you translate it — you have traded a
+translated string for a fixed one.
+
+**The texts you type** — a per-provider notice, button label or
+privacy-policy URL, and the names of your own providers — are stored in the
+plugin's option, so they are content, not code. They are registered for
+translation in the shipped `wpml-config.xml`, and both WPML and Polylang read
+that file:
+
+| Text | Where you translate it |
+|---|---|
+| Per-provider notice / button label | WPML → String Translation, or Polylang → Translations → Strings |
+| Per-provider privacy-policy URL | same — a URL is just a string, so `…/privacy` and `…/privacy?hl=de` can differ per language |
+| Your own providers' names | same |
+| Per-block button and notice text | translated with the post, in the translated post's block |
+
+The plugin re-reads those texts while the page is being built, so the string
+your multilingual plugin returns for *that* page's language is the one the
+panel shows. Only the texts are re-read: which providers are enabled, the host
+lists and every detection rule come from the values loaded at startup, so a
+translation layer can reword a panel and can never ungate an embed.
+
+With WPML or Polylang active, Status & tools → Compatibility names it and
+repeats where those strings are translated, so nobody has to remember this
+page.
+
+With WPML or Polylang active, Status & tools → Compatibility names it and
+repeats where those strings are translated, so nobody has to remember this
+page.
+
+The settings screen deliberately keeps showing the original text you typed —
+that is the source string your translations hang off, and editing it there
+edits the original, not a translation.
+
+**Without WPML or Polylang** — two languages by hand, a language switcher of
+your own — use the filters instead, keyed off the current locale:
+
+```php
+add_filter( 'calucon_embed_gate_action_text', function ( $action, $provider ) {
+	if ( 'youtube' !== $provider['id'] || 'de_DE' !== determine_locale() ) {
+		return $action;
+	}
+	return 'Video von YouTube laden';
+}, 10, 2 );
+```
+
+`calucon_embed_gate_note_text` does the same for the notice, and
+`calucon_embed_gate_providers` can rewrite a whole descriptor — including
+`privacy_url` — per locale.
 
 ## Styling
 

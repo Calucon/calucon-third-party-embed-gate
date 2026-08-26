@@ -1599,6 +1599,14 @@ final class SettingsPage {
 				? __( 'Detected. Whole-page gating is enabled, so this builder\'s embeds are covered.', 'calucon-third-party-embed-gate' )
 				: __( 'Detected. Page builders render outside the content filters — if its embeds are not being gated, enable "Gate the whole page output" under Detection.', 'calucon-third-party-embed-gate' ),
 		);
+		// Multilingual rows depend on how that plugin gets at the owner's own
+		// texts — registered strings it must be told to translate, or the
+		// finished page, where nothing needs configuring.
+		$multilingual_messages = array(
+			/* translators: %s: where the strings are translated, e.g. "WPML → String Translation". */
+			'registry' => __( 'Detected. The texts you type here — a provider\'s notice and button label, its privacy-policy URL, and the names of your own providers — are registered for translation and are read in the language of the page being shown. Translate them under %s. Everything else is translated by language pack and needs nothing from you; note that typing your own text for a provider replaces a wording that was already translated.', 'calucon-third-party-embed-gate' ),
+			'output'   => __( 'Detected. It translates the finished page, so the placeholder texts are translated there like any other text on the page. Nothing to configure here.', 'calucon-third-party-embed-gate' ),
+		);
 		// CMP rows (§6.4) depend on the row itself: tested platforms can be
 		// bridged; anything else keeps the fail-closed default.
 		$cmp_messages = array(
@@ -1609,7 +1617,7 @@ final class SettingsPage {
 		?>
 		<h2 id="cg-compatibility"><?php esc_html_e( 'Compatibility', 'calucon-third-party-embed-gate' ); ?></h2>
 		<?php if ( array() === $found ) : ?>
-			<p><?php esc_html_e( 'No cache plugin, consent platform or page builder detected.', 'calucon-third-party-embed-gate' ); ?></p>
+			<p><?php esc_html_e( 'No cache plugin, consent platform, multilingual plugin or page builder detected.', 'calucon-third-party-embed-gate' ); ?></p>
 		<?php else : ?>
 			<table class="widefat striped" style="max-width: 60rem;">
 				<thead><tr><th scope="col"><?php esc_html_e( 'Detected', 'calucon-third-party-embed-gate' ); ?></th><th scope="col"><?php esc_html_e( 'What Calucon Third-Party Embed Gate does', 'calucon-third-party-embed-gate' ); ?></th></tr></thead>
@@ -1622,6 +1630,10 @@ final class SettingsPage {
 						} else {
 							$message = $options['cmp']['bridge'] ? $cmp_messages['active'] : $cmp_messages['available'];
 						}
+					} elseif ( 'multilingual' === $row['kind'] ) {
+						$message = 'registry' === $row['mode']
+							? sprintf( $multilingual_messages['registry'], $row['where'] )
+							: $multilingual_messages['output'];
 					} else {
 						$message = $messages[ $row['kind'] ];
 					}

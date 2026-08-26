@@ -96,3 +96,58 @@ jobs:
 
       - name: WordPress integration suite
         run: npm run test:wp
+
+  wp-old:
+    # The same suite against the OLDEST WordPress this plugin claims to
+    # support, and against the version where translation loading changed.
+    #
+    # Playground only serves current WordPress, so this one uses the Docker
+    # backend. It exists because a whole class of bug is invisible on a
+    # current install: bundled translations were silently ignored below 6.8,
+    # and the suite was green throughout, because modern WordPress finds them
+    # by a route the old versions do not have. "Requires at least: 5.9" is a
+    # promise; this is what keeps it one.
+    #
+    # 6.7 is not arbitrary. Its release notes are the ones about translation
+    # loading, which makes it the version everyone assumes fixed this — and
+    # measurably it did not. If that boundary ever moves, this job is where
+    # it shows up.
+    name: WordPress ${{ matrix.wp }} (Docker)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - wp: '5.9'
+            php: '7.4'
+          - wp: '6.7'
+            php: '8.2'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start WordPress ${{ matrix.wp }}
+        env:
+          CG_WP_IMAGE: wordpress:${{ matrix.wp }}-php${{ matrix.php }}-apache
+          CG_WP_CLI_IMAGE: wordpress:cli-php${{ matrix.php }}
+        run: bash tests/wp/setup.sh
+
+      - name: WordPress integration suite
+        env:
+          WP_BASE_URL: http://127.0.0.1:8890
+        run: npm run test:wp
+
+      - name: Tear down
+        if: always()
+        run: bash tests/wp/teardown.sh

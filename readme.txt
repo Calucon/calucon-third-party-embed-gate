@@ -5,7 +5,7 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.11.0
+Stable tag: 0.12.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,7 @@ See it in action on the [live demo](https://calucon.de/third-party-embed-gate-sh
 * Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; a plain fallback link to the content stays for feed readers.
 * Per-block override in the editor: gate a specific embed always, never, or per the site default.
 * Optional poster image behind the consent panel, chosen per embed from your media library — served from your own site, never fetched from the provider. Per-embed button and notice text in the block editor, too.
+* German included: the plugin's own texts ship translated for every German locale WordPress offers — Germany (du and Sie), Austria, and Switzerland (with ss for ß) — placeholder wording, the settings screen and the block-editor controls alike.
 * Multilingual sites: the texts you type (per-provider and per-block notices and button labels, provider privacy-policy URLs, your own providers' names) are registered for WPML and Polylang via a shipped wpml-config.xml.
 * Optional, off by default: remember consent in the visitor's browser (per embed, per provider, or for all embeds; session or with an expiry), with a withdrawal control via the `[calucon_embed_gate_withdraw]` shortcode.
 * Optional, off by default: a bridge to your consent platform. When a tested platform (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner) reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state; with an untested platform, or when the platform gives no answer, gating stands unchanged.
@@ -48,7 +49,7 @@ Calucon Third-Party Embed Gate is a technical measure. It is not a consent manag
 * Theme override: copy `templates/placeholder.php` to `{your-theme}/calucon-embed-gate/placeholder.php`.
 * CSS custom properties on `.cg-embed` (`--cg-bg`, `--cg-fg`, `--cg-accent`, …) for restyling without specificity wars.
 * WP-CLI: `wp calucon-embed-gate scan` (is every embed gated? `--format=json` for CI and automation) and `wp calucon-embed-gate providers`; the shipped `docs/customizing.md` is a self-contained customization reference for developers and AI agents.
-* Documented filters: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority`, plus the `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` and `calucon_embed_gate_flush_caches` actions. Adding a provider is a ten-line filter in `functions.php`.
+* Documented filters: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority`, plus the `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` and `calucon_embed_gate_flush_caches` actions. Each one's signature, when it fires and what to return are documented in `docs/customizing.md`, which ships inside the plugin (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) and is readable on GitHub. Adding a provider is a ten-line filter in `functions.php`.
 
 == Installation ==
 
@@ -71,6 +72,10 @@ No plugin can claim that, and this one does not. Calucon Third-Party Embed Gate 
 = Why is there no cookie banner? =
 
 Because there is nothing to announce at page load. If nothing third-party loads until the visitor asks for it, there is no third-party storage to consent to on page load. The consent is the click, given for the one embed it belongs to.
+
+= Is the plugin available in German? =
+
+Yes. German ships with the plugin for all five German locales WordPress offers — Deutschland informal and formal ("de_DE", "de_DE_formal"), Österreich ("de_AT"), and Schweiz formal and informal ("de_CH", "de_CH_informal", spelled with ss instead of ß) — and it covers everything a person reads: the placeholder your visitors see, the settings screen and the block-editor controls. Set your site language and it follows. Other languages are welcome via translate.wordpress.org; a translation from there overrides the bundled one.
 
 = Does a visitor have to click every single time? =
 
@@ -149,6 +154,9 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 
 == Upgrade Notice ==
 
+= 0.12.0 =
+Adds German, in both the du and the Sie variant — the placeholder your visitors see, the settings screen and the editor controls. Set your site language to German and it follows. Nothing else changes; English sites see no difference.
+
 = 0.11.0 =
 Names the rest of WordPress's built-in embed types, and the content scan can now name or let through any host it finds without you typing an address. Fixes Scribd and Wolfram Cloud embeds, which contacted their provider before the click. Everything here was already gated.
 
@@ -156,6 +164,13 @@ Names the rest of WordPress's built-in embed types, and the content scan can now
 The panel looks and behaves as before unless you opt in: the privacy-policy link and the new Appearance controls are off by default. Clear your page cache once after updating. Adds your own providers, a CSP helper and a much larger Appearance tab.
 
 == Changelog ==
+
+= 0.12.0 =
+* New: German translations ship with the plugin, for all five German locales WordPress offers — Deutschland (du und Sie), Österreich, and Schweiz (Sie und du, written with ss instead of ß as Switzerland does). WordPress does not fall back between them, so each one needs its own file. Everything a person reads is covered: the placeholder your visitors see, all five settings tabs and the per-block controls in the editor. Set the site language to German and it follows; a translation from translate.wordpress.org still takes precedence over the bundled one.
+* Changed: the plugin loads its own translation files only on WordPress below 6.8, which is where it measured that WordPress stops finding bundled files by itself. Newer sites run without that call, as the plugin directory prefers. Nothing changes for sites running in English.
+* New: the Compatibility overview names a detected multilingual plugin (WPML, Polylang, TranslatePress, Weglot) and says where the texts you typed yourself are translated — for WPML and Polylang, the screen that holds them; the other two translate the finished page and need nothing.
+* Fixed: on WordPress older than 6.8, the bundled German never reached the block editor's own controls — the front end and the settings screen were translated, the editor was not. `wp_set_script_translations()` was not being told where the plugin keeps its translation files, so WordPress looked only in the language-pack directory.
+* Fixed: on WPML and Polylang sites, the texts you type yourself — a provider's notice, button label or privacy-policy URL, and your own providers' names — showed in the site's default language on every translation. They are now read in the language of the page being built. Translate them in WPML's String Translation or Polylang's Strings screen; the shipped wpml-config.xml already registers them.
 
 = 0.11.0 =
 * New: page caches are flushed automatically when the plugin is activated and after it updates, not only when settings are saved or the plugin is deactivated — so a cached page cannot keep serving pre-update markup.
