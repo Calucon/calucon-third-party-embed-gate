@@ -72,7 +72,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** Rebuilds embeds from an attribute safelist — `sandbox` is preserved, `autoplay` never survives, inline styles and event handlers are never copied.
 
-**DE:** Baut Einbettungen aus einer Positivliste von Attributen neu auf – `sandbox` bleibt erhalten, `autoplay` überlebt nie, Inline-Styles und Event-Handler werden nie übernommen.
+**DE:** Baut Einbettungen aus einer Freigabeliste von Attributen neu auf – `sandbox` bleibt erhalten, `autoplay` überlebt nie, Inline-Styles und Event-Handler werden nie übernommen.
 
 **EN:** Strips `preconnect`/`dns-prefetch`/`preload`/`prefetch` resource hints pointing at gated providers and their CDN hosts (`i.ytimg.com`, `pbs.twimg.com`, …).
 
@@ -80,7 +80,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; a plain fallback link to the content stays for feed readers.
 
-**DE:** Entfernt Einbettungen aus Feeds und Auszügen, statt dort einen sinnlosen Platzhalter zu zeigen; für Feed-Leser bleibt ein einfacher Link zum Inhalt.
+**DE:** Entfernt Einbettungen aus Feeds und Textauszügen, statt dort einen sinnlosen Platzhalter zu zeigen; für Feed-Leser bleibt ein einfacher Link zum Inhalt.
 
 **EN:** Per-block override in the editor: gate a specific embed always, never, or per the site default.
 
@@ -242,7 +242,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Können Platzhalter die Datenschutzerklärung des Anbieters verlinken?
 
-**DE (Antwort):** Ja: Ein Häkchen im Reiter „Anbieter“ ergänzt in jedem Platzhalter einen Link auf die Datenschutzseite des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen.
+**DE (Antwort):** Ja: Ein Häkchen im Tab „Anbieter“ ergänzt in jedem Platzhalter einen Link auf die Datenschutzseite des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen.
 
 **EN:** Do I need the Content-Security-Policy section?
 
@@ -254,7 +254,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Kann ich das Aussehen des Platzhalters ohne CSS ändern?
 
-**DE (Antwort):** Ja. Der Reiter „Darstellung“ bietet Schnellstile, Farben, die der Palette deines Themes folgen können, sowie Einstellungen für Ecken, Rahmen, Schatten, Abstände, Button, Posterbild und Dunkelmodus – mit Live-Vorschau und automatischer Lesbarkeitsprüfung. Eigenes CSS wirkt weiterhin darüber: Der Platzhalter stellt CSS-Custom-Properties bereit und lässt sich per Template überschreiben (siehe docs/customizing.md im Plugin-Ordner).
+**DE (Antwort):** Ja. Der Tab „Darstellung“ bietet Schnellstile, Farben, die der Palette deines Themes folgen können, sowie Einstellungen für Ecken, Rand, Schatten, Abstände, Button, Posterbild und Dunkelmodus – mit Live-Vorschau und automatischer Lesbarkeitsprüfung. Eigenes CSS wirkt weiterhin darüber: Der Platzhalter stellt CSS-Custom-Properties bereit und lässt sich per Template überschreiben (siehe docs/customizing.md im Plugin-Ordner).
 
 ---
 
@@ -275,7 +275,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 1. **DE:** Eine gesperrte YouTube-Einbettung, wie ein Besucher sie sieht: ein serverseitig gerenderter Platzhalter mit benannter Gruppe, einem echten „Laden“-Button und einem funktionierenden Ersatzlink. Vor dem Klick des Besuchers wird beim Anbieter nichts angefragt.
 2. **DE:** Die Darstellungseinstellungen – Schnellstile, Farben, die der Theme-Palette folgen oder eigene sind, und Abschnitte für Form, Button, Posterbild, Widerrufs-Button und Dunkelmodus – mit Live-Vorschau des echten Platzhalters und automatischer Lesbarkeitsprüfung, die jedes Farbpaar unterhalb des Mindestkontrasts von 4,5:1 markiert.
 3. **DE:** Der Inhalts-Scan unter Status und Werkzeuge: jede Einbettung in deinen neuesten Beiträgen und Seiten, die Adresse, die sie kontaktieren würde, und ob sie gesperrt ist – mit einem Klick, um einem unbekannten Host einen richtigen Namen zu geben oder ihn durchzulassen, ohne selbst eine Adresse herauszufinden. Nichts ändert sich, bis du speicherst.
-4. **DE:** Der Reiter „Anbieter“: Anbieter gruppiert nach Art der Einbettung, mit Filterfeld – ein/aus pro Anbieter, datenschutzfreundliche Ladevarianten, eigene Hinweis- und Button-Texte, der Datenschutz-Link samt eigener URL pro Anbieter und deine eigenen Anbieter. Ohne Code.
+4. **DE:** Der Tab „Anbieter“: Anbieter gruppiert nach Art der Einbettung, mit Filterfeld – ein/aus pro Anbieter, datenschutzfreundliche Ladevarianten, individuelle Hinweis- und Button-Texte, der Datenschutz-Link samt eigener URL pro Anbieter und deine eigenen Anbieter. Ohne Code.
 5. **DE:** Die Steuerung pro Einbettung im Block-Editor: eine bestimmte Einbettung immer sperren, nie sperren oder nach Website-Standard behandeln, ein optionales Posterbild aus der eigenen Mediathek setzen und dieser einen Einbettung eigenen Button- und Hinweistext geben.
 6. **DE:** Der Abschnitt zur Content-Security-Policy: was eine solche Richtlinie überhaupt ist, ob deine Website bereits eine sendet, welche Zeilen für die von dir aktivierten Anbieter zu ergänzen sind und welcher Anbieter welchen Host braucht.
 
@@ -311,7 +311,7 @@ Plugin-Name und bleibt unübersetzt.
 
 **EN:** Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): …
 
-**DE:** Einstellungsseite mit Reitern (Anbieter / Erkennung / Darstellung / Einwilligung merken / Status und Werkzeuge): eigene Anbieter (Name + Hosts, ohne Code), ein/aus pro Anbieter, datenschutzfreundliche Variante ein/aus, eigener Hinweis- und Button-Text, ein optionaler Link zur Datenschutzerklärung des Anbieters in jedem Platzhalter (standardmäßig aus, ein Häkchen schaltet ihn ein); Listen für eigene Hosts, nie zu sperrende und immer zu sperrende Hosts; Regel-Schalter samt optionaler Sperre für Bilder von Drittanbietern; Darstellungs-Vorlagen, Eckenformen mit eigenem Radius, Rahmenbreite und -farbe, Schatten, Abstände, Button-Größe/-Stil/-Breite/-Hover, ein optionales Symbol passend zur Art der Einbettung, Größe des Hinweistexts, Ausrichtung des Platzhalters, Linkfarbe, Platzierung und Abdunkeln des Posterbilds, Stile für den Widerrufs-Button und optionale Farben für den Dunkelmodus – in Abschnitte gegliedert, mit Schnellstilen, Farbwählern, Live-Vorschau (dunkle Seite, Posterbild, Smartphone-Breite), Zurücksetzen mit einem Klick und automatischer Lesbarkeitsprüfung, ganz ohne CSS; optionales Puffern der gesamten Seite für Page-Builder; Einwilligung merken; ein erzeugter Content-Security-Policy-Schnipsel; eine Kompatibilitätsübersicht (erkanntes Cache-Plugin, Consent-Plattform, Page-Builder – und was das Plugin jeweils tut); ein Scan der aktuellen Inhalte, der jeden gefundenen Host benennen oder durchlassen kann, ohne dass du eine Adresse tippst und ohne dass vor dem Speichern etwas geschrieben wird.
+**DE:** Einstellungsseite mit Tabs (Anbieter / Erkennung / Darstellung / Einwilligung merken / Status und Werkzeuge): eigene Anbieter (Name + Hosts, ohne Code), ein/aus pro Anbieter, datenschutzfreundliche Variante ein/aus, individueller Hinweis- und Button-Text, ein optionaler Link zur Datenschutzerklärung des Anbieters in jedem Platzhalter (standardmäßig aus, ein Häkchen schaltet ihn ein); Listen für eigene Hosts, nie zu sperrende und immer zu sperrende Hosts; Regel-Schalter samt optionaler Sperre für Bilder von Drittanbietern; Darstellungs-Vorlagen, Eckenformen mit eigenem Radius, Randbreite und -farbe, Schatten, Abstände, Button-Größe/-Stil/-Breite/-Hover, ein optionales Symbol passend zur Art der Einbettung, Größe des Hinweistexts, Ausrichtung des Platzhalters, Linkfarbe, Platzierung und Abdunkeln des Posterbilds, Stile für den Widerrufs-Button und optionale Farben für den Dunkelmodus – in Abschnitte gegliedert, mit Schnellstilen, Farbwählern, Live-Vorschau (dunkle Seite, Posterbild, Smartphone-Breite), Zurücksetzen mit einem Klick und automatischer Lesbarkeitsprüfung, ganz ohne CSS; optionales Puffern der gesamten Seite für Page-Builder; Einwilligung merken; ein erzeugter Content-Security-Policy-Schnipsel; eine Kompatibilitätsübersicht (erkanntes Cache-Plugin, Consent-Plattform, Page-Builder – und was das Plugin jeweils tut); ein Scan der aktuellen Inhalte, der jeden gefundenen Host benennen oder durchlassen kann, ohne dass du eine Adresse tippst und ohne dass vor dem Speichern etwas geschrieben wird.
 
 **EN:** Theme override: copy `templates/placeholder.php` to `{your-theme}/calucon-embed-gate/placeholder.php`.
 
