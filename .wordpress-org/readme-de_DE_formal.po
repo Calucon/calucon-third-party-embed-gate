@@ -8,7 +8,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: GlotPress/4.1.0\n"
-"Language: de_DE_formal\n"
+"Language: de\n"
 "Project-Id-Version: Plugins - Calucon Third-Party Embed Gate - Stable Readme (latest release)\n"
 
 #. Short description.
@@ -20,6 +20,22 @@ msgstr "YouTube, Maps und andere Drittanbieter-Einbettungen laden erst, wenn der
 #, gp-priority: high
 msgid "Calucon Third-Party Embed Gate"
 msgstr "Calucon Third-Party Embed Gate"
+
+#. Found in faq paragraph.
+msgid "Yes. German ships with the plugin for all five German locales WordPress offers — Deutschland informal and formal (\"de_DE\", \"de_DE_formal\"), Österreich (\"de_AT\"), and Schweiz formal and informal (\"de_CH\", \"de_CH_informal\", spelled with ss instead of ß) — and it covers everything a person reads: the placeholder your visitors see, the settings screen and the block-editor controls. Set your site language and it follows. Other languages are welcome via translate.wordpress.org; a translation from there overrides the bundled one."
+msgstr "Ja. Deutsch wird für alle fünf deutschen Sprachvarianten mitgeliefert, die WordPress anbietet – Deutschland informell und formell („de_DE“, „de_DE_formal“), Österreich („de_AT“) sowie Schweiz formell und informell („de_CH“, „de_CH_informal“, mit ss statt ß) – und deckt alles ab, was ein Mensch liest: den Platzhalter, den Ihre Besucher sehen, die Einstellungsseite und die Steuerelemente im Block-Editor. Stellen Sie die Sprache Ihrer Website ein, der Rest folgt. Weitere Sprachen sind über translate.wordpress.org willkommen; eine Übersetzung von dort hat Vorrang vor der mitgelieferten."
+
+#. Found in faq header.
+msgid "Is the plugin available in German?"
+msgstr "Gibt es das Plugin auf Deutsch?"
+
+#. Found in description list item.
+msgid "Documented filters: <code>calucon_embed_gate_providers</code>, <code>calucon_embed_gate_provider_for_url</code>, <code>calucon_embed_gate_should_gate</code>, <code>calucon_embed_gate_is_own_host</code>, <code>calucon_embed_gate_own_hosts</code>, <code>calucon_embed_gate_placeholder_html</code>, <code>calucon_embed_gate_payload</code>, <code>calucon_embed_gate_note_text</code>, <code>calucon_embed_gate_action_text</code>, <code>calucon_embed_gate_fallback_url</code>, <code>calucon_embed_gate_www_equivalence</code>, <code>calucon_embed_gate_cmp_config</code>, <code>calucon_embed_gate_asset_version</code>, <code>calucon_embed_gate_the_content_priority</code>, <code>calucon_embed_gate_render_block_priority</code>, plus the <code>calucon_embed_gate_before_render</code>, <code>calucon_embed_gate_embed_gated</code> and <code>calucon_embed_gate_flush_caches</code> actions. Each one's signature, when it fires and what to return are documented in <code>docs/customizing.md</code>, which ships inside the plugin (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) and is readable on GitHub. Adding a provider is a ten-line filter in <code>functions.php</code>."
+msgstr "Dokumentierte Filter: <code>calucon_embed_gate_providers</code>, <code>calucon_embed_gate_provider_for_url</code>, <code>calucon_embed_gate_should_gate</code>, <code>calucon_embed_gate_is_own_host</code>, <code>calucon_embed_gate_own_hosts</code>, <code>calucon_embed_gate_placeholder_html</code>, <code>calucon_embed_gate_payload</code>, <code>calucon_embed_gate_note_text</code>, <code>calucon_embed_gate_action_text</code>, <code>calucon_embed_gate_fallback_url</code>, <code>calucon_embed_gate_www_equivalence</code>, <code>calucon_embed_gate_cmp_config</code>, <code>calucon_embed_gate_asset_version</code>, <code>calucon_embed_gate_the_content_priority</code>, <code>calucon_embed_gate_render_block_priority</code> sowie die Aktionen <code>calucon_embed_gate_before_render</code>, <code>calucon_embed_gate_embed_gated</code> und <code>calucon_embed_gate_flush_caches</code>. Zu jedem Hook sind Signatur, Auslösezeitpunkt und Rückgabewert in <code>docs/customizing.md</code> dokumentiert, die im Plugin mitgeliefert wird (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) und auf GitHub lesbar ist. Einen Anbieter hinzuzufügen ist ein Filter von zehn Zeilen in der <code>functions.php</code>."
+
+#. Found in description list item.
+msgid "German included: the plugin's own texts ship translated for every German locale WordPress offers — Germany (du and Sie), Austria, and Switzerland (with ss for ß) — placeholder wording, the settings screen and the block-editor controls alike."
+msgstr "Deutsch ist dabei: Die Texte des Plugins werden für jede deutsche Sprachvariante mitgeliefert, die WordPress anbietet – Deutschland (du und Sie), Österreich und Schweiz (mit ss statt ß) – Platzhaltertexte, Einstellungsseite und Block-Editor gleichermaßen."
 
 #. Found in faq paragraph.
 msgid "Either is gated, so this is not a privacy question. It is a rendering one: prefer the plain <code>&lt;iframe&gt;</code> embed code where the provider offers one. An iframe renders by itself; a loader script has to notice the embed and draw it, and some providers' scripts only do that while the page is first parsing, so they can come up empty after the visitor clicks — with or without this plugin. If a script-based embed stays blank after loading, try the provider's iframe embed code instead."
@@ -60,10 +76,6 @@ msgstr "Welche Einbettungen erkennt es namentlich?"
 #. Found in faq header.
 msgid "Does a visitor have to click every single time?"
 msgstr "Muss ein Besucher wirklich jedes Mal klicken?"
-
-#. Found in description list item.
-msgid "Documented filters: <code>calucon_embed_gate_providers</code>, <code>calucon_embed_gate_provider_for_url</code>, <code>calucon_embed_gate_should_gate</code>, <code>calucon_embed_gate_is_own_host</code>, <code>calucon_embed_gate_own_hosts</code>, <code>calucon_embed_gate_placeholder_html</code>, <code>calucon_embed_gate_payload</code>, <code>calucon_embed_gate_note_text</code>, <code>calucon_embed_gate_action_text</code>, <code>calucon_embed_gate_fallback_url</code>, <code>calucon_embed_gate_www_equivalence</code>, <code>calucon_embed_gate_cmp_config</code>, <code>calucon_embed_gate_asset_version</code>, <code>calucon_embed_gate_the_content_priority</code>, <code>calucon_embed_gate_render_block_priority</code>, plus the <code>calucon_embed_gate_before_render</code>, <code>calucon_embed_gate_embed_gated</code> and <code>calucon_embed_gate_flush_caches</code> actions. Adding a provider is a ten-line filter in <code>functions.php</code>."
-msgstr "Dokumentierte Filter: <code>calucon_embed_gate_providers</code>, <code>calucon_embed_gate_provider_for_url</code>, <code>calucon_embed_gate_should_gate</code>, <code>calucon_embed_gate_is_own_host</code>, <code>calucon_embed_gate_own_hosts</code>, <code>calucon_embed_gate_placeholder_html</code>, <code>calucon_embed_gate_payload</code>, <code>calucon_embed_gate_note_text</code>, <code>calucon_embed_gate_action_text</code>, <code>calucon_embed_gate_fallback_url</code>, <code>calucon_embed_gate_www_equivalence</code>, <code>calucon_embed_gate_cmp_config</code>, <code>calucon_embed_gate_asset_version</code>, <code>calucon_embed_gate_the_content_priority</code>, <code>calucon_embed_gate_render_block_priority</code> sowie die Aktionen <code>calucon_embed_gate_before_render</code>, <code>calucon_embed_gate_embed_gated</code> und <code>calucon_embed_gate_flush_caches</code>. Einen Anbieter hinzuzufügen ist ein Filter von zehn Zeilen in der <code>functions.php</code>."
 
 #. Found in description list item.
 msgid "Ships a descriptor for almost every embed type WordPress offers out of the box — a proper name, an icon, a privacy-policy link and a working no-JavaScript link — plus the loader scripts and stylesheets those embeds bring with them. The few that are not named yet are listed in the FAQ; they are gated all the same."
@@ -328,6 +340,31 @@ msgstr "Externe Dienste"
 #. Screenshot description.
 msgid "A gated YouTube embed as a visitor sees it: a server-rendered placeholder with a named panel, a real \"Load\" button and a working fallback link. Nothing is requested from the provider until the visitor clicks."
 msgstr "Eine gesperrte YouTube-Einbettung, wie ein Besucher sie sieht: ein serverseitig gerenderter Platzhalter mit benannter Gruppe, einem echten „Laden“-Button und einem funktionierenden Ersatzlink. Vor dem Klick des Besuchers wird beim Anbieter nichts angefragt."
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Fixed: on WPML and Polylang sites, the texts you type yourself — a provider's notice, button label or privacy-policy URL, and your own providers' names — showed in the site's default language on every translation. They are now read in the language of the page being built. Translate them in WPML's String Translation or Polylang's Strings screen; the shipped wpml-config.xml already registers them."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Fixed: on WordPress older than 6.8, the bundled German never reached the block editor's own controls — the front end and the settings screen were translated, the editor was not. <code>wp_set_script_translations()</code> was not being told where the plugin keeps its translation files, so WordPress looked only in the language-pack directory."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "New: the Compatibility overview names a detected multilingual plugin (WPML, Polylang, TranslatePress, Weglot) and says where the texts you typed yourself are translated — for WPML and Polylang, the screen that holds them; the other two translate the finished page and need nothing."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Changed: the plugin loads its own translation files only on WordPress below 6.8, which is where it measured that WordPress stops finding bundled files by itself. Newer sites run without that call, as the plugin directory prefers. Nothing changes for sites running in English."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "New: German translations ship with the plugin, for all five German locales WordPress offers — Deutschland (du und Sie), Österreich, and Schweiz (Sie und du, written with ss instead of ß as Switzerland does). WordPress does not fall back between them, so each one needs its own file. Everything a person reads is covered: the placeholder your visitors see, all five settings tabs and the per-block controls in the editor. Set the site language to German and it follows; a translation from translate.wordpress.org still takes precedence over the bundled one."
+msgstr ""
 
 #. Found in changelog list item.
 #, gp-priority: low
