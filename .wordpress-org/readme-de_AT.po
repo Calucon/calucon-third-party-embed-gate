@@ -59,7 +59,7 @@ msgstr "Videos: YouTube, Vimeo, Dailymotion, TED, VideoPress und WordPress.tv, T
 
 #. Found in faq paragraph.
 msgid "By default, yes: once per embed, on every page, and nothing is stored on the visitor's device to remember it. If that is more friction than you want, Settings → Calucon Third-Party Embed Gate → Consent memory can remember the choice in the visitor's browser — for that one embed, for everything from that provider, or for all embeds — either until the browser is closed or for a number of days you choose. It is off by default and stores nothing before the visitor's first click. When you turn it on, give visitors a way back: the \"Withdraw consent\" block, or the <code>[calucon_embed_gate_withdraw]</code> shortcode, clears what was remembered."
-msgstr "Standardmäßig ja: einmal pro Einbettung, auf jeder Seite, und es wird nichts auf dem Gerät des Besuchers gespeichert, um sich das zu merken. Wenn dir das zu viel Reibung ist, kann sich das Plugin die Entscheidung unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken im Browser des Besuchers merken – für die eine Einbettung, für alles von diesem Anbieter oder für alle Einbettungen – entweder bis der Browser geschlossen wird oder für eine von dir gewählte Anzahl Tage. Die Option ist standardmäßig aus und speichert nichts vor dem ersten Klick des Besuchers. Wenn du sie aktivierst, gib Besuchern einen Weg zurück: Der Block „Einwilligungen widerrufen“ oder der Shortcode <code>[calucon_embed_gate_withdraw]</code> löscht das Gemerkte."
+msgstr "Standardmäßig ja: einmal pro Einbettung, auf jeder Seite, und es wird nichts auf dem Gerät des Besuchers gespeichert, um sich das zu merken. Wenn dir das zu viel Reibung ist: Unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken lässt sich die Entscheidung im Browser des Besuchers speichern – für die eine Einbettung, für alles von diesem Anbieter oder für alle Einbettungen – entweder bis der Browser geschlossen wird oder für eine von dir gewählte Anzahl Tage. Die Option ist standardmäßig aus und speichert nichts vor dem ersten Klick des Besuchers. Wenn du sie aktivierst, gib Besuchern einen Weg zurück: Der Block „Einwilligungen widerrufen“ oder der Shortcode <code>[calucon_embed_gate_withdraw]</code> löscht das Gespeicherte."
 
 #. Found in faq header.
 msgid "A provider offers both an embed code and a script — which should I paste?"
@@ -83,7 +83,7 @@ msgstr "Bringt für fast jeden Einbettungstyp, den WordPress von Haus aus kennt,
 
 #. Screenshot description.
 msgid "The Content-Security-Policy helper: what a policy is, a check of your own site for one, the exact lines to add for the providers you have enabled, and which provider needs which host."
-msgstr "Der Content-Security-Policy-Helfer: was eine Richtlinie ist, eine Prüfung der eigenen Website, die genauen Zeilen für die aktivierten Anbieter und welcher Anbieter welchen Host braucht."
+msgstr "Der Abschnitt zur Content-Security-Policy: was eine solche Richtlinie überhaupt ist, ob deine Website bereits eine sendet, welche Zeilen für die von dir aktivierten Anbieter zu ergänzen sind und welcher Anbieter welchen Host braucht."
 
 #. Screenshot description.
 msgid "The Providers tab: providers grouped by what the embed is, with a filter box — per-provider on/off, privacy-preserving load variants, custom notice and button text, the privacy-policy link and its per-provider URL, and your own providers — no code required."

@@ -174,7 +174,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Muss ein Besucher wirklich jedes Mal klicken?
 
-**DE (Antwort):** Standardmäßig ja: einmal pro Einbettung, auf jeder Seite, und es wird nichts auf dem Gerät des Besuchers gespeichert, um sich das zu merken. Wenn Ihnen das zu viel Reibung ist, kann sich das Plugin die Entscheidung unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken im Browser des Besuchers merken – für die eine Einbettung, für alles von diesem Anbieter oder für alle Einbettungen – entweder bis der Browser geschlossen wird oder für eine von Ihnen gewählte Anzahl Tage. Die Option ist standardmäßig aus und speichert nichts vor dem ersten Klick des Besuchers. Wenn Sie sie aktivieren, geben Sie Besuchern einen Weg zurück: Der Block „Einwilligungen widerrufen“ oder der Shortcode `[calucon_embed_gate_withdraw]` löscht das Gemerkte.
+**DE (Antwort):** Standardmäßig ja: einmal pro Einbettung, auf jeder Seite, und es wird nichts auf dem Gerät des Besuchers gespeichert, um sich das zu merken. Wenn Ihnen das zu viel Reibung ist: Unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken lässt sich die Entscheidung im Browser des Besuchers speichern – für die eine Einbettung, für alles von diesem Anbieter oder für alle Einbettungen – entweder bis der Browser geschlossen wird oder für eine von Ihnen gewählte Anzahl Tage. Die Option ist standardmäßig aus und speichert nichts vor dem ersten Klick des Besuchers. Wenn Sie sie aktivieren, geben Sie Besuchern einen Weg zurück: Der Block „Einwilligungen widerrufen“ oder der Shortcode `[calucon_embed_gate_withdraw]` löscht das Gespeicherte.
 
 **EN:** I already run a cookie banner (Complianz, Cookiebot, …). Do they fight?
 
@@ -277,7 +277,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 3. **DE:** Der Inhalts-Scan unter Status und Werkzeuge: jede Einbettung in Ihren neuesten Beiträgen und Seiten, die Adresse, die sie kontaktieren würde, und ob sie gesperrt ist – mit einem Klick, um einem unbekannten Host einen richtigen Namen zu geben oder ihn durchzulassen, ohne selbst eine Adresse herauszufinden. Nichts ändert sich, bis Sie speichern.
 4. **DE:** Der Reiter „Anbieter“: Anbieter gruppiert nach Art der Einbettung, mit Filterfeld – ein/aus pro Anbieter, datenschutzfreundliche Ladevarianten, eigene Hinweis- und Button-Texte, der Datenschutz-Link samt eigener URL pro Anbieter und Ihre eigenen Anbieter. Ohne Code.
 5. **DE:** Die Steuerung pro Einbettung im Block-Editor: eine bestimmte Einbettung immer sperren, nie sperren oder nach Website-Standard behandeln, ein optionales Posterbild aus der eigenen Mediathek setzen und dieser einen Einbettung eigenen Button- und Hinweistext geben.
-6. **DE:** Der Content-Security-Policy-Helfer: was eine Richtlinie ist, eine Prüfung der eigenen Website, die genauen Zeilen für die aktivierten Anbieter und welcher Anbieter welchen Host braucht.
+6. **DE:** Der Abschnitt zur Content-Security-Policy: was eine solche Richtlinie überhaupt ist, ob Ihre Website bereits eine sendet, welche Zeilen für die von Ihnen aktivierten Anbieter zu ergänzen sind und welcher Anbieter welchen Host braucht.
 
 ---
 
