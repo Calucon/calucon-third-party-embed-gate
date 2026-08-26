@@ -168,7 +168,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Gibt es das Plugin auf Deutsch?
 
-**DE (Antwort):** Ja. Deutsch wird für alle fünf deutschen Sprachvarianten mitgeliefert, die WordPress anbietet – Deutschland informell und formell („de_DE“, „de_DE_formal“), Österreich („de_AT“) sowie Schweiz formell und informell („de_CH“, „de_CH_informal“, mit ss statt ß) – und deckt alles ab, was ein Mensch liest: den Platzhalter, den Ihre Besucher sehen, die Einstellungsseite und die Steuerelemente im Block-Editor. Stellen Sie die Sprache Ihrer Website ein, der Rest folgt. Weitere Sprachen sind über translate.wordpress.org willkommen; eine Übersetzung von dort hat Vorrang vor der mitgelieferten.
+**DE (Antwort):** Ja. Deutsch wird für alle fünf deutschen Sprachvarianten mitgeliefert, die WordPress anbietet – Deutschland informell und formell („de_DE“, „de_DE_formal“), Österreich („de_AT“) sowie Schweiz formell und informell („de_CH“, „de_CH_informal“, mit ss statt ß) – und deckt alles ab, was eine Person liest: den Platzhalter, den Ihre Besucher sehen, die Einstellungsseite und die Steuerelemente im Block-Editor. Stellen Sie die Sprache Ihrer Website ein, der Rest folgt. Weitere Sprachen sind über translate.wordpress.org willkommen; eine Übersetzung von dort hat Vorrang vor der mitgelieferten.
 
 **EN:** Does a visitor have to click every single time?
 
