@@ -145,11 +145,11 @@ msgstr "Immer laden"
 
 #: src/Admin/SettingsPage.php:376 src/Admin/SettingsPage.php:1085
 msgid "Appearance"
-msgstr "Darstellung"
+msgstr "Design"
 
 #: src/Admin/SettingsPage.php:271
 msgid "Appearance reset to theme defaults."
-msgstr "Darstellung auf die Theme-Standards zurückgesetzt."
+msgstr "Design auf die Theme-Standards zurückgesetzt."
 
 #: src/Admin/SettingsPage.php:602
 msgid "Audio / podcast"
@@ -1519,7 +1519,7 @@ msgstr "Sie können das später unter Status und Werkzeuge rückgängig machen."
 
 #: src/Admin/SettingsPage.php:280
 msgid "You have unsaved appearance changes."
-msgstr "Sie haben ungespeicherte Änderungen an der Darstellung."
+msgstr "Sie haben ungespeicherte Änderungen am Design."
 
 #: src/Admin/SettingsPage.php:409
 msgid "You have unsaved changes."
