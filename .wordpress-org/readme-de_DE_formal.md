@@ -224,7 +224,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Etwas auf meiner Website ist gesperrt und soll normal laden
 
-**DE (Antwort):** Öffnen Sie Einstellungen → Calucon Third-Party Embed Gate → Anbieter und klicken Sie auf „Nachsehen, was auf meiner Website läuft“. Der Scan listet jede Einbettung auf, die er in Ihren neuesten Beiträgen und Seiten findet, samt der Adresse, die sie kontaktieren würde. Neben jeder können Sie sie entweder benennen – die Sperre bleibt dann bestehen, der Platzhalter bekommt aber einen richtigen Namen und ein Symbol – oder durchlassen, womit ihre Einbettungen für jeden Besucher ohne Platzhalter laden. So oder so müssen Sie nie selbst einen Hostnamen herausfinden, und nichts ändert sich, bis Sie speichern. Durchgelassene Hosts stehen oben auf derselben Seite, mit einem Klick rückgängig zu machen.
+**DE (Antwort):** Öffnen Sie Einstellungen → Calucon Third-Party Embed Gate → Anbieter und klicken Sie auf „Nachsehen, was auf meiner Website läuft“. Der Scan listet jede Einbettung auf, die er in Ihren neuesten Beiträgen und Seiten findet, samt der Adresse, die sie kontaktieren würde. Neben jeder können Sie sie entweder benennen – die Sperre bleibt dann bestehen, der Platzhalter bekommt aber einen richtigen Namen und ein Symbol – oder durchlassen, womit ihre Einbettungen für jeden Besucher ohne Platzhalter laden. So oder so müssen Sie nie selbst einen Hostnamen herausfinden, und nichts ändert sich, bis Sie speichern. Von Ihnen durchgelassene Hosts bleiben oben auf derselben Seite aufgelistet und lassen sich dort mit einem Klick wieder sperren.
 
 **EN:** A provider offers both an embed code and a script — which should I paste?
 
