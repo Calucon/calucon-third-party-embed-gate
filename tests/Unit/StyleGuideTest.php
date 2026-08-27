@@ -234,8 +234,19 @@ final class StyleGuideTest extends TestCase {
 
 	/**
 	 * bin/fix-style.php must never be able to change a word — it is run
-	 * unattended, over files nobody re-reads afterwards. Normalising every
-	 * protected space back to a plain one has to give the input back exactly.
+	 * unattended, over files nobody re-reads afterwards.
+	 *
+	 * The second half checks that the committed German is a fixed point of the
+	 * fixer: run it again and it has nothing to do. That is worth more than it
+	 * looks, because it pins the fixer and this test to each other. They encode
+	 * the same two whitespace rules twice, and they have already drifted once —
+	 * a `%` rule shipped in both that could never match, because `\b` cannot
+	 * fire between `%` and a space. Either half alone would have stayed green.
+	 *
+	 * It also reaches the two files the rest of this class cannot see: INFORMAL
+	 * and FORMAL list only the four .po files, so the German in the two readme
+	 * .md files had no style coverage at all until this assertion, and was
+	 * carrying a missing protected space in the 0.12.1 upgrade notice.
 	 */
 	public function test_the_style_fixer_only_ever_touches_whitespace(): void {
 		$root   = dirname( __DIR__, 2 );
@@ -249,15 +260,24 @@ final class StyleGuideTest extends TestCase {
 			'bin/fix-style.php must not do literal word replacement'
 		);
 
-		foreach ( array_merge( self::INFORMAL, self::FORMAL ) as $relative ) {
-			$text  = (string) file_get_contents( $root . '/' . $relative );
-			$plain = str_replace( self::NBSP, ' ', $text );
-			self::assertSame(
-				$plain,
-				str_replace( self::NBSP, ' ', $plain ),
-				"$relative: normalising protected spaces is not idempotent"
-			);
-		}
+		$command = sprintf(
+			'cd %s && %s bin/fix-style.php --dry-run 2>&1',
+			escapeshellarg( $root ),
+			escapeshellarg( PHP_BINARY )
+		);
+		$report  = (string) shell_exec( $command );
+
+		self::assertSame(
+			1,
+			preg_match( '/Would fix (\d+) line\(s\)/', $report, $found ),
+			"bin/fix-style.php --dry-run did not report a count:\n$report"
+		);
+		self::assertSame(
+			'0',
+			$found[1],
+			"The German is not a fixed point of bin/fix-style.php — run it:\n\n"
+				. "    php bin/fix-style.php\n\n" . $report
+		);
 	}
 
 	/**

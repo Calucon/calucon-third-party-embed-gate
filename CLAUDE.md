@@ -153,6 +153,24 @@ pins it; the `authority-backslash-*` fixtures prove it end-to-end.
 
 ## Translations
 
+**Never write or edit German yourself. Use the `german-translator` agent**
+(`.claude/agents/german-translator.md`) for anything that adds, changes or
+reviews a German string — a new user-facing string, a wording fix, a glossary
+correction, a review before submitting to translate.wordpress.org.
+
+That is a routing rule, not a formality, and the reason is measurable: the
+vendored glossary has **517 term rows and `GlossaryTest` knows eleven of them**.
+The gates are structural — completeness, placeholders, orthography, address form,
+a curated forbidden-word list — so a wrong-but-well-formed word passes all of
+them. Six did, and a reviewer at translate.wordpress.org caught them; a seventh,
+`Seite` for *screen*, reached the public plugin page and sat in
+`bin/glossary-report.php`'s output for two releases while everyone skimmed it.
+The agent looks every term up and reports what it looked up, and it may not
+deviate from the glossary or the style guide without Simon's explicit approval —
+it stops and asks rather than deciding. The style guide it works from is vendored
+at `docs/de-style-guide.md`; `bin/refresh-style-guide.sh` says when the handbook
+has moved underneath it.
+
 German ships with the plugin for all five German locales WordPress has, because
 the plugin's market is Germany and the EU and **WordPress does not fall back
 between them** — without its own file, a `de_AT` site sees English. Two are

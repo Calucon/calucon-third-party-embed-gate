@@ -20,6 +20,7 @@
 /.gitignore
 /.gitattributes
 /.distignore
+/.claude
 /.wordpress-org
 /bin
 /build

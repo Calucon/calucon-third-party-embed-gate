@@ -90,9 +90,12 @@ if ! "$PHPUNIT" --filter GlossaryTest --no-coverage; then
 Use the prescribed term. Nothing has been derived."
 fi
 
-advisory=$(php bin/glossary-report.php | tail -3 | head -1)
-printf '  advisory: %s\n' "$advisory"
-printf '  (php bin/glossary-report.php for the full list — most of it is legitimate)\n'
+departures=$(php bin/glossary-report.php --count)
+printf '  advisory: %s departures from the full glossary — read them, do not skim.\n' "$departures"
+printf '      php bin/glossary-report.php\n'
+printf '  Most are context the glossary does not cover (editor = the block editor,\n'
+printf '  header = an HTTP header). The ones that are not hide in exactly that noise:\n'
+printf '  "screen" sat in this list for two releases and shipped as "Seite" anyway.\n'
 
 # ---------------------------------------------------------------- 5. derive
 stage '5/7  Derive — de_AT, de_CH and de_CH_informal from the verified sources'

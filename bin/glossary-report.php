@@ -34,6 +34,7 @@ use CaluconEmbedGate\Tests\Support\PoReader;
 
 $root  = dirname( __DIR__ );
 $all   = in_array( '--all', $argv, true );
+$count = in_array( '--count', $argv, true );
 $files = array(
 	'languages/calucon-third-party-embed-gate-de_DE.po',
 	'languages/calucon-third-party-embed-gate-de_DE_formal.po',
@@ -123,10 +124,22 @@ foreach ( $files as $relative ) {
 		}
 	}
 
-	printf( "\n=== %s — %d to look at\n", basename( $relative ), count( $rows ) );
-	sort( $rows );
-	echo implode( "\n", $rows ) . "\n";
+	if ( ! $count ) {
+		printf( "\n=== %s — %d to look at\n", basename( $relative ), count( $rows ) );
+		sort( $rows );
+		echo implode( "\n", $rows ) . "\n";
+	}
 	$total += count( $rows );
+}
+
+// --count prints the number alone, for bin/update-translations.sh to quote in
+// its stage-4 summary. It used to slice this closing paragraph with
+// "tail -3 | head -1", which selected the blank line above it, so every run
+// printed an empty advisory — the one place the pipeline surfaces this sweep.
+// A flag cannot drift the way line arithmetic does.
+if ( $count ) {
+	printf( "%d\n", $total );
+	exit( 0 );
 }
 
 printf(
