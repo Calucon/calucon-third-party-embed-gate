@@ -96,12 +96,23 @@ final class ScriptRule {
 			}
 			$src = trim( $attributes['src'] );
 
+			if ( HostMatcher::FOREIGN !== $this->hosts->classify( $src ) ) {
+				continue;
+			}
+
 			// A CDN that rewrites the finished HTML makes the site's own
 			// scripts look third-party; gating those breaks the site instead
 			// of protecting anyone. Scripts and stylesheets only — see
 			// HostMatcher::looks_like_own_asset_path().
-			if ( HostMatcher::FOREIGN !== $this->hosts->classify( $src )
-				|| $this->hosts->is_exempt_own_asset( $src ) ) {
+			//
+			// But the path is a heuristic about shape, and shape is something
+			// anyone can copy: without this second condition, any host at all
+			// could serve a tracker from /wp-content/ and be waved through,
+			// which is the invisible failure invariant 6 exists to forbid. A
+			// host we already know to be a provider is never the site's own
+			// asset host, so the exemption does not apply to it.
+			if ( $this->hosts->is_exempt_own_asset( $src )
+				&& ! $this->is_known_provider_host( $src ) ) {
 				continue;
 			}
 
@@ -538,5 +549,23 @@ final class ScriptRule {
 			}
 		}
 		return $last_href;
+	}
+
+	/**
+	 * Does this URL sit on a host a registered provider owns?
+	 *
+	 * Used only to refuse the own-asset path exemption. A CDN hostname is
+	 * never a provider, so the exemption keeps working for the case it was
+	 * added for.
+	 *
+	 * @param string $url Raw URL from the markup.
+	 * @return bool
+	 */
+	private function is_known_provider_host( string $url ): bool {
+		$host = $this->hosts->host_of( $url );
+		if ( null === $host ) {
+			return false;
+		}
+		return null !== $this->providers->resolve_for_asset_host( $host );
 	}
 }
