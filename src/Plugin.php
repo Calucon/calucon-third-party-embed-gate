@@ -445,8 +445,30 @@ final class Plugin {
 			! empty( $this->options['display']['privacy_link'] )
 		);
 
-		$scanner     = new HtmlScanner();
-		$should_gate = static function ( bool $gate, string $url, array $ctx ): bool {
+		$scanner = new HtmlScanner();
+		// The plugin's own assets, as the browser will see them — which is not
+		// a constant: an asset CDN filters plugins_url(), so this resolves to
+		// the CDN too. Compared scheme-insensitively, because a page and its
+		// assets do not always agree about that.
+		$own_assets = (string) preg_replace( '#^https?://#i', '', (string) plugins_url( 'assets/', CALUCON_EMBED_GATE_FILE ) );
+
+		$should_gate = static function ( bool $gate, string $url, array $ctx ) use ( $own_assets ): bool {
+			// Never gate this plugin's own script. It is reachable: put your
+			// asset CDN's hostname on the always-gate list and that list —
+			// correctly — overrides both the own-host rule and the asset-path
+			// exemption, at which point gate.js itself is served from a gated
+			// host and gets replaced by a placeholder. The result is silent
+			// and total: every panel on the page becomes a button that does
+			// nothing, because the script that would have handled the click
+			// was the thing that got gated.
+			//
+			// Short-circuited before the filter deliberately. There is no
+			// configuration under which gating our own loader is what the
+			// owner wanted, so this is not a decision to delegate.
+			if ( '' !== $own_assets
+				&& 0 === strpos( (string) preg_replace( '#^https?://#i', '', $url ), $own_assets ) ) {
+				return false;
+			}
 			return (bool) apply_filters( 'calucon_embed_gate_should_gate', $gate, $url, $ctx );
 		};
 		$on_gated    = function ( array $provider, array $ctx ): void {

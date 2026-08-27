@@ -185,7 +185,7 @@ final class Compatibility {
 				$contents = (string) file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local theme file, read-only scan.
 				if ( preg_match_all( $cdn_hosts_to_warn_about, $contents, $m ) ) {
 					$findings[] = array(
-						'file'  => ltrim( str_replace( dirname( $dir ), '', $file ), '/' ),
+						'file'  => self::relative_to( dirname( $dir ), $file ),
 						'hosts' => array_values( array_unique( array_map( 'strtolower', $m[0] ) ) ),
 					);
 				}
@@ -362,5 +362,24 @@ final class Compatibility {
 			default:
 				return '';
 		}
+	}
+
+	/**
+	 * A theme file's path with its parent directory removed, for display.
+	 *
+	 * str_replace() would remove EVERY occurrence, so a path that repeats the
+	 * themes directory inside itself — a symlinked or nested install, a theme
+	 * with a folder named after the parent — comes out mangled. Only the
+	 * prefix is meaningful here, so only the prefix is removed.
+	 *
+	 * @param string $base   Directory the label is relative to.
+	 * @param string $file   Absolute file path.
+	 * @return string
+	 */
+	private static function relative_to( string $base, string $file ): string {
+		if ( '' !== $base && 0 === strpos( $file, $base ) ) {
+			$file = substr( $file, strlen( $base ) );
+		}
+		return ltrim( $file, '/' );
 	}
 }

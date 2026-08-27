@@ -1483,3 +1483,69 @@ test( 'compatibility: a detected optimiser is named, its risky setting explained
 	await page.click( '#cg-tabbtn-status' );
 	await expect( page.locator( '#cg-tab-status' ) ).not.toContainText( 'Where to exclude them:' );
 } );
+
+test( 'an asset CDN plus whole-page buffering: the site\'s own scripts survive', async ( { page } ) => {
+	// The half of the 0.13.0 fix that no test reached. Plugin::own_hosts()
+	// reads content_url(), plugins_url(), includes_url(), the uploads base and
+	// both theme URIs, so a CDN plugin that filters them is trusted
+	// automatically. tests/Support/PipelineFactory builds its HostMatcher from
+	// a literal array, so every unit and fixture test goes around that wiring —
+	// this is the only place it runs.
+	//
+	// Buffering is required, not incidental: a script printed into wp_head is
+	// outside the content filters, so only whole-page gating ever sees it. The
+	// pairing "asset CDN + buffering" is the exact scenario docs/customizing.md
+	// says the fix exists for, and neither half was tested with the other.
+	//
+	// The probe script sits at /bundle.js — NO /wp-content/ in the path — so
+	// the path heuristic cannot rescue it. If it survives, own_hosts() did it.
+	await page.goto( '/wp-login.php' );
+	await page.fill( '#user_login', 'admin' );
+	await page.fill( '#user_pass', 'password' );
+	await page.click( '#wp-submit' );
+	await page.waitForURL( /wp-admin/, { timeout: 120000 } );
+
+	const OPTION = 'input[name="calucon_embed_gate_options[detection][output_buffer]"][type="checkbox"]';
+	const save = async () => {
+		await page.click( 'form p.submit input[type="submit"], form input#submit' );
+		await page.waitForURL( /options-general\.php/ );
+	};
+
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.click( '#cg-tabbtn-detection' );
+	await page.check( OPTION );
+	await save();
+
+	try {
+		// Control: the same script, no CDN filters. A foreign host at a path
+		// with no wp segment is exactly what this plugin is for.
+		await page.goto( '/no-embeds/?cg_cdn=0' );
+		await expect( page.locator( 'script#cg-cdn-probe' ) ).toHaveCount( 0 );
+		await expect( page.locator( '.cg-embed[data-cg-host="cdn.cg-offload.example"]' ) ).toHaveCount( 1 );
+
+		// With content_url()/plugins_url() moved to that host, it is the
+		// site's own and the script is left exactly as it was.
+		await page.goto( '/no-embeds/?cg_cdn=1' );
+		await expect( page.locator( '.cg-embed[data-cg-host="cdn.cg-offload.example"]' ) ).toHaveCount( 0 );
+		await expect( page.locator( 'script#cg-cdn-probe' ) ).toHaveCount( 1 );
+
+		// And the owner's explicit instruction still outranks all of it: a
+		// host on the always-gate list is gated even when own_hosts() would
+		// otherwise vouch for it. This is the wiring from Plugin::pipeline()
+		// into HostMatcher's fourth constructor argument, which is proven by
+		// hand in HostMatcherTest and nowhere as actually passed.
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+		await page.click( '#cg-tabbtn-detection' );
+		await page.fill( 'textarea[name="calucon_embed_gate_options[detection][always_gate]"]', 'cdn.cg-offload.example' );
+		await save();
+
+		await page.goto( '/no-embeds/?cg_cdn=1' );
+		await expect( page.locator( '.cg-embed[data-cg-host="cdn.cg-offload.example"]' ) ).toHaveCount( 1 );
+	} finally {
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+		await page.click( '#cg-tabbtn-detection' );
+		await page.fill( 'textarea[name="calucon_embed_gate_options[detection][always_gate]"]', '' );
+		await page.uncheck( OPTION );
+		await save();
+	}
+} );

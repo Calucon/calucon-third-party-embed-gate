@@ -1685,7 +1685,23 @@ final class SettingsPage {
 		<?php endif; ?>
 
 		<?php
-		$theme_findings = Compatibility::theme_asset_findings();
+		// Reading up to 40 theme stylesheets is the same class of work as the
+		// content scan below, which has always been on demand because
+		// "rendering 50 posts through the content filters is not free". This
+		// ran on every load of the settings page instead. Same button, same
+		// query parameter: one click does both expensive reads.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only scan, no state changes; capability-gated by the page.
+		$theme_scan_requested = isset( $_GET['calucon-embed-gate-scan'] );
+		if ( ! $theme_scan_requested ) :
+			?>
+			<h3><?php esc_html_e( 'Third-party assets in your theme', 'calucon-third-party-embed-gate' ); ?></h3>
+			<p>
+				<a class="button" href="<?php echo esc_url( add_query_arg( 'calucon-embed-gate-scan', '1' ) . '#cg-compatibility' ); ?>"><?php esc_html_e( 'Check my theme', 'calucon-third-party-embed-gate' ); ?></a>
+				<span class="description"><?php esc_html_e( 'Reads your theme\'s own stylesheets and looks for third-party asset hosts — fonts and CDN files, which load on every page view outside what an embed gate can cover. Read-only; no outbound requests. Runs on request because reading the files costs something.', 'calucon-third-party-embed-gate' ); ?></span>
+			</p>
+			<?php
+		endif;
+		$theme_findings = $theme_scan_requested ? Compatibility::theme_asset_findings() : array();
 		if ( array() !== $theme_findings ) :
 			?>
 			<h3><?php esc_html_e( 'Third-party assets in your theme', 'calucon-third-party-embed-gate' ); ?></h3>
@@ -1695,6 +1711,9 @@ final class SettingsPage {
 					<li><code><?php echo esc_html( $finding['file'] ); ?></code> — <?php echo esc_html( implode( ', ', $finding['hosts'] ) ); ?></li>
 				<?php endforeach; ?>
 			</ul>
+		<?php elseif ( $theme_scan_requested ) : ?>
+			<h3><?php esc_html_e( 'Third-party assets in your theme', 'calucon-third-party-embed-gate' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'None found in your theme\'s own stylesheets. That covers the files a theme usually keeps them in, not every file it could — a theme that builds its CSS into another directory is outside this check.', 'calucon-third-party-embed-gate' ); ?></p>
 		<?php endif; ?>
 		<?php
 	}

@@ -158,6 +158,43 @@ add_filter( 'locale', function ( $locale ) {
 if ( isset( $_GET['cg_wpml'] ) && ! defined( 'ICL_SITEPRESS_VERSION' ) ) {
 	define( 'ICL_SITEPRESS_VERSION', '4.6.13' );
 }
+// Asset-CDN emulator. The 0.13.0 fix has two halves and only one of them was
+// reachable by a fixture: the path heuristic (/wp-content/ on any host) is
+// covered by tests/Fixtures/cdn-offloaded-assets-*, but Plugin::own_hosts() —
+// which reads content_url(), plugins_url(), includes_url(), the uploads base
+// and both theme URIs so that a CDN plugin filtering them is trusted
+// automatically — was reached by NO test at all. tests/Support/PipelineFactory
+// builds its HostMatcher from a literal array, so every unit and fixture test
+// goes around the wiring in Plugin::pipeline().
+//
+// The emitted script deliberately sits at a path with no /wp-content/ in it,
+// so the path heuristic cannot rescue it: if it survives ungated, that is
+// own_hosts() doing the work and nothing else.
+//
+//   ?cg_cdn=1  — content_url()/plugins_url() moved to the CDN host, so the
+//                CDN host is one of the site's own
+//   ?cg_cdn=0  — the same script, without the filters: the control, which
+//                must be gated
+if ( isset( $_GET['cg_cdn'] ) ) {
+	if ( '1' === (string) $_GET['cg_cdn'] ) {
+		$cg_cdn_host = static function ( $url ) {
+			return preg_replace( '#^https?://[^/]+#', 'https://cdn.cg-offload.example', (string) $url );
+		};
+		add_filter( 'content_url', $cg_cdn_host );
+		add_filter( 'plugins_url', $cg_cdn_host );
+	}
+	// wp_footer, not wp_head: OutputBuffer gates only inside <body>, on
+	// purpose — a panel in the head is invalid markup, and head findings are
+	// the Status screen's job rather than a silent rewrite.
+	add_action(
+		'wp_footer',
+		static function () {
+			echo '<script src="https://cdn.cg-offload.example/bundle.js" id="cg-cdn-probe"></script>' . "\n";
+		},
+		1
+	);
+}
+
 // Cache-plugin emulator, the same trick. The Compatibility screen tells the
 // owner which of their optimiser's settings breaks embeds and WHERE that
 // plugin keeps its exclusion list — advice that renders only when a cache
