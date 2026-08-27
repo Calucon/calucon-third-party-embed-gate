@@ -103,7 +103,7 @@ msgstr "Nur, wenn Ihre Website einen Content-Security-Policy-Header sendet – 
 
 #. Found in faq paragraph.
 msgid "Yes: one checkbox on the Providers tab adds a link to the provider's own policy page in every placeholder, so a visitor can read what loading the content means before asking for it. It is off by default. You can set a different URL per provider (for example a localised page). The link is plain markup — nothing is fetched from the provider by showing it."
-msgstr "Ja: Ein Häkchen im Tab „Anbieter“ ergänzt in jedem Platzhalter einen Link auf die Datenschutzseite des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen."
+msgstr "Ja: Ein Häkchen im Tab „Anbieter“ ergänzt in jedem Platzhalter einen Link auf die Datenschutzerklärung des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen."
 
 #. Found in faq paragraph.
 msgid "Yes, without code: Providers → <em>Your own providers</em> takes a name, the embed hosts (one per line) and, optionally, script hosts and a kind for the button icon. After saving it appears in the provider table with its own notice, button text and privacy-policy link. Unknown hosts are gated either way — a provider of your own only gives such a host a proper name and texts. Hosts the built-in providers handle stay with them, and your own providers are always gated; the never-gate list under Detection is the place to exempt a host."
@@ -215,7 +215,7 @@ msgstr "<strong>Voraussetzungen:</strong> WordPress 5.9 oder neuer und PHP 7.4 o
 
 #. Found in installation paragraph.
 msgid "If you turn on consent memory and want to offer visitors a way to take it back, add the \"Withdraw embed consents\" block, or place the <code>[calucon_embed_gate_withdraw]</code> shortcode on your privacy-policy page."
-msgstr "Wenn Sie das Merken der Einwilligung aktivieren und Besuchern einen Weg zurück anbieten möchten, fügen Sie den Block „Einwilligungen widerrufen“ ein oder setzen Sie den Shortcode <code>[calucon_embed_gate_withdraw]</code> auf Ihre Datenschutzseite."
+msgstr "Wenn Sie das Merken der Einwilligung aktivieren und Besuchern einen Weg zurück anbieten möchten, fügen Sie den Block „Einwilligungen widerrufen“ ein oder setzen Sie den Shortcode <code>[calucon_embed_gate_withdraw]</code> in Ihre Datenschutzerklärung."
 
 #. Found in installation paragraph.
 msgid "Calucon Third-Party Embed Gate works the moment it is activated — it gates third-party embeds by default, with no configuration, no account and no external service."

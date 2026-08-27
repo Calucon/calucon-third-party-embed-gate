@@ -77,7 +77,7 @@ msgstr "Eine Content-Security-Policy (CSP) ist eine Sicherheitseinstellung, die 
 
 #: assets/js/editor.js:181
 msgid "A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled."
-msgstr "Ein Button, mit dem Besucher ihre gespeicherten Einwilligungen löschen. Platziere ihn auf deiner Datenschutzseite. Er wirkt nur, wenn „Einwilligung merken“ aktiviert ist."
+msgstr "Ein Button, mit dem Besucher ihre gespeicherten Einwilligungen löschen. Platziere ihn in deiner Datenschutzerklärung. Er wirkt nur, wenn „Einwilligung merken“ aktiviert ist."
 
 #: src/Admin/SettingsPage.php:1290
 msgid "A little"
@@ -1041,7 +1041,7 @@ msgstr "Größe des Hinweistexts"
 
 #: src/Admin/SettingsPage.php:1358
 msgid "Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor's browser only — after their first click, never before — and a withdrawal control becomes available via the [calucon_embed_gate_withdraw] shortcode for your privacy policy page."
-msgstr "Standardmäßig aus: Die Einwilligung gilt für die eine angeklickte Einbettung und wird nirgends gespeichert. Ist die Option aktiviert, wird die Entscheidung ausschließlich im Browser des Besuchers gespeichert – nach dessen erstem Klick, nie davor – und über den Shortcode [calucon_embed_gate_withdraw] steht eine Widerrufsmöglichkeit für deine Datenschutzseite bereit."
+msgstr "Standardmäßig aus: Die Einwilligung gilt für die eine angeklickte Einbettung und wird nirgends gespeichert. Ist die Option aktiviert, wird die Entscheidung ausschließlich im Browser des Besuchers gespeichert – nach dessen erstem Klick, nie davor – und über den Shortcode [calucon_embed_gate_withdraw] steht eine Widerrufsmöglichkeit für deine Datenschutzerklärung bereit."
 
 #: src/Admin/SettingsPage.php:779
 msgid "One host per line, e.g. cdn.example.com or *.example.com. These are treated as the site itself and never gated. You can paste a whole web address; only the site name is kept."

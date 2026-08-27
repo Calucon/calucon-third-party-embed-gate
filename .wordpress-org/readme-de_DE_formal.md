@@ -142,7 +142,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** If you turn on consent memory and want to offer visitors a way to take it back …
 
-**DE:** Wenn Sie das Merken der Einwilligung aktivieren und Besuchern einen Weg zurück anbieten möchten, fügen Sie den Block „Einwilligungen widerrufen“ ein oder setzen Sie den Shortcode `[calucon_embed_gate_withdraw]` auf Ihre Datenschutzseite.
+**DE:** Wenn Sie das Merken der Einwilligung aktivieren und Besuchern einen Weg zurück anbieten möchten, fügen Sie den Block „Einwilligungen widerrufen“ ein oder setzen Sie den Shortcode `[calucon_embed_gate_withdraw]` in Ihre Datenschutzerklärung.
 
 **EN:** **Requirements:** WordPress 5.9 or newer and PHP 7.4 or newer …
 
@@ -242,7 +242,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Können Platzhalter die Datenschutzerklärung des Anbieters verlinken?
 
-**DE (Antwort):** Ja: Ein Häkchen im Tab „Anbieter“ ergänzt in jedem Platzhalter einen Link auf die Datenschutzseite des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen.
+**DE (Antwort):** Ja: Ein Häkchen im Tab „Anbieter“ ergänzt in jedem Platzhalter einen Link auf die Datenschutzerklärung des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmäßig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen.
 
 **EN:** Do I need the Content-Security-Policy section?
 

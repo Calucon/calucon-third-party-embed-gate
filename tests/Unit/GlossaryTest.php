@@ -65,6 +65,7 @@ final class GlossaryTest extends TestCase {
 		'Sperrliste für'  => array( 'safelist', 'Freigabeliste' ),
 		'Medienbibliothek' => array( 'media library', 'Mediathek' ),
 		'Datenschutzrichtlinie' => array( 'privacy policy', 'Datenschutzerklärung' ),
+		'Datenschutzseite' => array( 'privacy policy', 'Datenschutzerklärung' ),
 		'Webseite '       => array( 'site', 'Website' ),
 		'Vorschaubildchen' => array( 'thumbnail', 'Vorschaubild' ),
 	);
