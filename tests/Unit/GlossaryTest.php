@@ -94,6 +94,37 @@ final class GlossaryTest extends TestCase {
 		// keeps a long string that legitimately says both words quiet.
 		array( 'Einstellungsseite', 'screen', 'Einstellungsansicht', 'screen' ),
 		array( 'Seite', 'screen', 'Ansicht', 'screen' ),
+		// "disable" is deaktivieren, in all three forms the glossary lists.
+		// "abschalten" reached ten strings across all four source files —
+		// and, like "screen", sat in bin/glossary-report.php's output the
+		// whole time. Note the limit: the separable "schalte … ab" cannot be
+		// caught by a substring rule without also firing on "Regel-Schalter",
+		// so the report still has to be read. This catches the rest.
+		array( 'abgeschaltet', 'disable', 'deaktiviert', 'disabl' ),
+		array( 'abschalten', 'disable', 'deaktivieren', 'disabl' ),
+		array( 'abzuschalten', 'disable', 'zu deaktivieren', 'disabl' ),
+		// "default" is Standard. "Voreinstellung" is ordinary German and
+		// reads fine, which is why it survived eight strings while the rest of
+		// the corpus used Standard 13 times — a wrong word is not always an
+		// ugly one. The prescribed term is spelled out rather than bare
+		// "Standard" so the escape below cannot be satisfied by an unrelated
+		// "Standardtext" three clauses away.
+		array( 'Voreinstellung', 'default', 'Standardeinstellung', 'default' ),
+		// "required" is erfordert/erforderlich. Note what this rule does NOT
+		// claim: three other strings answer "require" by restructuring —
+		// "Grants require both …" as „zählt nur, wenn …", "no code required"
+		// as „ohne Code", "Requirements:" as „Voraussetzungen:" — and all
+		// three are right. A translation may drop a word; it may not swap the
+		// prescribed one for a synonym, which is what „nötig" did.
+		array( 'nötig', 'required', 'erforderlich', 'requir' ),
+		// "enabled" is aktiviert, not the bare adjective „aktiv" — Simon's
+		// call, and the right one: „aktiv ist" reads better than „aktiviert
+		// ist" and the glossary still wins. The wrong forms carry their
+		// following character so the substring cannot match inside
+		// „aktiviert" or „aktivieren", which would fire on every string.
+		array( 'aktiv ', 'enabled', 'aktiviert', 'enabled' ),
+		array( 'aktiv,', 'enabled', 'aktiviert', 'enabled' ),
+		array( 'aktiv;', 'enabled', 'aktiviert', 'enabled' ),
 	);
 
 	/**

@@ -75,7 +75,7 @@ msgstr "Eine Content-Security-Policy (CSP) ist eine Sicherheitseinstellung, die 
 
 #: assets/js/editor.js:181
 msgid "A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled."
-msgstr "Ein Button, mit dem Besucher ihre gespeicherten Einwilligungen löschen. Platzieren Sie ihn auf Ihrer Datenschutzseite. Er wirkt nur, wenn „Einwilligung merken“ aktiv ist."
+msgstr "Ein Button, mit dem Besucher ihre gespeicherten Einwilligungen löschen. Platzieren Sie ihn auf Ihrer Datenschutzseite. Er wirkt nur, wenn „Einwilligung merken“ aktiviert ist."
 
 #: src/Admin/SettingsPage.php:1290
 msgid "A little"
@@ -225,7 +225,7 @@ msgstr "Calucon Third-Party Embed Gate ist kostenlos und Open Source – Sie k�
 
 #: src/Admin/SettingsPage.php:381
 msgid "Calucon Third-Party Embed Gate settings sections"
-msgstr "Einstellungsbereiche von Calucon Third-Party Embed Gate"
+msgstr "Einstellungsabschnitte von Calucon Third-Party Embed Gate"
 
 #: src/Admin/SettingsPage.php:751
 msgid "Cancel"
@@ -374,7 +374,7 @@ msgstr "Erkannt"
 
 #: src/Admin/SettingsPage.php:1614
 msgid "Detected and tested for interoperation. Gating currently ignores its choices — the fail-closed default. Enable the consent platform bridge under Consent to load embeds automatically once this platform reports consent for them."
-msgstr "Erkannt und auf Zusammenspiel getestet. Die Sperre ignoriert die Entscheidungen dieser Plattform derzeit – die Voreinstellung „fail closed“. Aktivieren Sie die Brücke zur Consent-Plattform unter „Einwilligung merken“, damit Einbettungen automatisch laden, sobald diese Plattform eine Einwilligung dafür meldet."
+msgstr "Erkannt und auf Zusammenspiel getestet. Die Sperre ignoriert die Entscheidungen dieser Plattform derzeit – die Standardeinstellung „fail closed“. Aktivieren Sie die Brücke zur Consent-Plattform unter „Einwilligung merken“, damit Einbettungen automatisch laden, sobald diese Plattform eine Einwilligung dafür meldet."
 
 #: src/Admin/SettingsPage.php:1487
 msgid "Detected now: %s."
@@ -382,11 +382,11 @@ msgstr "Jetzt erkannt: %s."
 
 #: src/Admin/SettingsPage.php:1613
 msgid "Detected, bridge active: when this platform reports consent for the embeds' category, gated embeds load without a second click, and a withdrawal re-gates them. If the platform does not answer, gating stands (fail closed). Prefer its own blocker for a provider? Disable that provider under Providers and Calucon Third-Party Embed Gate steps aside for it."
-msgstr "Erkannt, Brücke aktiv: Meldet diese Plattform eine Einwilligung für die Kategorie der Einbettungen, laden gesperrte Einbettungen ohne zweiten Klick; ein Widerruf sperrt sie wieder. Antwortet die Plattform nicht, bleibt die Sperre bestehen (fail closed). Soll für einen Anbieter lieber der Blocker der Plattform greifen? Schalten Sie diesen Anbieter unter „Anbieter“ ab, dann tritt Calucon Third-Party Embed Gate dafür zurück."
+msgstr "Erkannt, Brücke aktiv: Meldet diese Plattform eine Einwilligung für die Kategorie der Einbettungen, laden gesperrte Einbettungen ohne zweiten Klick; ein Widerruf sperrt sie wieder. Antwortet die Plattform nicht, bleibt die Sperre bestehen (fail closed). Soll für einen Anbieter lieber der Blocker der Plattform greifen? Deaktivieren Sie diesen Anbieter unter „Anbieter“, dann tritt Calucon Third-Party Embed Gate dafür zurück."
 
 #: src/Admin/SettingsPage.php:1615
 msgid "Detected. Calucon Third-Party Embed Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
-msgstr "Erkannt. Calucon Third-Party Embed Gate hat keine getestete Brücke zu dieser Consent-Plattform und sperrt unabhängig von deren Entscheidungen weiter – die Voreinstellung „fail closed“. Vor dem Klick auf die Einbettung lädt nichts."
+msgstr "Erkannt. Calucon Third-Party Embed Gate hat keine getestete Brücke zu dieser Consent-Plattform und sperrt unabhängig von deren Entscheidungen weiter – die Standardeinstellung „fail closed“. Vor dem Klick auf die Einbettung lädt nichts."
 
 #: src/Admin/SettingsPage.php:1608
 msgid "Detected. It translates the finished page, so the placeholder texts are translated there like any other text on the page. Nothing to configure here."
@@ -406,7 +406,7 @@ msgstr "Erkannt. Die Texte, die Sie hier selbst eingeben – Hinweis und Button
 
 #: src/Admin/SettingsPage.php:1599
 msgid "Detected. Whole-page gating is enabled, so this builder's embeds are covered."
-msgstr "Erkannt. Die Sperre der gesamten Seitenausgabe ist aktiv; damit sind die Einbettungen dieses Builders abgedeckt."
+msgstr "Erkannt. Die Sperre der gesamten Seitenausgabe ist aktiviert; damit sind die Einbettungen dieses Builders abgedeckt."
 
 #: src/Admin/SettingsPage.php:375 src/Admin/SettingsPage.php:736
 msgid "Detection"
@@ -967,11 +967,11 @@ msgstr "Minimal – transparent mit Rand"
 
 #: src/Admin/SettingsPage.php:1729
 msgid "NOT gated — its detection rule is disabled"
-msgstr "NICHT gesperrt – die zugehörige Erkennungsregel ist abgeschaltet"
+msgstr "NICHT gesperrt – die zugehörige Erkennungsregel ist deaktiviert"
 
 #: src/Admin/SettingsPage.php:1730
 msgid "NOT gated — provider disabled in the table above"
-msgstr "NICHT gesperrt – Anbieter in der Tabelle oben abgeschaltet"
+msgstr "NICHT gesperrt – Anbieter in der Tabelle oben deaktiviert"
 
 #: src/Admin/SettingsPage.php:653 src/Admin/SettingsPage.php:684
 msgid "Name"
@@ -1039,7 +1039,7 @@ msgstr "Größe des Hinweistexts"
 
 #: src/Admin/SettingsPage.php:1358
 msgid "Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor's browser only — after their first click, never before — and a withdrawal control becomes available via the [calucon_embed_gate_withdraw] shortcode for your privacy policy page."
-msgstr "Standardmäßig aus: Die Einwilligung gilt für die eine angeklickte Einbettung und wird nirgends gespeichert. Ist die Option aktiv, wird die Entscheidung ausschließlich im Browser des Besuchers gespeichert – nach dessen erstem Klick, nie davor – und über den Shortcode [calucon_embed_gate_withdraw] steht eine Widerrufsmöglichkeit für Ihre Datenschutzseite bereit."
+msgstr "Standardmäßig aus: Die Einwilligung gilt für die eine angeklickte Einbettung und wird nirgends gespeichert. Ist die Option aktiviert, wird die Entscheidung ausschließlich im Browser des Besuchers gespeichert – nach dessen erstem Klick, nie davor – und über den Shortcode [calucon_embed_gate_withdraw] steht eine Widerrufsmöglichkeit für Ihre Datenschutzseite bereit."
 
 #: src/Admin/SettingsPage.php:779
 msgid "One host per line, e.g. cdn.example.com or *.example.com. These are treated as the site itself and never gated. You can paste a whole web address; only the site name is kept."
@@ -1055,7 +1055,7 @@ msgstr "Aktivieren Sie das nur, wenn Einbettungen aus einem Page-Builder nicht g
 
 #: src/Admin/SettingsPage.php:1565
 msgid "Only enabled providers are listed; disable a provider under Providers and its hosts disappear from the lines above. A host can differ from the embed address when the plugin loads a privacy-preserving variant (YouTube loads from youtube-nocookie.com, for example)."
-msgstr "Aufgeführt sind nur aktivierte Anbieter; wird ein Anbieter unter „Anbieter“ abgeschaltet, verschwinden seine Hosts aus den Zeilen oben. Ein Host kann von der Einbettungsadresse abweichen, wenn das Plugin eine datenschutzfreundliche Variante lädt (YouTube lädt zum Beispiel von youtube-nocookie.com)."
+msgstr "Aufgeführt sind nur aktivierte Anbieter; wird ein Anbieter unter „Anbieter“ deaktiviert, verschwinden seine Hosts aus den Zeilen oben. Ein Host kann von der Einbettungsadresse abweichen, wenn das Plugin eine datenschutzfreundliche Variante lädt (YouTube lädt zum Beispiel von youtube-nocookie.com)."
 
 #: src/Admin/SettingsPage.php:1327
 msgid "Only the colours you set here change; the rest keep the values above. Tick \"Preview on a dark page background\" to check them."

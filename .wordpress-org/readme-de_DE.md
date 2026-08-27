@@ -134,11 +134,11 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** 2. That is all that is required …
 
-**DE:** 2. Mehr ist nicht nötig. Deine bestehenden Einbettungen werden im Frontend jetzt durch einen Platzhalter zum Anklicken ersetzt, und vor dem Klick des Besuchers wird kein Drittanbieter kontaktiert. Redakteure sehen im Block-Editor weiterhin die normale Einbettung – am Schreiben ändert sich also nichts.
+**DE:** 2. Mehr ist nicht erforderlich. Deine bestehenden Einbettungen werden im Frontend jetzt durch einen Platzhalter zum Anklicken ersetzt, und vor dem Klick des Besuchers wird kein Drittanbieter kontaktiert. Redakteure sehen im Block-Editor weiterhin die normale Einbettung – am Schreiben ändert sich also nichts.
 
 **EN:** 3. Optional: open **Settings → Calucon Third-Party Embed Gate** …
 
-**DE:** 3. Optional: Unter **Einstellungen → Calucon Third-Party Embed Gate** lassen sich Design, Verhalten pro Anbieter, Erkennungsregeln, das Merken der Einwilligung und die optionale Brücke zur Consent-Plattform anpassen. Für den Schutz ist nichts davon nötig – die Voreinstellungen sperren alles, was von Drittanbietern kommt.
+**DE:** 3. Optional: Unter **Einstellungen → Calucon Third-Party Embed Gate** lassen sich Design, Verhalten pro Anbieter, Erkennungsregeln, das Merken der Einwilligung und die optionale Brücke zur Consent-Plattform anpassen. Für den Schutz ist nichts davon nötig – die Standardeinstellungen sperren alles, was von Drittanbietern kommt.
 
 **EN:** If you turn on consent memory and want to offer visitors a way to take it back …
 
@@ -180,7 +180,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Ich habe schon ein Cookie-Banner (Complianz, Cookiebot, …). Kommen sich die beiden in die Quere?
 
-**DE (Antwort):** Nein. Von Haus aus ignoriert Calucon Third-Party Embed Gate das Banner und sperrt weiter – Besucher sehen dein Banner für dessen Kategorien und den Platzhalter für Einbettungen, und nichts blockiert doppelt (der Platzhalter enthält kein Iframe und kein Skript, das der Blocker eines Banners abfangen könnte). Wenn dir eine Entscheidung statt zweier lieber ist, aktiviere die Brücke zur Consent-Plattform unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken: Eine Einwilligung, die dein Besucher in der Plattform gibt, lädt die Einbettungen dann automatisch, und ein Widerruf dort sperrt sie wieder. Die Brücke funktioniert nur mit den in dieser Ansicht genannten Plattformen – bei jeder anderen hält sie sich heraus und die Sperre bleibt bestehen. Soll für einen bestimmten Anbieter lieber der Blocker deiner Plattform greifen, schalte diesen Anbieter unter „Anbieter“ ab, dann tritt Calucon Third-Party Embed Gate dafür zurück.
+**DE (Antwort):** Nein. Von Haus aus ignoriert Calucon Third-Party Embed Gate das Banner und sperrt weiter – Besucher sehen dein Banner für dessen Kategorien und den Platzhalter für Einbettungen, und nichts blockiert doppelt (der Platzhalter enthält kein Iframe und kein Skript, das der Blocker eines Banners abfangen könnte). Wenn dir eine Entscheidung statt zweier lieber ist, aktiviere die Brücke zur Consent-Plattform unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken: Eine Einwilligung, die dein Besucher in der Plattform gibt, lädt die Einbettungen dann automatisch, und ein Widerruf dort sperrt sie wieder. Die Brücke funktioniert nur mit den in dieser Ansicht genannten Plattformen – bei jeder anderen hält sie sich heraus und die Sperre bleibt bestehen. Soll für einen bestimmten Anbieter lieber der Blocker deiner Plattform greifen, deaktiviere diesen Anbieter unter „Anbieter“, dann tritt Calucon Third-Party Embed Gate dafür zurück.
 
 **EN:** Is Google Consent Mode v2 supported?
 
@@ -283,7 +283,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 ## Upgrade Notice (0.12.1)
 
-**DE:** Nur Deutsch: Korrekturen nach der Prüfung durch das deutsche Übersetzungsteam – der Einstellungsbereich heißt jetzt „Design“, und mehrere Begriffe und Sätze wurden an Glossar und Styleguide von WordPress Deutsch angeglichen. Für englischsprachige Websites ändert sich nichts.
+**DE:** Nur Deutsch: Korrekturen nach der Prüfung durch das deutsche Übersetzungsteam – der Einstellungsbereich heißt jetzt „Design“, und mehrere Begriffe und Sätze wurden an Glossar und Styleguide von WordPress Deutsch angeglichen. Für englischsprachige Websites ändert sich nichts.
 
 ---
 
