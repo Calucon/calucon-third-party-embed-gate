@@ -184,6 +184,38 @@ pinned by the "multilingual" WP test, whose emulator hooks `default_option_` too
 — a site that never saved the settings has no option row, and WordPress then
 never applies `option_`.
 
+**Translations go through `composer translations`, which gates before it
+derives.** `bin/update-translations.sh` is seven announced stages: regenerate
+the POT and merge into **de_DE and de_DE_formal only**; gate on completeness
+and placeholders; gate on `StyleGuideTest`; gate on `GlossaryTest`; and only
+then derive de_AT/de_CH/de_CH_informal, compile the five `.mo` files and five
+editor JSONs, and re-run the whole suite. A failing gate aborts **before**
+anything is derived, so a mistake in a source locale can no longer become five
+wrong `.po` files, five wrong `.mo` files and five wrong JSONs that look like
+independent confirmation. The `@group translation-sources` / `translation-derived`
+annotations are what make that staging possible — the gates run the source
+group, because the derived-file tests legitimately fail until stage 5 has run.
+
+**The thing no gate can check is whether the German reads like German.** The
+style guide's first instruction is *„Niemand liest gerne eine wörtliche
+Übersetzung"*, and literal translation has been this project's most common
+translation defect: „der Content-Security-Policy-Helfer: was eine Richtlinie
+ist, eine Prüfung der eigenen Website, …" (an English list carried across item
+by item), „eine Art für das Button-Symbol", „was ein Mensch liest", „…, mit
+einem Klick rückgängig zu machen". Every one passed every mechanical check.
+Before submitting to translate.wordpress.org run `php bin/translation-review.php`,
+which prints the German **with the English hidden**, worst suspects first —
+reading German prose without the source in view is the only reliable way to
+notice it is not German prose.
+
+**Whitespace: the style guide wants a protected space before a Gedankenstrich
+and before a unit.** `php bin/fix-style.php` applies both and touches nothing
+else (asserted: normalise every U+00A0 back to a space and the file must be
+byte-identical). Expect to need it, because U+00A0 is invisible — and note the
+trap it creates in the other direction: a literal search-and-replace over a
+string that already contains one silently matches nothing. That has cost this
+repo time twice.
+
 **The de_DE glossary is not optional, and structure tests cannot see it.**
 A reviewer at translate.wordpress.org flagged six terms that were structurally
 perfect and lexically wrong — `Reiter` for tab, `Rahmen` for border, `Eigene`

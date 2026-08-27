@@ -47,6 +47,9 @@ final class ReadmeTranslationTest extends TestCase {
 		return $short . "\n" . substr( $readme, $start, $end - $start );
 	}
 
+	/**
+	 * @group translation-sources
+	 */
 	public function test_the_german_listing_text_is_in_step_with_readme_txt(): void {
 		$stamp = substr( hash( 'sha256', $this->translated_source() ), 0, 16 );
 
@@ -73,6 +76,9 @@ final class ReadmeTranslationTest extends TestCase {
 	 * Both variants must cover the same paragraphs — a chunk added to one and
 	 * forgotten in the other means one German plugin page is short a section.
 	 */
+	/**
+	 * @group translation-sources
+	 */
 	public function test_both_address_forms_cover_the_same_chunks(): void {
 		$counts = array();
 		foreach ( self::GERMAN as $relative ) {
@@ -97,6 +103,9 @@ final class ReadmeTranslationTest extends TestCase {
 	 *
 	 * The two rules are the Swiss team's own: the output was checked against
 	 * their converter at po.wpswitzerland.ch and matched entry for entry.
+	 */
+	/**
+	 * @group translation-derived
 	 */
 	public function test_derived_readme_locales_match_their_source(): void {
 		$dir = dirname( __DIR__, 2 ) . '/.wordpress-org/';

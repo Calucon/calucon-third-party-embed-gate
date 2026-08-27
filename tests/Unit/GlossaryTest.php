@@ -38,6 +38,9 @@ namespace CaluconEmbedGate\Tests\Unit;
 use CaluconEmbedGate\Tests\Support\PoReader;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @group translation-sources
+ */
 final class GlossaryTest extends TestCase {
 
 	/**
