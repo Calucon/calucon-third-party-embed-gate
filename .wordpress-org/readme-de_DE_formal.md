@@ -294,7 +294,7 @@ Werden Ihre Assets über einen CDN-Hostnamen ausgeliefert, gilt dieser als Ihr e
 
 ## Upgrade Notice (0.12.1)
 
-**DE:** Nur Deutsch: Korrekturen nach der Prüfung durch das deutsche Übersetzungsteam – der Einstellungsbereich heißt jetzt „Design“, und mehrere Begriffe und Sätze wurden an Glossar und Styleguide von WordPress Deutsch angeglichen. Für englischsprachige Websites ändert sich nichts.
+**DE:** Nur Deutsch: Korrekturen nach der Prüfung durch das deutsche Übersetzungsteam – ein Tab in den Einstellungen heißt jetzt „Design“, und mehrere Begriffe und Sätze wurden an Glossar und Styleguide von WordPress Deutsch angeglichen. Für englischsprachige Websites ändert sich nichts.
 
 ---
 

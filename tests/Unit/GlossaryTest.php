@@ -68,6 +68,15 @@ final class GlossaryTest extends TestCase {
 		'Datenschutzseite' => array( 'privacy policy', 'Datenschutzerklärung' ),
 		'Webseite '       => array( 'site', 'Website' ),
 		'Vorschaubildchen' => array( 'thumbnail', 'Vorschaubild' ),
+		// The third way to avoid „Tab", after Reiter and Registerkarte. It is
+		// here rather than in CONDITIONAL because the readme .md files carry
+		// German-only chunks — the upgrade notices have no "**EN:**" locator —
+		// and a CONDITIONAL rule needs English to trigger on, so it would be
+		// inert in exactly the place this word actually appeared. Unconditional
+		// is safe: this corpus says „Einstellungsansicht" for the screen and
+		// „Einstellungsabschnitte" for the sections, so the compound has no
+		// remaining legitimate sense.
+		'Einstellungsbereich' => array( 'tab', 'Tab' ),
 	);
 
 	/**
@@ -152,6 +161,23 @@ final class GlossaryTest extends TestCase {
 		'.wordpress-org/readme-de_DE_formal.po',
 	);
 
+	/**
+	 * The German listing text, which is authored here and only later shaped
+	 * into the .po files above.
+	 *
+	 * This is where the German for wordpress.org is actually written, so it
+	 * is the wrong place to be blind — and it was: until this was added, the
+	 * 0.12.1 upgrade notice said „Einstellungsbereich" for "settings tab"
+	 * with nothing to notice it. The .po files are checked separately because
+	 * the two are not isomorphic and neither is generated from the other.
+	 *
+	 * @var string[]
+	 */
+	private const MARKDOWN_SOURCES = array(
+		'.wordpress-org/readme-de_DE.md',
+		'.wordpress-org/readme-de_DE_formal.md',
+	);
+
 	public function test_no_known_wrong_glossary_term_comes_back(): void {
 		$found = array();
 
@@ -181,6 +207,35 @@ final class GlossaryTest extends TestCase {
 					// AND "your own providers". If the prescribed term is
 					// already there, the "custom" half is handled and the
 					// remaining "eigen…" belongs to "own".
+					if ( false !== stripos( $german, $right ) ) {
+						continue;
+					}
+					$found[] = self::report( $relative, $wrong, $term, $right, $german );
+				}
+			}
+		}
+
+		foreach ( self::MARKDOWN_SOURCES as $relative ) {
+			$path = dirname( __DIR__, 2 ) . '/' . $relative;
+			self::assertFileExists( $path );
+
+			foreach ( self::markdown_pairs( $path ) as list( $english, $german ) ) {
+				foreach ( self::FORBIDDEN as $wrong => list( $term, $right ) ) {
+					if ( false !== strpos( $german, $wrong ) ) {
+						$found[] = self::report( $relative, $wrong, $term, $right, $german );
+					}
+				}
+
+				foreach ( self::CONDITIONAL as list( $wrong, $term, $right, $trigger ) ) {
+					if ( false === strpos( $german, $wrong ) ) {
+						continue;
+					}
+					if ( 1 !== preg_match( '/\\b' . preg_quote( $trigger, '/' ) . '/i', $english ) ) {
+						continue;
+					}
+					if ( self::false_alarm( $english ) ) {
+						continue;
+					}
 					if ( false !== stripos( $german, $right ) ) {
 						continue;
 					}
@@ -269,4 +324,39 @@ final class GlossaryTest extends TestCase {
 			implode( "\n", $excerpts )
 		);
 	}
+
+	/**
+	 * English/German pairs out of a chunked readme markdown file.
+	 *
+	 * The files interleave "**EN:** …" with "**DE:** …" (and "**DE (Antwort):**"
+	 * for FAQ answers), the English acting as a locator rather than as shipped
+	 * text. Each German chunk is paired with the last English one seen, which
+	 * is what the CONDITIONAL rules need to know which sense a word carries.
+	 *
+	 * Note the limit: the upgrade-notice chunks are German-only and carry no
+	 * "**EN:**" line, so they inherit whatever English was last seen. Every
+	 * CONDITIONAL rule is therefore effectively inert in those chunks, and a
+	 * word that must be caught there belongs in FORBIDDEN.
+	 *
+	 * @param string $path Absolute path.
+	 * @return array<int, array{0:string,1:string}>
+	 */
+	private static function markdown_pairs( string $path ): array {
+		$pairs   = array();
+		$english = '';
+		foreach ( explode( "\n", (string) file_get_contents( $path ) ) as $line ) {
+			if ( 0 === strpos( $line, '**EN:**' ) ) {
+				$english = trim( substr( $line, 7 ) );
+				continue;
+			}
+			if ( 1 === preg_match( '/^\*\*DE[^:]*:\*\*(.*)$/u', $line, $found ) ) {
+				$german = trim( $found[1] );
+				if ( '' !== $german ) {
+					$pairs[] = array( $english, $german );
+				}
+			}
+		}
+		return $pairs;
+	}
+
 }

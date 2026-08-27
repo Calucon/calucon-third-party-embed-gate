@@ -42,12 +42,14 @@ final class StyleGuideTest extends TestCase {
 	private const INFORMAL = array(
 		'languages/calucon-third-party-embed-gate-de_DE.po',
 		'.wordpress-org/readme-de_DE.po',
+		'.wordpress-org/readme-de_DE.md',
 	);
 
 	/** The formal branch. */
 	private const FORMAL = array(
 		'languages/calucon-third-party-embed-gate-de_DE_formal.po',
 		'.wordpress-org/readme-de_DE_formal.po',
+		'.wordpress-org/readme-de_DE_formal.md',
 	);
 
 	/**
@@ -293,12 +295,47 @@ final class StyleGuideTest extends TestCase {
 		foreach ( $files as $relative ) {
 			$path = dirname( __DIR__, 2 ) . '/' . $relative;
 			self::assertFileExists( $path );
+
+			// The listing German is authored as markdown, not as a PO. It is
+			// the same German, published on the same plugin page, and it was
+			// unchecked here until a reviewer-grade word turned up in it.
+			if ( '.md' === substr( $relative, -3 ) ) {
+				foreach ( self::markdown_chunks( $path ) as $index => $german ) {
+					$out[ basename( $relative ) . ' :: chunk ' . $index ] = $german;
+				}
+				continue;
+			}
+
 			foreach ( PoReader::translations( $path ) as $english => $german ) {
 				$key = basename( $relative ) . ' :: ' . mb_substr( $english, 0, 60 );
 				$out[ $key ] = $german;
 			}
 		}
 
+		return $out;
+	}
+
+	/**
+	 * The German chunks of a readme markdown file, in order.
+	 *
+	 * Only the "**DE…:**" lines. The "**EN:**" lines are the English locator
+	 * the translator works against and are not shipped text — running German
+	 * orthography rules over them would fail on every straight quote and every
+	 * "you".
+	 *
+	 * @param string $path Absolute path.
+	 * @return string[]
+	 */
+	private static function markdown_chunks( string $path ): array {
+		$out = array();
+		foreach ( explode( "\n", (string) file_get_contents( $path ) ) as $line ) {
+			if ( 1 === preg_match( '/^\*\*DE[^:]*:\*\*(.*)$/u', $line, $found ) ) {
+				$german = trim( $found[1] );
+				if ( '' !== $german ) {
+					$out[] = $german;
+				}
+			}
+		}
 		return $out;
 	}
 
@@ -313,6 +350,14 @@ final class StyleGuideTest extends TestCase {
 		$german = preg_replace( '#<code>.*?</code>#su', '', $german );
 		$german = preg_replace( '#`[^`]*`#u', '', $german );
 		$german = preg_replace( '#<[^>]*>#u', '', $german );
+		// A bare HTML attribute, outside any tag: the Compatibility screen
+		// tells the owner to switch Cloudflare's Rocket Loader off with
+		// data-cfasync="false", and a German reader copies that verbatim. It
+		// is markup quoted as an example, which is the same reason the three
+		// rules above exist — but it has no tag around it to be caught by
+		// them, and the cell is rendered with esc_html(), so <code> would
+		// show up literally on the screen.
+		$german = preg_replace( '#\b[a-z][a-z0-9-]*="[^"]*"#u', '', $german );
 		return preg_replace( '#\[[a-z_]+\]#u', '', $german );
 	}
 }
