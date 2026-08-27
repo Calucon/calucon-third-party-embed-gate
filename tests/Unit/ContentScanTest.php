@@ -147,4 +147,52 @@ final class ContentScanTest extends TestCase {
 		self::assertSame( 'generic', $aggregated[0]['provider'] );
 		self::assertSame( 2, $aggregated[0]['count'] );
 	}
+
+	/**
+	 * An exempted own-asset path is reported as NOT gated, and says why.
+	 *
+	 * This screen's whole reason to exist is reporting "what it would NOT gate
+	 * and why, which is the part a site owner cannot see from the front end".
+	 * A script on a /wp-content/ path is left alone whatever host serves it —
+	 * and the scan reported it as "Gated", the opposite of the truth, on the
+	 * one row where the owner might want to reach for the always-gate list.
+	 */
+	public function test_an_exempted_own_asset_path_is_not_reported_as_gated(): void {
+		$rows = $this->scanner()->scan(
+			'<script src="https://cdn.example.net/wp-content/themes/x/app.js"></script>'
+			. '<script src="https://cdn.example.net/sdk/widget.js"></script>'
+		);
+		$by_url = array();
+		foreach ( $rows as $row ) {
+			$by_url[ $row['url'] ] = $row['status'];
+		}
+
+		self::assertSame(
+			ContentScan::OWN_ASSET_PATH,
+			$by_url['https://cdn.example.net/wp-content/themes/x/app.js'],
+			'the scan claims to gate a script the rules leave alone'
+		);
+		// Same host, ordinary path: genuinely gated, and still reported so.
+		self::assertSame(
+			ContentScan::GATED,
+			$by_url['https://cdn.example.net/sdk/widget.js']
+		);
+	}
+
+	/**
+	 * The owner's explicit list still outranks the heuristic, here as well as
+	 * on the render path — otherwise the screen would tell them the host they
+	 * just added to always-gate is still being let through.
+	 */
+	public function test_always_gate_returns_an_exempted_path_to_gated(): void {
+		$scan = new ContentScan(
+			new HtmlScanner(),
+			new HostMatcher( array( 'example.test' ), true, null, array( 'cdn.example.net' ) ),
+			new Registry( Descriptors::all() ),
+			array( 'iframes' => true, 'scripts' => true, 'images' => false )
+		);
+		$rows = $scan->scan( '<script src="https://cdn.example.net/wp-content/themes/x/app.js"></script>' );
+		self::assertSame( ContentScan::GATED, $rows[0]['status'] );
+	}
+
 }

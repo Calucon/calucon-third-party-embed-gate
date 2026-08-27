@@ -1787,6 +1787,7 @@ final class SettingsPage {
 			\CaluconEmbedGate\Support\ContentScan::NO_USABLE_URL => __( 'No usable URL — passes through', 'calucon-third-party-embed-gate' ),
 			\CaluconEmbedGate\Support\ContentScan::RULE_DISABLED => __( 'NOT gated — its detection rule is disabled', 'calucon-third-party-embed-gate' ),
 			\CaluconEmbedGate\Support\ContentScan::PROVIDER_DISABLED => __( 'NOT gated — provider disabled in the table above', 'calucon-third-party-embed-gate' ),
+			\CaluconEmbedGate\Support\ContentScan::OWN_ASSET_PATH => __( 'NOT gated — its address is a WordPress asset path, so it is treated as your own file. If this host is not yours, add it to "Always gate these hosts" under Detection.', 'calucon-third-party-embed-gate' ),
 		);
 
 		$scanned = array();

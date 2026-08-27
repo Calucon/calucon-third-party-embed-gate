@@ -32,6 +32,7 @@ final class ContentScan {
 	public const NO_USABLE_URL     = 'no-usable-url';
 	public const RULE_DISABLED     = 'rule-disabled';
 	public const PROVIDER_DISABLED = 'provider-disabled';
+	public const OWN_ASSET_PATH    = 'own-asset-path';
 
 	/** @var HtmlScanner */
 	private HtmlScanner $scanner;
@@ -172,6 +173,24 @@ final class ContentScan {
 		$host = $this->hosts->host_of( $url );
 		if ( null === $host ) {
 			return null;
+		}
+
+		// A script or stylesheet on a /wp-content/ or /wp-includes/ path is
+		// left alone whatever host serves it, for CDNs that rewrite the
+		// finished page (see HostMatcher::looks_like_own_asset_path()). This
+		// screen exists to report "what it would NOT gate and why", so it has
+		// to say so: reporting these as Gated told the owner the opposite of
+		// the truth, and it is the one row where they might want to reach for
+		// the always-gate list.
+		if ( $is_script && $this->hosts->is_exempt_own_asset( $url ) ) {
+			return array(
+				'tag'      => $tag,
+				'url'      => $url,
+				'host'     => $host,
+				'status'   => self::OWN_ASSET_PATH,
+				'label'    => '',
+				'provider' => '',
+			);
 		}
 
 		$provider = $is_script
