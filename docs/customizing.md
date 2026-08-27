@@ -313,6 +313,45 @@ Without either rule, whole-page buffering plus an asset CDN would gate your
 own `wp-includes` scripts into placeholders — which breaks the site's
 JavaScript rather than protecting anybody.
 
+### If something looks wrong: symptom, cause, fix
+
+Work down this list. Every fix is an exclusion, and excluding these three
+files costs nothing measurable — they are small, local, and already cached by
+the browser.
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| The **first** click on "Load" does nothing; the second works | "Delay JavaScript until interaction" — the first interaction is spent switching scripts on | Exclude `gate.js` from that setting specifically, not just from minification |
+| The button does nothing **at all**, ever | `gate.js` never executed. Usually a combined bundle threw earlier: a top-level error aborts the rest of *that file*, and anything bundled after it never runs | Open the console, find the throwing file, exclude `gate.js` from combining so it is not downstream of somebody else's error |
+| The panel appears but is unstyled | `gate.css` was combined, deferred or stripped | Exclude `gate.css` |
+| Embeds load **without** a click | Gating is server-side, so this means the plugin never saw that markup — typically a page builder rendering outside the WordPress content filters | Settings → Detection → enable whole-page buffering |
+| Your **own** scripts and styles were replaced by placeholders | An asset CDN plus whole-page buffering, on a build older than 0.13.0 | Update; if it persists, add the CDN hostname under Detection → own hosts |
+| Console errors about `wp-i18n`, `wp-data`, `lodash`, `moment` | Not this plugin — those are WordPress core packages whose inline snippets got separated from them by combining | Check the page **logged out** first: these are often enqueued only for logged-in admins, so no visitor ever sees them |
+
+That last row is worth taking seriously before changing anything. An admin bar
+and a block editor pull in scripts a visitor never loads, so a console full of
+errors while you are logged in can be entirely invisible to the public page.
+Compare the two before you start excluding things.
+
+### Where each plugin keeps its exclusion list
+
+Settings → Status & tools names this for the plugin it detects. Reproduced
+here because a support thread usually starts before anybody opens that screen.
+Labels drift between versions, so treat these as the area rather than an exact
+string.
+
+| Plugin | Exclusion list |
+|---|---|
+| WP Rocket | File Optimization → "Excluded JavaScript Files". "Delay JavaScript execution" keeps a **separate** box — add them there too |
+| W3 Total Cache | Performance → Minify → JS → "Never minify the following JS files" |
+| LiteSpeed Cache | Page Optimization → JS Settings → "JS Excludes"; Guest Mode has its own list |
+| Autoptimize | Settings → Autoptimize → JavaScript Options → "Exclude scripts from Autoptimize" |
+| WP Fastest Cache | The Exclude tab, one rule per file |
+| SiteGround Optimizer | SG Optimizer → Frontend → JavaScript, under the minify and combine switches |
+| Cloudflare | Rocket Loader takes no list — it is disabled per script with `data-cfasync="false"`. If embeds misbehave with it on, switch it off to confirm the cause |
+| WP Super Cache | Caches pages, does not touch JavaScript. Nothing to exclude |
+
+
 ## Adjusting behaviour with filters
 
 ```php

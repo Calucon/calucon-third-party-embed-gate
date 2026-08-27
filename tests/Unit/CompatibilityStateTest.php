@@ -61,4 +61,56 @@ final class CompatibilityStateTest extends TestCase {
 			);
 		}
 	}
+
+	/**
+	 * Every cache plugin this screen can detect must have somewhere to send
+	 * the owner.
+	 *
+	 * Knowing which files to exclude is useless without knowing where the
+	 * exclusion list lives, and each of these plugins hides it somewhere
+	 * different. Adding a ninth plugin to the detection list is easy and
+	 * forgetting the advice for it is easier, and the failure is quiet: the
+	 * owner is told their optimiser combines JavaScript and then left to find
+	 * the setting themselves.
+	 *
+	 * Read from the source rather than called, because exclusion_location()
+	 * goes through __() and the fixture suite runs without WordPress. Two
+	 * plugins answer "nothing to exclude" on purpose — WP Super Cache does not
+	 * touch JavaScript, and Cloudflare's Rocket Loader is switched off per
+	 * script instead of by a list — so this checks that a case exists, not
+	 * that it names a menu path.
+	 */
+	public function test_every_detectable_cache_plugin_has_exclusion_advice(): void {
+		$source = (string) file_get_contents( dirname( __DIR__, 2 ) . '/src/Admin/Compatibility.php' );
+
+		self::assertSame(
+			1,
+			preg_match( '/\$cache_plugins\s*=\s*array\((.*?)\);/su', $source, $block ),
+			'the cache-plugin detection list moved; this test can no longer find it'
+		);
+		self::assertSame(
+			1,
+			preg_match( '/private static function exclusion_location.*?^\t\}/sum', $source, $method ),
+			'exclusion_location() moved or was renamed'
+		);
+
+		preg_match_all( "/'([^']+)'\s*=>/", $block[1], $names );
+		self::assertNotEmpty( $names[1], 'no cache plugins found in the detection list' );
+
+		$missing = array();
+		foreach ( $names[1] as $name ) {
+			if ( false === strpos( $method[0], "case '" . $name . "':" ) ) {
+				$missing[] = $name;
+			}
+		}
+
+		self::assertSame(
+			array(),
+			$missing,
+			"Compatibility::detect() can report these cache plugins, but exclusion_location()\n"
+				. "has no case for them, so the Status screen tells the owner to exclude files\n"
+				. "without saying where:\n  " . implode( "\n  ", $missing )
+		);
+	}
+
 }

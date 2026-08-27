@@ -1443,3 +1443,43 @@ test( 'multilingual: translated texts reach the panel, cannot ungate it, and the
 	await page.click( '#cg-tabbtn-status' );
 	await expect( page.locator( '#cg-tab-status' ) ).not.toContainText( 'String Translation' );
 } );
+
+test( 'compatibility: a detected optimiser is named, its risky setting explained, and its exclusion list located', async ( { page } ) => {
+	// This whole panel renders only when a cache plugin is detected, so on a
+	// clean site it never appears — which is exactly why it went untested.
+	// Telling the owner which files to exclude is useless without telling them
+	// where that list lives, and every one of these plugins hides it somewhere
+	// different.
+
+	await login( page );
+
+	// WP Rocket, with delay_js readable: the setting that costs the visitor a
+	// click, and the only one whose exclusion box is separate from the main one.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg_cache=rocket' );
+	await page.click( '#cg-tabbtn-status' );
+	// Scoped to the optimisation table: the plugin is also listed in the
+	// detected-plugins table above, and an unscoped row locator matches both.
+	const rocket = page.locator( 'h3:has-text("JavaScript optimisation") + table tr', { hasText: 'WP Rocket' } );
+	await expect( rocket ).toHaveCount( 1 );
+	await expect( rocket ).toContainText( 'delay JavaScript until the visitor interacts' );
+	await expect( rocket ).toContainText( 'Where to exclude them:' );
+	await expect( rocket ).toContainText( 'Excluded JavaScript Files' );
+	// The separate box is the part an owner misses; it must be spelled out.
+	await expect( rocket ).toContainText( 'separate exclusion box' );
+
+	// W3 Total Cache, which has no settings reader. The screen must say the
+	// settings could not be read rather than imply an all-clear — a false
+	// "nothing risky is on" stops the owner looking at the plugin that is
+	// actually breaking their embeds — and must still say where the list is.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg_cache=w3tc' );
+	await page.click( '#cg-tabbtn-status' );
+	const w3tc = page.locator( 'h3:has-text("JavaScript optimisation") + table tr', { hasText: 'W3 Total Cache' } );
+	await expect( w3tc ).toHaveCount( 1 );
+	await expect( w3tc ).toContainText( 'could not be read' );
+	await expect( w3tc ).toContainText( 'Never minify the following JS files' );
+
+	// And none of it is claimed on a site with no cache plugin at all.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.click( '#cg-tabbtn-status' );
+	await expect( page.locator( '#cg-tab-status' ) ).not.toContainText( 'Where to exclude them:' );
+} );

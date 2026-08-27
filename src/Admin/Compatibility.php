@@ -291,6 +291,7 @@ final class Compatibility {
 				'name'     => $row['name'],
 				'state'    => $state,
 				'features' => $features,
+				'where'    => self::exclusion_location( $row['name'] ),
 			);
 		}
 
@@ -323,5 +324,43 @@ final class Compatibility {
 			return 'combine';
 		}
 		return 'off';
+	}
+
+	/**
+	 * Where this optimiser keeps its exclusion list.
+	 *
+	 * Knowing which files to exclude is useless without knowing where to put
+	 * them, and every one of these plugins hides it somewhere different. The
+	 * screen names are given as the plugin ships them in English, because a
+	 * translated admin renames the menu but rarely the setting, and a wrong
+	 * label sends the owner hunting. Labels do drift between versions, so the
+	 * copy names the area rather than promising an exact string.
+	 *
+	 * An empty string means "no advice for this one" — better than a guess.
+	 *
+	 * @param string $name Plugin name as detect() reports it.
+	 * @return string Human-readable location, already translated.
+	 */
+	private static function exclusion_location( string $name ): string {
+		switch ( $name ) {
+			case 'WP Rocket':
+				return __( 'File Optimization → “Excluded JavaScript Files”. If “Delay JavaScript execution” is on, it keeps a separate exclusion box — add them there too.', 'calucon-third-party-embed-gate' );
+			case 'W3 Total Cache':
+				return __( 'Performance → Minify → JS → “Never minify the following JS files”.', 'calucon-third-party-embed-gate' );
+			case 'LiteSpeed Cache':
+				return __( 'Page Optimization → JS Settings → “JS Excludes”. With Guest Mode on, its own exclude list needs them as well.', 'calucon-third-party-embed-gate' );
+			case 'Autoptimize':
+				return __( 'Settings → Autoptimize → JavaScript Options → “Exclude scripts from Autoptimize”.', 'calucon-third-party-embed-gate' );
+			case 'WP Fastest Cache':
+				return __( 'WP Fastest Cache → the Exclude tab → add a rule for each file.', 'calucon-third-party-embed-gate' );
+			case 'SiteGround Optimizer':
+				return __( 'SG Optimizer → Frontend → JavaScript, in the exclusion list under the minify and combine switches.', 'calucon-third-party-embed-gate' );
+			case 'Cloudflare':
+				return __( 'Rocket Loader takes no exclusion list: it is switched off per script with a data-cfasync="false" attribute. If embeds misbehave and Rocket Loader is on, turn it off for this site and see whether that is the cause.', 'calucon-third-party-embed-gate' );
+			case 'WP Super Cache':
+				return __( 'This plugin caches pages but does not minify or combine JavaScript, so there is nothing to exclude.', 'calucon-third-party-embed-gate' );
+			default:
+				return '';
+		}
 	}
 }

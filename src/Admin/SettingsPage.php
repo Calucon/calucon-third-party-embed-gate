@@ -1660,7 +1660,16 @@ final class SettingsPage {
 				<?php foreach ( $optimizers as $optimizer ) : ?>
 					<tr>
 						<td><?php echo esc_html( $optimizer['name'] ); ?></td>
-						<td><?php echo esc_html( $optimizer_messages[ $optimizer['state'] ] ); ?></td>
+						<td>
+							<?php echo esc_html( $optimizer_messages[ $optimizer['state'] ] ); ?>
+							<?php if ( '' !== $optimizer['where'] ) : ?>
+								<p class="description" style="margin-top: .5em;">
+									<strong><?php esc_html_e( 'Where to exclude them:', 'calucon-third-party-embed-gate' ); ?></strong>
+									<?php echo esc_html( $optimizer['where'] ); ?>
+									<?php esc_html_e( '(Wording can differ between versions of that plugin.)', 'calucon-third-party-embed-gate' ); ?>
+								</p>
+							<?php endif; ?>
+						</td>
 					</tr>
 				<?php endforeach; ?>
 				</tbody>

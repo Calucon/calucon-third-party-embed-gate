@@ -158,6 +158,36 @@ add_filter( 'locale', function ( $locale ) {
 if ( isset( $_GET['cg_wpml'] ) && ! defined( 'ICL_SITEPRESS_VERSION' ) ) {
 	define( 'ICL_SITEPRESS_VERSION', '4.6.13' );
 }
+// Cache-plugin emulator, the same trick. The Compatibility screen tells the
+// owner which of their optimiser's settings breaks embeds and WHERE that
+// plugin keeps its exclusion list — advice that renders only when a cache
+// plugin is detected, so on a clean Playground it never renders at all and
+// was untested end to end.
+//
+//   ?cg_cache=w3tc   — detected, no settings reader exists for it, so the
+//                      screen must say so rather than imply an all-clear
+//   ?cg_cache=rocket — detected AND its delay_js setting readable, which is
+//                      the one that costs the visitor a click
+if ( isset( $_GET['cg_cache'] ) ) {
+	if ( 'w3tc' === $_GET['cg_cache'] && ! defined( 'W3TC' ) ) {
+		define( 'W3TC', true );
+	}
+	if ( 'rocket' === $_GET['cg_cache'] ) {
+		if ( ! defined( 'WP_ROCKET_VERSION' ) ) {
+			define( 'WP_ROCKET_VERSION', '3.15' );
+		}
+		// Both filters, deliberately: option_{$name} fires only when the
+		// option row EXISTS, and this emulator never writes one. A site that
+		// never saved WP Rocket's settings hits default_option_{$name}
+		// instead — the same trap the multilingual emulator documents, and
+		// hooking only the first would silently emulate nothing.
+		$cg_rocket = static function () {
+			return array( 'delay_js' => 1, 'minify_concatenate_js' => 0 );
+		};
+		add_filter( 'option_wp_rocket_settings', $cg_rocket );
+		add_filter( 'default_option_wp_rocket_settings', $cg_rocket );
+	}
+}
 // Multilingual emulator: WPML and Polylang translate the strings named in
 // wpml-config.xml by filtering the option as the page is built, in that
 // page's language — long after plugins_loaded. ?cg_translate=1 does the same
