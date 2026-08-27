@@ -158,6 +158,38 @@ add_filter( 'locale', function ( $locale ) {
 if ( isset( $_GET['cg_wpml'] ) && ! defined( 'ICL_SITEPRESS_VERSION' ) ) {
 	define( 'ICL_SITEPRESS_VERSION', '4.6.13' );
 }
+// Cache-flush recorder + readback, for the CacheFlush investigation. Records
+// on calucon_embed_gate_flush_caches, which flush_all() fires unconditionally,
+// so it does not depend on which purge function happens to exist here.
+add_action(
+	'calucon_embed_gate_flush_caches',
+	static function () {
+		update_option( 'cg_flushes', (int) get_option( 'cg_flushes', 0 ) + 1 );
+	}
+);
+if ( isset( $_GET['cg_flushes'] ) ) {
+	add_action(
+		'init',
+		static function () {
+			// ?cg_flushes=reset puts the site back to "settings never saved",
+			// which is the state the first-save flush is about and which any
+			// earlier test in the run has already destroyed by saving.
+			if ( 'reset' === (string) $_GET['cg_flushes'] ) {
+				delete_option( 'calucon_embed_gate_options' );
+				update_option( 'cg_flushes', 0 );
+			}
+			header( 'Content-Type: text/plain' );
+			printf(
+				'flushes=%d row_exists=%d',
+				(int) get_option( 'cg_flushes', 0 ),
+				null === get_option( 'calucon_embed_gate_options', null ) ? 0 : 1
+			);
+			exit;
+		},
+		1
+	);
+}
+
 // Consent-platform and page-builder emulators. Neither branch of the
 // Compatibility screen had ever rendered in a test: the CMP rows say whether
 // the bridge is active, merely available, or absent because the platform is

@@ -209,6 +209,18 @@ final class Plugin {
 			}
 		);
 
+		// And the FIRST save, which is not an update: a site that has never
+		// opened this screen has no option row at all, so WordPress adds one
+		// and fires add_option_ instead. That save is the one most likely to
+		// change what visitors are served — it is where gating gets turned on
+		// — and it was the one save that did not flush the page cache.
+		add_action(
+			'add_option_' . Options::OPTION,
+			static function (): void {
+				CacheFlush::flush_all();
+			}
+		);
+
 		// Deactivation must restore original behaviour immediately (§9.10);
 		// a page cache still serving placeholders would reference assets
 		// that no longer load. Flush what we can reach.

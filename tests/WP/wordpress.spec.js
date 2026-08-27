@@ -1595,3 +1595,47 @@ test( 'compatibility: consent platforms, page builders and the two quiet optimis
 	await status( '' );
 	await expect( page.locator( '#cg-tab-status' ) ).toContainText( 'No cache plugin, consent platform, multilingual plugin or page builder detected.' );
 } );
+
+test( 'the promised cache flush happens on the first save too, not just later ones', async ( { page } ) => {
+	// The Compatibility screen tells the owner "its page cache is flushed
+	// automatically when Calucon Third-Party Embed Gate settings change".
+	// Support/CacheFlush implements that on update_option_, and a site that
+	// has never opened the settings screen has no option row at all — so its
+	// FIRST save is an add_option, which fires a different hook and used to
+	// flush nothing.
+	//
+	// That is the save where it matters most: it is where an owner turns
+	// gating on, and a page cache still holding pre-gate HTML is exactly the
+	// stale-cache problem the flush exists to prevent.
+	const readback = async ( query ) => {
+		await page.goto( '/?cg_flushes=' + query );
+		return ( await page.locator( 'body' ).innerText() ).trim();
+	};
+	const flushes = ( text ) => parseInt( ( text.match( /flushes=(\d+)/ ) || [ , '0' ] )[1], 10 );
+	const rowExists = ( text ) => '1' === ( text.match( /row_exists=(\d+)/ ) || [ , '0' ] )[1];
+
+	await login( page );
+
+	// Back to "never saved" — earlier tests in this run have saved settings.
+	const fresh = await readback( 'reset' );
+	expect( rowExists( fresh ), 'the reset did not remove the option row' ).toBe( false );
+	expect( flushes( fresh ) ).toBe( 0 );
+
+	const OPTION = 'input[name="calucon_embed_gate_options[detection][images]"][type="checkbox"]';
+	const saveToggled = async () => {
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+		await page.click( '#cg-tabbtn-detection' );
+		await page.setChecked( OPTION, ! ( await page.isChecked( OPTION ) ) );
+		await page.click( 'form p.submit input[type="submit"], form input#submit' );
+		await page.waitForURL( /options-general\.php/ );
+	};
+
+	await saveToggled();
+	const afterFirst = await readback( '1' );
+	expect( rowExists( afterFirst ), 'the first save should have created the option row' ).toBe( true );
+	expect( flushes( afterFirst ), 'the FIRST save did not flush the cache the screen promises' ).toBe( 1 );
+
+	// And an ordinary save still flushes, which is the path that always worked.
+	await saveToggled();
+	expect( flushes( await readback( '1' ) ) ).toBe( 2 );
+} );
