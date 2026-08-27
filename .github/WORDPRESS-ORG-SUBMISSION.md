@@ -70,6 +70,34 @@ To cut a release: bump the `Version` header (and `Stable tag`), merge to
 `main`. The release job tags and publishes the GitHub release and, when
 `WPORG_DEPLOY` is on, the deploy job pushes it to SVN.
 
+## Pushing trunk without releasing
+
+`.github/workflows/wporg-trunk.yml` — **Actions → Push trunk to WordPress.org
+→ Run workflow** — copies the current branch into SVN `trunk` and stops there.
+No tag, no release.
+
+Its purpose is translation. translate.wordpress.org builds its *Development*
+and *Development Readme* projects from trunk, so pushing trunk makes
+wordpress.org re-parse the readme and the plugin strings. The German can then
+be translated and inspected on GlotPress **before** that text becomes the
+Stable version the public plugin page shows.
+
+It defaults to a **dry run**: the first click shows the diff and commits
+nothing. Untick *Dry run* to push.
+
+What keeps it safe is that it never writes trunk's `Stable tag:` line. That
+line is what wordpress.org serves; this branch's readme names the version being
+developed, which has no tag yet, and pointing the directory at a tag that does
+not exist is the handbook's own "pushing bad code to users" scenario. The
+workflow reads the live value out of trunk, restores it into the readme it
+uploads, and refuses to commit unless that tag exists under `/tags`. Whatever
+users were getting before the run, they get after it.
+
+After it runs, the strings appear at:
+
+- `translate.wordpress.org/projects/wp-plugins/calucon-third-party-embed-gate/dev-readme/de/default/`
+- `translate.wordpress.org/projects/wp-plugins/calucon-third-party-embed-gate/dev/de/default/`
+
 Manual alternative (no CI): `svn co https://plugins.svn.wordpress.org/calucon-third-party-embed-gate`,
 copy the built files into `trunk/`, copy `.wordpress-org/*` into `assets/`,
 `svn cp trunk tags/<version>`, `svn ci`.
