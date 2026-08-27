@@ -68,8 +68,14 @@ foreach ( $targets as $locale => $spec ) {
 	$changed = 0;
 
 	foreach ( $lines as $line ) {
-		$is_msgstr = 0 === strpos( $line, 'msgstr ' );
-		if ( 0 === strpos( $line, 'msgid ' ) ) {
+		// msgmerge keeps strings that left the POT as obsolete "#~" entries so
+		// they come back translated if the string returns. They are still
+		// German, so Swiss orthography applies to them too — otherwise a ß
+		// survives in the Swiss files and TranslationTest fails on a line
+		// nobody can see in Poedit.
+		$bare      = 0 === strpos( $line, '#~ ' ) ? substr( $line, 3 ) : $line;
+		$is_msgstr = 0 === strpos( $bare, 'msgstr ' );
+		if ( 0 === strpos( $bare, 'msgid ' ) ) {
 			$in_msgstr = false;
 		}
 		if ( $is_msgstr ) {
@@ -83,7 +89,7 @@ foreach ( $targets as $locale => $spec ) {
 
 		if ( $header ) {
 			$line = str_replace( '"Language: ' . $spec['source'] . '\n"', '"Language: ' . $locale . '\n"', $line );
-		} elseif ( $spec['swiss'] && ( $is_msgstr || ( $in_msgstr && 0 === strpos( $line, '"' ) ) ) ) {
+		} elseif ( $spec['swiss'] && ( $is_msgstr || ( $in_msgstr && 0 === strpos( $bare, '"' ) ) ) ) {
 			$swiss = cg_swiss( $line );
 			if ( $swiss !== $line ) {
 				++$changed;

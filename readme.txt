@@ -5,7 +5,7 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.12.0
+Stable tag: 0.12.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -154,6 +154,9 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 
 == Upgrade Notice ==
 
+= 0.12.1 =
+German only: corrections after review by the German translation team — the settings tab is now "Design", and a number of terms and sentences were brought in line with the WordPress German glossary and style guide. English sites see no change.
+
 = 0.12.0 =
 Adds German, in both the du and the Sie variant — the placeholder your visitors see, the settings screen and the editor controls. Set your site language to German and it follows. Nothing else changes; English sites see no difference.
 
@@ -164,6 +167,10 @@ Names the rest of WordPress's built-in embed types, and the content scan can now
 The panel looks and behaves as before unless you opt in: the privacy-policy link and the new Appearance controls are off by default. Clear your page cache once after updating. Adds your own providers, a CSP helper and a much larger Appearance tab.
 
 == Changelog ==
+
+= 0.12.1 =
+* Changed: the German translation was reviewed by the German translation team at translate.wordpress.org and corrected against their glossary and style guide. The Appearance tab is now called "Design"; "Reiter" became "Tab", "Rahmen" became "Rand", "Eigene" became "Individuell" where the English says "custom", and a few sentences were rewritten because they read like English rather than German. Nothing changed for sites running in English.
+* Internal: translations now go through a staged pipeline that verifies de_DE and de_DE_formal against the style guide and the glossary *before* deriving de_AT, de_CH and de_CH_informal — so a wrong word can no longer be copied into five locales at once.
 
 = 0.12.0 =
 * New: German translations ship with the plugin, for all five German locales WordPress offers — Deutschland (du und Sie), Österreich, and Schweiz (Sie und du, written with ss instead of ß as Switzerland does). WordPress does not fall back between them, so each one needs its own file. Everything a person reads is covered: the placeholder your visitors see, all five settings tabs and the per-block controls in the editor. Set the site language to German and it follows; a translation from translate.wordpress.org still takes precedence over the bundled one.
