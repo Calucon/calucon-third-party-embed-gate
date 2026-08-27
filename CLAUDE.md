@@ -153,6 +153,24 @@ pins it; the `authority-backslash-*` fixtures prove it end-to-end.
 
 ## Translations
 
+**Never write or edit German yourself. Use the `german-translator` agent**
+(`.claude/agents/german-translator.md`) for anything that adds, changes or
+reviews a German string — a new user-facing string, a wording fix, a glossary
+correction, a review before submitting to translate.wordpress.org.
+
+That is a routing rule, not a formality, and the reason is measurable: the
+vendored glossary has **517 term rows and `GlossaryTest` knows eleven of them**.
+The gates are structural — completeness, placeholders, orthography, address form,
+a curated forbidden-word list — so a wrong-but-well-formed word passes all of
+them. Six did, and a reviewer at translate.wordpress.org caught them; a seventh,
+`Seite` for *screen*, reached the public plugin page and sat in
+`bin/glossary-report.php`'s output for two releases while everyone skimmed it.
+The agent looks every term up and reports what it looked up, and it may not
+deviate from the glossary or the style guide without Simon's explicit approval —
+it stops and asks rather than deciding. The style guide it works from is vendored
+at `docs/de-style-guide.md`; `bin/refresh-style-guide.sh` says when the handbook
+has moved underneath it.
+
 German ships with the plugin for all five German locales WordPress has, because
 the plugin's market is Germany and the EU and **WordPress does not fall back
 between them** — without its own file, a `de_AT` site sees English. Two are
@@ -161,9 +179,10 @@ written by hand — `de_DE` (du) and `de_DE_formal` (Sie) — and
 verbatim, `de_CH` is `de_DE_formal` and `de_CH_informal` is `de_DE`, both with
 Swiss orthography (ß → ss, „…“ → «…»), which is the Swiss team's own documented
 workflow. Never edit a derived file; `TranslationTest` fails if one drifts.
-`bin/update-translations.sh` is the whole chain: regenerate the `.pot`,
-`msgmerge` every `.po` (unwrapped, one line per string, so a wording change is
-a one-line diff), compile every `.mo`, rebuild the block-editor JSON.
+`composer translations` (`bin/update-translations.sh`) is the whole chain, and
+it merges only the two hand-written locales before the gates — see the pipeline
+note below. PO files stay unwrapped, one line per string, so a wording change
+is a one-line diff.
 
 **A new user-facing string is not done until it is translated.**
 `TranslationTest` fails while any `.pot` entry is untranslated in either
@@ -183,6 +202,56 @@ can reword a panel and can never ungate an embed (invariant 6). Both halves are
 pinned by the "multilingual" WP test, whose emulator hooks `default_option_` too
 — a site that never saved the settings has no option row, and WordPress then
 never applies `option_`.
+
+**Translations go through `composer translations`, which gates before it
+derives.** `bin/update-translations.sh` is seven announced stages: regenerate
+the POT and merge into **de_DE and de_DE_formal only**; gate on completeness
+and placeholders; gate on `StyleGuideTest`; gate on `GlossaryTest`; and only
+then derive de_AT/de_CH/de_CH_informal, compile the five `.mo` files and five
+editor JSONs, and re-run the whole suite. A failing gate aborts **before**
+anything is derived, so a mistake in a source locale can no longer become five
+wrong `.po` files, five wrong `.mo` files and five wrong JSONs that look like
+independent confirmation. The `@group translation-sources` / `translation-derived`
+annotations are what make that staging possible — the gates run the source
+group, because the derived-file tests legitimately fail until stage 5 has run.
+
+**The thing no gate can check is whether the German reads like German.** The
+style guide's first instruction is *„Niemand liest gerne eine wörtliche
+Übersetzung"*, and literal translation has been this project's most common
+translation defect: „der Content-Security-Policy-Helfer: was eine Richtlinie
+ist, eine Prüfung der eigenen Website, …" (an English list carried across item
+by item), „eine Art für das Button-Symbol", „was ein Mensch liest", „…, mit
+einem Klick rückgängig zu machen". Every one passed every mechanical check.
+Before submitting to translate.wordpress.org run `php bin/translation-review.php`,
+which prints the German **with the English hidden**, worst suspects first —
+reading German prose without the source in view is the only reliable way to
+notice it is not German prose.
+
+**Whitespace: the style guide wants a protected space before a Gedankenstrich
+and before a unit.** `php bin/fix-style.php` applies both and touches nothing
+else (asserted: normalise every U+00A0 back to a space and the file must be
+byte-identical). Expect to need it, because U+00A0 is invisible — and note the
+trap it creates in the other direction: a literal search-and-replace over a
+string that already contains one silently matches nothing. That has cost this
+repo time twice.
+
+**The de_DE glossary is not optional, and structure tests cannot see it.**
+A reviewer at translate.wordpress.org flagged six terms that were structurally
+perfect and lexically wrong — `Reiter` for tab, `Rahmen` for border, `Eigene`
+for custom, `Positivliste` for safelist, `Auszüge` for excerpts, `Umfrage` for
+survey. Two tools now cover that, and they trade off in opposite directions:
+`GlossaryTest` forbids a curated list of known-wrong words (no false positives,
+so it can fail the build, but blind to a term nobody has got wrong yet), and
+`php bin/glossary-report.php` sweeps the whole glossary and prints every
+departure for a human (finds new ones, ~100 lines of mostly-legitimate noise).
+Run the report after translating; when it finds a real miss, fix the wording
+**and** add the wrong word to `GlossaryTest::FORBIDDEN`. The glossary itself is
+vendored at `tests/Support/data/de-glossary.csv`; refresh it from the Export
+link on translate.wordpress.org and expect new hits. Note the two traps that
+already cost time: a **non-breaking space** before a dash makes literal
+search-and-replace miss silently (assert every edit), and `eigen…` is *correct*
+for "your own" — only the strings whose English says "custom" take
+`individuell`.
 
 **Touching `readme.txt` means touching the German listing text — say so, every
 time.** The wp.org listing (short description, description, installation, FAQ,

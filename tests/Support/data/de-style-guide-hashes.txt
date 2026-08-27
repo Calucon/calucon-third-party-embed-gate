@@ -1,0 +1,8 @@
+# Written by bin/refresh-style-guide.sh --update.
+# sha256(visible text), first 16 hex, of each style-guide page as it read
+# when docs/de-style-guide.md was last distilled from it.
+allgemein	405e4802979ce8c6
+rechtschreibung	046971fbadffdf39
+komposita	61cb373d80a30341
+stilistisches	0f880b9d0bc57f3b
+titel	0e4153a6529cc064

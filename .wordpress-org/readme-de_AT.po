@@ -8,7 +8,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: GlotPress/4.1.0\n"
-"Language: de\n"
+"Language: de-at\n"
 "Project-Id-Version: Plugins - Calucon Third-Party Embed Gate - Stable Readme (latest release)\n"
 
 #. Short description.

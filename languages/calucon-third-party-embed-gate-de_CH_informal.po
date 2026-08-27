@@ -18,7 +18,18 @@
 # Keep "may set cookies" hedged as "es können Cookies gesetzt werden" — the
 # English hedge is deliberate and the German must not promise more.
 msgid ""
-msgstr "Project-Id-Version: Calucon Third-Party Embed Gate 0.12.0\nReport-Msgid-Bugs-To: https://github.com/Calucon/calucon-third-party-embed-gate/issues\nPO-Revision-Date: 2026-08-25 12:00+0000\nLast-Translator: Calucon <https://calucon.de>\nLanguage-Team: German\nLanguage: de_DE\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=(n != 1);\nX-Domain: calucon-third-party-embed-gate\n"
+msgstr ""
+"Project-Id-Version: Calucon Third-Party Embed Gate 0.12.0\n"
+"Report-Msgid-Bugs-To: https://github.com/Calucon/calucon-third-party-embed-gate/issues\n"
+"PO-Revision-Date: 2026-08-25 12:00+0000\n"
+"Last-Translator: Calucon <https://calucon.de>\n"
+"Language-Team: German\n"
+"Language: de_CH_informal\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: calucon-third-party-embed-gate\n"
 
 #: src/Admin/SettingsPage.php:695
 msgid "%1$s is handled by the built-in %2$s provider, which takes precedence — this entry is ignored for that host. Remove it here to clear this note."
@@ -66,7 +77,7 @@ msgstr "Eine Content-Security-Policy (CSP) ist eine Sicherheitseinstellung, die 
 
 #: assets/js/editor.js:181
 msgid "A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled."
-msgstr "Ein Button, mit dem Besucher ihre gespeicherten Einwilligungen löschen. Platziere ihn auf deiner Datenschutzseite. Er wirkt nur, wenn «Einwilligung merken» aktiv ist."
+msgstr "Ein Button, mit dem Besucher ihre gespeicherten Einwilligungen löschen. Platziere ihn in deiner Datenschutzerklärung. Er wirkt nur, wenn «Einwilligung merken» aktiviert ist."
 
 #: src/Admin/SettingsPage.php:1290
 msgid "A little"
@@ -134,11 +145,11 @@ msgstr "Immer laden"
 
 #: src/Admin/SettingsPage.php:376 src/Admin/SettingsPage.php:1085
 msgid "Appearance"
-msgstr "Darstellung"
+msgstr "Design"
 
 #: src/Admin/SettingsPage.php:271
 msgid "Appearance reset to theme defaults."
-msgstr "Darstellung auf die Theme-Standards zurückgesetzt."
+msgstr "Design auf die Theme-Standards zurückgesetzt."
 
 #: src/Admin/SettingsPage.php:602
 msgid "Audio / podcast"
@@ -150,11 +161,11 @@ msgstr "Leiste am unteren Rand"
 
 #: src/Admin/SettingsPage.php:1118
 msgid "Border"
-msgstr "Rahmen"
+msgstr "Rand"
 
 #: src/Admin/SettingsPage.php:1157
 msgid "Border width (px)"
-msgstr "Rahmenbreite (px)"
+msgstr "Randbreite (px)"
 
 #: src/Admin/SettingsPage.php:1497
 msgid "Borlabs Cookie service group"
@@ -216,7 +227,7 @@ msgstr "Calucon Third-Party Embed Gate ist kostenlos und Open Source – du kan
 
 #: src/Admin/SettingsPage.php:381
 msgid "Calucon Third-Party Embed Gate settings sections"
-msgstr "Einstellungsbereiche von Calucon Third-Party Embed Gate"
+msgstr "Einstellungsabschnitte von Calucon Third-Party Embed Gate"
 
 #: src/Admin/SettingsPage.php:751
 msgid "Cancel"
@@ -224,7 +235,7 @@ msgstr "Abbrechen"
 
 #: src/Admin/SettingsPage.php:1134
 msgid "Card — border, rounded corners, shadow"
-msgstr "Karte – Rahmen, runde Ecken, Schatten"
+msgstr "Karte – Rand, runde Ecken, Schatten"
 
 #: src/Admin/SettingsPage.php:1278
 msgid "Card, bottom-left"
@@ -308,7 +319,7 @@ msgstr "Kopieren nicht möglich – markiere den Text und kopiere ihn von Hand.
 
 #: src/Admin/SettingsPage.php:237
 msgid "Could not load your home page from this browser, so nothing could be checked. Try again; if it keeps failing, open the home page in a new tab and look for a Content-Security-Policy header in the browser's developer tools (Network panel)."
-msgstr "Deine Startseite konnte in diesem Browser nicht geladen werden, es liess sich also nichts prüfen. Versuche es erneut; klappt es weiterhin nicht, öffne die Startseite in einem neuen Tab und suche in den Entwicklerwerkzeugen des Browsers (Reiter «Netzwerk») nach einem Content-Security-Policy-Header."
+msgstr "Deine Startseite konnte in diesem Browser nicht geladen werden, es liess sich also nichts prüfen. Versuche es erneut; klappt es weiterhin nicht, öffne die Startseite in einem neuen Tab und suche in den Entwicklerwerkzeugen des Browsers (Tab «Netzwerk») nach einem Content-Security-Policy-Header."
 
 #: src/Admin/SettingsPage.php:1759
 msgid "Count"
@@ -316,19 +327,19 @@ msgstr "Anzahl"
 
 #: src/Admin/SettingsPage.php:1057
 msgid "Custom"
-msgstr "Eigene"
+msgstr "Individuell"
 
 #: src/Admin/SettingsPage.php:1018
 msgid "Custom %s"
-msgstr "Eigene %s"
+msgstr "Individuell %s"
 
 #: src/Admin/SettingsPage.php:1059
 msgid "Custom colour…"
-msgstr "Eigene Farbe …"
+msgstr "Individuelle Farbe …"
 
 #: src/Admin/SettingsPage.php:1147
 msgid "Custom radius…"
-msgstr "Eigener Radius …"
+msgstr "Individueller Radius …"
 
 #: src/Admin/SettingsPage.php:1095
 msgid "Dark cinema"
@@ -365,7 +376,7 @@ msgstr "Erkannt"
 
 #: src/Admin/SettingsPage.php:1614
 msgid "Detected and tested for interoperation. Gating currently ignores its choices — the fail-closed default. Enable the consent platform bridge under Consent to load embeds automatically once this platform reports consent for them."
-msgstr "Erkannt und auf Zusammenspiel getestet. Die Sperre ignoriert die Entscheidungen dieser Plattform derzeit – die Voreinstellung «fail closed». Aktiviere die Brücke zur Consent-Plattform unter «Einwilligung merken», damit Einbettungen automatisch laden, sobald diese Plattform eine Einwilligung dafür meldet."
+msgstr "Erkannt und auf Zusammenspiel getestet. Die Sperre ignoriert die Entscheidungen dieser Plattform derzeit – die Standardeinstellung «fail closed». Aktiviere die Brücke zur Consent-Plattform unter «Einwilligung merken», damit Einbettungen automatisch laden, sobald diese Plattform eine Einwilligung dafür meldet."
 
 #: src/Admin/SettingsPage.php:1487
 msgid "Detected now: %s."
@@ -373,11 +384,11 @@ msgstr "Jetzt erkannt: %s."
 
 #: src/Admin/SettingsPage.php:1613
 msgid "Detected, bridge active: when this platform reports consent for the embeds' category, gated embeds load without a second click, and a withdrawal re-gates them. If the platform does not answer, gating stands (fail closed). Prefer its own blocker for a provider? Disable that provider under Providers and Calucon Third-Party Embed Gate steps aside for it."
-msgstr "Erkannt, Brücke aktiv: Meldet diese Plattform eine Einwilligung für die Kategorie der Einbettungen, laden gesperrte Einbettungen ohne zweiten Klick; ein Widerruf sperrt sie wieder. Antwortet die Plattform nicht, bleibt die Sperre bestehen (fail closed). Soll für einen Anbieter lieber der Blocker der Plattform greifen? Schalte diesen Anbieter unter «Anbieter» ab, dann tritt Calucon Third-Party Embed Gate dafür zurück."
+msgstr "Erkannt, Brücke aktiv: Meldet diese Plattform eine Einwilligung für die Kategorie der Einbettungen, laden gesperrte Einbettungen ohne zweiten Klick; ein Widerruf sperrt sie wieder. Antwortet die Plattform nicht, bleibt die Sperre bestehen (fail closed). Soll für einen Anbieter lieber der Blocker der Plattform greifen? Deaktiviere diesen Anbieter unter «Anbieter», dann tritt Calucon Third-Party Embed Gate dafür zurück."
 
 #: src/Admin/SettingsPage.php:1615
 msgid "Detected. Calucon Third-Party Embed Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
-msgstr "Erkannt. Calucon Third-Party Embed Gate hat keine getestete Brücke zu dieser Consent-Plattform und sperrt unabhängig von deren Entscheidungen weiter – die Voreinstellung «fail closed». Vor dem Klick auf die Einbettung lädt nichts."
+msgstr "Erkannt. Calucon Third-Party Embed Gate hat keine getestete Brücke zu dieser Consent-Plattform und sperrt unabhängig von deren Entscheidungen weiter – die Standardeinstellung «fail closed». Vor dem Klick auf die Einbettung lädt nichts."
 
 #: src/Admin/SettingsPage.php:1608
 msgid "Detected. It translates the finished page, so the placeholder texts are translated there like any other text on the page. Nothing to configure here."
@@ -397,7 +408,7 @@ msgstr "Erkannt. Die Texte, die du hier selbst eingibst – Hinweis und Button-
 
 #: src/Admin/SettingsPage.php:1599
 msgid "Detected. Whole-page gating is enabled, so this builder's embeds are covered."
-msgstr "Erkannt. Die Sperre der gesamten Seitenausgabe ist aktiv; damit sind die Einbettungen dieses Builders abgedeckt."
+msgstr "Erkannt. Die Sperre der gesamten Seitenausgabe ist aktiviert; damit sind die Einbettungen dieses Builders abgedeckt."
 
 #: src/Admin/SettingsPage.php:375 src/Admin/SettingsPage.php:736
 msgid "Detection"
@@ -445,13 +456,13 @@ msgstr "Eingebettete Inhalte werden geladen von (frame-src)"
 
 #: src/Admin/SettingsPage.php:1160
 msgid "Empty: the panel style decides. 0 removes the border."
-msgstr "Leer: Der Platzhalter-Stil entscheidet. 0 entfernt den Rahmen."
+msgstr "Leer: Der Platzhalter-Stil entscheidet. 0 entfernt den Rand."
 
 #: src/Admin/SettingsPage.php:462
 msgid "Every third-party embed is gated, listed here or not. These entries add the provider's name, icon and privacy-policy link, and let you word the panel yourself. Turning one off stops gating its embeds — they then load exactly as WordPress renders them."
 msgstr "Jede Einbettung von Drittanbietern wird gesperrt – ob sie hier steht oder nicht. Diese Einträge ergänzen Name, Symbol und Datenschutz-Link des Anbieters und lassen dich den Text des Platzhalters selbst formulieren. Schaltest du einen Eintrag ab, werden dessen Einbettungen nicht mehr gesperrt: Sie laden dann genau so, wie WordPress sie ausgibt."
 
-#: src/Plugin.php:477
+#: src/Plugin.php:490
 msgid "Example embed"
 msgstr "Beispieleinbettung"
 
@@ -497,7 +508,7 @@ msgstr "Für diese Browser-Sitzung"
 
 #: src/Admin/SettingsPage.php:604
 msgid "Form / survey"
-msgstr "Formular / Umfrage"
+msgstr "Formular / Befragung"
 
 #: src/Admin/SettingsPage.php:1242
 msgid "Full panel width"
@@ -954,15 +965,15 @@ msgstr "Karte"
 
 #: src/Admin/SettingsPage.php:1133
 msgid "Minimal — transparent with a border"
-msgstr "Minimal – transparent mit Rahmen"
+msgstr "Minimal – transparent mit Rand"
 
 #: src/Admin/SettingsPage.php:1729
 msgid "NOT gated — its detection rule is disabled"
-msgstr "NICHT gesperrt – die zugehörige Erkennungsregel ist abgeschaltet"
+msgstr "NICHT gesperrt – die zugehörige Erkennungsregel ist deaktiviert"
 
 #: src/Admin/SettingsPage.php:1730
 msgid "NOT gated — provider disabled in the table above"
-msgstr "NICHT gesperrt – Anbieter in der Tabelle oben abgeschaltet"
+msgstr "NICHT gesperrt – Anbieter in der Tabelle oben deaktiviert"
 
 #: src/Admin/SettingsPage.php:653 src/Admin/SettingsPage.php:684
 msgid "Name"
@@ -1030,7 +1041,7 @@ msgstr "Grösse des Hinweistexts"
 
 #: src/Admin/SettingsPage.php:1358
 msgid "Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor's browser only — after their first click, never before — and a withdrawal control becomes available via the [calucon_embed_gate_withdraw] shortcode for your privacy policy page."
-msgstr "Standardmässig aus: Die Einwilligung gilt für die eine angeklickte Einbettung und wird nirgends gespeichert. Ist die Option aktiv, wird die Entscheidung ausschliesslich im Browser des Besuchers gespeichert – nach dessen erstem Klick, nie davor – und über den Shortcode [calucon_embed_gate_withdraw] steht eine Widerrufsmöglichkeit für deine Datenschutzseite bereit."
+msgstr "Standardmässig aus: Die Einwilligung gilt für die eine angeklickte Einbettung und wird nirgends gespeichert. Ist die Option aktiviert, wird die Entscheidung ausschliesslich im Browser des Besuchers gespeichert – nach dessen erstem Klick, nie davor – und über den Shortcode [calucon_embed_gate_withdraw] steht eine Widerrufsmöglichkeit für deine Datenschutzerklärung bereit."
 
 #: src/Admin/SettingsPage.php:779
 msgid "One host per line, e.g. cdn.example.com or *.example.com. These are treated as the site itself and never gated. You can paste a whole web address; only the site name is kept."
@@ -1046,7 +1057,7 @@ msgstr "Aktiviere das nur, wenn Einbettungen aus einem Page-Builder nicht gesper
 
 #: src/Admin/SettingsPage.php:1565
 msgid "Only enabled providers are listed; disable a provider under Providers and its hosts disappear from the lines above. A host can differ from the embed address when the plugin loads a privacy-preserving variant (YouTube loads from youtube-nocookie.com, for example)."
-msgstr "Aufgeführt sind nur aktivierte Anbieter; wird ein Anbieter unter «Anbieter» abgeschaltet, verschwinden seine Hosts aus den Zeilen oben. Ein Host kann von der Einbettungsadresse abweichen, wenn das Plugin eine datenschutzfreundliche Variante lädt (YouTube lädt zum Beispiel von youtube-nocookie.com)."
+msgstr "Aufgeführt sind nur aktivierte Anbieter; wird ein Anbieter unter «Anbieter» deaktiviert, verschwinden seine Hosts aus den Zeilen oben. Ein Host kann von der Einbettungsadresse abweichen, wenn das Plugin eine datenschutzfreundliche Variante lädt (YouTube lädt zum Beispiel von youtube-nocookie.com)."
 
 #: src/Admin/SettingsPage.php:1327
 msgid "Only the colours you set here change; the rest keep the values above. Tick \"Preview on a dark page background\" to check them."
@@ -1427,7 +1438,7 @@ msgstr "Datenschutzfreundliche Ladeadresse für %s verwenden"
 
 #: src/Admin/SettingsPage.php:1118
 msgid "Used when a border is shown (see Shape). Default: the panel text colour."
-msgstr "Wird verwendet, wenn ein Rahmen angezeigt wird (siehe Form). Standard: die Textfarbe des Platzhalters."
+msgstr "Wird verwendet, wenn ein Rand angezeigt wird (siehe Form). Standard: die Textfarbe des Platzhalters."
 
 #: src/Admin/SettingsPage.php:600
 msgid "Video"
@@ -1476,7 +1487,7 @@ msgstr "Du kannst das später unter Status und Werkzeuge rückgängig machen."
 
 #: src/Admin/SettingsPage.php:280
 msgid "You have unsaved appearance changes."
-msgstr "Du hast ungespeicherte Änderungen an der Darstellung."
+msgstr "Du hast ungespeicherte Änderungen am Design."
 
 #: src/Admin/SettingsPage.php:409
 msgid "You have unsaved changes."
@@ -1545,3 +1556,27 @@ msgstr "script-src (Anbieterskripte, z. B. für Social-Media-Beiträge)"
 #: src/Admin/SettingsPage.php:128
 msgid "support its development"
 msgstr "die Entwicklung unterstützen"
+
+#~ msgid "Files to exclude from JavaScript and CSS optimisation"
+#~ msgstr "Dateien, die von der JavaScript- und CSS-Optimierung ausgenommen werden sollten"
+
+#~ msgid "If a caching, minification or optimisation plugin combines, defers or delays scripts, paste these into its exclusion list. They are small, local and already cached by the browser, so excluding them costs nothing measurable."
+#~ msgstr "Wenn ein Caching-, Minifizierungs- oder Optimierungs-Plugin Skripte zusammenfasst, mit «defer» lädt oder verzögert, trage diese Pfade in dessen Ausschlussliste ein. Sie sind klein, liegen auf deiner eigenen Website und stehen ohnehin im Browser-Cache – sie auszunehmen kostet nichts Messbares."
+
+#~ msgid "Its JavaScript settings could not be read from here, so this is not an all-clear. If embeds misbehave, check whether it combines, defers or delays JavaScript, and exclude the files below."
+#~ msgstr "Seine JavaScript-Einstellungen liessen sich von hier aus nicht auslesen – das ist also keine Entwarnung. Wenn Einbettungen sich seltsam verhalten, prüfe, ob es JavaScript zusammenfasst, mit «defer» lädt oder verzögert, und nimm die unten stehenden Dateien aus."
+
+#~ msgid "Its JavaScript settings were read and none of the ones that cause trouble are on."
+#~ msgstr "Seine JavaScript-Einstellungen wurden ausgelesen; keine der problematischen ist aktiv."
+
+#~ msgid "JavaScript optimisation"
+#~ msgstr "JavaScript-Optimierung"
+
+#~ msgid "Keep the inline configuration next to gate.js as well: some plugins list it separately as \"calucon-embed-gate-js-before\"."
+#~ msgstr "Lass auch die Inline-Konfiguration bei gate.js: Manche Plugins führen sie separat als «calucon-embed-gate-js-before» auf."
+
+#~ msgid "This plugin is set to combine JavaScript into a bundle. Combining moves scripts away from the inline snippets that belong to them, which is a common cause of console errors across a site. Gating survives it, but if anything looks wrong, exclude the files below first."
+#~ msgstr "Dieses Plugin ist so eingestellt, dass es JavaScript zu einem Bündel zusammenfasst. Dabei geraten Skripte von den Inline-Schnipseln fort, die zu ihnen gehören – eine häufige Ursache für Konsolenfehler auf der ganzen Website. Die Sperre übersteht das; wenn aber etwas nicht stimmt, nimm zuerst die unten stehenden Dateien aus."
+
+#~ msgid "This plugin is set to delay JavaScript until the visitor interacts with the page. That first interaction is spent switching the scripts on, so a visitor's first click on a \"Load\" button does nothing and they have to click again. Nothing third-party is contacted by the extra click, and the embed loads on the second one — but the placeholder feels broken. Exclude the files below from that setting."
+#~ msgstr "Dieses Plugin ist so eingestellt, dass es JavaScript verzögert, bis der Besucher mit der Seite interagiert. Diese erste Interaktion wird dafür verbraucht, die Skripte einzuschalten – der erste Klick eines Besuchers auf einen «Laden»-Button bewirkt also nichts, und er muss erneut klicken. Durch den zusätzlichen Klick wird kein Drittanbieter kontaktiert, und beim zweiten lädt die Einbettung – aber der Platzhalter wirkt kaputt. Nimm die unten stehenden Dateien von dieser Einstellung aus."

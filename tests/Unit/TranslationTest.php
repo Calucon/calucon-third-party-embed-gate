@@ -21,6 +21,9 @@ final class TranslationTest extends TestCase {
 
 	private const LOCALES = array( 'de_DE', 'de_DE_formal', 'de_AT', 'de_CH', 'de_CH_informal' );
 
+	/** Generated from the two above by bin/derive-german-locales.php. */
+	private const DERIVED_LOCALES = array( 'de_AT', 'de_CH', 'de_CH_informal' );
+
 	/**
 	 * msgid => msgstr for one PO file.
 	 *
@@ -87,11 +90,28 @@ final class TranslationTest extends TestCase {
 		return array_keys( $this->entries( dirname( __DIR__, 2 ) . '/languages/calucon-third-party-embed-gate.pot' ) );
 	}
 
+	/**
+	 * @group translation-sources
+	 */
 	public function test_every_source_string_is_translated(): void {
+		$this->assert_complete( self::SOURCE_LOCALES );
+	}
+
+	/**
+	 * @group translation-derived
+	 */
+	public function test_every_derived_locale_is_complete(): void {
+		$this->assert_complete( self::DERIVED_LOCALES );
+	}
+
+	/**
+	 * @param string[] $locales Locales to check.
+	 */
+	private function assert_complete( array $locales ): void {
 		$expected = $this->pot_msgids();
 		self::assertGreaterThan( 300, count( $expected ), 'the POT looks truncated' );
 
-		foreach ( self::LOCALES as $locale ) {
+		foreach ( $locales as $locale ) {
 			$entries = $this->entries( dirname( __DIR__, 2 ) . "/languages/calucon-third-party-embed-gate-$locale.po" );
 			$missing = array();
 			foreach ( $expected as $msgid ) {
@@ -107,8 +127,25 @@ final class TranslationTest extends TestCase {
 	 * A dropped or renamed placeholder is a runtime error, not a wording
 	 * problem: sprintf() with a missing argument throws in PHP 8.
 	 */
+	/**
+	 * @group translation-sources
+	 */
 	public function test_placeholders_survive_translation(): void {
-		foreach ( self::LOCALES as $locale ) {
+		$this->assert_placeholders( self::SOURCE_LOCALES );
+	}
+
+	/**
+	 * @group translation-derived
+	 */
+	public function test_placeholders_survive_derivation(): void {
+		$this->assert_placeholders( self::DERIVED_LOCALES );
+	}
+
+	/**
+	 * @param string[] $locales Locales to check.
+	 */
+	private function assert_placeholders( array $locales ): void {
+		foreach ( $locales as $locale ) {
 			foreach ( $this->entries( dirname( __DIR__, 2 ) . "/languages/calucon-third-party-embed-gate-$locale.po" ) as $msgid => $msgstr ) {
 				preg_match_all( '/%(?:\d+\$)?[sd]/', $msgid, $source );
 				preg_match_all( '/%(?:\d+\$)?[sd]/', $msgstr, $target );
@@ -123,6 +160,9 @@ final class TranslationTest extends TestCase {
 	 * The block editor reads its strings from JSON, not from the .mo, so an
 	 * editor.js string can be translated everywhere else and still show up in
 	 * English. Regenerate with bin/make-json-translations.php.
+	 */
+	/**
+	 * @group translation-derived
 	 */
 	public function test_the_block_editor_json_covers_every_editor_string(): void {
 		$root   = dirname( __DIR__, 2 );
@@ -153,6 +193,9 @@ final class TranslationTest extends TestCase {
 	 * The compiled .mo is what WordPress actually reads; a stale one ships
 	 * yesterday's wording however good the .po is.
 	 */
+	/**
+	 * @group translation-derived
+	 */
 	public function test_the_compiled_mo_matches_the_po(): void {
 		foreach ( self::LOCALES as $locale ) {
 			$base = dirname( __DIR__, 2 ) . "/languages/calucon-third-party-embed-gate-$locale";
@@ -173,6 +216,9 @@ final class TranslationTest extends TestCase {
 	 * German variants: without its own file, a de_AT site sees English.
 	 * Regenerate with bin/derive-german-locales.php (bin/update-translations.sh
 	 * runs it) — never edit them by hand.
+	 */
+	/**
+	 * @group translation-derived
 	 */
 	public function test_derived_locales_match_the_locale_they_come_from(): void {
 		$dir = dirname( __DIR__, 2 ) . '/languages/calucon-third-party-embed-gate-';
@@ -221,6 +267,9 @@ final class TranslationTest extends TestCase {
 	 * install whether the path is there or not. It was only visible when the
 	 * suite was pointed at WordPress 6.6, which is inside the range this
 	 * plugin claims to support.
+	 */
+	/**
+	 * @group translation-sources
 	 */
 	public function test_script_translations_are_given_the_bundled_path(): void {
 		$source = (string) file_get_contents( dirname( __DIR__, 2 ) . '/src/Admin/BlockEditor.php' );

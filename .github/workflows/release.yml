@@ -29,7 +29,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -38,7 +38,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@v4
 
       - name: Unit + fixture suite (PHPUnit)
         run: composer test
@@ -62,7 +62,7 @@ jobs:
         run: bash bin/build-zip.sh
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: Calucon Third-Party Embed Gate ${{ steps.version.outputs.tag }}
@@ -83,7 +83,7 @@ jobs:
     if: ${{ vars.WPORG_DEPLOY == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Deploy to WordPress.org SVN
         uses: 10up/action-wordpress-plugin-deploy@2.3.0

@@ -26,6 +26,11 @@ mkdir -p "$STAGE"
 cp calucon-third-party-embed-gate.php uninstall.php readme.txt LICENSE wpml-config.xml "$STAGE/"
 cp -R src assets templates languages docs "$STAGE/"
 
+# docs/de-style-guide.md is contributor material, not an on-site reference: it
+# tells the translation agent how to write German. Nothing on an install reads
+# it, so it stays out of the zip even though the rest of docs/ ships.
+rm -f "$STAGE/docs/de-style-guide.md"
+
 ( cd build && zip -rq "calucon-third-party-embed-gate-${VERSION}.zip" calucon-third-party-embed-gate )
 
 echo "Built $ZIP:"
