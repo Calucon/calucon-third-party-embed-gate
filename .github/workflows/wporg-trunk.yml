@@ -79,6 +79,17 @@ jobs:
       - name: Build the shipped file set
         run: bash bin/build-zip.sh > /dev/null && ls build/${{ env.SLUG }}
 
+      # ubuntu-latest no longer ships Subversion. The release workflow does not
+      # need this step because 10up/action-wordpress-plugin-deploy installs svn
+      # itself; this workflow drives svn directly, so it has to do the same.
+      - name: Install Subversion
+        run: |
+          if ! command -v svn > /dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y subversion
+          fi
+          svn --version --quiet
+
       - name: Check out SVN trunk
         run: |
           svn checkout --depth immediates "$SVN_URL" svn
