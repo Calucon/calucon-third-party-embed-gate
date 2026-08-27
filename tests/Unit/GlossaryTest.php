@@ -36,6 +36,7 @@
 namespace CaluconEmbedGate\Tests\Unit;
 
 use CaluconEmbedGate\Tests\Support\PoReader;
+use CaluconEmbedGate\Tests\Support\ReadmeMarkdown;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -219,7 +220,7 @@ final class GlossaryTest extends TestCase {
 			$path = dirname( __DIR__, 2 ) . '/' . $relative;
 			self::assertFileExists( $path );
 
-			foreach ( self::markdown_pairs( $path ) as list( $english, $german ) ) {
+			foreach ( ReadmeMarkdown::pairs( $path ) as list( $english, $german ) ) {
 				foreach ( self::FORBIDDEN as $wrong => list( $term, $right ) ) {
 					if ( false !== strpos( $german, $wrong ) ) {
 						$found[] = self::report( $relative, $wrong, $term, $right, $german );
@@ -325,38 +326,5 @@ final class GlossaryTest extends TestCase {
 		);
 	}
 
-	/**
-	 * English/German pairs out of a chunked readme markdown file.
-	 *
-	 * The files interleave "**EN:** …" with "**DE:** …" (and "**DE (Antwort):**"
-	 * for FAQ answers), the English acting as a locator rather than as shipped
-	 * text. Each German chunk is paired with the last English one seen, which
-	 * is what the CONDITIONAL rules need to know which sense a word carries.
-	 *
-	 * Note the limit: the upgrade-notice chunks are German-only and carry no
-	 * "**EN:**" line, so they inherit whatever English was last seen. Every
-	 * CONDITIONAL rule is therefore effectively inert in those chunks, and a
-	 * word that must be caught there belongs in FORBIDDEN.
-	 *
-	 * @param string $path Absolute path.
-	 * @return array<int, array{0:string,1:string}>
-	 */
-	private static function markdown_pairs( string $path ): array {
-		$pairs   = array();
-		$english = '';
-		foreach ( explode( "\n", (string) file_get_contents( $path ) ) as $line ) {
-			if ( 0 === strpos( $line, '**EN:**' ) ) {
-				$english = trim( substr( $line, 7 ) );
-				continue;
-			}
-			if ( 1 === preg_match( '/^\*\*DE[^:]*:\*\*(.*)$/u', $line, $found ) ) {
-				$german = trim( $found[1] );
-				if ( '' !== $german ) {
-					$pairs[] = array( $english, $german );
-				}
-			}
-		}
-		return $pairs;
-	}
 
 }

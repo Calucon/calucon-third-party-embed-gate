@@ -29,6 +29,7 @@
 namespace CaluconEmbedGate\Tests\Unit;
 
 use CaluconEmbedGate\Tests\Support\PoReader;
+use CaluconEmbedGate\Tests\Support\ReadmeMarkdown;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -300,7 +301,7 @@ final class StyleGuideTest extends TestCase {
 			// the same German, published on the same plugin page, and it was
 			// unchecked here until a reviewer-grade word turned up in it.
 			if ( '.md' === substr( $relative, -3 ) ) {
-				foreach ( self::markdown_chunks( $path ) as $index => $german ) {
+				foreach ( ReadmeMarkdown::chunks( $path ) as $index => $german ) {
 					$out[ basename( $relative ) . ' :: chunk ' . $index ] = $german;
 				}
 				continue;
@@ -315,29 +316,6 @@ final class StyleGuideTest extends TestCase {
 		return $out;
 	}
 
-	/**
-	 * The German chunks of a readme markdown file, in order.
-	 *
-	 * Only the "**DE…:**" lines. The "**EN:**" lines are the English locator
-	 * the translator works against and are not shipped text — running German
-	 * orthography rules over them would fail on every straight quote and every
-	 * "you".
-	 *
-	 * @param string $path Absolute path.
-	 * @return string[]
-	 */
-	private static function markdown_chunks( string $path ): array {
-		$out = array();
-		foreach ( explode( "\n", (string) file_get_contents( $path ) ) as $line ) {
-			if ( 1 === preg_match( '/^\*\*DE[^:]*:\*\*(.*)$/u', $line, $found ) ) {
-				$german = trim( $found[1] );
-				if ( '' !== $german ) {
-					$out[] = $german;
-				}
-			}
-		}
-		return $out;
-	}
 
 	/**
 	 * The German with markup removed, so a quote inside an HTML attribute or a
