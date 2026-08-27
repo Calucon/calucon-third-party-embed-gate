@@ -460,9 +460,8 @@ final class Plugin {
 		$scanner = new HtmlScanner();
 		// The plugin's own assets, as the browser will see them — which is not
 		// a constant: an asset CDN filters plugins_url(), so this resolves to
-		// the CDN too. Compared scheme-insensitively, because a page and its
-		// assets do not always agree about that.
-		$own_assets = (string) preg_replace( '#^https?://#i', '', (string) plugins_url( 'assets/', CALUCON_EMBED_GATE_FILE ) );
+		// the CDN too.
+		$own_assets = (string) plugins_url( 'assets/', CALUCON_EMBED_GATE_FILE );
 
 		$should_gate = static function ( bool $gate, string $url, array $ctx ) use ( $own_assets ): bool {
 			// Never gate this plugin's own script. It is reachable: put your
@@ -477,8 +476,7 @@ final class Plugin {
 			// Short-circuited before the filter deliberately. There is no
 			// configuration under which gating our own loader is what the
 			// owner wanted, so this is not a decision to delegate.
-			if ( '' !== $own_assets
-				&& 0 === strpos( (string) preg_replace( '#^https?://#i', '', $url ), $own_assets ) ) {
+			if ( HostMatcher::url_is_under( $own_assets, $url ) ) {
 				return false;
 			}
 			return (bool) apply_filters( 'calucon_embed_gate_should_gate', $gate, $url, $ctx );

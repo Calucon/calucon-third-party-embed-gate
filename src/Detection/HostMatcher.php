@@ -194,6 +194,68 @@ final class HostMatcher {
 	 * @param string $url Raw (already entity-decoded) URL from the markup.
 	 * @return bool
 	 */
+	/**
+	 * Is this URL inside the given asset base — same host, same path prefix?
+	 *
+	 * Used for one thing: never gating the plugin's own script. That check
+	 * lived in Plugin.php as a scheme-stripped string prefix, which two
+	 * ordinary shapes defeated — a protocol-relative URL (several CDN plugins
+	 * emit those from plugins_url()) and an uppercased host. Either made the
+	 * plugin gate its own gate.js again, and the failure is silent: every
+	 * placeholder becomes a button that does nothing.
+	 *
+	 * So it lives here instead, beside the same authority normalisation the
+	 * rest of this class uses, where it is also reachable from a unit test —
+	 * the closure in Plugin.php was not, because PipelineFactory never passes
+	 * one.
+	 *
+	 * Host compares case-insensitively (hostnames are), path prefix compares
+	 * exactly (paths are not).
+	 *
+	 * @param string $base Absolute URL of the asset directory.
+	 * @param string $url  URL from the markup.
+	 * @return bool
+	 */
+	public static function url_is_under( string $base, string $url ): bool {
+		$base_parts = self::authority_and_path( $base );
+		$url_parts  = self::authority_and_path( $url );
+		if ( null === $base_parts || null === $url_parts ) {
+			return false;
+		}
+		if ( $base_parts[0] !== $url_parts[0] ) {
+			return false;
+		}
+		return '' !== $base_parts[1] && 0 === strpos( $url_parts[1], $base_parts[1] );
+	}
+
+	/**
+	 * Lowercased host and raw path of a URL, browser-normalised first.
+	 *
+	 * @param string $url URL.
+	 * @return array{0:string,1:string}|null
+	 */
+	private static function authority_and_path( string $url ): ?array {
+		$url = self::preprocess( $url );
+		if ( '' === $url ) {
+			return null;
+		}
+		if ( preg_match( '#^https?:#i', $url ) ) {
+			$url = (string) preg_replace( '#^(https?:)/*#i', '$1//', $url );
+		} elseif ( preg_match( '#^/{2,}#', $url ) ) {
+			$url = 'https:' . (string) preg_replace( '#^/+#', '//', $url );
+		} else {
+			return null;
+		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2).
+		$host = parse_url( $url, PHP_URL_HOST );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2).
+		$path = parse_url( $url, PHP_URL_PATH );
+		if ( ! is_string( $host ) || '' === $host ) {
+			return null;
+		}
+		return array( strtolower( $host ), is_string( $path ) ? $path : '' );
+	}
+
 	public static function looks_like_own_asset_path( string $url ): bool {
 		$url = self::preprocess( $url );
 		if ( '' === $url ) {

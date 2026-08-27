@@ -196,4 +196,51 @@ final class HostMatcherTest extends TestCase {
 		self::assertSame( HostMatcher::OWN, $matcher->classify( 'https://trusted.example/frame' ) );
 		self::assertSame( HostMatcher::FOREIGN, $matcher->classify( 'https://other.example/frame' ) );
 	}
+
+	/**
+	 * Never gating the plugin's own script, across the URL shapes a CDN
+	 * actually produces.
+	 *
+	 * This began life as a scheme-stripped string prefix inside a closure in
+	 * Plugin.php, where no test could reach it — PipelineFactory never passes
+	 * a should_gate callback — and two ordinary shapes defeated it. Both
+	 * re-open the defect it exists to prevent: the plugin gates its own
+	 * gate.js, and every placeholder becomes a button that does nothing.
+	 */
+	public function test_own_asset_base_survives_the_shapes_a_cdn_produces(): void {
+		$base = 'https://cdn.example.net/wp-content/plugins/calucon-third-party-embed-gate/assets/';
+
+		// Several CDN plugins emit protocol-relative URLs from plugins_url().
+		self::assertTrue( HostMatcher::url_is_under( $base, '//cdn.example.net/wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js' ) );
+		// Hostnames are case-insensitive; the old prefix compare was not.
+		self::assertTrue( HostMatcher::url_is_under( $base, 'https://CDN.EXAMPLE.NET/wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js' ) );
+		// The ordinary shape, with the ?ver= wp_enqueue_script always appends.
+		self::assertTrue( HostMatcher::url_is_under( $base, 'https://cdn.example.net/wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js?ver=0.13.0' ) );
+		// A protocol-relative BASE, for a filter that returns one.
+		self::assertTrue( HostMatcher::url_is_under( '//cdn.example.net/wp-content/plugins/calucon-third-party-embed-gate/assets/', 'https://cdn.example.net/wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js' ) );
+	}
+
+	/**
+	 * And the direction that must never widen: this is an exemption from
+	 * gating, so a near miss has to fail closed.
+	 */
+	public function test_own_asset_base_does_not_exempt_a_near_miss(): void {
+		$base = 'https://cdn.example.net/wp-content/plugins/calucon-third-party-embed-gate/assets/';
+
+		// The base appearing later in the URL is not the base.
+		self::assertFalse( HostMatcher::url_is_under( $base, 'https://evil.test/?u=cdn.example.net/wp-content/plugins/calucon-third-party-embed-gate/assets/x.js' ) );
+		// Same host, another plugin's directory.
+		self::assertFalse( HostMatcher::url_is_under( $base, 'https://cdn.example.net/wp-content/plugins/other/app.js' ) );
+		// Same path, another host.
+		self::assertFalse( HostMatcher::url_is_under( $base, 'https://evil.example/wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js' ) );
+		// A host that merely ends with ours.
+		self::assertFalse( HostMatcher::url_is_under( $base, 'https://notcdn.example.net/wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js' ) );
+		// Authority confusion: parses as our host in PHP, connects elsewhere.
+		self::assertFalse( HostMatcher::url_is_under( $base, 'https://evil.example\\@cdn.example.net/wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js' ) );
+		// Nothing to compare against.
+		self::assertFalse( HostMatcher::url_is_under( '', 'https://cdn.example.net/x.js' ) );
+		self::assertFalse( HostMatcher::url_is_under( $base, '' ) );
+		self::assertFalse( HostMatcher::url_is_under( $base, 'data:text/javascript,alert(1)' ) );
+	}
+
 }
