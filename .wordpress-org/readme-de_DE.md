@@ -197,11 +197,11 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** I use a caching or minification plugin — will this still work?
 
-**DE:** Ich nutze ein Caching- oder Minifizierungs-Plugin – funktioniert das trotzdem?
+**DE:** Ich nutze ein Caching- oder Minifizierungs-Plugin – funktioniert das trotzdem?
 
-**DE (Antwort):** Ja, und an der Sperre ändert sich nichts: Sie greift auf dem Server, gespeichert wird also die bereits gesperrte Seite. Minifiziertes HTML ist eingeplant und kein Problem – der Scanner ist dafür gebaut, und genau daran scheitern die meisten Umsetzungen still. Auch Deferring, Zusammenfassen oder spätes Nachladen des Plugin-Skripts funktionieren; das ist durch Tests abgedeckt.
+**DE (Antwort):** Ja, und an der Sperre ändert sich nichts: Sie greift auf dem Server, gespeichert wird also die bereits gesperrte Seite. Minifiziertes HTML ist eingeplant und kein Problem – der Scanner ist dafür gebaut, und genau daran scheitern die meisten Umsetzungen still. Auch Deferring, Zusammenfassen oder spätes Nachladen des Plugin-Skripts funktionieren; das ist durch Tests abgedeckt.
 
-Eine Einstellung solltest du kennen: „JavaScript bis zur Interaktion verzögern“ hält alle Skripte zurück, bis der Besucher die Seite zum ersten Mal berührt – und diese Interaktion wird dafür verbraucht, die Skripte einzuschalten. Sein erster Klick auf einen „Laden“-Button bewirkt dann nichts und er muss ein zweites Mal klicken. Durch den zusätzlichen Klick wird kein Drittanbieter kontaktiert, aber der Platzhalter wirkt kaputt. Unter Einstellungen → Status und Werkzeuge stehen die genauen Dateien, die du in die Ausschlussliste deines Optimierungs-Plugins einträgst, samt dem, was sich über die JavaScript-Einstellungen des installierten Caching-Plugins auslesen ließ.
+Eine Einstellung solltest du kennen: „JavaScript bis zur Interaktion verzögern“ hält alle Skripte zurück, bis der Besucher die Seite zum ersten Mal berührt – und diese Interaktion wird dafür verbraucht, die Skripte einzuschalten. Sein erster Klick auf einen „Laden“-Button bewirkt dann nichts und er muss ein zweites Mal klicken. Durch den zusätzlichen Klick wird kein Drittanbieter kontaktiert, aber der Platzhalter wirkt kaputt. Unter Einstellungen → Status und Werkzeuge stehen die genauen Dateien, die du in die Ausschlussliste deines Optimierungs-Plugins einträgst, samt dem, was sich über die JavaScript-Einstellungen des installierten Caching-Plugins auslesen ließ.
 
 Werden deine Assets über einen CDN-Hostnamen ausgeliefert, gilt dieser als deiner eigener und wird nie gesperrt.
 
