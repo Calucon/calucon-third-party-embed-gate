@@ -92,7 +92,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **EN:** German included: the plugin's own texts ship translated for every German locale WordPress offers …
 
-**DE:** Deutsch ist dabei: Die Texte des Plugins werden für jede deutsche Sprachvariante mitgeliefert, die WordPress anbietet – Deutschland (du und Sie), Österreich und Schweiz (mit ss statt ß) – Platzhaltertexte, Einstellungsseite und Block-Editor gleichermaßen.
+**DE:** Deutsch ist dabei: Die Texte des Plugins werden für jede deutsche Sprachvariante mitgeliefert, die WordPress anbietet – Deutschland (du und Sie), Österreich und Schweiz (mit ss statt ß) – Platzhaltertexte, Einstellungsansicht und Block-Editor gleichermaßen.
 
 **EN:** Multilingual sites: the texts you type (per-provider and per-block notices and button labels, provider privacy-policy URLs, your own providers' names) are registered for WPML and Polylang via a shipped wpml-config.xml.
 
@@ -168,7 +168,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Gibt es das Plugin auf Deutsch?
 
-**DE (Antwort):** Ja. Deutsch wird für alle fünf deutschen Sprachvarianten mitgeliefert, die WordPress anbietet – Deutschland informell und formell („de_DE“, „de_DE_formal“), Österreich („de_AT“) sowie Schweiz formell und informell („de_CH“, „de_CH_informal“, mit ss statt ß) – und deckt alles ab, was eine Person liest: den Platzhalter, den deine Besucher sehen, die Einstellungsseite und die Steuerelemente im Block-Editor. Stell die Sprache deiner Website ein, der Rest folgt. Weitere Sprachen sind über translate.wordpress.org willkommen; eine Übersetzung von dort hat Vorrang vor der mitgelieferten.
+**DE (Antwort):** Ja. Deutsch wird für alle fünf deutschen Sprachvarianten mitgeliefert, die WordPress anbietet – Deutschland informell und formell („de_DE“, „de_DE_formal“), Österreich („de_AT“) sowie Schweiz formell und informell („de_CH“, „de_CH_informal“, mit ss statt ß) – und deckt alles ab, was eine Person liest: den Platzhalter, den deine Besucher sehen, die Einstellungsansicht und die Steuerelemente im Block-Editor. Stell die Sprache deiner Website ein, der Rest folgt. Weitere Sprachen sind über translate.wordpress.org willkommen; eine Übersetzung von dort hat Vorrang vor der mitgelieferten.
 
 **EN:** Does a visitor have to click every single time?
 
@@ -180,7 +180,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Ich habe schon ein Cookie-Banner (Complianz, Cookiebot, …). Kommen sich die beiden in die Quere?
 
-**DE (Antwort):** Nein. Von Haus aus ignoriert Calucon Third-Party Embed Gate das Banner und sperrt weiter – Besucher sehen dein Banner für dessen Kategorien und den Platzhalter für Einbettungen, und nichts blockiert doppelt (der Platzhalter enthält kein Iframe und kein Skript, das der Blocker eines Banners abfangen könnte). Wenn dir eine Entscheidung statt zweier lieber ist, aktiviere die Brücke zur Consent-Plattform unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken: Eine Einwilligung, die dein Besucher in der Plattform gibt, lädt die Einbettungen dann automatisch, und ein Widerruf dort sperrt sie wieder. Die Brücke funktioniert nur mit den auf dieser Seite genannten Plattformen – bei jeder anderen hält sie sich heraus und die Sperre bleibt bestehen. Soll für einen bestimmten Anbieter lieber der Blocker deiner Plattform greifen, schalte diesen Anbieter unter „Anbieter“ ab, dann tritt Calucon Third-Party Embed Gate dafür zurück.
+**DE (Antwort):** Nein. Von Haus aus ignoriert Calucon Third-Party Embed Gate das Banner und sperrt weiter – Besucher sehen dein Banner für dessen Kategorien und den Platzhalter für Einbettungen, und nichts blockiert doppelt (der Platzhalter enthält kein Iframe und kein Skript, das der Blocker eines Banners abfangen könnte). Wenn dir eine Entscheidung statt zweier lieber ist, aktiviere die Brücke zur Consent-Plattform unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken: Eine Einwilligung, die dein Besucher in der Plattform gibt, lädt die Einbettungen dann automatisch, und ein Widerruf dort sperrt sie wieder. Die Brücke funktioniert nur mit den in dieser Ansicht genannten Plattformen – bei jeder anderen hält sie sich heraus und die Sperre bleibt bestehen. Soll für einen bestimmten Anbieter lieber der Blocker deiner Plattform greifen, schalte diesen Anbieter unter „Anbieter“ ab, dann tritt Calucon Third-Party Embed Gate dafür zurück.
 
 **EN:** Is Google Consent Mode v2 supported?
 
@@ -224,7 +224,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Etwas auf meiner Website ist gesperrt und soll normal laden
 
-**DE (Antwort):** Öffne Einstellungen → Calucon Third-Party Embed Gate → Anbieter und klicke auf „Nachsehen, was auf meiner Website läuft“. Der Scan listet jede Einbettung auf, die er in deinen neuesten Beiträgen und Seiten findet, samt der Adresse, die sie kontaktieren würde. Neben jeder kannst du sie entweder benennen – die Sperre bleibt dann bestehen, der Platzhalter bekommt aber einen richtigen Namen und ein Symbol – oder durchlassen, womit ihre Einbettungen für jeden Besucher ohne Platzhalter laden. So oder so musst du nie selbst einen Hostnamen herausfinden, und nichts ändert sich, bis du speicherst. Von dir durchgelassene Hosts bleiben oben auf derselben Seite aufgelistet und lassen sich dort mit einem Klick wieder sperren.
+**DE (Antwort):** Öffne Einstellungen → Calucon Third-Party Embed Gate → Anbieter und klicke auf „Nachsehen, was auf meiner Website läuft“. Der Scan listet jede Einbettung auf, die er in deinen neuesten Beiträgen und Seiten findet, samt der Adresse, die sie kontaktieren würde. Neben jeder kannst du sie entweder benennen – die Sperre bleibt dann bestehen, der Platzhalter bekommt aber einen richtigen Namen und ein Symbol – oder durchlassen, womit ihre Einbettungen für jeden Besucher ohne Platzhalter laden. So oder so musst du nie selbst einen Hostnamen herausfinden, und nichts ändert sich, bis du speicherst. Von dir durchgelassene Hosts bleiben oben in derselben Ansicht aufgelistet und lassen sich dort mit einem Klick wieder sperren.
 
 **EN:** A provider offers both an embed code and a script — which should I paste?
 
@@ -289,7 +289,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 ## Upgrade Notice (0.12.0)
 
-**DE:** Bringt Deutsch für alle fünf deutschen Sprachvarianten – den Platzhalter, den deine Besucher sehen, die Einstellungsseite und die Editor-Steuerung. Stell die Sprache deiner Website auf Deutsch, der Rest folgt. Sonst ändert sich nichts.
+**DE:** Bringt Deutsch für alle fünf deutschen Sprachvarianten – den Platzhalter, den deine Besucher sehen, die Einstellungsansicht und die Editor-Steuerung. Stell die Sprache deiner Website auf Deutsch, der Rest folgt. Sonst ändert sich nichts.
 
 ---
 
@@ -317,7 +317,7 @@ Plugin-Name und bleibt unübersetzt.
 
 **EN:** Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status & tools): …
 
-**DE:** Einstellungsseite mit Tabs (Anbieter / Erkennung / Design / Einwilligung merken / Status und Werkzeuge): eigene Anbieter (Name + Hosts, ohne Code), ein/aus pro Anbieter, datenschutzfreundliche Variante ein/aus, individueller Hinweis- und Button-Text, ein optionaler Link zur Datenschutzerklärung des Anbieters in jedem Platzhalter (standardmäßig aus, ein Häkchen schaltet ihn ein); Listen für eigene Hosts, nie zu sperrende und immer zu sperrende Hosts; Regel-Schalter samt optionaler Sperre für Bilder von Drittanbietern; Design-Vorlagen, Eckenformen mit eigenem Radius, Randbreite und -farbe, Schatten, Abstände, Button-Größe/-Stil/-Breite/-Hover, ein optionales Symbol passend zur Art der Einbettung, Größe des Hinweistexts, Ausrichtung des Platzhalters, Linkfarbe, Platzierung und Abdunkeln des Posterbilds, Stile für den Widerrufs-Button und optionale Farben für den Dunkelmodus – in Abschnitte gegliedert, mit Schnellstilen, Farbwählern, Live-Vorschau (dunkle Seite, Posterbild, Smartphone-Breite), Zurücksetzen mit einem Klick und automatischer Lesbarkeitsprüfung, ganz ohne CSS; optionales Puffern der gesamten Seite für Page-Builder; Einwilligung merken; ein erzeugter Content-Security-Policy-Schnipsel; eine Kompatibilitätsübersicht (erkanntes Cache-Plugin, Consent-Plattform, Page-Builder – und was das Plugin jeweils tut); ein Scan der aktuellen Inhalte, der jeden gefundenen Host benennen oder durchlassen kann, ohne dass du eine Adresse tippst und ohne dass vor dem Speichern etwas geschrieben wird.
+**DE:** Einstellungsansicht mit Tabs (Anbieter / Erkennung / Design / Einwilligung merken / Status und Werkzeuge): eigene Anbieter (Name + Hosts, ohne Code), ein/aus pro Anbieter, datenschutzfreundliche Variante ein/aus, individueller Hinweis- und Button-Text, ein optionaler Link zur Datenschutzerklärung des Anbieters in jedem Platzhalter (standardmäßig aus, ein Häkchen schaltet ihn ein); Listen für eigene Hosts, nie zu sperrende und immer zu sperrende Hosts; Regel-Schalter samt optionaler Sperre für Bilder von Drittanbietern; Design-Vorlagen, Eckenformen mit eigenem Radius, Randbreite und -farbe, Schatten, Abstände, Button-Größe/-Stil/-Breite/-Hover, ein optionales Symbol passend zur Art der Einbettung, Größe des Hinweistexts, Ausrichtung des Platzhalters, Linkfarbe, Platzierung und Abdunkeln des Posterbilds, Stile für den Widerrufs-Button und optionale Farben für den Dunkelmodus – in Abschnitte gegliedert, mit Schnellstilen, Farbwählern, Live-Vorschau (dunkle Seite, Posterbild, Smartphone-Breite), Zurücksetzen mit einem Klick und automatischer Lesbarkeitsprüfung, ganz ohne CSS; optionales Puffern der gesamten Seite für Page-Builder; Einwilligung merken; ein erzeugter Content-Security-Policy-Schnipsel; eine Kompatibilitätsübersicht (erkanntes Cache-Plugin, Consent-Plattform, Page-Builder – und was das Plugin jeweils tut); ein Scan der aktuellen Inhalte, der jeden gefundenen Host benennen oder durchlassen kann, ohne dass du eine Adresse tippst und ohne dass vor dem Speichern etwas geschrieben wird.
 
 **EN:** Theme override: copy `templates/placeholder.php` to `{your-theme}/calucon-embed-gate/placeholder.php`.
 

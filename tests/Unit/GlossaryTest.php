@@ -88,6 +88,12 @@ final class GlossaryTest extends TestCase {
 		array( 'eigene', 'custom', 'individuelle', 'custom' ),
 		array( 'Auszüge', 'excerpts', 'Textauszüge', 'excerpt' ),
 		array( 'Auszügen', 'excerpts', 'Textauszügen', 'excerpt' ),
+		// "screen" is Ansicht; "page" is Seite. Using Seite for a screen
+		// collides the two glossary entries, which is how six "Seite"s for
+		// "settings screen" reached the wp.org listing. The escape below
+		// keeps a long string that legitimately says both words quiet.
+		array( 'Einstellungsseite', 'screen', 'Einstellungsansicht', 'screen' ),
+		array( 'Seite', 'screen', 'Ansicht', 'screen' ),
 	);
 
 	/**
@@ -210,10 +216,25 @@ final class GlossaryTest extends TestCase {
 	 * @return string
 	 */
 	private static function report( string $file, string $wrong, string $term, string $right, string $german ): string {
-		$excerpt = $german;
-		if ( preg_match( '/.{0,45}' . preg_quote( $wrong, '/' ) . '.{0,45}/u', $german, $found ) ) {
-			$excerpt = '…' . $found[0] . '…';
+		// Every occurrence, not the first: a word like "Seite" is legitimate
+		// for "page" and wrong for "screen" in the same sentence, and quoting
+		// only the first hit sends the reader to fix the innocent one.
+		$excerpts = array();
+		if ( preg_match_all( '/.{0,45}' . preg_quote( $wrong, '/' ) . '.{0,45}/u', $german, $found ) ) {
+			foreach ( array_slice( $found[0], 0, 3 ) as $hit ) {
+				$excerpts[] = '    …' . $hit . '…';
+			}
 		}
-		return sprintf( "  %s\n    \"%s\" → the glossary says %s (%s)\n    %s", basename( $file ), $wrong, $right, $term, $excerpt );
+		if ( array() === $excerpts ) {
+			$excerpts[] = '    ' . $german;
+		}
+		return sprintf(
+			"  %s\n    \"%s\" → the glossary says %s (%s)\n%s",
+			basename( $file ),
+			$wrong,
+			$right,
+			$term,
+			implode( "\n", $excerpts )
+		);
 	}
 }
