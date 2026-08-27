@@ -220,7 +220,16 @@ final class GlossaryTest extends TestCase {
 			$path = dirname( __DIR__, 2 ) . '/' . $relative;
 			self::assertFileExists( $path );
 
-			foreach ( ReadmeMarkdown::pairs( $path ) as list( $english, $german ) ) {
+			$pairs = ReadmeMarkdown::pairs( $path );
+			// A parser that returned nothing would leave $found empty and this
+			// test green, which is how a corpus silently stops being checked.
+			self::assertSame(
+				ReadmeMarkdown::expected_chunk_count( $path ),
+				count( $pairs ),
+				"the parser did not return every German chunk in {$relative} — a partial loss makes this test pass, not fail"
+			);
+
+			foreach ( $pairs as list( $english, $german ) ) {
 				foreach ( self::FORBIDDEN as $wrong => list( $term, $right ) ) {
 					if ( false !== strpos( $german, $wrong ) ) {
 						$found[] = self::report( $relative, $wrong, $term, $right, $german );

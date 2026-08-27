@@ -301,7 +301,15 @@ final class StyleGuideTest extends TestCase {
 			// the same German, published on the same plugin page, and it was
 			// unchecked here until a reviewer-grade word turned up in it.
 			if ( '.md' === substr( $relative, -3 ) ) {
-				foreach ( ReadmeMarkdown::chunks( $path ) as $index => $german ) {
+				$chunks = ReadmeMarkdown::chunks( $path );
+				// Same trap as GlossaryTest: an empty parse means an empty
+				// corpus, and every rule below then passes over nothing.
+				self::assertSame(
+					ReadmeMarkdown::expected_chunk_count( $path ),
+					count( $chunks ),
+					"the parser did not return every German chunk in {$relative} — a partial loss makes this test pass, not fail"
+				);
+				foreach ( $chunks as $index => $german ) {
 					$out[ basename( $relative ) . ' :: chunk ' . $index ] = $german;
 				}
 				continue;

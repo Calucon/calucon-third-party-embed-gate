@@ -224,7 +224,14 @@ final class ReadmeTranslationTest extends TestCase {
 
 			$translations = array_map( 'self::markup_free', array_values( PoReader::translations( $po_path ) ) );
 
-			foreach ( array_map( 'self::markup_free', ReadmeMarkdown::chunks( $md_path ) ) as $chunk ) {
+			$chunks = ReadmeMarkdown::chunks( $md_path );
+			self::assertSame(
+				ReadmeMarkdown::expected_chunk_count( $md_path ),
+				count( $chunks ),
+				"the parser did not return every German chunk in {$markdown} — a partial loss makes this test pass, not fail"
+			);
+
+			foreach ( array_map( 'self::markup_free', $chunks ) as $chunk ) {
 				// Short chunks are headings and labels; several legitimately
 				// share an opening, and they are not where drift hides.
 				if ( mb_strlen( $chunk ) < 60 ) {

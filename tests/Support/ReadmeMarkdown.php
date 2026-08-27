@@ -86,4 +86,23 @@ final class ReadmeMarkdown {
 		}
 		return trim( $found[1] );
 	}
+
+	/**
+	 * How many German chunks the raw file contains, counted independently.
+	 *
+	 * The point of a second implementation: every caller of chunks()/pairs()
+	 * loops the result and asserts the loop found no problems, so a parser
+	 * that returns fewer chunks makes those tests MORE likely to pass. A
+	 * blunt "more than fifty" guard does not help — dropping the 19
+	 * "**DE (Antwort):**" chunks is a quarter of the corpus and stays well
+	 * above any such floor. Counting the file directly is the only guard that
+	 * notices a partial loss.
+	 *
+	 * @param string $path Absolute path to a readme markdown file.
+	 * @return int
+	 */
+	public static function expected_chunk_count( string $path ): int {
+		return (int) preg_match_all( '/^\*\*DE[^:]*:\*\*/mu', (string) file_get_contents( $path ) );
+	}
+
 }

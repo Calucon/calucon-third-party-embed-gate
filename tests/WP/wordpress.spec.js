@@ -1211,7 +1211,11 @@ test( 'admin: every settings tab fits phone, tablet and desktop without sideways
 
 	for ( const vp of VIEWPORTS ) {
 		await page.setViewportSize( { width: vp.width, height: vp.height } );
-		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+		// Every emulator on: the Compatibility rows — a detected optimiser with
+		// its exclusion-list advice, a consent platform, a page builder — only
+		// render when the matching plugin exists, so the widest markup on this
+		// screen was never measured at 360px.
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg_cache=rocket&cg_cmp=tested&cg_builder=1&calucon-embed-gate-scan=1' );
 		await page.waitForSelector( '.cg-tabs' );
 		// The admin bar is core's and collapses on its own; measure the
 		// settings screen itself.
