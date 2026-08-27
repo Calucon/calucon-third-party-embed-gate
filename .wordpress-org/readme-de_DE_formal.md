@@ -1,6 +1,6 @@
 # readme.txt auf Deutsch (de_DE_formal, „Sie“)
 
-<!-- readme.txt: 63cab00279964151 -->
+<!-- readme.txt: 63c49f6071977e34 -->
 
 <!-- Dieser Stempel bindet die Übersetzung an den englischen Stand.
      tests/Unit/ReadmeTranslationTest.php schlägt fehl, sobald readme.txt sich ändert. -->
@@ -292,15 +292,15 @@ Werden Ihre Assets über einen CDN-Hostnamen ausgeliefert, gilt dieser als Ihr e
 
 ---
 
-## Upgrade Notice (0.12.1)
+## Upgrade Notice (0.13.0)
 
-**DE:** Nur Deutsch: Korrekturen nach der Prüfung durch das deutsche Übersetzungsteam – ein Tab in den Einstellungen heißt jetzt „Design“, und mehrere Begriffe und Sätze wurden an Glossar und Styleguide von WordPress Deutsch angeglichen. Für englischsprachige Websites ändert sich nichts.
+**DE:** Behebt einen Fall, in dem ein CDN vor Ihren Assets zusammen mit der Sperre der gesamten Seitenausgabe dazu führen konnte, dass das Plugin die eigenen Skripte Ihrer Website sperrte. In einer bestimmten Konfiguration wurde dabei auch das Skript des Plugins selbst gesperrt – dann war jeder Platzhalter nur noch ein Button, der nichts bewirkte. Unter Status und Werkzeuge steht jetzt, welche Dateien Sie in Ihrem Caching- oder Minifizierungs-Plugin ausnehmen sollten und wo dieses Plugin seine Ausschlussliste führt. An den Einstellungen ändert sich nichts.
 
 ---
 
-## Upgrade Notice (0.13.0)
+## Upgrade Notice (0.12.1)
 
-**DE:** Behebt einen Fall, in dem ein CDN vor Ihren Assets zusammen mit der Sperre für die gesamte Seite dazu führen konnte, dass die eigenen Skripte Ihrer Website gesperrt wurden. Ergänzt unter Status und Werkzeuge eine Liste von Dateien, die Sie in Caching- und Minifizierungs-Plugins ausschließen sollten. An den Einstellungen ändert sich nichts.
+**DE:** Nur Deutsch: Korrekturen nach der Prüfung durch das deutsche Übersetzungsteam – ein Tab in den Einstellungen heißt jetzt „Design“, und mehrere Begriffe und Sätze wurden an Glossar und Styleguide von WordPress Deutsch angeglichen. Für englischsprachige Websites ändert sich nichts.
 
 ---
 

@@ -1549,3 +1549,49 @@ test( 'an asset CDN plus whole-page buffering: the site\'s own scripts survive',
 		await save();
 	}
 } );
+
+test( 'compatibility: consent platforms, page builders and the two quiet optimiser states', async ( { page } ) => {
+	// Every row below renders only when the matching plugin is installed, so
+	// on a clean Playground none of them had ever rendered in a test — the CMP
+	// rows (0 of 8 platforms), the builder rows (0 of 6), and two of the four
+	// optimiser states. All of it is copy an owner acts on.
+	await login( page );
+
+	const compat = ( name ) => page.locator( '#cg-compatibility + table tr', { hasText: name } );
+	const optimiser = ( name ) => page.locator( 'h3:has-text("JavaScript optimisation") + table tr', { hasText: name } );
+	const status = async ( query ) => {
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' + query );
+		await page.click( '#cg-tabbtn-status' );
+	};
+
+	// A bridgeable platform with the bridge off: "tested, but we are still
+	// gating" — NOT "we are honouring your banner". Getting this backwards
+	// would tell an owner their embeds follow a consent they never wired up.
+	await status( '&cg_cmp=tested' );
+	await expect( compat( 'Complianz' ) ).toContainText( 'tested for interoperation' );
+	await expect( compat( 'Complianz' ) ).toContainText( 'fail-closed default' );
+
+	// A platform with no tested bridge: gating stands regardless.
+	await status( '&cg_cmp=untested' );
+	await expect( compat( 'Usercentrics' ) ).toContainText( 'no tested bridge' );
+
+	// A page builder, with whole-page gating off — the state where its embeds
+	// may NOT be covered, which is the whole reason the row exists.
+	await status( '&cg_builder=1' );
+	await expect( compat( 'Elementor' ) ).toContainText( 'render outside the content filters' );
+
+	// "Combine" and "off" are the two optimiser states nothing had rendered.
+	// Off must never read as an all-clear about the plugin generally: it says
+	// the settings were read and the risky ones are not on.
+	await status( '&cg_cache=autoptimize' );
+	await expect( optimiser( 'Autoptimize' ) ).toContainText( 'combine JavaScript' );
+	await expect( optimiser( 'Autoptimize' ) ).toContainText( 'Exclude scripts from Autoptimize' );
+
+	await status( '&cg_cache=litespeed' );
+	await expect( optimiser( 'LiteSpeed Cache' ) ).toContainText( 'none of the ones that cause trouble are on' );
+	await expect( optimiser( 'LiteSpeed Cache' ) ).toContainText( 'JS Excludes' );
+
+	// The empty state, asserted positively rather than by absence.
+	await status( '' );
+	await expect( page.locator( '#cg-tab-status' ) ).toContainText( 'No cache plugin, consent platform, multilingual plugin or page builder detected.' );
+} );

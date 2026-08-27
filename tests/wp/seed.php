@@ -158,6 +158,27 @@ add_filter( 'locale', function ( $locale ) {
 if ( isset( $_GET['cg_wpml'] ) && ! defined( 'ICL_SITEPRESS_VERSION' ) ) {
 	define( 'ICL_SITEPRESS_VERSION', '4.6.13' );
 }
+// Consent-platform and page-builder emulators. Neither branch of the
+// Compatibility screen had ever rendered in a test: the CMP rows say whether
+// the bridge is active, merely available, or absent because the platform is
+// untested, and the builder row changes with whole-page gating. All of it is
+// copy an owner acts on.
+//
+//   ?cg_cmp=tested    — a bridgeable platform (Complianz)
+//   ?cg_cmp=untested  — one with no tested bridge (Usercentrics)
+//   ?cg_builder=1     — a page builder (Elementor)
+if ( isset( $_GET['cg_cmp'] ) ) {
+	if ( 'tested' === $_GET['cg_cmp'] && ! defined( 'cmplz_version' ) ) {
+		define( 'cmplz_version', '7.1.0' );
+	}
+	if ( 'untested' === $_GET['cg_cmp'] && ! defined( 'UC_PLUGIN_FILE' ) ) {
+		define( 'UC_PLUGIN_FILE', 'usercentrics/usercentrics.php' );
+	}
+}
+if ( isset( $_GET['cg_builder'] ) && ! defined( 'ELEMENTOR_VERSION' ) ) {
+	define( 'ELEMENTOR_VERSION', '3.21.0' );
+}
+
 // Asset-CDN emulator. The 0.13.0 fix has two halves and only one of them was
 // reachable by a fixture: the path heuristic (/wp-content/ on any host) is
 // covered by tests/Fixtures/cdn-offloaded-assets-*, but Plugin::own_hosts() —
@@ -208,6 +229,37 @@ if ( isset( $_GET['cg_cdn'] ) ) {
 if ( isset( $_GET['cg_cache'] ) ) {
 	if ( 'w3tc' === $_GET['cg_cache'] && ! defined( 'W3TC' ) ) {
 		define( 'W3TC', true );
+	}
+	if ( 'autoptimize' === $_GET['cg_cache'] ) {
+		// The 'combine' state, which had never rendered. Autoptimize's reader
+		// needs autoptimize_js set AND autoptimize_js_aggregate truthy — the
+		// latter defaults to true, so its default_option_ filter matters as
+		// much as the option_ one.
+		if ( ! defined( 'AUTOPTIMIZE_PLUGIN_VERSION' ) ) {
+			define( 'AUTOPTIMIZE_PLUGIN_VERSION', '3.1' );
+		}
+		$cg_ao = static function () {
+			return '1';
+		};
+		add_filter( 'option_autoptimize_js', $cg_ao );
+		add_filter( 'default_option_autoptimize_js', $cg_ao );
+		add_filter( 'option_autoptimize_js_aggregate', $cg_ao );
+		add_filter( 'default_option_autoptimize_js_aggregate', $cg_ao );
+	}
+	if ( 'litespeed' === $_GET['cg_cache'] ) {
+		// The 'off' state: settings READ, and none of the risky ones on. It
+		// must never collapse into 'unknown' — "we looked and it is fine" and
+		// "we could not look" are different things to tell an owner.
+		if ( ! defined( 'LSCWP_V' ) ) {
+			define( 'LSCWP_V', '6.5' );
+		}
+		$cg_ls_off = static function () {
+			return '0';
+		};
+		add_filter( 'option_litespeed.optm.js_defer', $cg_ls_off );
+		add_filter( 'default_option_litespeed.optm.js_defer', $cg_ls_off );
+		add_filter( 'option_litespeed.optm.js_comb', $cg_ls_off );
+		add_filter( 'default_option_litespeed.optm.js_comb', $cg_ls_off );
 	}
 	if ( 'rocket' === $_GET['cg_cache'] ) {
 		if ( ! defined( 'WP_ROCKET_VERSION' ) ) {
