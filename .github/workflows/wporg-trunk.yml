@@ -60,7 +60,7 @@ jobs:
       SLUG: calucon-third-party-embed-gate
       SVN_URL: https://plugins.svn.wordpress.org/calucon-third-party-embed-gate
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -69,7 +69,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@v4
 
       # Trunk is public and gets parsed for the plugin directory the moment it
       # lands, so it should not be a state the suite rejects.
