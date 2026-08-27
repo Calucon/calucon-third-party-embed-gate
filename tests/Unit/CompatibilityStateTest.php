@@ -113,4 +113,62 @@ final class CompatibilityStateTest extends TestCase {
 		);
 	}
 
+
+	/**
+	 * The exclusion paths must name files that exist, and the same files the
+	 * plugin actually enqueues on the front end.
+	 *
+	 * Compatibility::exclusion_paths() carries its own hardcoded copy of the
+	 * asset list — a second source of truth beside Integration/Assets.php —
+	 * and plugins_url() performs no existence check. So a rename that updates
+	 * the enqueue and forgets this file produces advice pointing at a file
+	 * that is not there, and the site owner pastes it into ANOTHER plugin's
+	 * configuration, where nothing can tell them it is wrong.
+	 *
+	 * The WordPress test that reads this block off the screen cannot catch it:
+	 * it asserts the same literal the stale code emits, so both move together
+	 * and stay green. Hence a source-level comparison instead.
+	 */
+	public function test_the_exclusion_paths_are_real_files_and_match_the_enqueued_set(): void {
+		$root = dirname( __DIR__, 2 );
+
+		$source = (string) file_get_contents( $root . '/src/Admin/Compatibility.php' );
+		self::assertSame(
+			1,
+			preg_match( '/public static function exclusion_paths.*?^\t\}/sum', $source, $method ),
+			'exclusion_paths() moved or was renamed'
+		);
+		preg_match_all( "#'(assets/[A-Za-z0-9/._-]+)'#", $method[0], $advertised );
+
+		$assets = (string) file_get_contents( $root . '/src/Integration/Assets.php' );
+		preg_match_all( "#'(assets/[A-Za-z0-9/._-]+)'#", $assets, $enqueued );
+
+		self::assertNotEmpty( $advertised[1], 'no asset paths found in exclusion_paths()' );
+
+		$missing = array();
+		foreach ( $advertised[1] as $asset ) {
+			if ( ! is_file( $root . '/' . $asset ) ) {
+				$missing[] = $asset;
+			}
+		}
+		self::assertSame(
+			array(),
+			$missing,
+			"The Status screen tells the owner to exclude files that do not exist:\n  "
+				. implode( "\n  ", $missing )
+		);
+
+		$advertised_set = array_unique( $advertised[1] );
+		$enqueued_set   = array_unique( $enqueued[1] );
+		sort( $advertised_set );
+		sort( $enqueued_set );
+		self::assertSame(
+			$enqueued_set,
+			$advertised_set,
+			"Compatibility::exclusion_paths() and Integration/Assets.php disagree about which\n"
+				. "assets this plugin ships. Whichever is right, the owner is being given the\n"
+				. 'other one.'
+		);
+	}
+
 }
