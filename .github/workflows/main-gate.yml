@@ -1,0 +1,56 @@
+# Two gates on pull requests into main.
+#
+# main is the stable branch: it only ever receives `trunk`, and only at a
+# version that has not been tagged yet, because every merge into main is a
+# release (release.yml tags it, publishes the zip and deploys the WordPress.org
+# tag). Feature branches merge into `trunk`; see CLAUDE.md.
+#
+# Both jobs are required status checks on main. Both always run and fail
+# inside a step: a job skipped by a job-level `if` counts as PASSED for branch
+# protection, which would make the gate a decoration.
+#
+# `edited` is in the event list because retargeting a PR's base fires it;
+# without it a PR opened against trunk and later pointed at main would carry
+# no verdict.
+name: Main gate
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  source:
+    name: Source branch is trunk
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refuse anything but trunk → main
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          # A fork can name a branch `trunk` too; the head repo has to be ours.
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          if [ "$HEAD_REF" != "trunk" ] || [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::main only takes merges from trunk; this pull request is ${HEAD_REPO}:${HEAD_REF}. Feature branches merge into trunk — retarget it with: gh pr edit ${PR_NUMBER} --base trunk"
+            exit 1
+          fi
+          echo "Head is ${HEAD_REPO}:${HEAD_REF} — the release path."
+
+  version:
+    name: Version is unreleased
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Refuse a version that already has a tag
+        run: |
+          VERSION=$(bash bin/plugin-version.sh)
+          if git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" > /dev/null 2>&1; then
+            echo "::error::v${VERSION} is already released. Every merge into main is a release, so bump the version on trunk first — the Version header and CALUCON_EMBED_GATE_VERSION in calucon-third-party-embed-gate.php, and Stable tag in readme.txt (bin/plugin-version.sh checks all three agree)."
+            exit 1
+          fi
+          echo "v${VERSION} has no tag yet — merging will release it."

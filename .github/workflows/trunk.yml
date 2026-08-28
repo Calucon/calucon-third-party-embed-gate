@@ -1,13 +1,22 @@
-# Push the current branch to the WordPress.org SVN **trunk**, and nothing else.
+# The `trunk` branch mirrors WordPress.org's SVN **trunk**, and this workflow
+# keeps the two in step: every merge into `trunk` syncs SVN trunk and publishes
+# a GitHub pre-release `v{VERSION}-rc.N`. It never creates an SVN tag and never
+# changes what users are served — releases stay with release.yml, which runs
+# when `trunk` is merged into `main`.
 #
-# Why this exists: translate.wordpress.org builds its "Development" and
-# "Development Readme" projects from trunk. Pushing trunk makes wordpress.org
-# re-parse the readme and the plugin strings, so the German (or any other
-# locale) can be translated and inspected on GlotPress *before* the text
-# becomes the Stable version that users and the public plugin page see.
+# Why trunk is synced before a release: translate.wordpress.org builds its
+# "Development" and "Development Readme" projects from SVN trunk. Syncing it
+# makes wordpress.org re-parse the readme and the plugin strings, so the German
+# (or any other locale) can be translated and inspected on GlotPress *before*
+# the text becomes the Stable version that users and the public plugin page
+# see. The release candidate is the same build as a downloadable zip.
 #
-# It does NOT create a tag and does NOT release anything. Releases stay with
-# release.yml, which runs on merges to main and deploys trunk + a version tag.
+# Two ways to run it:
+#   - automatically, on every push to `trunk` (i.e. every merge into it):
+#     syncs SVN trunk AND publishes the release candidate;
+#   - by hand (Actions → Trunk → Run workflow), from any ref: syncs SVN trunk
+#     only, and defaults to a dry run that shows the diff and commits nothing.
+#     Use it to preview a sync or to refresh trunk without a merge.
 #
 # ---------------------------------------------------------------------------
 # The one thing that could hurt users, and how this avoids it
@@ -27,9 +36,11 @@
 #
 # Requires the same opt-in as the release deploy: vars.WPORG_DEPLOY=true and
 # the SVN_USERNAME / SVN_PASSWORD secrets.
-name: Push trunk to WordPress.org
+name: Trunk
 
 on:
+  push:
+    branches: [trunk]
   workflow_dispatch:
     inputs:
       dry_run:
@@ -42,8 +53,10 @@ on:
         required: true
         default: 'refresh trunk so translate.wordpress.org re-parses the readme'
 
+# contents: write is for the release candidate (a tag and a pre-release). The
+# SVN side authenticates with the secrets, not with this token.
 permissions:
-  contents: read
+  contents: write
 
 # Shares the release workflow's lock: two things writing this SVN repo at once
 # is a confusing failure, and neither is urgent enough to race.
@@ -51,9 +64,15 @@ concurrency:
   group: release
   cancel-in-progress: false
 
+env:
+  # `inputs.*` is empty on a push event, so `!inputs.dry_run` would be true
+  # there by accident. Spell the condition out: a dry run is a manual run
+  # with the box ticked, and nothing else.
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
+
 jobs:
   trunk:
-    name: Deploy trunk only
+    name: Sync trunk + release candidate
     runs-on: ubuntu-latest
     if: ${{ vars.WPORG_DEPLOY == 'true' }}
     env:
@@ -140,25 +159,64 @@ jobs:
           svn diff --summarize trunk || true
 
       - name: Commit
-        if: ${{ !inputs.dry_run }}
+        if: ${{ env.DRY_RUN != 'true' }}
         working-directory: svn
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           # Through the environment, never interpolated into the script: a
-          # dispatch input expanded inline is a shell-injection hole, however
-          # short the list of people who can dispatch it.
-          REASON: ${{ inputs.reason }}
+          # dispatch input or a commit message expanded inline is a
+          # shell-injection hole, however short the list of people who can
+          # dispatch or merge. On a push the reason is the merge commit's
+          # subject line.
+          REASON: ${{ inputs.reason || github.event.head_commit.message }}
           LIVE: ${{ steps.stable.outputs.live }}
         run: |
+          REASON="${REASON%%$'\n'*}"
           svn commit trunk \
             --username "$SVN_USERNAME" --password "$SVN_PASSWORD" \
             --no-auth-cache --non-interactive \
             -m "Update trunk from ${GITHUB_SHA::8}: ${REASON} (stable stays ${LIVE})"
 
+      # Release candidate: one pre-release per merge into trunk, numbered per
+      # version from the rc tags already on origin (max + 1, so a hand-deleted
+      # rc.2 between rc.1 and rc.3 cannot be minted twice). Skipped when
+      # v{VERSION} is already a release — a docs-only or infra merge after a
+      # release has nothing to be a candidate for; bump the version first.
+      # Only on push: a manual run can come from any ref and is the
+      # "sync SVN trunk only" path.
+      - name: Determine the release-candidate tag
+        id: rc
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          VERSION=$(bash bin/plugin-version.sh)
+          if git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" > /dev/null 2>&1; then
+            echo "::notice::v${VERSION} is already released. Trunk was synced, but no release candidate is published for a released version — bump the Version header, the constant and the Stable tag to get one."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          LAST=$(git ls-remote --refs --tags origin "refs/tags/v${VERSION}-rc.*" \
+            | sed -nE 's/.*-rc\.([0-9]+)$/\1/p' | sort -n | tail -n1)
+          N=$(( ${LAST:-0} + 1 ))
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}-rc.${N}" >> "$GITHUB_OUTPUT"
+          echo "Release candidate: v${VERSION}-rc.${N}"
+
+      - name: Publish the release candidate
+        if: ${{ github.event_name == 'push' && steps.rc.outputs.skip == 'false' }}
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.rc.outputs.tag }}
+          name: Calucon Third-Party Embed Gate ${{ steps.rc.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          generate_release_notes: true
+          files: build/calucon-third-party-embed-gate-${{ steps.rc.outputs.version }}.zip
+
       - name: Where to look next
         run: |
-          if [ '${{ inputs.dry_run }}' = 'true' ]; then
+          if [ "$DRY_RUN" = 'true' ]; then
             echo '### Dry run — nothing was committed' >> "$GITHUB_STEP_SUMMARY"
             echo 'Re-run with **Dry run** unchecked to push trunk.' >> "$GITHUB_STEP_SUMMARY"
           else
@@ -167,9 +225,15 @@ jobs:
               echo ''
               echo "Stable stays at **${{ steps.stable.outputs.live }}** — users are unaffected."
               echo ''
+              if [ '${{ steps.rc.outputs.skip }}' = 'false' ]; then
+                echo "Release candidate: **${{ steps.rc.outputs.tag }}** (pre-release, with the zip)."
+                echo ''
+              fi
               echo 'wordpress.org re-parses trunk within a few minutes. Inspect the regenerated strings:'
               echo ''
               echo "- [Development Readme](https://translate.wordpress.org/projects/wp-plugins/$SLUG/dev-readme/de/default/)"
               echo "- [Development](https://translate.wordpress.org/projects/wp-plugins/$SLUG/dev/de/default/)"
+              echo ''
+              echo 'When the translations are right, open the release: `gh pr create --base main --head trunk` and merge it with **Create a merge commit**.'
             } >> "$GITHUB_STEP_SUMMARY"
           fi
