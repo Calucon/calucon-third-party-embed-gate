@@ -96,7 +96,9 @@ readme states as measured — and `bin/check-tested-up-to.sh` compares the
 readme's `Tested up to` with WordPress's version API. Red opens an issue
 labelled `maintenance`. Together with the monthly field validation and
 Dependabot for the Actions pins, that is the whole maintenance routine:
-nothing rots silently, and nothing needs watching.
+nothing rots silently, and nothing needs watching. Scheduled and dispatched
+workflows run from `main` only — a canary merged into `trunk` is live once
+the next release lands on `main`.
 
 ## Invariants (PLAN.md §1) — if a change would break one of these, stop and ask
 
