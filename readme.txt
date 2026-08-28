@@ -99,7 +99,7 @@ Yes, and gating itself is unaffected: it happens on the server, so the page that
 
 One setting is worth knowing about: "delay JavaScript until interaction" holds every script back until the visitor first interacts, and that interaction is spent switching the scripts on — so their first click on a "Load" button does nothing and they have to click again. Nothing third-party is contacted by the extra click, but the placeholder feels broken. Settings → Status & tools lists the exact files to paste into your optimisation plugin's exclusion list, and reports what it could read about the JavaScript settings of the caching plugin you have installed.
 
-If your assets are served from a CDN hostname, that is recognised as your own and never gated.
+If your assets are served from a CDN hostname, that is recognised as your own. Most CDN plugins filter the WordPress functions that say where your files live, and then everything from that host counts as yours. A CDN that rewrites the finished page instead is invisible to that, so scripts and stylesheets on a `/wp-content/` or `/wp-includes/` path are left alone whatever host serves them — which does not cover images, and third-party image gating is off by default for that reason among others.
 
 = The placeholder looks unstyled after an update =
 

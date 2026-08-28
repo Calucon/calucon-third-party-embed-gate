@@ -180,6 +180,22 @@ final class ContentScanTest extends TestCase {
 	}
 
 	/**
+	 * A known provider cannot hide behind the path here either.
+	 *
+	 * ScriptRule refuses the exemption for a host that already belongs to a
+	 * provider. The first version of the scan's own-asset branch omitted that
+	 * condition, so the screen said "NOT gated — treated as your own file"
+	 * about a script the pipeline gates. That is the original defect pointing
+	 * the other way, and the more dangerous direction: the owner is told a
+	 * tracker is being let through when it is not, and reaches for a setting
+	 * they do not need.
+	 */
+	public function test_a_provider_host_on_a_wp_path_is_still_reported_as_gated(): void {
+		$rows = $this->scanner()->scan( '<script src="https://platform.twitter.com/wp-content/plugins/widgets.js"></script>' );
+		self::assertSame( ContentScan::GATED, $rows[0]['status'] );
+	}
+
+	/**
 	 * The owner's explicit list still outranks the heuristic, here as well as
 	 * on the render path — otherwise the screen would tell them the host they
 	 * just added to always-gate is still being let through.

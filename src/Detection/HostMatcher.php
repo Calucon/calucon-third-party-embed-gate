@@ -165,36 +165,6 @@ final class HostMatcher {
 	}
 
 	/**
-	 * Does this URL's path look like WordPress's own asset tree?
-	 *
-	 * The escape hatch for a CDN that rewrites the finished HTML rather than
-	 * filtering WordPress's URL functions. Plugin::own_hosts() already trusts
-	 * the hosts content_url()/includes_url()/… report, which covers every CDN
-	 * that works through those filters; one that rewrites the output buffer
-	 * instead is invisible to that, and with whole-page buffering on the
-	 * site's own wp-includes scripts then look third-party and get gated —
-	 * which breaks the site's JavaScript rather than protecting anyone.
-	 *
-	 * Callers should use is_exempt_own_asset(), which is this check plus the
-	 * owner's always-gate list. This raw form exists so the shape of the URL
-	 * can be tested on its own.
-	 *
-	 * **Only ScriptRule and StylesheetRule may consult this.** Never
-	 * IframeRule, ImageRule or EmbedObjectRule: invariant 6 — an unknown
-	 * third-party iframe is gated by default — has no exceptions, and a path
-	 * heuristic is exactly the hole it exists to close. For a script or a
-	 * stylesheet the trade is different: to abuse it a third party would have
-	 * to serve from a /wp-content/ or /wp-includes/ path, which in practice
-	 * means hosting a copy of somebody's WordPress, and the owner still has
-	 * always_gate to override it.
-	 *
-	 * Substring, not prefix: WordPress in a subdirectory gives
-	 * '/blog/wp-content/…', and CDNs routinely prefix a pull-zone path.
-	 *
-	 * @param string $url Raw (already entity-decoded) URL from the markup.
-	 * @return bool
-	 */
-	/**
 	 * Is this URL inside the given asset base — same host, same path prefix?
 	 *
 	 * Used for one thing: never gating the plugin's own script. That check
@@ -229,6 +199,34 @@ final class HostMatcher {
 	}
 
 	/**
+	 * Is this URL's PATH under the given base's path, whatever host serves it?
+	 *
+	 * The companion to url_is_under(), for the case that rule cannot see. A
+	 * CDN that rewrites the finished HTML leaves plugins_url() reporting the
+	 * origin host while the markup carries the CDN's — so a host comparison
+	 * fails on exactly the setup the own-asset path rule exists for, and the
+	 * plugin gates its own gate.js again.
+	 *
+	 * Host-blind on purpose, and safe because the base is this plugin's own
+	 * asset directory: the path carries the plugin's slug, so a collision
+	 * means somebody is deliberately serving a copy of our own script, and
+	 * the worst outcome is that our own loader runs. Compare that with the
+	 * alternative — the gate silently doing nothing on every page.
+	 *
+	 * @param string $base Absolute URL of the asset directory.
+	 * @param string $url  URL from the markup.
+	 * @return bool
+	 */
+	public static function path_is_under( string $base, string $url ): bool {
+		$base_parts = self::authority_and_path( $base );
+		$url_parts  = self::authority_and_path( $url );
+		if ( null === $base_parts || null === $url_parts || '' === $base_parts[1] ) {
+			return false;
+		}
+		return 0 === strpos( $url_parts[1], $base_parts[1] );
+	}
+
+	/**
 	 * Lowercased host and raw path of a URL, browser-normalised first.
 	 *
 	 * @param string $url URL.
@@ -256,6 +254,36 @@ final class HostMatcher {
 		return array( strtolower( $host ), is_string( $path ) ? $path : '' );
 	}
 
+	/**
+	 * Does this URL's path look like WordPress's own asset tree?
+	 *
+	 * The escape hatch for a CDN that rewrites the finished HTML rather than
+	 * filtering WordPress's URL functions. Plugin::own_hosts() already trusts
+	 * the hosts content_url()/includes_url()/… report, which covers every CDN
+	 * that works through those filters; one that rewrites the output buffer
+	 * instead is invisible to that, and with whole-page buffering on the
+	 * site's own wp-includes scripts then look third-party and get gated —
+	 * which breaks the site's JavaScript rather than protecting anyone.
+	 *
+	 * Callers should use is_exempt_own_asset(), which is this check plus the
+	 * owner's always-gate list. This raw form exists so the shape of the URL
+	 * can be tested on its own.
+	 *
+	 * **Only ScriptRule and StylesheetRule may consult this.** Never
+	 * IframeRule, ImageRule or EmbedObjectRule: invariant 6 — an unknown
+	 * third-party iframe is gated by default — has no exceptions, and a path
+	 * heuristic is exactly the hole it exists to close. For a script or a
+	 * stylesheet the trade is different: to abuse it a third party would have
+	 * to serve from a /wp-content/ or /wp-includes/ path, which in practice
+	 * means hosting a copy of somebody's WordPress, and the owner still has
+	 * always_gate to override it.
+	 *
+	 * Substring, not prefix: WordPress in a subdirectory gives
+	 * '/blog/wp-content/…', and CDNs routinely prefix a pull-zone path.
+	 *
+	 * @param string $url Raw (already entity-decoded) URL from the markup.
+	 * @return bool
+	 */
 	public static function looks_like_own_asset_path( string $url ): bool {
 		$url = self::preprocess( $url );
 		if ( '' === $url ) {

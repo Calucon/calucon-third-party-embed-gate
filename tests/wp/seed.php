@@ -262,6 +262,21 @@ if ( isset( $_GET['cg_cache'] ) ) {
 	if ( 'w3tc' === $_GET['cg_cache'] && ! defined( 'W3TC' ) ) {
 		define( 'W3TC', true );
 	}
+	// The four whose exclusion-list advice never rendered in a test. No
+	// settings readers exist for these, so each needs only its detection
+	// signal — the point is the advice string, not the state machine.
+	if ( 'fastest' === $_GET['cg_cache'] && ! class_exists( 'WpFastestCache' ) ) {
+		class WpFastestCache {} // phpcs:ignore
+	}
+	if ( 'siteground' === $_GET['cg_cache'] && ! function_exists( 'sg_cachepress_purge_cache' ) ) {
+		function sg_cachepress_purge_cache() {} // phpcs:ignore
+	}
+	if ( 'cloudflare' === $_GET['cg_cache'] && ! defined( 'CLOUDFLARE_PLUGIN_DIR' ) ) {
+		define( 'CLOUDFLARE_PLUGIN_DIR', '/wp-content/plugins/cloudflare/' );
+	}
+	if ( 'supercache' === $_GET['cg_cache'] && ! function_exists( 'wp_cache_clear_cache' ) ) {
+		function wp_cache_clear_cache() {} // phpcs:ignore
+	}
 	if ( 'autoptimize' === $_GET['cg_cache'] ) {
 		// The 'combine' state, which had never rendered. Autoptimize's reader
 		// needs autoptimize_js set AND autoptimize_js_aggregate truthy — the

@@ -32,8 +32,15 @@ final class PipelineFactory {
 	 * @return string
 	 */
 	public static function gate( string $html, array $own_hosts = array( 'example.test' ), array $ctx = array(), ?array $providers = null ): string {
-		$scanner  = new HtmlScanner();
-		$hosts    = new HostMatcher( $own_hosts );
+		$scanner = new HtmlScanner();
+		// A fixture declares the owner's always-gate list in ctx.json, e.g.
+		// {"always_gate":["cdn.example.net"]}. Without this the fourth
+		// constructor argument was unreachable from every fixture and E2E
+		// path, so the rule that the owner's explicit list outranks the
+		// own-asset path heuristic was proven in HostMatcherTest and nowhere
+		// through the pipeline that actually applies it.
+		$always_gate = isset( $ctx['always_gate'] ) && is_array( $ctx['always_gate'] ) ? $ctx['always_gate'] : array();
+		$hosts       = new HostMatcher( $own_hosts, true, null, $always_gate );
 		$registry = new Registry( null === $providers ? Descriptors::all() : $providers );
 		// The provider privacy link is off by default; a fixture opts in
 		// through ctx.json {"privacy_link": true} (the E2E app turns it on

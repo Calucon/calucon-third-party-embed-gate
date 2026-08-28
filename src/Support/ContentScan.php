@@ -175,14 +175,16 @@ final class ContentScan {
 			return null;
 		}
 
-		// A script or stylesheet on a /wp-content/ or /wp-includes/ path is
-		// left alone whatever host serves it, for CDNs that rewrite the
-		// finished page (see HostMatcher::looks_like_own_asset_path()). This
-		// screen exists to report "what it would NOT gate and why", so it has
-		// to say so: reporting these as Gated told the owner the opposite of
-		// the truth, and it is the one row where they might want to reach for
-		// the always-gate list.
-		if ( $is_script && $this->hosts->is_exempt_own_asset( $url ) ) {
+		// A script on a /wp-content/ or /wp-includes/ path is left alone
+		// whatever host serves it — unless that host belongs to a provider we
+		// already know, which is the carve-out ScriptRule applies too. Both
+		// conditions have to match the render path exactly: reporting "Gated"
+		// for a script the rules leave alone was the original defect, and
+		// reporting "not gated" for one they DO gate is the same defect
+		// pointing the other way.
+		if ( $is_script
+			&& $this->hosts->is_exempt_own_asset( $url )
+			&& null === $this->providers->resolve_for_asset_host( $host ) ) {
 			return array(
 				'tag'      => $tag,
 				'url'      => $url,

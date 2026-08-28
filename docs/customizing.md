@@ -306,8 +306,9 @@ is trusted automatically — WordPress itself is saying where your assets
 live. For a CDN that rewrites the finished HTML instead, where those
 functions never see the change, a `/wp-content/` or `/wp-includes/` path is
 left alone whatever host serves it. That second rule applies to `<script>`
-and `<link rel=stylesheet>` only, never to iframes, and your always-gate
-list overrides it.
+and `<link rel=stylesheet>` only — never to iframes, and never to images, so a
+CDN-served image is still gated if you have turned third-party image gating
+on. Your always-gate list overrides it.
 
 Without either rule, whole-page buffering plus an asset CDN would gate your
 own `wp-includes` scripts into placeholders — which breaks the site's
@@ -325,7 +326,7 @@ the browser.
 | The button does nothing **at all**, ever | `gate.js` never executed. Usually a combined bundle threw earlier: a top-level error aborts the rest of *that file*, and anything bundled after it never runs | Open the console, find the throwing file, exclude `gate.js` from combining so it is not downstream of somebody else's error |
 | The panel appears but is unstyled | `gate.css` was combined, deferred or stripped | Exclude `gate.css` |
 | Embeds load **without** a click | Gating is server-side, so this means the plugin never saw that markup — typically a page builder rendering outside the WordPress content filters | Settings → Detection → enable whole-page buffering |
-| Your **own** scripts and styles were replaced by placeholders | An asset CDN plus whole-page buffering, on a build older than 0.13.0 | Update; if it persists, add the CDN hostname under Detection → own hosts |
+| Your **own** scripts and styles were replaced by placeholders | An asset CDN plus whole-page buffering, on a build older than 0.13.0 | Update; if it persists, add the CDN hostname under Detection → "Additional own hosts" |
 | Console errors about `wp-i18n`, `wp-data`, `lodash`, `moment` | Not this plugin — those are WordPress core packages whose inline snippets got separated from them by combining | Check the page **logged out** first: these are often enqueued only for logged-in admins, so no visitor ever sees them |
 
 That last row is worth taking seriously before changing anything. An admin bar

@@ -79,14 +79,17 @@ final class StylesheetRule {
 			if ( null === $host ) {
 				continue;
 			}
-			// See ScriptRule: a buffer-rewriting CDN turns the site's own
-			// stylesheets into foreign URLs, and gating those breaks the page
-			// — but a host that is already a known provider is not the site's
-			// own asset host, whatever its path looks like.
-			if ( $this->hosts->is_exempt_own_asset( $href )
-				&& null === $this->providers->resolve_for_asset_host( $host ) ) {
-				continue;
-			}
+			// No own-asset exemption here, and none is needed: this rule only
+			// ever gates a stylesheet whose host resolves to a known provider
+			// (below), and the exemption never applies to those anyway. The
+			// site's own stylesheets — CDN-served or not — resolve to no
+			// provider and are dropped by the very next condition.
+			//
+			// b5f0920 added an is_exempt_own_asset() guard here for symmetry
+			// with ScriptRule. It was dead: it could only fire in cases the
+			// next line already handled, and deleting it changed no test. A
+			// guard that cannot change an outcome is worse than none — it
+			// reads as protection and reviews as covered.
 			$provider = $this->providers->resolve_for_asset_host( $host );
 			if ( null === $provider || ( false === $provider['enabled'] && empty( $ctx['force_gate'] ) ) ) {
 				continue;

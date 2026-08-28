@@ -171,4 +171,41 @@ final class CompatibilityStateTest extends TestCase {
 		);
 	}
 
+
+	/**
+	 * The theme-file label strips only the leading directory.
+	 *
+	 * This replaced a str_replace(), which removes EVERY occurrence — so a
+	 * path that repeats the themes directory inside itself came out mangled.
+	 * That is not a contrived case: symlinked installs, a theme with a folder
+	 * named after its parent, and nested WordPress installs all produce one.
+	 */
+	public function test_the_theme_file_label_strips_only_the_prefix(): void {
+		self::assertSame(
+			'calucon/style.css',
+			Compatibility::relative_to( '/srv/site/wp-content/themes', '/srv/site/wp-content/themes/calucon/style.css' )
+		);
+
+		// The case str_replace() got wrong, and it only shows when the base
+		// string itself repeats later in the path — my first attempt at this
+		// test used '/srv/themes' with a bare '/themes' further along, which
+		// str_replace handles identically, so the mutation passed.
+		//
+		//   str_replace : calucon/style.css          <- 'themes' silently gone
+		//   prefix-strip: calucon/themes/style.css
+		self::assertSame(
+			'calucon/themes/style.css',
+			Compatibility::relative_to( '/themes', '/themes/calucon/themes/style.css' )
+		);
+
+		// Not under the base at all: returned as-is, never silently truncated.
+		self::assertSame(
+			'srv/other/style.css',
+			Compatibility::relative_to( '/srv/site/themes', '/srv/other/style.css' )
+		);
+
+		// No base to strip.
+		self::assertSame( 'srv/site/style.css', Compatibility::relative_to( '', '/srv/site/style.css' ) );
+	}
+
 }

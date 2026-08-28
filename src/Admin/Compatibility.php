@@ -292,6 +292,7 @@ final class Compatibility {
 				'state'    => $state,
 				'features' => $features,
 				'where'    => self::exclusion_location( $row['name'] ),
+				'has_list' => self::has_exclusion_list( $row['name'] ),
 			);
 		}
 
@@ -344,20 +345,28 @@ final class Compatibility {
 	private static function exclusion_location( string $name ): string {
 		switch ( $name ) {
 			case 'WP Rocket':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
 				return __( 'File Optimization → “Excluded JavaScript Files”. If “Delay JavaScript execution” is on, it keeps a separate exclusion box — add them there too.', 'calucon-third-party-embed-gate' );
 			case 'W3 Total Cache':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
 				return __( 'Performance → Minify → JS → “Never minify the following JS files”.', 'calucon-third-party-embed-gate' );
 			case 'LiteSpeed Cache':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
 				return __( 'Page Optimization → JS Settings → “JS Excludes”. With Guest Mode on, its own exclude list needs them as well.', 'calucon-third-party-embed-gate' );
 			case 'Autoptimize':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
 				return __( 'Settings → Autoptimize → JavaScript Options → “Exclude scripts from Autoptimize”.', 'calucon-third-party-embed-gate' );
 			case 'WP Fastest Cache':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
 				return __( 'WP Fastest Cache → the Exclude tab → add a rule for each file.', 'calucon-third-party-embed-gate' );
 			case 'SiteGround Optimizer':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
 				return __( 'SG Optimizer → Frontend → JavaScript, in the exclusion list under the minify and combine switches.', 'calucon-third-party-embed-gate' );
 			case 'Cloudflare':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
 				return __( 'Rocket Loader takes no exclusion list: it is switched off per script with a data-cfasync="false" attribute. If embeds misbehave and Rocket Loader is on, turn it off for this site and see whether that is the cause.', 'calucon-third-party-embed-gate' );
 			case 'WP Super Cache':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
 				return __( 'This plugin caches pages but does not minify or combine JavaScript, so there is nothing to exclude.', 'calucon-third-party-embed-gate' );
 			default:
 				return '';
@@ -372,14 +381,32 @@ final class Compatibility {
 	 * with a folder named after the parent — comes out mangled. Only the
 	 * prefix is meaningful here, so only the prefix is removed.
 	 *
+	 * Public only so it can be tested: the rest of this class needs WordPress
+	 * and so is unreachable from the fixture suite, which is exactly how the
+	 * str_replace() version shipped without anyone exercising it.
+	 *
 	 * @param string $base   Directory the label is relative to.
 	 * @param string $file   Absolute file path.
 	 * @return string
 	 */
-	private static function relative_to( string $base, string $file ): string {
+	public static function relative_to( string $base, string $file ): string {
 		if ( '' !== $base && 0 === strpos( $file, $base ) ) {
 			$file = substr( $file, strlen( $base ) );
 		}
 		return ltrim( $file, '/' );
+	}
+
+	/**
+	 * Does this plugin have an exclusion list at all?
+	 *
+	 * Two of the eight do not, and their advice says so. Heading that answer
+	 * with "Where to exclude them:" made the cell contradict itself — the
+	 * label promises a location and the sentence explains there is none.
+	 *
+	 * @param string $name Plugin name as detect() reports it.
+	 * @return bool
+	 */
+	private static function has_exclusion_list( string $name ): bool {
+		return ! in_array( $name, array( 'Cloudflare', 'WP Super Cache' ), true );
 	}
 }

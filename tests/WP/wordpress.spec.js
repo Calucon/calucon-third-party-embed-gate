@@ -1643,3 +1643,68 @@ test( 'the promised cache flush happens on the first save too, not just later on
 	await saveToggled();
 	expect( flushes( await readback( '1' ) ) ).toBe( 2 );
 } );
+
+test( 'compatibility: the remaining exclusion-list advice, and the copy around it', async ( { page } ) => {
+	// Four of the eight per-plugin advice strings had never rendered, and two
+	// of those four are the ones that do NOT name a menu path — they say there
+	// is no list to add to. Those are the easiest to get wrong later, because
+	// a future edit "fixing" them would invent a path that does not exist.
+	await login( page );
+
+	const optimiser = ( name ) => page.locator( 'h3:has-text("JavaScript optimisation") + table tr', { hasText: name } );
+	const status = async ( query ) => {
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' + query );
+		await page.click( '#cg-tabbtn-status' );
+	};
+
+	await status( '&cg_cache=fastest' );
+	await expect( optimiser( 'WP Fastest Cache' ) ).toContainText( 'Exclude tab' );
+
+	await status( '&cg_cache=siteground' );
+	await expect( optimiser( 'SiteGround Optimizer' ) ).toContainText( 'Frontend → JavaScript' );
+
+	// No exclusion list at all — the honest answer, and the one a later edit
+	// is most likely to replace with an invented menu path.
+	await status( '&cg_cache=cloudflare' );
+	await expect( optimiser( 'Cloudflare' ) ).toContainText( 'takes no exclusion list' );
+	await expect( optimiser( 'Cloudflare' ) ).toContainText( 'data-cfasync' );
+
+	await status( '&cg_cache=supercache' );
+	await expect( optimiser( 'WP Super Cache' ) ).toContainText( 'nothing to exclude' );
+
+	// The copy around the exclusion block: the heading, the reassurance that
+	// excluding costs nothing, and the inline-config handle. That last one is
+	// a literal an owner pastes into another plugin, so a rename that misses
+	// it is invisible from here.
+	await status( '&cg_cache=rocket' );
+	const statusTab = page.locator( '#cg-tab-status' );
+	await expect( statusTab ).toContainText( 'Files to exclude from JavaScript and CSS optimisation' );
+	await expect( statusTab ).toContainText( 'costs nothing measurable' );
+	await expect( statusTab ).toContainText( 'calucon-embed-gate-js-before' );
+	await expect( statusTab ).toContainText( 'Wording can differ between versions' );
+} );
+
+test( 'compatibility: the theme scan is on demand, and says what it did not look at', async ( { page } ) => {
+	// The theme scan moved behind a button because it reads up to 40 theme
+	// stylesheets. Three branches, none of which was asserted: the button, the
+	// "asked and found nothing" state, and the absence of the scan on a plain
+	// page load — that last one is what would catch a revert to running it on
+	// every render.
+	await login( page );
+
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.click( '#cg-tabbtn-status' );
+	const statusTab = page.locator( '#cg-tab-status' );
+	await expect( statusTab.locator( 'a.button', { hasText: 'Check my theme' } ) ).toHaveCount( 1 );
+	// Not scanned yet, so no verdict either way.
+	await expect( statusTab ).not.toContainText( 'None found in your theme' );
+
+	await statusTab.locator( 'a.button', { hasText: 'Check my theme' } ).click();
+	await page.waitForURL( /calucon-embed-gate-scan/ );
+	await page.click( '#cg-tabbtn-status' );
+	// The default theme bundles its fonts locally, so nothing is found — and
+	// the screen says so, including what it did not cover, rather than showing
+	// an empty space that reads as "all clear".
+	await expect( page.locator( '#cg-tab-status' ) ).toContainText( 'None found in your theme' );
+	await expect( page.locator( '#cg-tab-status' ) ).toContainText( 'builds its CSS into another directory is outside this check' );
+} );

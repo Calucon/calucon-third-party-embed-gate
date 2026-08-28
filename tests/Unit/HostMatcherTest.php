@@ -243,4 +243,27 @@ final class HostMatcherTest extends TestCase {
 		self::assertFalse( HostMatcher::url_is_under( $base, 'data:text/javascript,alert(1)' ) );
 	}
 
+
+	/**
+	 * The path-only fallback, for the CDN shape a host comparison cannot see.
+	 *
+	 * A CDN that rewrites the finished HTML leaves plugins_url() reporting the
+	 * origin host while the markup carries the CDN's — so url_is_under() fails
+	 * on exactly the setup the own-asset path rule exists for, and the plugin
+	 * gates its own gate.js. Host-blind on purpose; the base carries this
+	 * plugin's slug, so the worst a collision can do is run our own loader.
+	 */
+	public function test_the_own_asset_path_matches_across_a_rewriting_cdn(): void {
+		$base = 'https://example.test/wp-content/plugins/calucon-third-party-embed-gate/assets/';
+
+		// The case url_is_under() cannot see: same path, another host.
+		self::assertTrue( HostMatcher::path_is_under( $base, 'https://cdn.example.net/wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js' ) );
+		self::assertTrue( HostMatcher::path_is_under( $base, '//cdn.example.net/wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js?ver=1' ) );
+
+		// Still a prefix test, not containment.
+		self::assertFalse( HostMatcher::path_is_under( $base, 'https://cdn.example.net/wp-content/plugins/other/app.js' ) );
+		self::assertFalse( HostMatcher::path_is_under( $base, 'https://cdn.example.net/x.js?u=/wp-content/plugins/calucon-third-party-embed-gate/assets/' ) );
+		self::assertFalse( HostMatcher::path_is_under( '', 'https://cdn.example.net/anything.js' ) );
+	}
+
 }

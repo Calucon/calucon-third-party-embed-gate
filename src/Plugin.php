@@ -476,7 +476,12 @@ final class Plugin {
 			// Short-circuited before the filter deliberately. There is no
 			// configuration under which gating our own loader is what the
 			// owner wanted, so this is not a decision to delegate.
-			if ( HostMatcher::url_is_under( $own_assets, $url ) ) {
+			// Host match covers a CDN that FILTERS plugins_url(). Path match
+			// covers one that rewrites the finished HTML, where plugins_url()
+			// still reports the origin host and a host comparison therefore
+			// misses the exact setup the own-asset rule exists for.
+			if ( HostMatcher::url_is_under( $own_assets, $url )
+				|| HostMatcher::path_is_under( $own_assets, $url ) ) {
 				return false;
 			}
 			return (bool) apply_filters( 'calucon_embed_gate_should_gate', $gate, $url, $ctx );
@@ -735,13 +740,22 @@ final class Plugin {
 	/**
 	 * Hosts that count as the site itself. Naive home_url() comparison is
 	 * wrong on real sites (PLAN.md §3.4): include site_url() for
-	 * WordPress-in-a-subdirectory, and let sites declare their CDN via the
-	 * calucon_embed_gate_own_hosts filter.
+	 * WordPress-in-a-subdirectory, every domain on a multisite network, and
+	 * let sites declare a host via the calucon_embed_gate_own_hosts filter.
+	 *
+	 * Since 0.13.0 it also reads the site's own ASSET bases — content_url(),
+	 * includes_url(), plugins_url(), the uploads base and both theme URIs — so
+	 * that a CDN plugin filtering those declares its host as ours and the
+	 * owner configures nothing. Those functions only ever answer "where do MY
+	 * assets live", so they cannot introduce a third party.
 	 *
 	 * @return string[]
 	 */
 	private function own_hosts(): array {
-		$uploads = wp_upload_dir();
+		// wp_get_upload_dir(), not wp_upload_dir(): the latter defaults to
+		// creating the directory, and own_hosts() runs on every front-end
+		// render. A gate has no business running mkdir on a page view.
+		$uploads = wp_get_upload_dir();
 
 		// The site's own asset bases, not just its pages. A CDN plugin that
 		// filters these functions (WP Offload Media, BunnyCDN, Cloudflare and

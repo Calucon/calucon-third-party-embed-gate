@@ -111,6 +111,15 @@ final class ScriptRule {
 			// which is the invisible failure invariant 6 exists to forbid. A
 			// host we already know to be a provider is never the site's own
 			// asset host, so the exemption does not apply to it.
+			//
+			// Deliberately BEFORE the force_gate check below. The two answer
+			// different questions: force_gate is the owner saying "gate the
+			// embeds in this block", while this says "that is not a
+			// third-party embed at all, it is one of my own files". A block
+			// marked always-gate should not start placeholdering the site's
+			// own scripts. The owner's host-level always-gate list is the
+			// setting that does override this, and it is honoured inside
+			// is_exempt_own_asset().
 			if ( $this->hosts->is_exempt_own_asset( $src )
 				&& ! $this->is_known_provider_host( $src ) ) {
 				continue;
@@ -562,6 +571,12 @@ final class ScriptRule {
 	 * @return bool
 	 */
 	private function is_known_provider_host( string $url ): bool {
+		// Note for anyone hooking calucon_embed_gate_provider_for_url:
+		// resolve_for_asset_host() passes a synthetic "https://host/" to that
+		// filter, so it can fire during detection with a URL that never
+		// appeared in the markup. Reached only for a URL that already looks
+		// like an own-asset path, so it is rare — but it is not the markup's
+		// URL, and filter code that inspects $url should not assume it is.
 		$host = $this->hosts->host_of( $url );
 		if ( null === $host ) {
 			return false;

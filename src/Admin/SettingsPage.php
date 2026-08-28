@@ -1656,15 +1656,23 @@ final class SettingsPage {
 			?>
 			<h3><?php esc_html_e( 'JavaScript optimisation', 'calucon-third-party-embed-gate' ); ?></h3>
 			<table class="widefat striped" style="max-width: 60rem;">
+				<thead>
+					<tr>
+						<th scope="col"><?php esc_html_e( 'Plugin', 'calucon-third-party-embed-gate' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'What it does to the gate', 'calucon-third-party-embed-gate' ); ?></th>
+					</tr>
+				</thead>
 				<tbody>
 				<?php foreach ( $optimizers as $optimizer ) : ?>
 					<tr>
-						<td><?php echo esc_html( $optimizer['name'] ); ?></td>
+						<th scope="row"><?php echo esc_html( $optimizer['name'] ); ?></th>
 						<td>
 							<?php echo esc_html( $optimizer_messages[ $optimizer['state'] ] ); ?>
 							<?php if ( '' !== $optimizer['where'] ) : ?>
 								<p class="description" style="margin-top: .5em;">
-									<strong><?php esc_html_e( 'Where to exclude them:', 'calucon-third-party-embed-gate' ); ?></strong>
+									<?php if ( $optimizer['has_list'] ) : ?>
+										<strong><?php esc_html_e( 'Where to exclude them:', 'calucon-third-party-embed-gate' ); ?></strong>
+									<?php endif; ?>
 									<?php echo esc_html( $optimizer['where'] ); ?>
 									<?php esc_html_e( '(Wording can differ between versions of that plugin.)', 'calucon-third-party-embed-gate' ); ?>
 								</p>
@@ -1680,7 +1688,8 @@ final class SettingsPage {
 		<?php if ( array() !== $exclusions ) : ?>
 			<h3><?php esc_html_e( 'Files to exclude from JavaScript and CSS optimisation', 'calucon-third-party-embed-gate' ); ?></h3>
 			<p class="description"><?php esc_html_e( 'If a caching, minification or optimisation plugin combines, defers or delays scripts, paste these into its exclusion list. They are small, local and already cached by the browser, so excluding them costs nothing measurable.', 'calucon-third-party-embed-gate' ); ?></p>
-			<pre class="cg-exclusions"><?php echo esc_html( implode( "\n", $exclusions ) ); ?></pre>
+			<?php // Focusable and named: this box scrolls sideways on a narrow screen, and a scrollable region that cannot be reached by keyboard fails 2.1.1. ?>
+			<pre class="cg-exclusions" tabindex="0" role="group" aria-label="<?php esc_attr_e( 'Files to exclude from JavaScript and CSS optimisation', 'calucon-third-party-embed-gate' ); ?>"><?php echo esc_html( implode( "\n", $exclusions ) ); ?></pre>
 			<p class="description"><?php esc_html_e( 'Keep the inline configuration next to gate.js as well: some plugins list it separately as "calucon-embed-gate-js-before".', 'calucon-third-party-embed-gate' ); ?></p>
 		<?php endif; ?>
 
@@ -1697,7 +1706,7 @@ final class SettingsPage {
 			<h3><?php esc_html_e( 'Third-party assets in your theme', 'calucon-third-party-embed-gate' ); ?></h3>
 			<p>
 				<a class="button" href="<?php echo esc_url( add_query_arg( 'calucon-embed-gate-scan', '1' ) . '#cg-compatibility' ); ?>"><?php esc_html_e( 'Check my theme', 'calucon-third-party-embed-gate' ); ?></a>
-				<span class="description"><?php esc_html_e( 'Reads your theme\'s own stylesheets and looks for third-party asset hosts — fonts and CDN files, which load on every page view outside what an embed gate can cover. Read-only; no outbound requests. Runs on request because reading the files costs something.', 'calucon-third-party-embed-gate' ); ?></span>
+				<span class="description"><?php esc_html_e( 'Reads your theme\'s own stylesheets and its functions.php, looking for third-party asset hosts — fonts and CDN files, which load on every page view outside what an embed gate can cover. Read-only; no outbound requests. Runs on request because reading the files takes time.', 'calucon-third-party-embed-gate' ); ?></span>
 			</p>
 			<?php
 		endif;
@@ -1713,7 +1722,7 @@ final class SettingsPage {
 			</ul>
 		<?php elseif ( $theme_scan_requested ) : ?>
 			<h3><?php esc_html_e( 'Third-party assets in your theme', 'calucon-third-party-embed-gate' ); ?></h3>
-			<p class="description"><?php esc_html_e( 'None found in your theme\'s own stylesheets. That covers the files a theme usually keeps them in, not every file it could — a theme that builds its CSS into another directory is outside this check.', 'calucon-third-party-embed-gate' ); ?></p>
+			<p class="description"><?php esc_html_e( 'None found in your theme\'s own stylesheets or its functions.php. That covers where a theme usually keeps them, not every file it could use — a theme that builds its CSS into another directory is outside this check.', 'calucon-third-party-embed-gate' ); ?></p>
 		<?php endif; ?>
 		<?php
 	}
@@ -1845,7 +1854,7 @@ final class SettingsPage {
 								&mdash;
 							<?php elseif ( $excepted ) : ?>
 								<button type="button" class="button button-small cg-scan-action" data-cg-ungate="<?php echo esc_attr( $host ); ?>" hidden><?php esc_html_e( 'Gate it again', 'calucon-third-party-embed-gate' ); ?></button>
-							<?php elseif ( ContentScan::OWN_HOST === $row['status'] ) : ?>
+							<?php elseif ( ContentScan::OWN_HOST === $row['status'] || ContentScan::OWN_ASSET_PATH === $row['status'] ) : ?>
 								<button type="button" class="button button-small cg-scan-action" data-cg-always="<?php echo esc_attr( $host ); ?>" hidden><?php esc_html_e( 'Gate it anyway', 'calucon-third-party-embed-gate' ); ?></button>
 							<?php elseif ( ContentScan::GATED === $row['status'] ) : ?>
 								<?php if ( $is_generic ) : ?>

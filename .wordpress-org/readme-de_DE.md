@@ -1,6 +1,6 @@
 # readme.txt auf Deutsch (de_DE, „du“)
 
-<!-- readme.txt: 63c49f6071977e34 -->
+<!-- readme.txt: b3294fabc2a60c00 -->
 
 <!-- Dieser Stempel bindet die Übersetzung an den englischen Stand.
      tests/Unit/ReadmeTranslationTest.php schlägt fehl, sobald readme.txt sich ändert. -->
@@ -203,7 +203,7 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 Eine Einstellung solltest du kennen: „JavaScript bis zur Interaktion verzögern“ hält alle Skripte zurück, bis der Besucher die Seite zum ersten Mal berührt – und diese Interaktion wird dafür verbraucht, die Skripte einzuschalten. Sein erster Klick auf einen „Laden“-Button bewirkt dann nichts und er muss ein zweites Mal klicken. Durch den zusätzlichen Klick wird kein Drittanbieter kontaktiert, aber der Platzhalter wirkt kaputt. Unter Einstellungen → Status und Werkzeuge stehen die genauen Dateien, die du in die Ausschlussliste deines Optimierungs-Plugins einträgst, samt dem, was sich über die JavaScript-Einstellungen des installierten Caching-Plugins auslesen ließ.
 
-Werden deine Assets über einen CDN-Hostnamen ausgeliefert, gilt dieser als deiner eigener und wird nie gesperrt.
+Werden deine Assets über einen CDN-Hostnamen ausgeliefert, gilt dieser als deiner eigener. Die meisten CDN-Plugins filtern die WordPress-Funktionen, die angeben, wo deine Dateien liegen; damit zählt alles von diesem Host als deines. Ein CDN, das stattdessen die fertige Seite umschreibt, lässt sich so nicht erkennen. Deshalb bleiben Skripte und Stylesheets, deren Pfad `/wp-content/` oder `/wp-includes/` enthält, unangetastet – ganz gleich, welcher Host sie ausliefert. Bilder sind davon nicht erfasst; unter anderem deshalb werden Bilder von Drittanbietern standardmäßig nicht gesperrt.
 
 **EN:** The placeholder looks unstyled after an update
 
