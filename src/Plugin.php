@@ -24,6 +24,7 @@ use CaluconEmbedGate\Detection\EmbedObjectRule;
 use CaluconEmbedGate\Detection\EmbedStripper;
 use CaluconEmbedGate\Detection\HostMatcher;
 use CaluconEmbedGate\Detection\HtmlScanner;
+use CaluconEmbedGate\Detection\ElementorVideoRule;
 use CaluconEmbedGate\Detection\IframeRule;
 use CaluconEmbedGate\Detection\ImageRule;
 use CaluconEmbedGate\Detection\ScriptRule;
@@ -503,6 +504,7 @@ final class Plugin {
 		};
 
 		$this->pipeline = new Pipeline(
+			new ElementorVideoRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate_script, $on_gated ),
@@ -593,6 +595,12 @@ final class Plugin {
 	 * opt-in image rule is on: it is by far the most common tag, and probing
 	 * it unconditionally would defeat the fast path everywhere.
 	 *
+	 * Not only tags: Elementor's video widget is a <div> whose player exists
+	 * only in a data-settings JSON (ElementorVideoRule), so its class name
+	 * is part of the probe — the field suite found the rule silently skipped
+	 * on the the_content path while the buffered page, which always carries
+	 * a <script>, passed.
+	 *
 	 * @param string $html Content.
 	 * @return bool
 	 */
@@ -603,8 +611,8 @@ final class Plugin {
 		// alternation scans the string once instead of once per tag name
 		// (measured ~4x on a 60 KB text-only post).
 		$pattern = $this->options['detection']['images']
-			? '/<(?:iframe|script|embed|object|img)/i'
-			: '/<(?:iframe|script|embed|object)/i';
+			? '/<(?:iframe|script|embed|object|img)|elementor-widget-video/i'
+			: '/<(?:iframe|script|embed|object)|elementor-widget-video/i';
 		return 1 === preg_match( $pattern, $html );
 	}
 
@@ -618,6 +626,10 @@ final class Plugin {
 	public function gate( string $html, array $ctx ): string {
 		$pipeline = $this->pipeline();
 		if ( $this->options['detection']['iframes'] ) {
+			// Before the iframe rule: this one turns a player that exists only
+			// as JSON into a panel, and must not leave an iframe behind for
+			// the next rule to gate twice.
+			$html = $pipeline->elementor_video_rule->apply( $html, $ctx );
 			$html = $pipeline->iframe_rule->apply( $html, $ctx );
 			// <embed>/<object> are frame-shaped embeds under the same toggle:
 			// Flash-era markup requests third-party content on load too.

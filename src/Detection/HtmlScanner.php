@@ -109,6 +109,25 @@ final class HtmlScanner {
 	}
 
 	/**
+	 * Offset just past the '>' of the start tag that begins at $start, or
+	 * null when it never terminates. find_tags() reports an element's END
+	 * (up to its closing tag); a rule that replaces an element's contents
+	 * needs where its opening tag stops, and this is that, with the same
+	 * tolerance for stripped quotes and newlines inside the tag.
+	 *
+	 * @param string $html  HTML.
+	 * @param int    $start Offset of the '<' of the start tag.
+	 * @return int|null
+	 */
+	public function start_tag_end( string $html, int $start ): ?int {
+		if ( ! preg_match( '/^<([A-Za-z][A-Za-z0-9-]*)/', substr( $html, $start, 64 ), $m ) ) {
+			return null;
+		}
+		$parsed = $this->parse_start_tag( $html, $start + 1 + strlen( $m[1] ) );
+		return null === $parsed ? null : (int) $parsed['after'];
+	}
+
+	/**
 	 * Parse attributes from just past the tag name to the closing '>'.
 	 *
 	 * Tolerates: any whitespace including newlines between name and attributes;
