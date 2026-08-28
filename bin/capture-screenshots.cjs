@@ -84,9 +84,16 @@ async function settings( page ) {
 	// at the end of the Colours section — quick styles, colours, the live
 	// preview and the readability check, which is what the caption leads on.
 	{
+		// boundingBox() is viewport-relative, and a clip is page-relative once
+		// fullPage is on. Scroll to the top first so the two agree; without it
+		// the clip lands past the bottom of the image and Playwright refuses
+		// with "Clipped area is either empty or outside the resulting image".
+		await page.evaluate( () => window.scrollTo( 0, 0 ) );
+		await page.waitForTimeout( 200 );
 		const box = await page.locator( '#cg-tab-appearance' ).boundingBox();
 		await page.screenshot( {
 			path: path.join( OUT, 'screenshot-2.png' ),
+			fullPage: true,
 			clip: { x: box.x, y: box.y, width: box.width, height: Math.min( box.height, 960 ) },
 		} );
 	}
@@ -194,6 +201,7 @@ async function settings( page ) {
 	}
 	await page.waitForTimeout( 600 );
 	await page.locator( '.interface-interface-skeleton__sidebar' ).screenshot( { path: path.join( OUT, 'screenshot-5.png' ) } );
+
 
 	await browser.close();
 	console.log( 'Wrote screenshot-1..6.png to .wordpress-org/' );

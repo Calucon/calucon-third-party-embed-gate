@@ -185,7 +185,7 @@ final class Compatibility {
 				$contents = (string) file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local theme file, read-only scan.
 				if ( preg_match_all( $cdn_hosts_to_warn_about, $contents, $m ) ) {
 					$findings[] = array(
-						'file'  => ltrim( str_replace( dirname( $dir ), '', $file ), '/' ),
+						'file'  => self::relative_to( dirname( $dir ), $file ),
 						'hosts' => array_values( array_unique( array_map( 'strtolower', $m[0] ) ) ),
 					);
 				}
@@ -193,5 +193,220 @@ final class Compatibility {
 		}
 
 		return $findings;
+	}
+
+	/**
+	 * The plugin's own asset paths, for pasting into an optimizer's
+	 * "do not combine / do not defer / do not delay" field.
+	 *
+	 * Offered as text rather than written into anyone's settings on the
+	 * owner's behalf: every optimizer changes its option schema between
+	 * versions, and silently editing another plugin's configuration is not a
+	 * thing a privacy plugin should do. A list the owner pastes works with
+	 * optimizers this plugin has never heard of, including future ones.
+	 *
+	 * Paths, not URLs: that is the shape those fields want, and it stays
+	 * correct on a site with a moved wp-content directory or a CDN in front.
+	 *
+	 * @return string[]
+	 */
+	public static function exclusion_paths(): array {
+		$paths = array();
+		foreach ( array( 'assets/js/gate.js', 'assets/js/cmp-bridge.js', 'assets/css/gate.css' ) as $asset ) {
+			$path = wp_parse_url( plugins_url( $asset, CALUCON_EMBED_GATE_FILE ), PHP_URL_PATH );
+			if ( is_string( $path ) && '' !== $path ) {
+				$paths[] = $path;
+			}
+		}
+		return $paths;
+	}
+
+	/**
+	 * Which detected optimizers have a JS setting that costs the visitor
+	 * something, and which could not be read at all.
+	 *
+	 * @return array[] Rows: name, state (see optimizer_state()), features.
+	 */
+	public static function optimizer_findings(): array {
+		$readers = array(
+			'WP Rocket'            => static function (): array {
+				$o = get_option( 'wp_rocket_settings' );
+				if ( ! is_array( $o ) ) {
+					return array();
+				}
+				return array(
+					'delay'   => ! empty( $o['delay_js'] ),
+					'combine' => ! empty( $o['minify_concatenate_js'] ),
+				);
+			},
+			'LiteSpeed Cache'      => static function (): array {
+				// LiteSpeed keeps one option row per setting; js_defer is
+				// 0 = off, 1 = deferred, 2 = delayed until interaction.
+				$defer = get_option( 'litespeed.optm.js_defer', null );
+				$comb  = get_option( 'litespeed.optm.js_comb', null );
+				if ( null === $defer && null === $comb ) {
+					return array();
+				}
+				return array(
+					'delay'   => '2' === (string) $defer,
+					'combine' => (bool) $comb,
+				);
+			},
+			'Autoptimize'          => static function (): array {
+				$js = get_option( 'autoptimize_js', null );
+				if ( null === $js ) {
+					return array();
+				}
+				return array(
+					'delay'   => false,
+					'combine' => ! empty( $js ) && ! empty( get_option( 'autoptimize_js_aggregate', true ) ),
+				);
+			},
+			'SiteGround Optimizer' => static function (): array {
+				$combine = get_option( 'siteground_optimizer_combine_javascript', null );
+				if ( null === $combine ) {
+					return array();
+				}
+				return array(
+					'delay'   => false,
+					'combine' => (bool) $combine,
+				);
+			},
+		);
+
+		$findings = array();
+		foreach ( self::detect() as $row ) {
+			if ( 'cache' !== $row['kind'] ) {
+				continue;
+			}
+			$flags    = isset( $readers[ $row['name'] ] ) ? call_user_func( $readers[ $row['name'] ] ) : array();
+			$state    = self::optimizer_state( $flags );
+			$features = array();
+			foreach ( array( 'delay', 'combine' ) as $feature ) {
+				if ( ! empty( $flags[ $feature ] ) ) {
+					$features[] = $feature;
+				}
+			}
+			$findings[] = array(
+				'name'     => $row['name'],
+				'state'    => $state,
+				'features' => $features,
+				'where'    => self::exclusion_location( $row['name'] ),
+				'has_list' => self::has_exclusion_list( $row['name'] ),
+			);
+		}
+
+		return $findings;
+	}
+
+	/**
+	 * Turn one optimizer's read flags into a state for the screen.
+	 *
+	 * An empty array means the settings could not be read — a different
+	 * thing from "read them, nothing risky is on", and it must never render
+	 * as an all-clear. Optimizers rename and restructure their options
+	 * between versions, so a false green here would be worse than saying
+	 * nothing: the owner would stop looking.
+	 *
+	 * Pure on purpose (no get_option), so the precedence is unit-testable.
+	 *
+	 * @param array $flags Feature => bool, as read from that plugin.
+	 * @return string 'delay', 'combine', 'off' or 'unknown'.
+	 */
+	public static function optimizer_state( array $flags ): string {
+		if ( array() === $flags ) {
+			return 'unknown';
+		}
+		// Delay first: it is the only one that costs the visitor a click.
+		if ( ! empty( $flags['delay'] ) ) {
+			return 'delay';
+		}
+		if ( ! empty( $flags['combine'] ) ) {
+			return 'combine';
+		}
+		return 'off';
+	}
+
+	/**
+	 * Where this optimiser keeps its exclusion list.
+	 *
+	 * Knowing which files to exclude is useless without knowing where to put
+	 * them, and every one of these plugins hides it somewhere different. The
+	 * screen names are given as the plugin ships them in English, because a
+	 * translated admin renames the menu but rarely the setting, and a wrong
+	 * label sends the owner hunting. Labels do drift between versions, so the
+	 * copy names the area rather than promising an exact string.
+	 *
+	 * An empty string means "no advice for this one" — better than a guess.
+	 *
+	 * @param string $name Plugin name as detect() reports it.
+	 * @return string Human-readable location, already translated.
+	 */
+	private static function exclusion_location( string $name ): string {
+		switch ( $name ) {
+			case 'WP Rocket':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
+				return __( 'File Optimization → “Excluded JavaScript Files”. If “Delay JavaScript execution” is on, it keeps a separate exclusion box — add them there too.', 'calucon-third-party-embed-gate' );
+			case 'W3 Total Cache':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
+				return __( 'Performance → Minify → JS → “Never minify the following JS files”.', 'calucon-third-party-embed-gate' );
+			case 'LiteSpeed Cache':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
+				return __( 'Page Optimization → JS Settings → “JS Excludes”. With Guest Mode on, its own exclude list needs them as well.', 'calucon-third-party-embed-gate' );
+			case 'Autoptimize':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
+				return __( 'Settings → Autoptimize → JavaScript Options → “Exclude scripts from Autoptimize”.', 'calucon-third-party-embed-gate' );
+			case 'WP Fastest Cache':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
+				return __( 'WP Fastest Cache → the Exclude tab → add a rule for each file.', 'calucon-third-party-embed-gate' );
+			case 'SiteGround Optimizer':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
+				return __( 'SG Optimizer → Frontend → JavaScript, in the exclusion list under the minify and combine switches.', 'calucon-third-party-embed-gate' );
+			case 'Cloudflare':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
+				return __( 'Rocket Loader takes no exclusion list: it is switched off per script with a data-cfasync="false" attribute. If embeds misbehave and Rocket Loader is on, turn it off for this site and see whether that is the cause.', 'calucon-third-party-embed-gate' );
+			case 'WP Super Cache':
+				/* translators: the quoted names are that plugin's own UI labels — keep them in English unless you have checked its German build uses different ones. */
+				return __( 'This plugin caches pages but does not minify or combine JavaScript, so there is nothing to exclude.', 'calucon-third-party-embed-gate' );
+			default:
+				return '';
+		}
+	}
+
+	/**
+	 * A theme file's path with its parent directory removed, for display.
+	 *
+	 * str_replace() would remove EVERY occurrence, so a path that repeats the
+	 * themes directory inside itself — a symlinked or nested install, a theme
+	 * with a folder named after the parent — comes out mangled. Only the
+	 * prefix is meaningful here, so only the prefix is removed.
+	 *
+	 * Public only so it can be tested: the rest of this class needs WordPress
+	 * and so is unreachable from the fixture suite, which is exactly how the
+	 * str_replace() version shipped without anyone exercising it.
+	 *
+	 * @param string $base   Directory the label is relative to.
+	 * @param string $file   Absolute file path.
+	 * @return string
+	 */
+	public static function relative_to( string $base, string $file ): string {
+		if ( '' !== $base && 0 === strpos( $file, $base ) ) {
+			$file = substr( $file, strlen( $base ) );
+		}
+		return ltrim( $file, '/' );
+	}
+
+	/**
+	 * Does this plugin have an exclusion list at all?
+	 *
+	 * Two of the eight do not, and their advice says so. Heading that answer
+	 * with "Where to exclude them:" made the cell contradict itself — the
+	 * label promises a location and the sentence explains there is none.
+	 *
+	 * @param string $name Plugin name as detect() reports it.
+	 * @return bool
+	 */
+	private static function has_exclusion_list( string $name ): bool {
+		return ! in_array( $name, array( 'Cloudflare', 'WP Super Cache' ), true );
 	}
 }

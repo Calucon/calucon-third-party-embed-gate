@@ -209,6 +209,18 @@ final class Plugin {
 			}
 		);
 
+		// And the FIRST save, which is not an update: a site that has never
+		// opened this screen has no option row at all, so WordPress adds one
+		// and fires add_option_ instead. That save is the one most likely to
+		// change what visitors are served — it is where gating gets turned on
+		// — and it was the one save that did not flush the page cache.
+		add_action(
+			'add_option_' . Options::OPTION,
+			static function (): void {
+				CacheFlush::flush_all();
+			}
+		);
+
 		// Deactivation must restore original behaviour immediately (§9.10);
 		// a page cache still serving placeholders would reference assets
 		// that no longer load. Flush what we can reach.
@@ -398,7 +410,11 @@ final class Plugin {
 					return false;
 				}
 				return (bool) apply_filters( 'calucon_embed_gate_is_own_host', $own, $host );
-			}
+			},
+			// Also handed over whole: the asset-path exemption for scripts and
+			// stylesheets is a heuristic, and the owner's explicit list has to
+			// outrank it (HostMatcher::is_exempt_own_asset()).
+			$always_gate
 		);
 
 		$providers = $this->providers();
@@ -441,11 +457,47 @@ final class Plugin {
 			! empty( $this->options['display']['privacy_link'] )
 		);
 
-		$scanner     = new HtmlScanner();
+		$scanner = new HtmlScanner();
+		// The plugin's own assets, as the browser will see them — which is not
+		// a constant: an asset CDN filters plugins_url(), so this resolves to
+		// the CDN too.
+		$own_assets = (string) plugins_url( 'assets/', CALUCON_EMBED_GATE_FILE );
+
 		$should_gate = static function ( bool $gate, string $url, array $ctx ): bool {
 			return (bool) apply_filters( 'calucon_embed_gate_should_gate', $gate, $url, $ctx );
 		};
-		$on_gated    = function ( array $provider, array $ctx ): void {
+
+		// Never gate this plugin's own script. It is reachable: put your
+		// asset CDN's hostname on the always-gate list and that list —
+		// correctly — overrides both the own-host rule and the asset-path
+		// exemption, at which point gate.js itself is served from a gated
+		// host and gets replaced by a placeholder. The result is silent
+		// and total: every panel on the page becomes a button that does
+		// nothing, because the script that would have handled the click
+		// was the thing that got gated.
+		//
+		// Short-circuited before the filter deliberately. There is no
+		// configuration under which gating our own loader is what the
+		// owner wanted, so this is not a decision to delegate.
+		// Host match covers a CDN that FILTERS plugins_url(). Path match
+		// covers one that rewrites the finished HTML, where plugins_url()
+		// still reports the origin host and a host comparison therefore
+		// misses the exact setup the own-asset rule exists for.
+		//
+		// Handed to ScriptRule ALONE. The path match is host-blind, and
+		// what it identifies is "our loader" — a claim that only a script
+		// can make. Given to IframeRule, an iframe on any host at all could
+		// copy this path and be waved through with no panel and no link:
+		// the invisible failure invariant 6 exists to forbid. The 0.13.0
+		// review found exactly that; the CDN test in tests/WP pins it.
+		$should_gate_script = static function ( bool $gate, string $url, array $ctx ) use ( $own_assets, $should_gate ): bool {
+			if ( HostMatcher::url_is_under( $own_assets, $url )
+				|| HostMatcher::path_is_under( $own_assets, $url ) ) {
+				return false;
+			}
+			return $should_gate( $gate, $url, $ctx );
+		};
+		$on_gated           = function ( array $provider, array $ctx ): void {
 			$this->assets->enqueue_assets();
 			do_action( 'calucon_embed_gate_embed_gated', $provider, $ctx );
 		};
@@ -453,7 +505,7 @@ final class Plugin {
 		$this->pipeline = new Pipeline(
 			new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
-			new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
+			new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate_script, $on_gated ),
 			new ImageRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new StylesheetRule( $scanner, $hosts, $registry, $renderer ),
 			$registry,
@@ -699,14 +751,47 @@ final class Plugin {
 	/**
 	 * Hosts that count as the site itself. Naive home_url() comparison is
 	 * wrong on real sites (PLAN.md §3.4): include site_url() for
-	 * WordPress-in-a-subdirectory, and let sites declare their CDN via the
-	 * calucon_embed_gate_own_hosts filter.
+	 * WordPress-in-a-subdirectory, every domain on a multisite network, and
+	 * let sites declare a host via the calucon_embed_gate_own_hosts filter.
+	 *
+	 * Since 0.13.0 it also reads the site's own ASSET bases — content_url(),
+	 * includes_url(), plugins_url(), the uploads base and both theme URIs — so
+	 * that a CDN plugin filtering those declares its host as ours and the
+	 * owner configures nothing. Those functions only ever answer "where do MY
+	 * assets live", so they cannot introduce a third party.
 	 *
 	 * @return string[]
 	 */
 	private function own_hosts(): array {
+		// wp_get_upload_dir(), not wp_upload_dir(): the latter defaults to
+		// creating the directory, and own_hosts() runs on every front-end
+		// render. A gate has no business running mkdir on a page view.
+		$uploads = wp_get_upload_dir();
+
+		// The site's own asset bases, not just its pages. A CDN plugin that
+		// filters these functions (WP Offload Media, BunnyCDN, Cloudflare and
+		// most others) reports the CDN host here — so WordPress itself tells
+		// us the offloaded host is ours, and we stop treating the site's own
+		// scripts, stylesheets and uploads as third party. It can never let a
+		// third party through: these functions only ever answer "where do MY
+		// assets live". A CDN that rewrites the finished HTML instead is
+		// invisible here; HostMatcher::looks_like_own_asset_path() covers that.
+		$own_urls = array(
+			home_url(),
+			site_url(),
+			content_url(),
+			includes_url(),
+			plugins_url( '', CALUCON_EMBED_GATE_FILE ),
+			isset( $uploads['baseurl'] ) ? (string) $uploads['baseurl'] : '',
+			get_stylesheet_directory_uri(),
+			get_template_directory_uri(),
+		);
+
 		$hosts = array();
-		foreach ( array( home_url(), site_url() ) as $url ) {
+		foreach ( $own_urls as $url ) {
+			if ( ! is_string( $url ) || '' === $url ) {
+				continue;
+			}
 			$host = wp_parse_url( $url, PHP_URL_HOST );
 			if ( is_string( $host ) && '' !== $host ) {
 				$hosts[] = $host;

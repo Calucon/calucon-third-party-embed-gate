@@ -284,4 +284,77 @@ final class TranslationTest extends TestCase {
 				. 'or bundled editor translations are ignored on WordPress below 6.7'
 		);
 	}
+
+	/**
+	 * Every translatable string in the source is in the POT.
+	 *
+	 * The other tests here assert PO ⊇ POT — every string the POT knows about
+	 * has German. None of them asserted POT ⊇ SOURCE, so a POT that had not
+	 * been regenerated since the last few strings were added satisfied the
+	 * whole translation gate vacuously: the missing strings were in no file to
+	 * be found missing from.
+	 *
+	 * That is not hypothetical. Four strings added late on the 0.13.0 branch —
+	 * including a status label sitting in a table of otherwise-translated
+	 * statuses — reached no POT and no PO, and every translation test stayed
+	 * green. A German admin would have read them in English.
+	 *
+	 * The extraction is deliberately a SECOND implementation of the one in
+	 * tests/bin/generate-pot.php. A test that reused the generator's own
+	 * extraction could only ever agree with it.
+	 *
+	 * @group translation-sources
+	 */
+	public function test_every_translatable_string_in_the_source_reached_the_pot(): void {
+		$root = dirname( __DIR__, 2 );
+		$pot  = $this->pot_msgids();
+		self::assertGreaterThan( 300, count( $pot ), 'the POT looks truncated' );
+
+		$files = array( $root . '/templates/placeholder.php', $root . '/assets/js/editor.js' );
+		$dir   = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $root . '/src' ) );
+		foreach ( $dir as $file ) {
+			if ( $file->isFile() && 'php' === $file->getExtension() ) {
+				$files[] = $file->getPathname();
+			}
+		}
+
+		$missing = array();
+		foreach ( $files as $path ) {
+			$source = (string) file_get_contents( $path );
+			$found  = array();
+			preg_match_all(
+				'/(?:__|_e|esc_html__|esc_html_e|esc_attr__|esc_attr_e)\(\s*'
+					. '(?:\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)")\s*,\s*\'calucon-third-party-embed-gate\'\s*\)/s',
+				$source,
+				$found,
+				PREG_SET_ORDER
+			);
+			$inline = array();
+			preg_match_all(
+				'/\$t\(\s*(?:\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)")\s*\)/s',
+				$source,
+				$inline,
+				PREG_SET_ORDER
+			);
+
+			foreach ( array_merge( $found, $inline ) as $match ) {
+				$raw  = '' !== $match[1] ? $match[1] : ( $match[2] ?? '' );
+				$text = stripcslashes( $raw );
+				if ( '' === $text || in_array( $text, $pot, true ) ) {
+					continue;
+				}
+				$missing[] = substr( $path, strlen( $root ) + 1 ) . ': ' . mb_substr( $text, 0, 90 );
+			}
+		}
+
+		self::assertSame(
+			array(),
+			array_values( array_unique( $missing ) ),
+			"These strings are translatable in the source and absent from the POT, so they\n"
+				. "have no German anywhere and no other test can see it. Run:\n\n"
+				. "    php tests/bin/generate-pot.php   (or: composer translations)\n\n"
+				. implode( "\n", array_unique( $missing ) )
+		);
+	}
+
 }

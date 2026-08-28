@@ -260,6 +260,99 @@ add_filter( 'calucon_embed_gate_asset_version', function ( $version, $file ) {
 }, 10, 2 );
 ```
 
+## Caching, minification and CDN plugins
+
+Gating happens on the server, so a page cache stores the gated page and
+serves that. Nothing leaks: the placeholder is what gets cached, and the
+plugin flushes the caches it can reach when its settings change or it is
+activated, deactivated or updated.
+
+The interesting part is what an optimizer does to the *scripts*.
+
+**Minified HTML is expected, not a problem.** The scanner is built for
+attribute quotes stripped, newlines inside tags and attributes in any order;
+that is the single most common reason competing implementations fail
+silently, and the fixture corpus carries a minified variant of every case.
+
+**Deferred, async and combined `gate.js` all work.** The click handler is
+delegated on `document` and the memory restore is guarded on
+`document.readyState`, so it does not matter when the script arrives or in
+what order the inline configuration reaches it.
+`tests/E2E/loading-strategy.spec.js` pins all of that — including a build
+where `gate.js` is injected after the load event has already fired.
+
+**"Delay JavaScript until interaction" costs the visitor a click.** That
+feature holds every script back until the first interaction, and that
+interaction is spent switching the scripts on — so the first click on a
+"Load" button does nothing and the visitor has to click again. Nothing
+third-party is contacted by the extra click and the embed loads on the
+second one, but the placeholder feels broken. Exclude the plugin's assets
+from that setting; Settings → Status & tools lists the exact paths, and they
+are:
+
+```
+wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js
+wp-content/plugins/calucon-third-party-embed-gate/assets/js/cmp-bridge.js
+wp-content/plugins/calucon-third-party-embed-gate/assets/css/gate.css
+```
+
+Keep the inline configuration with `gate.js`; some plugins list it separately
+as `calucon-embed-gate-js-before`.
+
+**A CDN in front of your assets is handled, twice over.** The own-host list
+includes whatever `content_url()`, `includes_url()`, `plugins_url()`, the
+uploads base and the theme URIs report, so a CDN plugin that filters those
+is trusted automatically — WordPress itself is saying where your assets
+live. For a CDN that rewrites the finished HTML instead, where those
+functions never see the change, a `/wp-content/` or `/wp-includes/` path is
+left alone whatever host serves it. That second rule applies to `<script>`
+and `<link rel=stylesheet>` only — never to iframes, and never to images, so a
+CDN-served image is still gated if you have turned third-party image gating
+on. Your always-gate list overrides it.
+
+Without either rule, whole-page buffering plus an asset CDN would gate your
+own `wp-includes` scripts into placeholders — which breaks the site's
+JavaScript rather than protecting anybody.
+
+### If something looks wrong: symptom, cause, fix
+
+Work down this list. Every fix is an exclusion, and excluding these three
+files costs nothing measurable — they are small, local, and already cached by
+the browser.
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| The **first** click on "Load" does nothing; the second works | "Delay JavaScript until interaction" — the first interaction is spent switching scripts on | Exclude `gate.js` from that setting specifically, not just from minification |
+| The button does nothing **at all**, ever | `gate.js` never executed. Usually a combined bundle threw earlier: a top-level error aborts the rest of *that file*, and anything bundled after it never runs | Open the console, find the throwing file, exclude `gate.js` from combining so it is not downstream of somebody else's error |
+| The panel appears but is unstyled | `gate.css` was combined, deferred or stripped | Exclude `gate.css` |
+| Embeds load **without** a click | Gating is server-side, so this means the plugin never saw that markup — typically a page builder rendering outside the WordPress content filters | Settings → Detection → enable whole-page buffering |
+| Your **own** scripts and styles were replaced by placeholders | An asset CDN plus whole-page buffering, on a build older than 0.13.0 | Update; if it persists, add the CDN hostname under Detection → "Additional own hosts" |
+| Console errors about `wp-i18n`, `wp-data`, `lodash`, `moment` | Not this plugin — those are WordPress core packages whose inline snippets got separated from them by combining | Check the page **logged out** first: these are often enqueued only for logged-in admins, so no visitor ever sees them |
+
+That last row is worth taking seriously before changing anything. An admin bar
+and a block editor pull in scripts a visitor never loads, so a console full of
+errors while you are logged in can be entirely invisible to the public page.
+Compare the two before you start excluding things.
+
+### Where each plugin keeps its exclusion list
+
+Settings → Status & tools names this for the plugin it detects. Reproduced
+here because a support thread usually starts before anybody opens that screen.
+Labels drift between versions, so treat these as the area rather than an exact
+string.
+
+| Plugin | Exclusion list |
+|---|---|
+| WP Rocket | File Optimization → "Excluded JavaScript Files". "Delay JavaScript execution" keeps a **separate** box — add them there too |
+| W3 Total Cache | Performance → Minify → JS → "Never minify the following JS files" |
+| LiteSpeed Cache | Page Optimization → JS Settings → "JS Excludes"; Guest Mode has its own list |
+| Autoptimize | Settings → Autoptimize → JavaScript Options → "Exclude scripts from Autoptimize" |
+| WP Fastest Cache | The Exclude tab, one rule per file |
+| SiteGround Optimizer | SG Optimizer → Frontend → JavaScript, under the minify and combine switches |
+| Cloudflare | Rocket Loader takes no list — it is disabled per script with `data-cfasync="false"`. If embeds misbehave with it on, switch it off to confirm the cause |
+| WP Super Cache | Caches pages, does not touch JavaScript. Nothing to exclude |
+
+
 ## Adjusting behaviour with filters
 
 ```php

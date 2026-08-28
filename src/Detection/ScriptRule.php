@@ -100,6 +100,31 @@ final class ScriptRule {
 				continue;
 			}
 
+			// A CDN that rewrites the finished HTML makes the site's own
+			// scripts look third-party; gating those breaks the site instead
+			// of protecting anyone. Scripts and stylesheets only — see
+			// HostMatcher::looks_like_own_asset_path().
+			//
+			// But the path is a heuristic about shape, and shape is something
+			// anyone can copy: without this second condition, any host at all
+			// could serve a tracker from /wp-content/ and be waved through,
+			// which is the invisible failure invariant 6 exists to forbid. A
+			// host we already know to be a provider is never the site's own
+			// asset host, so the exemption does not apply to it.
+			//
+			// Deliberately BEFORE the force_gate check below. The two answer
+			// different questions: force_gate is the owner saying "gate the
+			// embeds in this block", while this says "that is not a
+			// third-party embed at all, it is one of my own files". A block
+			// marked always-gate should not start placeholdering the site's
+			// own scripts. The owner's host-level always-gate list is the
+			// setting that does override this, and it is honoured inside
+			// is_exempt_own_asset().
+			if ( $this->hosts->is_exempt_own_asset( $src )
+				&& ! $this->is_known_provider_host( $src ) ) {
+				continue;
+			}
+
 			if ( empty( $ctx['force_gate'] ) && null !== $this->should_gate
 				&& ! call_user_func( $this->should_gate, true, $src, $ctx ) ) {
 				continue;
@@ -533,5 +558,29 @@ final class ScriptRule {
 			}
 		}
 		return $last_href;
+	}
+
+	/**
+	 * Does this URL sit on a host a registered provider owns?
+	 *
+	 * Used only to refuse the own-asset path exemption. A CDN hostname is
+	 * never a provider, so the exemption keeps working for the case it was
+	 * added for.
+	 *
+	 * @param string $url Raw URL from the markup.
+	 * @return bool
+	 */
+	private function is_known_provider_host( string $url ): bool {
+		// Note for anyone hooking calucon_embed_gate_provider_for_url:
+		// resolve_for_asset_host() passes a synthetic "https://host/" to that
+		// filter, so it can fire during detection with a URL that never
+		// appeared in the markup. Reached only for a URL that already looks
+		// like an own-asset path, so it is rare — but it is not the markup's
+		// URL, and filter code that inspects $url should not assume it is.
+		$host = $this->hosts->host_of( $url );
+		if ( null === $host ) {
+			return false;
+		}
+		return null !== $this->providers->resolve_for_asset_host( $host );
 	}
 }

@@ -40,8 +40,10 @@
  */
 
 require_once __DIR__ . '/../tests/Support/PoReader.php';
+require_once __DIR__ . '/../tests/Support/ReadmeMarkdown.php';
 
 use CaluconEmbedGate\Tests\Support\PoReader;
+use CaluconEmbedGate\Tests\Support\ReadmeMarkdown;
 
 $root         = dirname( __DIR__ );
 $formal       = in_array( '--formal', $argv, true );
@@ -52,6 +54,10 @@ $branch       = $formal ? 'de_DE_formal' : 'de_DE';
 $files = array(
 	"languages/calucon-third-party-embed-gate-$branch.po",
 	".wordpress-org/readme-$branch.po",
+	// The listing German is written here first. Reading it as German — with
+	// the English out of sight — is the only check that catches a sentence
+	// which is grammatical, glossary-clean and still not German prose.
+	".wordpress-org/readme-$branch.md",
 );
 
 /**
@@ -117,7 +123,15 @@ foreach ( $files as $relative ) {
 	if ( ! is_readable( $path ) ) {
 		continue;
 	}
-	foreach ( PoReader::translations( $path ) as $english => $german ) {
+	$entries = array();
+	if ( '.md' === substr( $relative, -3 ) ) {
+		$entries = ReadmeMarkdown::pairs( $path );
+	} else {
+		foreach ( PoReader::translations( $path ) as $english => $german ) {
+			$entries[] = array( $english, $german );
+		}
+	}
+	foreach ( $entries as list( $english, $german ) ) {
 		list( $score, $why ) = cg_suspicion( $english, $german );
 		$rows[] = array(
 			'file'    => basename( $relative ),

@@ -1645,7 +1645,87 @@ final class SettingsPage {
 		<?php endif; ?>
 
 		<?php
-		$theme_findings = Compatibility::theme_asset_findings();
+		$optimizers = Compatibility::optimizer_findings();
+		if ( array() !== $optimizers ) :
+			$optimizer_messages = array(
+				'delay'   => __( 'This plugin is set to delay JavaScript until the visitor interacts with the page. That first interaction is spent switching the scripts on, so a visitor\'s first click on a "Load" button does nothing and they have to click again. Nothing third-party is contacted by the extra click, and the embed loads on the second one — but the placeholder feels broken. Exclude the files below from that setting.', 'calucon-third-party-embed-gate' ),
+				'combine' => __( 'This plugin is set to combine JavaScript into a bundle. Combining moves scripts away from the inline snippets that belong to them, which is a common cause of console errors across a site. Gating survives it, but if anything looks wrong, exclude the files below first.', 'calucon-third-party-embed-gate' ),
+				'off'     => __( 'Its JavaScript settings were read and none of the ones that cause trouble are on.', 'calucon-third-party-embed-gate' ),
+				'unknown' => __( 'Its JavaScript settings could not be read from here, so this is not an all-clear. If embeds misbehave, check whether it combines, defers or delays JavaScript, and exclude the files below.', 'calucon-third-party-embed-gate' ),
+			);
+			?>
+			<h3><?php esc_html_e( 'JavaScript optimisation', 'calucon-third-party-embed-gate' ); ?></h3>
+			<table class="widefat striped" style="max-width: 60rem;">
+				<thead>
+					<tr>
+						<th scope="col"><?php esc_html_e( 'Plugin', 'calucon-third-party-embed-gate' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'What it does to the gate', 'calucon-third-party-embed-gate' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+				<?php foreach ( $optimizers as $optimizer ) : ?>
+					<tr>
+						<th scope="row"><?php echo esc_html( $optimizer['name'] ); ?></th>
+						<td>
+							<?php
+							// A plugin with no exclusion list has no settings
+							// reader either, so it lands in 'unknown' — whose
+							// body ends "exclude the files below", one line
+							// above its own advice saying there is nothing to
+							// exclude. Its advice is the whole answer; the
+							// preamble and the "wording can differ" tail (about
+							// menu labels the advice does not name) only
+							// contradict it.
+							$lone_advice = ! $optimizer['has_list'] && 'unknown' === $optimizer['state'] && '' !== $optimizer['where'];
+							if ( ! $lone_advice ) {
+								echo esc_html( $optimizer_messages[ $optimizer['state'] ] );
+							}
+							?>
+							<?php if ( '' !== $optimizer['where'] ) : ?>
+								<p class="description" style="margin-top: .5em;">
+									<?php if ( $optimizer['has_list'] ) : ?>
+										<strong><?php esc_html_e( 'Where to exclude them:', 'calucon-third-party-embed-gate' ); ?></strong>
+									<?php endif; ?>
+									<?php echo esc_html( $optimizer['where'] ); ?>
+									<?php if ( ! $lone_advice ) : ?>
+										<?php esc_html_e( '(Wording can differ between versions of that plugin.)', 'calucon-third-party-embed-gate' ); ?>
+									<?php endif; ?>
+								</p>
+							<?php endif; ?>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
+
+		<?php $exclusions = Compatibility::exclusion_paths(); ?>
+		<?php if ( array() !== $exclusions ) : ?>
+			<h3><?php esc_html_e( 'Files to exclude from JavaScript and CSS optimisation', 'calucon-third-party-embed-gate' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'If a caching, minification or optimisation plugin combines, defers or delays scripts, paste these into its exclusion list. They are small, local and already cached by the browser, so excluding them costs nothing measurable.', 'calucon-third-party-embed-gate' ); ?></p>
+			<?php // Focusable and named: this box scrolls sideways on a narrow screen, and a scrollable region that cannot be reached by keyboard fails 2.1.1. ?>
+			<pre class="cg-exclusions" tabindex="0" role="group" aria-label="<?php esc_attr_e( 'Files to exclude from JavaScript and CSS optimisation', 'calucon-third-party-embed-gate' ); ?>"><?php echo esc_html( implode( "\n", $exclusions ) ); ?></pre>
+			<p class="description"><?php esc_html_e( 'Keep the inline configuration next to gate.js as well: some plugins list it separately as "calucon-embed-gate-js-before".', 'calucon-third-party-embed-gate' ); ?></p>
+		<?php endif; ?>
+
+		<?php
+		// Reading up to 40 theme stylesheets is the same class of work as the
+		// content scan below, which has always been on demand because
+		// "rendering 50 posts through the content filters is not free". This
+		// ran on every load of the settings page instead. Same button, same
+		// query parameter: one click does both expensive reads.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only scan, no state changes; capability-gated by the page.
+		$theme_scan_requested = isset( $_GET['calucon-embed-gate-scan'] );
+		if ( ! $theme_scan_requested ) :
+			?>
+			<h3><?php esc_html_e( 'Third-party assets in your theme', 'calucon-third-party-embed-gate' ); ?></h3>
+			<p>
+				<a class="button" href="<?php echo esc_url( add_query_arg( 'calucon-embed-gate-scan', '1' ) . '#cg-compatibility' ); ?>"><?php esc_html_e( 'Check my theme', 'calucon-third-party-embed-gate' ); ?></a>
+				<span class="description"><?php esc_html_e( 'Reads your theme\'s own stylesheets and its functions.php, looking for third-party asset hosts — fonts and CDN files, which load on every page view outside what an embed gate can cover. Read-only; no outbound requests. Runs on request because reading the files takes time.', 'calucon-third-party-embed-gate' ); ?></span>
+			</p>
+			<?php
+		endif;
+		$theme_findings = $theme_scan_requested ? Compatibility::theme_asset_findings() : array();
 		if ( array() !== $theme_findings ) :
 			?>
 			<h3><?php esc_html_e( 'Third-party assets in your theme', 'calucon-third-party-embed-gate' ); ?></h3>
@@ -1655,6 +1735,9 @@ final class SettingsPage {
 					<li><code><?php echo esc_html( $finding['file'] ); ?></code> — <?php echo esc_html( implode( ', ', $finding['hosts'] ) ); ?></li>
 				<?php endforeach; ?>
 			</ul>
+		<?php elseif ( $theme_scan_requested ) : ?>
+			<h3><?php esc_html_e( 'Third-party assets in your theme', 'calucon-third-party-embed-gate' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'None found in your theme\'s own stylesheets or its functions.php. That covers where a theme usually keeps them, not every file it could use — a theme that builds its CSS into another directory is outside this check.', 'calucon-third-party-embed-gate' ); ?></p>
 		<?php endif; ?>
 		<?php
 	}
@@ -1728,6 +1811,7 @@ final class SettingsPage {
 			\CaluconEmbedGate\Support\ContentScan::NO_USABLE_URL => __( 'No usable URL — passes through', 'calucon-third-party-embed-gate' ),
 			\CaluconEmbedGate\Support\ContentScan::RULE_DISABLED => __( 'NOT gated — its detection rule is disabled', 'calucon-third-party-embed-gate' ),
 			\CaluconEmbedGate\Support\ContentScan::PROVIDER_DISABLED => __( 'NOT gated — provider disabled in the table above', 'calucon-third-party-embed-gate' ),
+			\CaluconEmbedGate\Support\ContentScan::OWN_ASSET_PATH => __( 'NOT gated — its address is a WordPress asset path, so it is treated as your own file. If this host is not yours, add it to "Always gate these hosts" under Detection.', 'calucon-third-party-embed-gate' ),
 		);
 
 		$scanned = array();
@@ -1785,7 +1869,7 @@ final class SettingsPage {
 								&mdash;
 							<?php elseif ( $excepted ) : ?>
 								<button type="button" class="button button-small cg-scan-action" data-cg-ungate="<?php echo esc_attr( $host ); ?>" hidden><?php esc_html_e( 'Gate it again', 'calucon-third-party-embed-gate' ); ?></button>
-							<?php elseif ( ContentScan::OWN_HOST === $row['status'] ) : ?>
+							<?php elseif ( ContentScan::OWN_HOST === $row['status'] || ContentScan::OWN_ASSET_PATH === $row['status'] ) : ?>
 								<button type="button" class="button button-small cg-scan-action" data-cg-always="<?php echo esc_attr( $host ); ?>" hidden><?php esc_html_e( 'Gate it anyway', 'calucon-third-party-embed-gate' ); ?></button>
 							<?php elseif ( ContentScan::GATED === $row['status'] ) : ?>
 								<?php if ( $is_generic ) : ?>

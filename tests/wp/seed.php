@@ -158,6 +158,180 @@ add_filter( 'locale', function ( $locale ) {
 if ( isset( $_GET['cg_wpml'] ) && ! defined( 'ICL_SITEPRESS_VERSION' ) ) {
 	define( 'ICL_SITEPRESS_VERSION', '4.6.13' );
 }
+// Cache-flush recorder + readback, for the CacheFlush investigation. Records
+// on calucon_embed_gate_flush_caches, which flush_all() fires unconditionally,
+// so it does not depend on which purge function happens to exist here.
+add_action(
+	'calucon_embed_gate_flush_caches',
+	static function () {
+		update_option( 'cg_flushes', (int) get_option( 'cg_flushes', 0 ) + 1 );
+	}
+);
+if ( isset( $_GET['cg_flushes'] ) ) {
+	add_action(
+		'init',
+		static function () {
+			// ?cg_flushes=reset puts the site back to "settings never saved",
+			// which is the state the first-save flush is about and which any
+			// earlier test in the run has already destroyed by saving.
+			if ( 'reset' === (string) $_GET['cg_flushes'] ) {
+				delete_option( 'calucon_embed_gate_options' );
+				update_option( 'cg_flushes', 0 );
+			}
+			header( 'Content-Type: text/plain' );
+			printf(
+				'flushes=%d row_exists=%d',
+				(int) get_option( 'cg_flushes', 0 ),
+				null === get_option( 'calucon_embed_gate_options', null ) ? 0 : 1
+			);
+			exit;
+		},
+		1
+	);
+}
+
+// Consent-platform and page-builder emulators. Neither branch of the
+// Compatibility screen had ever rendered in a test: the CMP rows say whether
+// the bridge is active, merely available, or absent because the platform is
+// untested, and the builder row changes with whole-page gating. All of it is
+// copy an owner acts on.
+//
+//   ?cg_cmp=tested    — a bridgeable platform (Complianz)
+//   ?cg_cmp=untested  — one with no tested bridge (Usercentrics)
+//   ?cg_builder=1     — a page builder (Elementor)
+if ( isset( $_GET['cg_cmp'] ) ) {
+	if ( 'tested' === $_GET['cg_cmp'] && ! defined( 'cmplz_version' ) ) {
+		define( 'cmplz_version', '7.1.0' );
+	}
+	if ( 'untested' === $_GET['cg_cmp'] && ! defined( 'UC_PLUGIN_FILE' ) ) {
+		define( 'UC_PLUGIN_FILE', 'usercentrics/usercentrics.php' );
+	}
+}
+if ( isset( $_GET['cg_builder'] ) && ! defined( 'ELEMENTOR_VERSION' ) ) {
+	define( 'ELEMENTOR_VERSION', '3.21.0' );
+}
+
+// Asset-CDN emulator. The 0.13.0 fix has two halves and only one of them was
+// reachable by a fixture: the path heuristic (/wp-content/ on any host) is
+// covered by tests/Fixtures/cdn-offloaded-assets-*, but Plugin::own_hosts() —
+// which reads content_url(), plugins_url(), includes_url(), the uploads base
+// and both theme URIs so that a CDN plugin filtering them is trusted
+// automatically — was reached by NO test at all. tests/Support/PipelineFactory
+// builds its HostMatcher from a literal array, so every unit and fixture test
+// goes around the wiring in Plugin::pipeline().
+//
+// The emitted script deliberately sits at a path with no /wp-content/ in it,
+// so the path heuristic cannot rescue it: if it survives ungated, that is
+// own_hosts() doing the work and nothing else.
+//
+// The emitted iframe is the opposite probe. It sits at this plugin's OWN
+// asset path — the one Plugin::pipeline() rescues gate.js by, host-blind,
+// because a CDN that rewrites the finished HTML leaves plugins_url() on the
+// origin host. That rescue is a claim about scripts only; an iframe at the
+// same path on a foreign host is a third-party iframe and invariant 6 says
+// it is gated. The review of 0.13.0 found the rescue handed to every rule.
+//
+//   ?cg_cdn=1  — content_url()/plugins_url() moved to the CDN host, so the
+//                CDN host is one of the site's own
+//   ?cg_cdn=0  — the same script, without the filters: the control, which
+//                must be gated
+if ( isset( $_GET['cg_cdn'] ) ) {
+	if ( '1' === (string) $_GET['cg_cdn'] ) {
+		$cg_cdn_host = static function ( $url ) {
+			return preg_replace( '#^https?://[^/]+#', 'https://cdn.cg-offload.example', (string) $url );
+		};
+		add_filter( 'content_url', $cg_cdn_host );
+		add_filter( 'plugins_url', $cg_cdn_host );
+	}
+	// wp_footer, not wp_head: OutputBuffer gates only inside <body>, on
+	// purpose — a panel in the head is invalid markup, and head findings are
+	// the Status screen's job rather than a silent rewrite.
+	add_action(
+		'wp_footer',
+		static function () {
+			echo '<script src="https://cdn.cg-offload.example/bundle.js" id="cg-cdn-probe"></script>' . "\n";
+			echo '<iframe src="https://cdn.cg-offload.example/wp-content/plugins/calucon-third-party-embed-gate/assets/widget.html" id="cg-cdn-iframe-probe" title="probe"></iframe>' . "\n";
+		},
+		1
+	);
+}
+
+// Cache-plugin emulator, the same trick. The Compatibility screen tells the
+// owner which of their optimiser's settings breaks embeds and WHERE that
+// plugin keeps its exclusion list — advice that renders only when a cache
+// plugin is detected, so on a clean Playground it never renders at all and
+// was untested end to end.
+//
+//   ?cg_cache=w3tc   — detected, no settings reader exists for it, so the
+//                      screen must say so rather than imply an all-clear
+//   ?cg_cache=rocket — detected AND its delay_js setting readable, which is
+//                      the one that costs the visitor a click
+if ( isset( $_GET['cg_cache'] ) ) {
+	if ( 'w3tc' === $_GET['cg_cache'] && ! defined( 'W3TC' ) ) {
+		define( 'W3TC', true );
+	}
+	// The four whose exclusion-list advice never rendered in a test. No
+	// settings readers exist for these, so each needs only its detection
+	// signal — the point is the advice string, not the state machine.
+	if ( 'fastest' === $_GET['cg_cache'] && ! class_exists( 'WpFastestCache' ) ) {
+		class WpFastestCache {} // phpcs:ignore
+	}
+	if ( 'siteground' === $_GET['cg_cache'] && ! function_exists( 'sg_cachepress_purge_cache' ) ) {
+		function sg_cachepress_purge_cache() {} // phpcs:ignore
+	}
+	if ( 'cloudflare' === $_GET['cg_cache'] && ! defined( 'CLOUDFLARE_PLUGIN_DIR' ) ) {
+		define( 'CLOUDFLARE_PLUGIN_DIR', '/wp-content/plugins/cloudflare/' );
+	}
+	if ( 'supercache' === $_GET['cg_cache'] && ! function_exists( 'wp_cache_clear_cache' ) ) {
+		function wp_cache_clear_cache() {} // phpcs:ignore
+	}
+	if ( 'autoptimize' === $_GET['cg_cache'] ) {
+		// The 'combine' state, which had never rendered. Autoptimize's reader
+		// needs autoptimize_js set AND autoptimize_js_aggregate truthy — the
+		// latter defaults to true, so its default_option_ filter matters as
+		// much as the option_ one.
+		if ( ! defined( 'AUTOPTIMIZE_PLUGIN_VERSION' ) ) {
+			define( 'AUTOPTIMIZE_PLUGIN_VERSION', '3.1' );
+		}
+		$cg_ao = static function () {
+			return '1';
+		};
+		add_filter( 'option_autoptimize_js', $cg_ao );
+		add_filter( 'default_option_autoptimize_js', $cg_ao );
+		add_filter( 'option_autoptimize_js_aggregate', $cg_ao );
+		add_filter( 'default_option_autoptimize_js_aggregate', $cg_ao );
+	}
+	if ( 'litespeed' === $_GET['cg_cache'] ) {
+		// The 'off' state: settings READ, and none of the risky ones on. It
+		// must never collapse into 'unknown' — "we looked and it is fine" and
+		// "we could not look" are different things to tell an owner.
+		if ( ! defined( 'LSCWP_V' ) ) {
+			define( 'LSCWP_V', '6.5' );
+		}
+		$cg_ls_off = static function () {
+			return '0';
+		};
+		add_filter( 'option_litespeed.optm.js_defer', $cg_ls_off );
+		add_filter( 'default_option_litespeed.optm.js_defer', $cg_ls_off );
+		add_filter( 'option_litespeed.optm.js_comb', $cg_ls_off );
+		add_filter( 'default_option_litespeed.optm.js_comb', $cg_ls_off );
+	}
+	if ( 'rocket' === $_GET['cg_cache'] ) {
+		if ( ! defined( 'WP_ROCKET_VERSION' ) ) {
+			define( 'WP_ROCKET_VERSION', '3.15' );
+		}
+		// Both filters, deliberately: option_{$name} fires only when the
+		// option row EXISTS, and this emulator never writes one. A site that
+		// never saved WP Rocket's settings hits default_option_{$name}
+		// instead — the same trap the multilingual emulator documents, and
+		// hooking only the first would silently emulate nothing.
+		$cg_rocket = static function () {
+			return array( 'delay_js' => 1, 'minify_concatenate_js' => 0 );
+		};
+		add_filter( 'option_wp_rocket_settings', $cg_rocket );
+		add_filter( 'default_option_wp_rocket_settings', $cg_rocket );
+	}
+}
 // Multilingual emulator: WPML and Polylang translate the strings named in
 // wpml-config.xml by filtering the option as the page is built, in that
 // page's language — long after plugins_loaded. ?cg_translate=1 does the same

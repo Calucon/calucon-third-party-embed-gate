@@ -32,6 +32,7 @@ final class ContentScan {
 	public const NO_USABLE_URL     = 'no-usable-url';
 	public const RULE_DISABLED     = 'rule-disabled';
 	public const PROVIDER_DISABLED = 'provider-disabled';
+	public const OWN_ASSET_PATH    = 'own-asset-path';
 
 	/** @var HtmlScanner */
 	private HtmlScanner $scanner;
@@ -172,6 +173,26 @@ final class ContentScan {
 		$host = $this->hosts->host_of( $url );
 		if ( null === $host ) {
 			return null;
+		}
+
+		// A script on a /wp-content/ or /wp-includes/ path is left alone
+		// whatever host serves it — unless that host belongs to a provider we
+		// already know, which is the carve-out ScriptRule applies too. Both
+		// conditions have to match the render path exactly: reporting "Gated"
+		// for a script the rules leave alone was the original defect, and
+		// reporting "not gated" for one they DO gate is the same defect
+		// pointing the other way.
+		if ( $is_script
+			&& $this->hosts->is_exempt_own_asset( $url )
+			&& null === $this->providers->resolve_for_asset_host( $host ) ) {
+			return array(
+				'tag'      => $tag,
+				'url'      => $url,
+				'host'     => $host,
+				'status'   => self::OWN_ASSET_PATH,
+				'label'    => '',
+				'provider' => '',
+			);
 		}
 
 		$provider = $is_script

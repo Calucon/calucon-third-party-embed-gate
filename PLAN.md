@@ -307,6 +307,39 @@ Naive `$host === parse_url(home_url(), PHP_URL_HOST)` is wrong on real sites.
 - IDN/punycode normalisation before comparison.
 - Optional subdomain-wildcard entries (`*.example.com`).
 
+**Asset hosts, added in 0.13.0.** WordPress already knows where the site's own
+assets live, so `own_hosts()` also reads `content_url()`, `includes_url()`,
+`plugins_url()`, the uploads base and both theme URIs. A CDN plugin that filters
+those — most of them do — thereby declares its host as the site's own, and the
+owner has to configure nothing. These functions only ever answer "where do MY
+assets live", so they cannot introduce a third party.
+
+**The path rule, and why it is not an exemption from invariant 1.** A CDN that
+rewrites the finished HTML instead of filtering those functions is invisible to
+all of the above, and with whole-page buffering on, the site's own `wp-includes`
+scripts then look third-party and get gated — breaking the page rather than
+protecting anyone. So a `<script>` or `<link rel=stylesheet>` whose path
+contains `/wp-content/` or `/wp-includes/` is treated as the site's own,
+whatever host serves it.
+
+This is a claim about **identity**, not a licence: it says "this host is serving
+my assets", and a request to the site's own asset host is not a third-party
+contact. Invariant 1 is intact in principle. What the rule really costs is
+precision — the identity test is a heuristic about the shape of a URL, and shape
+is copyable — so it is fenced accordingly:
+
+- scripts and stylesheets only, **never iframes** (invariant 6 has no
+  exceptions, and a path heuristic is the hole it exists to close)
+- never for a host that already belongs to a known provider
+- the owner's always-gate list overrides it
+- the Status screen reports such a row as **not** gated, and says why, so the
+  owner can see the one case they might want to override
+
+The residue is a genuinely third-party host that chooses to serve from a
+`/wp-content/` path. Nothing in the plugin can distinguish that from the case
+the rule exists for; closing it needs a different mechanism than a heuristic,
+not a tighter heuristic.
+
 ### 3.5 What to detect beyond iframes
 
 Ship as separate, individually-toggleable rules:

@@ -29,8 +29,10 @@
  */
 
 require_once __DIR__ . '/../tests/Support/PoReader.php';
+require_once __DIR__ . '/../tests/Support/ReadmeMarkdown.php';
 
 use CaluconEmbedGate\Tests\Support\PoReader;
+use CaluconEmbedGate\Tests\Support\ReadmeMarkdown;
 
 $root  = dirname( __DIR__ );
 $all   = in_array( '--all', $argv, true );
@@ -40,6 +42,11 @@ $files = array(
 	'languages/calucon-third-party-embed-gate-de_DE_formal.po',
 	'.wordpress-org/readme-de_DE.po',
 	'.wordpress-org/readme-de_DE_formal.po',
+	// The listing German is AUTHORED in these, and the gates check them; the
+	// wide sweep has to reach them too, or the one German surface with a
+	// public audience is checked only for the words already known to be wrong.
+	'.wordpress-org/readme-de_DE.md',
+	'.wordpress-org/readme-de_DE_formal.md',
 );
 if ( $all ) {
 	foreach ( glob( $root . '/languages/*.po' ) as $path ) {
@@ -105,8 +112,11 @@ foreach ( $files as $relative ) {
 		continue;
 	}
 
-	$rows = array();
-	foreach ( PoReader::translations( $path ) as $english => $german ) {
+	$rows    = array();
+	$entries = '.md' === substr( $relative, -3 )
+		? ReadmeMarkdown::pairs( $path )
+		: array_map( null, array_keys( PoReader::translations( $path ) ), array_values( PoReader::translations( $path ) ) );
+	foreach ( $entries as list( $english, $german ) ) {
 		foreach ( $glossary as $term => $renderings ) {
 			if ( 1 !== preg_match( '/\b' . preg_quote( $term, '/' ) . '\b/iu', $english ) ) {
 				continue;
