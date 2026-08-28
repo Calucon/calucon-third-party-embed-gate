@@ -77,7 +77,7 @@ it says so on the same issue.
 | `cache-autoptimize` | autoptimize | Reader states; click loads with aggregation, and with the inline config folded into the bundle |
 | `cache-wp-fastest-cache` | wp-fastest-cache | Reader "could not be read" + Exclude tab; cached page gated; click loads with minify + combine |
 | `cache-sg-cachepress` | sg-cachepress | Reader combine on/off; click loads with combine |
-| `builder-elementor` | elementor | Row text follows the buffer setting; HTML widget gated with the buffer off (Elementor renders through `the_content`) and on, and Load loads; the **video widget is a known gap** kept as an expected failure (below) |
+| `builder-elementor` | elementor | Row text follows the buffer setting; HTML widget gated with the buffer off (Elementor renders through `the_content`) and on; the **video widget** — a player that exists only as a JSON attribute — gated by `ElementorVideoRule` on both paths, Load loads, Elementor's handler stands down without an error |
 | `detect-only` | cookiebot, cloudflare, polylang, translatepress-multilingual, beaver-builder-lite-version | Each row and its advice; zero third-party requests on a gated page with all five active |
 
 ### Not field-validated (emulated only)
@@ -129,20 +129,23 @@ yet. The API contract the bridge relies on is measured (phase 2 above).
   matches); the adapter now requires one of those positive signals before
   it trusts `unblock()`. Pinned in `tests/E2E/cmp-bridge.spec.js` with
   `rcb-noblocker` and `rcb-legacy` stubs, and by the field group's phase 1.
-- **Elementor's video widget is not gated — by anyone.** The server renders
+- **Elementor's video widget was gated by nobody.** The server renders
   `<div class="elementor-widget-video" data-settings='{"video_type":
   "youtube","youtube_url":…}'>` and nothing else; Elementor's front-end
   JavaScript then loads `youtube.com/iframe_api` and builds the player.
   Measured: 10 requests to youtube.com plus i.ytimg.com, DoubleClick and
   jnn-pa.googleapis.com before any click, with whole-page gating on or off,
-  and no placeholder. An HTML scanner cannot see a player that does not
-  exist in the HTML. The Compatibility row's "this builder's embeds are
-  covered" is true of Elementor's HTML widget (gated even with the buffer
-  off — Elementor renders through `the_content`) and false of its video
-  widget. Kept in the suite as an **expected failure** (`test.fail()`), so
-  it flips visibly when a rule for Elementor's `data-settings` players
-  lands; until then the Status-screen wording for Elementor needs
-  narrowing (a string change → German).
+  and no placeholder. Fixed by `src/Detection/ElementorVideoRule.php`, which
+  reads the same JSON: the wrapper's contents become the panel (the owner's
+  media-library overlay becomes its poster) and `data-settings` is rewritten
+  so Elementor's handler bails out the way it does for every non-YouTube
+  type. Vimeo and Dailymotion widgets render a real `<iframe>` the iframe
+  rule already gates; lightbox mode loads nothing before a click and is left
+  to the owner's design. Second lesson from the same group: the zero-embed
+  fast path (`Plugin::has_gateable_markup()`) probes tag names, so the new
+  rule was silently skipped on the `the_content` path while the buffered
+  page — which always carries a `<script>` — passed. The widget's class name
+  is part of the probe now; the buffer-off field test is the pin.
 - **Elementor fetches Google Fonts on every page** (`fonts.googleapis.com`,
   `fonts.gstatic.com`) — its typography, not an embed, and outside the
   plugin's remit; the harness turns it off the way an owner would

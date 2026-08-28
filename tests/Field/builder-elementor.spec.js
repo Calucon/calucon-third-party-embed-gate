@@ -9,9 +9,8 @@
 // be gated with the buffer OFF as well — the test records both states so
 // the FAQ can be narrowed honestly rather than left vague.
 //
-// The video widget is the case nothing server-side can see — and the first
-// run confirmed it: Elementor's own script fetches YouTube's player API
-// before any click. Its two tests are expected failures, see below.
+// The video widget is the case nothing server-side could see until
+// ElementorVideoRule read the same JSON Elementor does — see below.
 // @ts-check
 const { test, expect } = require( '@playwright/test' );
 const {
@@ -80,17 +79,15 @@ test( 'HTML widget, buffer ON: gated, nothing requested, and Load loads', async 
 
 // The video widget — measured 2026-08-28, Elementor 4.2.3: the server
 // renders <div class="elementor-widget-video" data-settings='{"video_type":
-// "youtube","youtube_url":…}'> and NOTHING else — no iframe, no script tag
-// naming YouTube. Elementor's own front-end JavaScript then loads
-// youtube.com/iframe_api and builds the player, and the page contacts
-// youtube.com, i.ytimg.com and DoubleClick before any click, with the
-// buffer on or off. No HTML scanner can gate that; it is a gap in what
-// "this builder's embeds are covered" promises, not a regression. Kept as an
-// EXPECTED failure: the day a rule for Elementor's data-settings players
-// lands, this test turns unexpectedly green and the marker comes off.
+// "youtube","youtube_url":…}'> and NOTHING else; Elementor's own script
+// then loads youtube.com/iframe_api and builds the player, and the page
+// contacted youtube.com, i.ytimg.com and DoubleClick before any click, with
+// the buffer on or off (14 requests, 0 panels). ElementorVideoRule closes
+// that: the wrapper's contents become the panel and data-settings is
+// rewritten so Elementor's handler stands down. These are the tests that
+// were expected failures until it did.
 for ( const buffer of [ false, true ] ) {
-	test( `video widget, buffer ${ buffer ? 'ON' : 'OFF' }: nothing reaches YouTube before a click`, async ( { page } ) => {
-		test.fail( true, 'known gap: Elementor builds its video widget client-side from data-settings; nothing server-side to gate (docs/field-validation.md)' );
+	test( `video widget, buffer ${ buffer ? 'ON' : 'OFF' }: gated, nothing reaches YouTube before a click, and Load loads`, async ( { page } ) => {
 		await login( page );
 		await setOutputBuffer( page, buffer );
 		await page.context().clearCookies();
@@ -98,12 +95,20 @@ for ( const buffer of [ false, true ] ) {
 		await page.goto( '/elementor-video/' );
 		await page.waitForLoadState( 'networkidle' );
 		await expectElementorRendered( page );
-		// Positive guard on the shape of the gap, so a passing run means the
-		// widget really was gated — not that Elementor stopped rendering it.
-		await expect( page.locator( '.elementor-widget-video[data-settings*="youtube_url"]' ) ).toHaveCount( 1 );
-		const youtube = offenders.filter( ( u ) => /youtube|ytimg|googlevideo|doubleclick/.test( u ) );
-		test.info().annotations.push( { type: 'finding', description: `Elementor video widget, buffer ${ buffer ? 'on' : 'off' }: ${ youtube.length } request(s) to YouTube/DoubleClick before any click; panels: ${ await page.locator( '.cg-embed' ).count() }` } );
-		expect( youtube ).toEqual( [] );
+		// Positive guard: the widget is really there, and really rewritten.
+		await expect( page.locator( '.elementor-widget-video[data-settings*="calucon-embed-gate"]' ) ).toHaveCount( 1 );
+		await expect( page.locator( '.elementor-widget-video .elementor-wrapper .cg-embed' ) ).toHaveCount( 1 );
+		await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
+		expect( offenders.filter( ( u ) => /youtube|ytimg|googlevideo|doubleclick/.test( u ) ) ).toEqual( [] );
+		// Elementor's handler must have stood down without throwing.
+		const errors = [];
+		page.on( 'pageerror', ( e ) => errors.push( String( e ) ) );
+
+		await abortThirdParty( page );
+		await page.locator( '.cg-embed__button' ).first().click();
+		await expect( page.locator( '.cg-embed iframe' ) ).toHaveCount( 1 );
+		await expect( page.locator( '.cg-embed iframe' ).first() ).toHaveAttribute( 'src', /youtube-nocookie\.com/ );
+		expect( errors ).toEqual( [] );
 	} );
 }
 

@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use CaluconEmbedGate\Detection\ElementorVideoRule;
 use CaluconEmbedGate\Detection\EmbedObjectRule;
 use CaluconEmbedGate\Detection\EmbedStripper;
 use CaluconEmbedGate\Detection\HostMatcher;
@@ -36,6 +37,7 @@ use CaluconEmbedGate\Rendering\PlaceholderRenderer;
 final class Pipeline {
 
 	/** @var IframeRule */
+	public ElementorVideoRule $elementor_video_rule;
 	public IframeRule $iframe_rule;
 
 	/** @var EmbedObjectRule */
@@ -82,6 +84,7 @@ final class Pipeline {
 	 * @param PlaceholderRenderer $renderer          The §5.1 markup contract.
 	 */
 	public function __construct(
+		ElementorVideoRule $elementor_video_rule,
 		IframeRule $iframe_rule,
 		EmbedObjectRule $embed_object_rule,
 		ScriptRule $script_rule,
@@ -94,16 +97,17 @@ final class Pipeline {
 		ResourceHints $hint_scrubber,
 		PlaceholderRenderer $renderer
 	) {
-		$this->iframe_rule       = $iframe_rule;
-		$this->embed_object_rule = $embed_object_rule;
-		$this->script_rule       = $script_rule;
-		$this->image_rule        = $image_rule;
-		$this->stylesheet_rule   = $stylesheet_rule;
-		$this->registry          = $registry;
-		$this->host_matcher      = $host_matcher;
-		$this->stripper          = $stripper;
-		$this->scanner           = $scanner;
-		$this->hint_scrubber     = $hint_scrubber;
-		$this->renderer          = $renderer;
+		$this->elementor_video_rule = $elementor_video_rule;
+		$this->iframe_rule          = $iframe_rule;
+		$this->embed_object_rule    = $embed_object_rule;
+		$this->script_rule          = $script_rule;
+		$this->image_rule           = $image_rule;
+		$this->stylesheet_rule      = $stylesheet_rule;
+		$this->registry             = $registry;
+		$this->host_matcher         = $host_matcher;
+		$this->stripper             = $stripper;
+		$this->scanner              = $scanner;
+		$this->hint_scrubber        = $hint_scrubber;
+		$this->renderer             = $renderer;
 	}
 }
