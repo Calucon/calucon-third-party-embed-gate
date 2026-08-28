@@ -150,6 +150,12 @@ so on the same issue.
 | Compatibility claims against the real plugins | monthly | `field-validation.yml` → issue `field-validation` | read `docs/field-validation.md`; fix or narrow the claim |
 | GitHub Actions pins | monthly | Dependabot (`.github/dependabot.yml`), one grouped PR labelled `maintenance` | review, merge into `trunk` |
 
+GitHub runs `schedule` and `workflow_dispatch` workflows **only from the
+default branch (`main`)**. A canary added on `trunk` therefore starts on the
+release that carries it to `main`; until then it can neither be scheduled
+nor run by hand (`gh workflow run` answers 404). Pushes to `trunk` are the
+exception — `trunk.yml` runs from the pushed ref.
+
 Anything else — a support thread, a security report — arrives by e-mail from
 wordpress.org or GitHub. The fix path is always the same: branch → PR into
 `trunk` → release candidate → PR `trunk → main`.

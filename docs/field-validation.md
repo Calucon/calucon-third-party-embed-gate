@@ -37,7 +37,9 @@ reproduce a failure; the default, and the schedule, is always the current
 release.
 
 In CI, `.github/workflows/field-validation.yml` runs the groups as a parallel
-matrix on the 3rd of every month and on demand (Actions → Field validation →
+matrix on the 3rd of every month and on demand (from `main` — GitHub
+schedules and dispatches workflows from the default branch only, so the
+suite is live once the release carrying it has been merged there) (Actions → Field validation →
 Run workflow, optionally with a group list and version pins). It is
 informational — never a required check — and on failure it opens, or
 comments on, an issue labelled `field-validation`; when a later run is green
