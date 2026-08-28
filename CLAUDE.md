@@ -89,6 +89,14 @@ stay that way; never make it automatic or point it anywhere else.
 HEAD every built-in `privacy_url` weekly **from CI only** — the plugin itself
 never may (invariant 9). A MOVED/FAIL line means: update the descriptor and
 ship a release; the canary is informational, not a required check.
+`.github/workflows/maintenance-canary.yml` (weekly, same standing) runs two
+more: `bin/check-load-endpoints.sh` re-measures that youtube-nocookie.com
+and Vimeo `dnt=1` still set **0 cookies** on a plain GET — the numbers the
+readme states as measured — and `bin/check-tested-up-to.sh` compares the
+readme's `Tested up to` with WordPress's version API. Red opens an issue
+labelled `maintenance`. Together with the monthly field validation and
+Dependabot for the Actions pins, that is the whole maintenance routine:
+nothing rots silently, and nothing needs watching.
 
 ## Invariants (PLAN.md §1) — if a change would break one of these, stop and ask
 

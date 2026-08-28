@@ -1,0 +1,99 @@
+# Maintenance canaries: the things that rot without a code change.
+#
+#   - The two privacy-preserving load targets (youtube-nocookie.com, Vimeo
+#     with dnt=1) still set no cookies on a plain GET — the numbers the
+#     readme states as measured (bin/check-load-endpoints.sh).
+#   - readme.txt's "Tested up to" is still the current WordPress
+#     (bin/check-tested-up-to.sh).
+#
+# Weekly. Outbound requests happen HERE, in CI — never in the plugin
+# (invariant 9); this is the same standing the privacy-link canary has.
+# Informational, never a required check. On failure it opens, or comments
+# on, an issue labelled `maintenance`, so nobody has to watch Actions; when
+# a later run is green it says so on the same issue. The field-validation
+# workflow (monthly, real plugins) is the third canary of this kind.
+name: Maintenance canary
+
+on:
+  schedule:
+    - cron: '41 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  load-endpoints:
+    name: Privacy-preserving load targets set no cookies
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.run.outcome }}
+      log: ${{ steps.run.outputs.log }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: run
+        continue-on-error: true
+        run: |
+          set +e
+          out=$(bash bin/check-load-endpoints.sh 2>&1); status=$?
+          echo "$out"
+          { echo 'log<<EOF'; echo "$out"; echo 'EOF'; } >> "$GITHUB_OUTPUT"
+          exit $status
+
+  tested-up-to:
+    name: readme "Tested up to" is current
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.run.outcome }}
+      log: ${{ steps.run.outputs.log }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: run
+        continue-on-error: true
+        run: |
+          set +e
+          out=$(bash bin/check-tested-up-to.sh 2>&1); status=$?
+          echo "$out"
+          { echo 'log<<EOF'; echo "$out"; echo 'EOF'; } >> "$GITHUB_OUTPUT"
+          exit $status
+
+  report:
+    name: Tell someone
+    needs: [ load-endpoints, tested-up-to ]
+    if: always()
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      R_ENDPOINTS: ${{ needs.load-endpoints.outputs.result }}
+      R_TESTED: ${{ needs.tested-up-to.outputs.result }}
+      LOG_ENDPOINTS: ${{ needs.load-endpoints.outputs.log }}
+      LOG_TESTED: ${{ needs.tested-up-to.outputs.log }}
+    steps:
+      - name: Summary, and an issue if anything is red
+        run: |
+          failed=0
+          {
+            echo "Run: $RUN_URL"; echo
+            echo "| Canary | Result |"; echo "|---|---|"
+            echo "| Privacy-preserving load targets set no cookies | $R_ENDPOINTS |"
+            echo "| readme \"Tested up to\" is current | $R_TESTED |"
+            echo; echo '```'; echo "$LOG_ENDPOINTS"; echo "$LOG_TESTED"; echo '```'
+          } > body.md
+          cat body.md >> "$GITHUB_STEP_SUMMARY"
+          [ "$R_ENDPOINTS" = "success" ] || failed=$((failed+1))
+          [ "$R_TESTED" = "success" ] || failed=$((failed+1))
+          gh label create maintenance --description "Weekly canaries: load targets, Tested up to" --color D93F0B --force >/dev/null 2>&1 || true
+          OPEN=$(gh issue list --label maintenance --state open --json number --jq '.[0].number // empty')
+          if [ "$failed" != 0 ]; then
+            if [ -n "$OPEN" ]; then
+              gh issue comment "$OPEN" --body-file body.md
+            else
+              gh issue create --title "Maintenance canary: $failed check(s) failed" --label maintenance --body-file body.md
+            fi
+            exit 1
+          elif [ -n "$OPEN" ]; then
+            { echo "Green again on $(date -u +%Y-%m-%d)."; echo; cat body.md; } > green.md
+            gh issue comment "$OPEN" --body-file green.md
+          fi
