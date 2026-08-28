@@ -72,7 +72,7 @@ it says so on the same issue.
 | `cmp-complianz` | complianz-gdpr | Compatibility row; fail-closed with no consent; `cmplz_set_consent()` grant auto-loads, deny re-gates (through Complianz's own reload); a clicked embed survives a withdrawal; the real banner button; stored consent on return |
 | `cmp-cookieyes` | cookie-law-info | Same shape. The WordPress plugin's script exposes `getCkyConsent()` / `revisitCkyConsent()` and fires `cookieyes_consent_update`, but has **no** `performBannerAction()` and never fires `cookieyes_banner_load` (those are the hosted script's) — consent goes through the real banner buttons, and a stored consent is read at load |
 | `cmp-wp-consent-api` | wp-consent-api | **The trap**: with no consent type registered the real `wp_has_consent()` returns true — the bridge must not grant, nor on a synthetic change event. With a type registered (a stub CMP mu-plugin): `wp_set_consent()` allow/deny, stored consent, clicked embed survives |
-| `cmp-real-cookie-banner` | real-cookie-banner | Phase 1: RCB active, **no** content blocker — `consentApi.unblock()` resolves immediately, and everything must stay gated (red on the pre-1.0 adapter, green on the fix). Phase 2: a YouTube blocker created the way RCB stores one — `unblockSync()` names it for a governed URL only, `unblock()` stays pending, nothing auto-loads. Consent through RCB's real banner is the one **follow-up**: RCB renders no banner until its setup wizard has run |
+| `cmp-real-cookie-banner` | real-cookie-banner | Phase 1: RCB active, **no** content blocker — `consentApi.unblock()` resolves immediately, and everything must stay gated (red on the pre-1.0 adapter, green on the fix); the visitor answers the modal banner first, then the placeholder click works. Phase 2: RCB's own default content (its settings page creates the groups; the spec visits it once), a YouTube service in a Marketing group and a blocker stored the way RCB stores them — `unblockSync()` names the blocker for a governed URL only, `unblock()` waits; **the real banner**: "Continue without consent" leaves everything gated, "Accept all" auto-loads the two governed embeds while the unknown-host widget stays gated, and the stored consent loads them on the next visit |
 | `cache-w3-total-cache` | w3-total-cache | Cache row; optimiser "could not be read" + exclusion list; the cached page is the gated one (per-request marker equal on two anonymous GETs); a settings save flushes; Load loads with minify (auto) on |
 | `cache-wp-super-cache` | wp-super-cache | Cache row; the lone "nothing to exclude" sentence; the supercache **file WPSC writes** is the gated page (marker-matched to the live response) and a settings save deletes it; click loads (see the port note below) |
 | `cache-litespeed` | litespeed-cache | The **real option rows** (`litespeed.conf.optm-js_defer` / `optm-js_comb`): off → "nothing risky on", comb → "combine", 2 → "delay"; click loads with defer + combine; the delay symptom on touch (below) |
@@ -89,11 +89,7 @@ are still produced by the emulators in `tests/wp/seed.php`: **WP Rocket,
 Borlabs Cookie, WPBakery, Divi, Bricks, Oxygen, WPML, Weglot**, the
 **Cookiebot banner** itself (the plugin installs; the banner needs a Domain
 Group ID), **Usercentrics** and **iubenda** (detected as untested; that is
-all the plugin claims for them). One interoperation path is also still
-unvalidated: consent given through **Real Cookie Banner's own banner** —
-RCB renders none (and denies even the administrator its admin screen)
-until its setup wizard has completed, which the harness does not reproduce
-yet. The API contract the bridge relies on is measured (phase 2 above).
+all the plugin claims for them).
 
 ## What the first run found (2026-08-28)
 
@@ -131,6 +127,24 @@ yet. The API contract the bridge relies on is measured (phase 2 above).
   matches); the adapter now requires one of those positive signals before
   it trusts `unblock()`. Pinned in `tests/E2E/cmp-bridge.spec.js` with
   `rcb-noblocker` and `rcb-legacy` stubs, and by the field group's phase 1.
+- **Real Cookie Banner, the second time: its pre-load stub is not an
+  answer.** RCB inlines a stub `consentApi` before its banner script loads:
+  `unblockSync()` answers `undefined` (exactly like "no blocker"),
+  `consentSync()` reports no cookie, and `unblock()`/`consent()` are queued
+  until the real API replaces the stub and announces itself with a
+  `consentApi` event on `window`. The adapter's fail-closed check, asked
+  once at page load, decided "nothing governs this URL" on the stub and
+  never asked again — "Accept all" then loaded nothing. It now waits for
+  the real API (recognised by `wrapFn()`, which the stub lacks) and listens
+  for the announcement; the `rcb-late` E2E stub replays RCB's own snippet
+  and is red on the previous adapter. Three more things the banner run
+  taught: RCB shows no banner to a `HeadlessChrome` user agent and installs
+  the stub in its place (the spec runs under a normal Chrome UA); its
+  buttons are `<a>` elements without `href` in a shadow root with generated
+  class names, so they are driven by visible text; and a service group is
+  invisible to the banner unless it carries RCB's `order` term meta
+  (`CookieGroup::getOrdered()` selects on it) — a group without it can never
+  be consented to.
 - **Elementor's video widget was gated by nobody.** The server renders
   `<div class="elementor-widget-video" data-settings='{"video_type":
   "youtube","youtube_url":…}'>` and nothing else; Elementor's front-end
@@ -165,6 +179,8 @@ yet. The API contract the bridge relies on is measured (phase 2 above).
 
 The real-banner tests drive vendor UI by selector: Complianz `.cmplz-accept`
 / `.cmplz-deny`; CookieYes `.cky-btn-accept` and
-`[data-cky-tag="reject-button"]` / `[data-cky-tag="detail-reject-button"]`.
+`[data-cky-tag="reject-button"]` / `[data-cky-tag="detail-reject-button"]`;
+Real Cookie Banner by the visible texts "Accept all" and "Continue without
+consent" (its classes are generated per build).
 A vendor renaming those breaks one test each; the API-driven tests stand on
 their own.

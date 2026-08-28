@@ -39,7 +39,11 @@ tags; no consent-mode signal governs iframes) — bridging the CMP itself is
 the reliable read of the same choice. Never "fix" the WP Consent API
 adapter to trust `wp_has_consent()` without a consent type set: that
 function is fail-open by design and would ungate everything when the CMP
-deactivates. Thumbnails shipped as **owner-supplied posters** (media-library image
+deactivates. Never let the Real Cookie Banner adapter decide on
+`consentApi` before `wrapFn()` exists on it: RCB inlines a stub first whose
+`unblockSync()` answers `undefined` for every URL — read as "no blocker",
+it gates a governed embed forever; read as "unblocked", it ungates
+everything (see `docs/field-validation.md`). Thumbnails shipped as **owner-supplied posters** (media-library image
 per block, own-host-validated, `$ctx['poster']`); the §5.4 server-side
 auto-fetch was **rejected** — it is an outbound request, and a cached
 provider thumbnail goes stale with no invalidation signal. Never propose it

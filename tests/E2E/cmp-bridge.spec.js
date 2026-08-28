@@ -110,6 +110,22 @@ test( 'real-cookie-banner: per-embed unblock promises resolve to activation', as
 	await expect( page.locator( 'iframe' ) ).toHaveCount( 2 );
 } );
 
+test( 'real-cookie-banner (rcb-late): the pre-load stub is not an answer; the real API, announced after load, is', async ( { page } ) => {
+	// RCB's stub answers unblockSync() with undefined — indistinguishable
+	// from "no blocker" — and the real API arrives later with a
+	// "consentApi" event. Deciding on the stub would gate a governed embed
+	// forever (the field suite saw exactly that: Accept all, nothing loads).
+	await abortThirdParty( page );
+	await page.goto( '/page/cmp-rcb-late' );
+	await page.waitForLoadState( 'networkidle' );
+	await page.waitForTimeout( 600 );
+	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 2 );
+	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
+
+	await page.evaluate( () => window.__cmpGrant() );
+	await expect( page.locator( 'iframe' ) ).toHaveCount( 2 );
+} );
+
 for ( const variant of [ 'rcb-noblocker', 'rcb-legacy' ] ) {
 	test( `real-cookie-banner (${ variant }): an unblock() that resolves at once is not consent — everything stays gated`, async ( { page } ) => {
 		// The trap the field suite found against RCB 5.3: with no content

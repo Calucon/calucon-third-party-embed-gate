@@ -224,10 +224,24 @@
 		// site can only end up gating something RCB would have allowed
 		// (visible), never loading something nobody consented to.
 		'real-cookie-banner': function () {
+			// RCB inlines a STUB consentApi before its banner script loads:
+			// unblockSync() answers undefined and consentSync() "no cookie",
+			// while unblock()/consent() are queued until the real API
+			// replaces the stub and announces itself with a "consentApi"
+			// event on window (its own snippet, measured against RCB 5.3).
+			// Asking the stub is asking nobody: it looks exactly like "no
+			// blocker". So the bridge decides only once the real API is
+			// there — recognised by wrapFn(), which the stub never has — and
+			// listens for the announcement in case that is after page load.
 			var asked = false;
+			function real( api ) {
+				return !! ( api && typeof api.unblock === 'function'
+					&& typeof api.unblockSync === 'function'
+					&& typeof api.wrapFn === 'function' );
+			}
 			function governs( api, src ) {
 				try {
-					if ( typeof api.unblockSync === 'function' && api.unblockSync( src ) ) {
+					if ( api.unblockSync( src ) ) {
 						return true;
 					}
 				} catch ( e ) {
@@ -245,7 +259,7 @@
 			}
 			function check() {
 				var api = window.consentApi;
-				if ( asked || ! api || typeof api.unblock !== 'function' ) {
+				if ( asked || ! real( api ) ) {
 					return;
 				}
 				asked = true;
@@ -266,6 +280,7 @@
 					}
 				} );
 			}
+			window.addEventListener( 'consentApi', check, false );
 			onSettled( check );
 		}
 	};
