@@ -1,6 +1,6 @@
 # readme.txt auf Deutsch (de_DE_formal, „Sie“)
 
-<!-- readme.txt: b3294fabc2a60c00 -->
+<!-- readme.txt: 5c6be2f871688fc6 -->
 
 <!-- Dieser Stempel bindet die Übersetzung an den englischen Stand.
      tests/Unit/ReadmeTranslationTest.php schlägt fehl, sobald readme.txt sich ändert. -->
@@ -292,7 +292,7 @@ Werden Ihre Assets über einen CDN-Hostnamen ausgeliefert, gilt dieser als Ihr e
 
 ---
 
-## Upgrade Notice (0.13.0)
+## Upgrade Notice (1.0.0)
 
 **DE:** Behebt einen Fall, in dem ein CDN vor Ihren Assets zusammen mit der Sperre der gesamten Seitenausgabe dazu führen konnte, dass das Plugin die eigenen Skripte Ihrer Website sperrte. In einer bestimmten Konfiguration wurde dabei auch das Skript des Plugins selbst gesperrt – dann war jeder Platzhalter nur noch ein Button, der nichts bewirkte. Unter Status und Werkzeuge steht jetzt, welche Dateien Sie in Ihrem Caching- oder Minifizierungs-Plugin ausnehmen sollten und wo dieses Plugin seine Ausschlussliste führt. An den Einstellungen ändert sich nichts.
 

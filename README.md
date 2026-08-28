@@ -8,7 +8,7 @@ subscription, no consent platform.
 
 **[Plugin page](https://calucon.de/third-party-embed-gate/) · [Live demo](https://calucon.de/third-party-embed-gate-showcase/)**
 
-**Status: M1–M7 implemented**, including the §6.4 CMP bridge (see below).
+**Status: 1.0 — feature-complete, in maintenance.** M1–M7 are implemented, including the §6.4 CMP bridge (see below); what 1.0 promises to keep stable is in `docs/customizing.md`. Changes from here are fixes, findings from the monthly field validation against real plugins (`docs/field-validation.md`), and WordPress/PHP compatibility.
 The core claim — zero third-party requests before interaction — is enforced
 by an end-to-end test that is never skipped.
 

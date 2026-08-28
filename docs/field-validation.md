@@ -5,7 +5,7 @@
 The Compatibility screen and the readme FAQ name specific third-party
 plugins: consent platforms the bridge can read, cache and minification
 plugins whose settings it inspects, page builders and multilingual plugins it
-recognises. Until 0.13.0 every one of those claims was verified against a
+recognises. Until 1.0 every one of those claims was verified against a
 **simulation** — a stub page implementing a vendor's documented JavaScript
 API, or a seed that defined a plugin's constant by hand. That is how a
 settings reader asking LiteSpeed for an option name it never wrote stayed
@@ -70,7 +70,7 @@ it says so on the same issue.
 | `cmp-complianz` | complianz-gdpr | Compatibility row; fail-closed with no consent; `cmplz_set_consent()` grant auto-loads, deny re-gates (through Complianz's own reload); a clicked embed survives a withdrawal; the real banner button; stored consent on return |
 | `cmp-cookieyes` | cookie-law-info | Same shape. The WordPress plugin's script exposes `getCkyConsent()` / `revisitCkyConsent()` and fires `cookieyes_consent_update`, but has **no** `performBannerAction()` and never fires `cookieyes_banner_load` (those are the hosted script's) — consent goes through the real banner buttons, and a stored consent is read at load |
 | `cmp-wp-consent-api` | wp-consent-api | **The trap**: with no consent type registered the real `wp_has_consent()` returns true — the bridge must not grant, nor on a synthetic change event. With a type registered (a stub CMP mu-plugin): `wp_set_consent()` allow/deny, stored consent, clicked embed survives |
-| `cmp-real-cookie-banner` | real-cookie-banner | Phase 1: RCB active, **no** content blocker — `consentApi.unblock()` resolves immediately, and everything must stay gated (red on 0.13.0's adapter, green on the fix). Phase 2: a YouTube blocker created the way RCB stores one — `unblockSync()` names it for a governed URL only, `unblock()` stays pending, nothing auto-loads. Consent through RCB's real banner is the one **follow-up**: RCB renders no banner until its setup wizard has run |
+| `cmp-real-cookie-banner` | real-cookie-banner | Phase 1: RCB active, **no** content blocker — `consentApi.unblock()` resolves immediately, and everything must stay gated (red on the pre-1.0 adapter, green on the fix). Phase 2: a YouTube blocker created the way RCB stores one — `unblockSync()` names it for a governed URL only, `unblock()` stays pending, nothing auto-loads. Consent through RCB's real banner is the one **follow-up**: RCB renders no banner until its setup wizard has run |
 | `cache-w3-total-cache` | w3-total-cache | Cache row; optimiser "could not be read" + exclusion list; the cached page is the gated one (per-request marker equal on two anonymous GETs); a settings save flushes; Load loads with minify (auto) on |
 | `cache-wp-super-cache` | wp-super-cache | Cache row; the lone "nothing to exclude" sentence; the supercache **file WPSC writes** is the gated page (marker-matched to the live response) and a settings save deletes it; click loads (see the port note below) |
 | `cache-litespeed` | litespeed-cache | The **real option rows** (`litespeed.conf.optm-js_defer` / `optm-js_comb`): off → "nothing risky on", comb → "combine", 2 → "delay"; click loads with defer + combine; the delay symptom on touch (below) |

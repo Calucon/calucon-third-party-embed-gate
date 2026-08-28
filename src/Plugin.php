@@ -489,7 +489,7 @@ final class Plugin {
 		// what it identifies is "our loader" — a claim that only a script
 		// can make. Given to IframeRule, an iframe on any host at all could
 		// copy this path and be waved through with no panel and no link:
-		// the invisible failure invariant 6 exists to forbid. The 0.13.0
+		// the invisible failure invariant 6 exists to forbid. The pre-1.0
 		// review found exactly that; the CDN test in tests/WP pins it.
 		$should_gate_script = static function ( bool $gate, string $url, array $ctx ) use ( $own_assets, $should_gate ): bool {
 			if ( HostMatcher::url_is_under( $own_assets, $url )
@@ -766,7 +766,7 @@ final class Plugin {
 	 * WordPress-in-a-subdirectory, every domain on a multisite network, and
 	 * let sites declare a host via the calucon_embed_gate_own_hosts filter.
 	 *
-	 * Since 0.13.0 it also reads the site's own ASSET bases — content_url(),
+	 * Since 1.0 it also reads the site's own ASSET bases — content_url(),
 	 * includes_url(), plugins_url(), the uploads base and both theme URIs — so
 	 * that a CDN plugin filtering those declares its host as ours and the
 	 * owner configures nothing. Those functions only ever answer "where do MY

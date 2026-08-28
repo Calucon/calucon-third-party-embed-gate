@@ -307,7 +307,7 @@ Naive `$host === parse_url(home_url(), PHP_URL_HOST)` is wrong on real sites.
 - IDN/punycode normalisation before comparison.
 - Optional subdomain-wildcard entries (`*.example.com`).
 
-**Asset hosts, added in 0.13.0.** WordPress already knows where the site's own
+**Asset hosts, added for 1.0.** WordPress already knows where the site's own
 assets live, so `own_hosts()` also reads `content_url()`, `includes_url()`,
 `plugins_url()`, the uploads base and both theme URIs. A CDN plugin that filters
 those — most of them do — thereby declares its host as the site's own, and the

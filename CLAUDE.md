@@ -18,7 +18,10 @@ wp.org plugin, `npm run test:field:docker`, `docs/field-validation.md`. The
 first field run found two defects the simulations had hidden — read that
 doc before trusting an emulator in `tests/wp/seed.php`, and add a field
 group when you add a tested platform). The plugin is LIVE on WordPress.org
-(slug `calucon-third-party-embed-gate`). **Branch flow mirrors wp.org:**
+(slug `calucon-third-party-embed-gate`) and **1.0 is the feature freeze**: no new
+features; changes are fixes, field-validation findings and WordPress/PHP
+compatibility, and `docs/customizing.md` "What 1.0 promises" is the public
+surface — a change to it is a major version. **Branch flow mirrors wp.org:**
 `trunk` is development, `main` is stable. Feature branches merge into
 `trunk` only — never `main`. Every merge into `trunk` syncs wp.org SVN
 `/trunk` (the live Stable tag untouched) and publishes a `v{VERSION}-rc.N`
