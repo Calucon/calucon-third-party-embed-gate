@@ -1500,17 +1500,6 @@ final class SettingsPage {
 					<p class="description"><?php esc_html_e( 'Only used with Borlabs Cookie, whose consent groups are defined per site: the ID of the group that covers embedded content. The default installation calls it "external-media".', 'calucon-third-party-embed-gate' ); ?></p>
 				</td>
 			</tr>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'IAB TCF (experimental)', 'calucon-third-party-embed-gate' ); ?></th>
-				<td>
-					<input type="hidden" name="<?php echo esc_attr( Options::OPTION ); ?>[cmp][tcf]" value="0">
-					<label for="cg-cmp-tcf">
-						<input type="checkbox" id="cg-cmp-tcf" name="<?php echo esc_attr( Options::OPTION ); ?>[cmp][tcf]" value="1" <?php checked( $options['cmp']['tcf'] ); ?>>
-						<?php esc_html_e( 'Also honour an IAB TCF v2.2 signal (sites running an ad-industry consent framework)', 'calucon-third-party-embed-gate' ); ?>
-					</label>
-					<p class="description"><?php esc_html_e( 'Grants require both the storage purpose and the provider\'s registered vendor consent; providers without a Global Vendor List entry always keep the click. Leave this off unless your site serves programmatic advertising.', 'calucon-third-party-embed-gate' ); ?></p>
-				</td>
-			</tr>
 		</table>
 		<?php
 	}

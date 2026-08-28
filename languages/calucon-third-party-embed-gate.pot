@@ -41,7 +41,7 @@ msgstr ""
 msgid "%s reset to its default."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1691
+#: src/Admin/SettingsPage.php:1680
 msgid "(Wording can differ between versions of that plugin.)"
 msgstr ""
 
@@ -53,7 +53,7 @@ msgstr ""
 msgid "3D / virtual tour"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1546
+#: src/Admin/SettingsPage.php:1535
 msgid "A Content-Security-Policy (CSP) is a security setting some sites send to browsers. It lists which other websites a page is allowed to load anything from — and blocks the rest. Most WordPress sites do not send one. If you never set one up in a security plugin, your hosting panel or the web server, you can skip this section."
 msgstr ""
 
@@ -73,8 +73,8 @@ msgstr ""
 msgid "A style fills in every control below; \"Theme default\" clears them all. Nothing changes on your site until you save."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1772
-#: src/Admin/SettingsPage.php:1846
+#: src/Admin/SettingsPage.php:1761
+#: src/Admin/SettingsPage.php:1835
 msgid "Action"
 msgstr ""
 
@@ -90,7 +90,7 @@ msgstr ""
 msgid "Add the lines below to your policy, where it is defined, and run the check again."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1561
+#: src/Admin/SettingsPage.php:1550
 msgid "Add them wherever your policy is defined — a security plugin, your hosting panel or the web server configuration. Merge, do not replace: if the policy already has a frame-src line, add these hosts to that line instead of adding a second one. If it has neither frame-src nor script-src, the browser falls back to default-src — add the hosts there."
 msgstr ""
 
@@ -110,10 +110,6 @@ msgstr ""
 msgid "All embeds of the same provider"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1509
-msgid "Also honour an IAB TCF v2.2 signal (sites running an ad-industry consent framework)"
-msgstr ""
-
 #: assets/js/editor.js:120
 msgid "Always gate"
 msgstr ""
@@ -122,7 +118,7 @@ msgstr ""
 msgid "Always gate these hosts"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1879
+#: src/Admin/SettingsPage.php:1868
 msgid "Always load this"
 msgstr ""
 
@@ -236,11 +232,11 @@ msgstr ""
 msgid "Centred"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1550
+#: src/Admin/SettingsPage.php:1539
 msgid "Check my site for a policy"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1723
+#: src/Admin/SettingsPage.php:1712
 msgid "Check my theme"
 msgstr ""
 
@@ -268,7 +264,7 @@ msgstr ""
 msgid "Compact"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1618
+#: src/Admin/SettingsPage.php:1607
 msgid "Compatibility"
 msgstr ""
 
@@ -281,11 +277,11 @@ msgstr ""
 msgid "Consent platform bridge"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1544
+#: src/Admin/SettingsPage.php:1533
 msgid "Content-Security-Policy (advanced)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1556
+#: src/Admin/SettingsPage.php:1545
 msgid "Content-Security-Policy snippet"
 msgstr ""
 
@@ -293,7 +289,7 @@ msgstr ""
 msgid "Copied to the clipboard."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1558
+#: src/Admin/SettingsPage.php:1547
 msgid "Copy"
 msgstr ""
 
@@ -313,7 +309,7 @@ msgstr ""
 msgid "Could not load your home page from this browser, so nothing could be checked. Try again; if it keeps failing, open the home page in a new tab and look for a Content-Security-Policy header in the browser's developer tools (Network panel)."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1843
+#: src/Admin/SettingsPage.php:1832
 msgid "Count"
 msgstr ""
 
@@ -363,11 +359,11 @@ msgstr ""
 msgid "Default — theme %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1623
+#: src/Admin/SettingsPage.php:1612
 msgid "Detected"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1614
+#: src/Admin/SettingsPage.php:1603
 msgid "Detected and tested for interoperation. Gating currently ignores its choices — the fail-closed default. Enable the consent platform bridge under Consent to load embeds automatically once this platform reports consent for them."
 msgstr ""
 
@@ -375,31 +371,31 @@ msgstr ""
 msgid "Detected now: %s."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1613
+#: src/Admin/SettingsPage.php:1602
 msgid "Detected, bridge active: when this platform reports consent for the embeds' category, gated embeds load without a second click, and a withdrawal re-gates them. If the platform does not answer, gating stands (fail closed). Prefer its own blocker for a provider? Disable that provider under Providers and Calucon Third-Party Embed Gate steps aside for it."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1615
+#: src/Admin/SettingsPage.php:1604
 msgid "Detected. Calucon Third-Party Embed Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1608
+#: src/Admin/SettingsPage.php:1597
 msgid "Detected. It translates the finished page, so the placeholder texts are translated there like any other text on the page. Nothing to configure here."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1597
+#: src/Admin/SettingsPage.php:1586
 msgid "Detected. Its page cache is flushed automatically when Calucon Third-Party Embed Gate settings change and when the plugin is activated, deactivated or updated. If pages still look stale, clear it once by hand."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1600
+#: src/Admin/SettingsPage.php:1589
 msgid "Detected. Page builders render outside the content filters — if its embeds are not being gated, enable \"Gate the whole page output\" under Detection."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1607
+#: src/Admin/SettingsPage.php:1596
 msgid "Detected. The texts you type here — a provider's notice and button label, its privacy-policy URL, and the names of your own providers — are registered for translation and are read in the language of the page being shown. Translate them under %s. Everything else is translated by language pack and needs nothing from you; note that typing your own text for a provider replaces a wording that was already translated."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1599
+#: src/Admin/SettingsPage.php:1588
 msgid "Detected. Whole-page gating is enabled, so this builder's embeds are covered."
 msgstr ""
 
@@ -436,7 +432,7 @@ msgstr ""
 msgid "Embeds from hosts nobody listed are already gated, under their host name. Add a provider here to give such a host a proper name and a kind (for the button icon); after saving it appears in the list above, where you can set its wording and privacy-policy link like for any other provider. Hosts must match exactly — list www. and bare variants separately. Adding a provider never changes what is gated: unknown hosts are gated either way, and hosts a built-in provider handles stay with that provider (they are skipped here). Your own providers are always gated; to let a host through, use the never-gate list under Detection."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1768
+#: src/Admin/SettingsPage.php:1757
 msgid "Embeds from these hosts load for every visitor as soon as the page opens, with no placeholder. This plugin does not stop them being contacted."
 msgstr ""
 
@@ -444,7 +440,7 @@ msgstr ""
 msgid "Embeds from these hosts load without a placeholder. Use only for third parties you have covered elsewhere — this plugin then no longer prevents their requests. You can paste a whole web address; only the site name is kept."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1569
+#: src/Admin/SettingsPage.php:1558
 msgid "Embeds load from (frame-src)"
 msgstr ""
 
@@ -468,8 +464,8 @@ msgstr ""
 msgid "File Optimization → “Excluded JavaScript Files”. If “Delay JavaScript execution” is on, it keeps a separate exclusion box — add them there too."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1704
-#: src/Admin/SettingsPage.php:1707
+#: src/Admin/SettingsPage.php:1693
+#: src/Admin/SettingsPage.php:1696
 msgid "Files to exclude from JavaScript and CSS optimisation"
 msgstr ""
 
@@ -493,7 +489,7 @@ msgstr ""
 msgid "Filter providers…"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1845
+#: src/Admin/SettingsPage.php:1834
 msgid "First seen in"
 msgstr ""
 
@@ -525,12 +521,12 @@ msgstr ""
 msgid "Gate %s embeds"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1779
-#: src/Admin/SettingsPage.php:1871
+#: src/Admin/SettingsPage.php:1768
+#: src/Admin/SettingsPage.php:1860
 msgid "Gate it again"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1873
+#: src/Admin/SettingsPage.php:1862
 msgid "Gate it anyway"
 msgstr ""
 
@@ -554,7 +550,7 @@ msgstr ""
 msgid "Gate this embed"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1809
+#: src/Admin/SettingsPage.php:1798
 msgid "Gated"
 msgstr ""
 
@@ -562,12 +558,8 @@ msgstr ""
 msgid "Generic"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1511
-msgid "Grants require both the storage purpose and the provider's registered vendor consent; providers without a Global Vendor List entry always keep the click. Leave this off unless your site serves programmatic advertising."
-msgstr ""
-
-#: src/Admin/SettingsPage.php:1771
-#: src/Admin/SettingsPage.php:1841
+#: src/Admin/SettingsPage.php:1760
+#: src/Admin/SettingsPage.php:1830
 msgid "Host"
 msgstr ""
 
@@ -575,7 +567,7 @@ msgstr ""
 msgid "Host matching"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1767
+#: src/Admin/SettingsPage.php:1756
 msgid "Hosts you let through"
 msgstr ""
 
@@ -583,15 +575,11 @@ msgstr ""
 msgid "Hover effect"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1504
-msgid "IAB TCF (experimental)"
-msgstr ""
-
 #: src/Admin/SettingsPage.php:1259
 msgid "Icon"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1705
+#: src/Admin/SettingsPage.php:1694
 msgid "If a caching, minification or optimisation plugin combines, defers or delays scripts, paste these into its exclusion list. They are small, local and already cached by the browser, so excluding them costs nothing measurable."
 msgstr ""
 
@@ -611,19 +599,19 @@ msgstr ""
 msgid "It already lists every enabled provider, so switching it to enforced would be safe for the embeds."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1654
+#: src/Admin/SettingsPage.php:1643
 msgid "Its JavaScript settings could not be read from here, so this is not an all-clear. If embeds misbehave, check whether it combines, defers or delays JavaScript, and exclude the files below."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1653
+#: src/Admin/SettingsPage.php:1642
 msgid "Its JavaScript settings were read and none of the ones that cause trouble are on."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1657
+#: src/Admin/SettingsPage.php:1646
 msgid "JavaScript optimisation"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1708
+#: src/Admin/SettingsPage.php:1697
 msgid "Keep the inline configuration next to gate.js as well: some plugins list it separately as \"calucon-embed-gate-js-before\"."
 msgstr ""
 
@@ -644,7 +632,7 @@ msgstr ""
 msgid "Left"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1858
+#: src/Admin/SettingsPage.php:1847
 msgid "Let through by you — not gated"
 msgstr ""
 
@@ -652,7 +640,7 @@ msgstr ""
 msgid "Light minimal"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1555
+#: src/Admin/SettingsPage.php:1544
 msgid "Lines to add"
 msgstr ""
 
@@ -980,7 +968,7 @@ msgstr ""
 msgid "Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1551
+#: src/Admin/SettingsPage.php:1540
 msgid "Loads your home page once, in this browser, and reads whether it sends a policy and what it allows. Nothing leaves your site."
 msgstr ""
 
@@ -996,15 +984,15 @@ msgstr ""
 msgid "Minimal — transparent with a border"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1814
+#: src/Admin/SettingsPage.php:1803
 msgid "NOT gated — its address is a WordPress asset path, so it is treated as your own file. If this host is not yours, add it to \"Always gate these hosts\" under Detection."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1812
+#: src/Admin/SettingsPage.php:1801
 msgid "NOT gated — its detection rule is disabled"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1813
+#: src/Admin/SettingsPage.php:1802
 msgid "NOT gated — provider disabled in the table above"
 msgstr ""
 
@@ -1017,7 +1005,7 @@ msgstr ""
 msgid "Name of %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1877
+#: src/Admin/SettingsPage.php:1866
 msgid "Name this host"
 msgstr ""
 
@@ -1037,7 +1025,7 @@ msgstr ""
 msgid "No (default) — ask on every page view"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1620
+#: src/Admin/SettingsPage.php:1609
 msgid "No cache plugin, consent platform, multilingual plugin or page builder detected."
 msgstr ""
 
@@ -1045,11 +1033,11 @@ msgstr ""
 msgid "No tested consent platform is currently detected. The setting can stay enabled; it takes effect as soon as one is installed."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1837
+#: src/Admin/SettingsPage.php:1826
 msgid "No third-party embeds found in the scanned content."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1811
+#: src/Admin/SettingsPage.php:1800
 msgid "No usable URL — passes through"
 msgstr ""
 
@@ -1058,7 +1046,7 @@ msgstr ""
 msgid "None"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1740
+#: src/Admin/SettingsPage.php:1729
 msgid "None found in your theme's own stylesheets or its functions.php. That covers where a theme usually keeps them, not every file it could use — a theme that builds its CSS into another directory is outside this check."
 msgstr ""
 
@@ -1094,7 +1082,7 @@ msgstr ""
 msgid "Only enable this if embeds from a page builder are not being gated. It buffers the entire page, which can conflict with other buffering or streaming plugins. Any error inside the buffer returns the page unmodified."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1565
+#: src/Admin/SettingsPage.php:1554
 msgid "Only enabled providers are listed; disable a provider under Providers and its hosts disappear from the lines above. A host can differ from the embed address when the plugin loads a privacy-preserving variant (YouTube loads from youtube-nocookie.com, for example)."
 msgstr ""
 
@@ -1128,7 +1116,7 @@ msgstr ""
 msgid "Overrides the site-wide setting for this block only."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1810
+#: src/Admin/SettingsPage.php:1799
 msgid "Own host — not gated"
 msgstr ""
 
@@ -1188,7 +1176,7 @@ msgstr ""
 msgid "Plain text, for example “Load the trailer”. Empty keeps the provider’s default."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1661
+#: src/Admin/SettingsPage.php:1650
 msgid "Plugin"
 msgstr ""
 
@@ -1220,7 +1208,7 @@ msgstr ""
 msgid "Privacy-preserving load"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1568
+#: src/Admin/SettingsPage.php:1557
 msgid "Provider"
 msgstr ""
 
@@ -1233,7 +1221,7 @@ msgstr ""
 msgid "Readability (WCAG 4.5:1):"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1724
+#: src/Admin/SettingsPage.php:1713
 msgid "Reads your theme's own stylesheets and its functions.php, looking for third-party asset hosts — fonts and CDN files, which load on every page view outside what an embed gate can cover. Read-only; no outbound requests. Runs on request because reading the files takes time."
 msgstr ""
 
@@ -1258,7 +1246,7 @@ msgstr ""
 msgid "Remove poster image"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1792
+#: src/Admin/SettingsPage.php:1781
 msgid "Renders your latest posts and pages in memory and reports every embed found and whether it is gated. Read-only; no outbound requests."
 msgstr ""
 
@@ -1303,11 +1291,11 @@ msgstr ""
 msgid "Save changes"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1791
+#: src/Admin/SettingsPage.php:1780
 msgid "Scan recent content"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1831
+#: src/Admin/SettingsPage.php:1820
 msgid "Scanned the %d most recent published posts and pages. Widgets, template parts and builder-rendered layouts are not part of this scan, and hosts you have let through are listed above rather than here."
 msgstr ""
 
@@ -1327,7 +1315,7 @@ msgstr ""
 msgid "Script hosts of %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1570
+#: src/Admin/SettingsPage.php:1559
 msgid "Scripts load from (script-src)"
 msgstr ""
 
@@ -1355,7 +1343,7 @@ msgstr ""
 msgid "Show an icon that matches what the embed is — play for videos, a pin for maps, a note for audio, and so on"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1564
+#: src/Admin/SettingsPage.php:1553
 msgid "Show which provider needs which host"
 msgstr ""
 
@@ -1410,8 +1398,8 @@ msgstr ""
 msgid "Start from a style"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1758
-#: src/Admin/SettingsPage.php:1844
+#: src/Admin/SettingsPage.php:1747
+#: src/Admin/SettingsPage.php:1833
 msgid "Status"
 msgstr ""
 
@@ -1473,9 +1461,9 @@ msgstr ""
 msgid "Theme default"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1721
-#: src/Admin/SettingsPage.php:1731
-#: src/Admin/SettingsPage.php:1739
+#: src/Admin/SettingsPage.php:1710
+#: src/Admin/SettingsPage.php:1720
+#: src/Admin/SettingsPage.php:1728
 msgid "Third-party assets in your theme"
 msgstr ""
 
@@ -1495,11 +1483,11 @@ msgstr ""
 msgid "This plugin caches pages but does not minify or combine JavaScript, so there is nothing to exclude."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1652
+#: src/Admin/SettingsPage.php:1641
 msgid "This plugin is set to combine JavaScript into a bundle. Combining moves scripts away from the inline snippets that belong to them, which is a common cause of console errors across a site. Gating survives it, but if anything looks wrong, exclude the files below first."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1651
+#: src/Admin/SettingsPage.php:1640
 msgid "This plugin is set to delay JavaScript until the visitor interacts with the page. That first interaction is spent switching the scripts on, so a visitor's first click on a \"Load\" button does nothing and they have to click again. Nothing third-party is contacted by the extra click, and the embed loads on the second one — but the placeholder feels broken. Exclude the files below from that setting."
 msgstr ""
 
@@ -1507,7 +1495,7 @@ msgstr ""
 msgid "Treat www.example.com and example.com as the same site"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1842
+#: src/Admin/SettingsPage.php:1831
 msgid "Type"
 msgstr ""
 
@@ -1539,11 +1527,11 @@ msgstr ""
 msgid "WP Fastest Cache → the Exclude tab → add a rule for each file."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1623
+#: src/Admin/SettingsPage.php:1612
 msgid "What Calucon Third-Party Embed Gate does"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1662
+#: src/Admin/SettingsPage.php:1651
 msgid "What it does to the gate"
 msgstr ""
 
@@ -1555,11 +1543,11 @@ msgstr ""
 msgid "When you save, this host will be gated again: its embeds go back to asking the visitor first."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1687
+#: src/Admin/SettingsPage.php:1676
 msgid "Where to exclude them:"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1547
+#: src/Admin/SettingsPage.php:1536
 msgid "Why it matters here: when a policy does not list a provider, that provider's embed stays empty after the visitor clicks Load, and the browser console reports “Refused to frame …”. Listing a host only grants permission; it does not load anything — nothing is contacted before the click either way."
 msgstr ""
 
@@ -1622,7 +1610,7 @@ msgstr ""
 msgid "Your site sends a report-only policy (Content-Security-Policy-Report-Only). It logs violations but blocks nothing, so embeds still load."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1732
+#: src/Admin/SettingsPage.php:1721
 msgid "Your theme references these third-party asset hosts (found by reading its files — nothing was fetched). Fonts and CDN assets load on every page view without consent, outside what an embed gate can cover. Consider serving them locally; your theme or a localisation plugin can usually do this."
 msgstr ""
 
@@ -1638,7 +1626,7 @@ msgstr ""
 msgid "e.g. Example Videos"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1525
+#: src/Admin/SettingsPage.php:1514
 msgid "frame-src (embedded players, maps and other iframes)"
 msgstr ""
 
@@ -1654,7 +1642,7 @@ msgstr ""
 msgid "readable (meets the 4.5:1 minimum)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1526
+#: src/Admin/SettingsPage.php:1515
 msgid "script-src (provider scripts, e.g. for social-media posts)"
 msgstr ""
 

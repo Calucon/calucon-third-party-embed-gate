@@ -47,7 +47,8 @@ everything (see `docs/field-validation.md`). Thumbnails shipped as **owner-suppl
 per block, own-host-validated, `$ctx['poster']`); the §5.4 server-side
 auto-fetch was **rejected** — it is an outbound request, and a cached
 provider thumbnail goes stale with no invalidation signal. Never propose it
-(or a Google-Fonts downloader) again.
+(or a Google-Fonts downloader) again. The **IAB TCF bridge** was removed at
+1.0 (shipped "experimental", never validatable); do not reintroduce it.
 
 **Naming (Aug 2026 wp.org review + pre-launch identifier alignment):** the
 plugin was "Consent Gate" until the review flagged that name as

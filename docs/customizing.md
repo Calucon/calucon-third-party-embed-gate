@@ -128,7 +128,7 @@ Shape (see `src/Support/Options.php` for the authoritative schema):
 - `consent`: `memory` (`off|session|persistent`), `scope`
   (`embed|provider|all`), `duration_days` (1–730)
 - `cmp`: `bridge` (bool, off by default), `borlabs_group` (slug, default
-  `external-media`), `tcf` (bool, experimental)
+  `external-media`)
 
 Cache plugins are flushed automatically when this option changes.
 
@@ -145,9 +145,8 @@ provider handles are refused at save time (with a notice) and ignored at
 run time, and owner-defined providers are always gated — there is no Gate
 checkbox for them; exempting a host is the never-gate list's explicit job.
 At most 100 rows of 50 hosts. With the consent-platform bridge on, your
-own providers follow the same category consent as every other embed; the
-experimental TCF bridge only recognises providers with a vendor id, so
-they stay gated under it (fail closed). They never rewrite the load URL; for
+own providers follow the same category consent as every other embed. They
+never rewrite the load URL; for
 `load_host`/`load_path`, path captures, companion classes or hint scrubbing,
 register a descriptor in code:
 
@@ -479,14 +478,6 @@ disables the bridge by returning `null`):
 add_filter( 'calucon_embed_gate_cmp_config', function ( $config ) {
 	if ( is_array( $config ) ) {
 		$config['category'] = 'external-media';
-	}
-	return $config;
-} );
-
-// Add a TCF Global Vendor List id for a custom provider (tcf flag on).
-add_filter( 'calucon_embed_gate_cmp_config', function ( $config ) {
-	if ( is_array( $config ) && isset( $config['tcf'] ) ) {
-		$config['tcf']['vendors']['example-videos'] = 123;
 	}
 	return $config;
 } );

@@ -40,8 +40,7 @@ by an end-to-end test that is never skipped.
   CookieYes, Borlabs Cookie 3, Real Cookie Banner) reports consent for the
   embeds' category, gated embeds load without a second click, and a
   withdrawal there re-gates them. Read-only, client-side, and fail-closed:
-  an untested platform, or no answer, means gating stands. An IAB TCF v2.2
-  signal can be honoured behind its own experimental flag.
+  an untested platform, or no answer, means gating stands.
 - **Never phones home.** No telemetry, no CDN assets, no outbound request on
   any path.
 

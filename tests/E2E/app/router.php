@@ -550,19 +550,6 @@ if ( 0 === strpos( $uri, '/page/cmp-' ) ) {
 			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
 			'stub'   => 'window.consentApi = { unblock: function (url) { return Promise.resolve(); } };',
 		),
-		'tcf'            => array(
-			'config' => array(
-				'adapter'  => null,
-				'category' => 'marketing',
-				'tcf'      => array( 'vendors' => array( 'youtube' => 755, 'google-maps' => 755 ) ),
-			),
-			'stub'   => 'var cgListeners = []; var cgCurrent = null;'
-				. 'window.__tcfapi = function (command, version, callback) {'
-				. ' if (command === "addEventListener") { cgListeners.push(callback); if (cgCurrent) { callback(cgCurrent, true); } } };'
-				. 'function cgPush(data) { cgCurrent = data; for (var i = 0; i < cgListeners.length; i++) { cgListeners[i](data, true); } }'
-				. 'window.__cmpGrant = function () { cgPush({ eventStatus: "useractioncomplete", gdprApplies: true, purpose: { consents: { 1: true } }, vendor: { consents: { 755: true } } }); };'
-				. 'window.__cmpRevoke = function () { cgPush({ eventStatus: "useractioncomplete", gdprApplies: true, purpose: { consents: { 1: false } }, vendor: { consents: { 755: false } } }); };',
-		),
 	);
 
 	if ( isset( $cmp_stubs[ $cmp_case ] ) ) {
