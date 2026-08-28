@@ -2,13 +2,15 @@
 
 # Calucon Third-Party Embed Gate — a two-click embed plugin for WordPress
 
-Hold third-party embeds until the visitor asks for them, so nothing is
-contacted and nothing is stored before a click. No cookie banner, no
-subscription, no consent platform.
+Every YouTube video, Google Map and Instagram post contacts its provider the
+moment the page opens. This plugin holds those embeds behind a click-to-load
+placeholder: until the visitor presses "Load", nothing is requested and nothing
+is stored — the two-click solution, with no cookie banner, no consent platform
+and no subscription.
 
 **[Plugin page](https://calucon.de/third-party-embed-gate/) · [Live demo](https://calucon.de/third-party-embed-gate-showcase/)**
 
-**Status: 1.0 — feature-complete, in maintenance.** M1–M7 are implemented, including the §6.4 CMP bridge (see below); what 1.0 promises to keep stable is in `docs/customizing.md`. Changes from here are fixes, findings from the monthly field validation against real plugins (`docs/field-validation.md`), and WordPress/PHP compatibility.
+**Status: 1.0 — feature-complete, in maintenance.** What 1.0 promises to keep stable is in `docs/customizing.md`. Changes from here are fixes, findings from the monthly field validation against real plugins (`docs/field-validation.md`), and WordPress/PHP compatibility.
 The core claim — zero third-party requests before interaction — is enforced
 by an end-to-end test that is never skipped.
 

@@ -13,7 +13,7 @@ up. This file is the checklist and the steps.
   `Donate link`; `Tested up to: 7.0`; Description, Installation, FAQ,
   Screenshots and Changelog sections; no compliance claims.
 - **Assets** in `.wordpress-org/` — `icon-128x128.png`, `icon-256x256.png`,
-  `icon.svg`, and `screenshot-1..4.png` (matching the readme captions).
+  `icon.svg`, and `screenshot-1..6.png` (matching the readme captions).
 - **Direct-access guards** on every shipped PHP file; `uninstall.php` guarded
   by `WP_UNINSTALL_PLUGIN`.
 - **No outbound requests** anywhere in the shipped code — the core product
@@ -163,7 +163,7 @@ wordpress.org or GitHub. The fix path is always the same: branch → PR into
 ## Regenerating assets
 
 - Screenshots: boot a backend (`bash tests/wp/serve-playground.sh`) and run
-  `node bin/capture-screenshots.cjs` → `.wordpress-org/screenshot-1..4.png`.
+  `node bin/capture-screenshots.cjs` → `.wordpress-org/screenshot-1..6.png`.
   Screenshot 5 (block-editor control) is best captured by hand from a real
   editing session.
 - Translations: `php tests/bin/generate-pot.php`.
