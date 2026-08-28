@@ -520,7 +520,7 @@ if ( 0 === strpos( $uri, '/page/cmp-' ) ) {
 		'rcb'            => array(
 			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
 			'stub'   => 'var cgResolvers = [];'
-				. 'window.consentApi = { unblockSync: function (url) { return { blocker: 1 }; }, consentSync: function (sel) { return { cookie: { id: 1 }, consentGiven: false }; }, unblock: function (url) { return new Promise(function (resolve) { cgResolvers.push(resolve); }); } };'
+				. 'window.consentApi = { wrapFn: function () {}, unblockSync: function (url) { return { blocker: 1 }; }, consentSync: function (sel) { return { cookie: { id: 1 }, consentGiven: false }; }, unblock: function (url) { return new Promise(function (resolve) { cgResolvers.push(resolve); }); } };'
 				. 'window.__cmpGrant = function () { var r = cgResolvers; cgResolvers = []; for (var i = 0; i < r.length; i++) { r[i](); } };',
 		),
 		// RCB with NO blocker for these URLs — the shape of a plain install
@@ -528,7 +528,21 @@ if ( 0 === strpos( $uri, '/page/cmp-' ) ) {
 		// reports cookie null, and unblock() resolves at once. Must stay gated.
 		'rcb-noblocker'  => array(
 			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
-			'stub'   => 'window.consentApi = { unblockSync: function (url) { return undefined; }, consentSync: function (sel) { return { cookie: null, consentGiven: false, cookieOptIn: true }; }, unblock: function (url) { return Promise.resolve(); } };',
+			'stub'   => 'window.consentApi = { wrapFn: function () {}, unblockSync: function (url) { return undefined; }, consentSync: function (sel) { return { cookie: null, consentGiven: false, cookieOptIn: true }; }, unblock: function (url) { return Promise.resolve(); } };',
+		),
+		// RCB as it really loads: its pre-load STUB first (unblockSync →
+		// undefined, unblock() queued on a "consentApi" window event), the
+		// real API only after the page has loaded, then the announcement.
+		// The bridge must neither decide on the stub nor miss the real one.
+		'rcb-late'       => array(
+			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
+			'stub'   => '((a,b)=>{a[b]||(a[b]={unblockSync:()=>undefined},["consentSync"].forEach(c=>a[b][c]=()=>({cookie:null,consentGiven:!1,cookieOptIn:!0})),["consent","consentAll","unblock"].forEach(c=>a[b][c]=(...d)=>new Promise(e=>a.addEventListener(b,()=>{a[b][c](...d).then(e)},{once:!0}))))})(window,"consentApi");'
+				. 'var cgResolvers = [];'
+				. 'window.addEventListener("load", function () { setTimeout(function () {'
+				. ' window.consentApi = { wrapFn: function () {}, unblockSync: function (url) { return { blocker: 1 }; }, consentSync: function (sel) { return { cookie: { id: 1 }, consentGiven: false }; }, unblock: function (url) { return new Promise(function (resolve) { cgResolvers.push(resolve); }); } };'
+				. ' window.dispatchEvent(new CustomEvent("consentApi"));'
+				. '}, 300); });'
+				. 'window.__cmpGrant = function () { var r = cgResolvers; cgResolvers = []; for (var i = 0; i < r.length; i++) { r[i](); } };',
 		),
 		// An older RCB without the sync lookups: nothing to confirm the URL
 		// is governed, so an immediately-resolving unblock() must not grant.
