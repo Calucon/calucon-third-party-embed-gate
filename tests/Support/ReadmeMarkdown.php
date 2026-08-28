@@ -81,7 +81,7 @@ final class ReadmeMarkdown {
 	 * @return string
 	 */
 	private static function german_of( string $line ): string {
-		if ( 1 !== preg_match( '/^\*\*DE[^:]*:\*\*(.*)$/u', $line, $found ) ) {
+		if ( 1 !== preg_match( '/^(?:\d+\. )?\*\*DE[^:]*:\*\*(.*)$/u', $line, $found ) ) {
 			return '';
 		}
 		return trim( $found[1] );
@@ -102,7 +102,7 @@ final class ReadmeMarkdown {
 	 * @return int
 	 */
 	public static function expected_chunk_count( string $path ): int {
-		return (int) preg_match_all( '/^\*\*DE[^:]*:\*\*/mu', (string) file_get_contents( $path ) );
+		return (int) preg_match_all( '/^(?:\d+\. )?\*\*DE[^:]*:\*\*/mu', (string) file_get_contents( $path ) );
 	}
 
 }
