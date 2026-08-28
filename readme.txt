@@ -13,7 +13,7 @@ YouTube, Maps and other third-party embeds load only after the visitor clicks �
 
 == Description ==
 
-When an editor pastes a YouTube URL, WordPress turns it into an iframe — and on every page view, before the visitor has been offered any choice, their browser contacts the provider. Measured on a plain GET to `www.youtube.com/embed/…` with no playback and no scripts run: five cookies, two of them ~18-month identifiers. The same request on `www.youtube-nocookie.com` sets zero.
+When an editor pastes a YouTube URL, WordPress turns it into an iframe — and on every page view, before the visitor has been offered any choice, their browser contacts the provider. Measured on a plain GET to `www.youtube.com/embed/…` with no playback and no scripts run: six cookies, four of them identifiers that live about six months (re-measured August 2026; a year earlier it was five, two of them 18-month). The same request on `www.youtube-nocookie.com` sets zero.
 
 Calucon Third-Party Embed Gate replaces third-party embeds with a server-rendered placeholder until the visitor clicks to load them — the two-click pattern (Zwei-Klick-Lösung). Nothing third-party is contacted before that click: no script, no iframe, no thumbnail, no preconnect. Nothing is stored on the visitor's device before that click either — including by this plugin.
 
@@ -25,7 +25,7 @@ See it in action on the [live demo](https://calucon.de/third-party-embed-gate-sh
 * Gates content delivered over AJAX and the REST API to visitors ("load more", infinite scroll), while editors always see the original markup.
 * Gates by host, not by a provider allowlist: an unknown third-party iframe is gated by default.
 * Ships a descriptor for almost every embed type WordPress offers out of the box — a proper name, an icon, a privacy-policy link and a working no-JavaScript link — plus the loader scripts and stylesheets those embeds bring with them. The few that are not named yet are listed in the FAQ; they are gated all the same.
-* Loads from privacy-preserving endpoints after the click where they exist: `youtube-nocookie.com` (measured: 0 cookies instead of 5), Vimeo with `dnt=1`.
+* Loads from privacy-preserving endpoints after the click where they exist: `youtube-nocookie.com` (measured: 0 cookies instead of 6), Vimeo with `dnt=1`.
 * Renders the placeholder server-side, so a visitor without JavaScript still gets a real, working link to the content.
 * Rebuilds embeds from an attribute safelist — `sandbox` is preserved, `autoplay` never survives, inline styles and event handlers are never copied.
 * Strips `preconnect`/`dns-prefetch`/`preload`/`prefetch` resource hints pointing at gated providers and their CDN hosts (`i.ytimg.com`, `pbs.twimg.com`, …).

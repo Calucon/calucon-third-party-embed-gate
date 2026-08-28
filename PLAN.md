@@ -22,16 +22,20 @@ offered any choice at all, the browser contacts Google.
 Measured on `www.youtube.com/embed/<id>`, plain GET, **no playback, no scripts
 run**:
 
-| Cookie | Lifetime |
-|---|---|
-| `VISITOR_INFO1_LIVE` | ~18 months |
-| `__Secure-ROLLOUT_TOKEN` | ~18 months |
-| `YSC` | session |
-| `__Secure-YNID` | session |
-| `__Secure-YEC` | (cleared) |
+| Cookie | Lifetime (2026-08-28) | Lifetime (original measurement) |
+|---|---|---|
+| `VISITOR_INFO1_LIVE` | ~6 months | ~18 months |
+| `VISITOR_PRIVACY_METADATA` | ~6 months | — (new) |
+| `__Secure-ROLLOUT_TOKEN` | ~6 months | ~18 months |
+| `__Secure-YNID` | ~6 months | session |
+| `YSC` | session | session |
+| `__Secure-YEC` | (cleared) | (cleared) |
 
-Five cookies. Two of them long-lived identifiers. The same request on
-`www.youtube-nocookie.com/embed/<id>` sets **zero**.
+Six cookies today, four of them persistent identifiers; five (two of them
+18-month) when this was first measured. Google changes the set without
+notice — `bin/check-load-endpoints.sh` re-measures it weekly and prints the
+names. The same request on `www.youtube-nocookie.com/embed/<id>` sets
+**zero**, then and now.
 
 That is storage on the visitor's terminal equipment. Under **§ 25(1) TDDDG**
 (Germany's implementation of ePrivacy Art. 5(3)) it requires prior informed
@@ -1306,7 +1310,7 @@ expectations, and README evidence.
 
 | Measurement | Value |
 |---|---|
-| YouTube `/embed/` cookies on plain GET | 5 (2 × ~18 months) |
+| YouTube `/embed/` cookies on plain GET | 6 (4 × ~6 months) as of 2026-08-28; was 5 (2 × ~18 months) |
 | `youtube-nocookie.com/embed/` cookies on plain GET | 0 |
 | WordPress-to-WordPress oEmbed cookie | `pll_language`, 1 year |
 | Strava embed on page load | `sp` on `.strava.com`, plus 6 hosts contacted |
