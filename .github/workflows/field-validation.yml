@@ -1,0 +1,174 @@
+# Field validation: the plugin's compatibility claims against the REAL
+# wordpress.org plugins they name — CMPs, cache/optimiser plugins, a page
+# builder, multilingual plugins — each installed at its current release into
+# a fresh Docker WordPress (tests/wp/field-setup.sh), then tests/Field/ runs.
+#
+# Monthly, because it is a rot detector: a CMP that changes its JavaScript
+# API, an optimiser that renames an option, a builder that changes how it
+# renders. On failure it opens (or comments on) a GitHub issue labelled
+# `field-validation`, so nobody has to watch Actions; when it goes green
+# again it says so on the same issue.
+#
+# Informational, never a required check, never referenced from ci.yml: it
+# installs third-party code and contacts wordpress.org — from CI, like the
+# privacy-link canary. The plugin itself never makes an outbound request.
+#
+# The group table lives in tests/wp/field-groups.sh and is the matrix here,
+# so a group added locally cannot be forgotten in CI.
+name: Field validation
+
+on:
+  schedule:
+    - cron: '23 5 3 * *'
+  workflow_dispatch:
+    inputs:
+      groups:
+        description: 'Space-separated group ids to run (default: all — see tests/wp/field-groups.sh --list)'
+        type: string
+        default: ''
+      versions:
+        description: 'Pin plugin versions to reproduce a failure, e.g. "complianz-gdpr=7.3.0 litespeed-cache=7.5"'
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  groups:
+    name: Read the group table
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.list.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: list
+        env:
+          ONLY: ${{ inputs.groups }}
+        run: |
+          if [ -n "$ONLY" ]; then
+            MATRIX=$(printf '%s\n' $ONLY | jq -R . | jq -sc .)
+          else
+            MATRIX=$(bash tests/wp/field-groups.sh --list-json)
+          fi
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          echo "groups: $MATRIX"
+
+  field:
+    name: ${{ matrix.group }}
+    needs: groups
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        group: ${{ fromJson( needs.groups.outputs.matrix ) }}
+    env:
+      WP_BASE_URL: http://127.0.0.1:8890
+      FIELD_VERSIONS: ${{ inputs.versions }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install Playwright
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Fresh WordPress with the group's plugins
+        run: bash tests/wp/field-setup.sh "${{ matrix.group }}"
+
+      - name: Run the group
+        run: npm run test:field -- --project="${{ matrix.group }}"
+
+      - name: Keep the report and the installed versions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: field-${{ matrix.group }}
+          path: |
+            field-results/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Tear down
+        if: always()
+        run: bash tests/wp/teardown.sh
+
+  report:
+    name: Summarise, and tell someone
+    needs: field
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: field-*
+          path: artifacts
+
+      - name: Build the summary
+        id: summary
+        run: |
+          python3 - <<'PY' > summary.md
+          import json, os, glob
+          rows = []
+          failed = 0
+          for d in sorted(glob.glob('artifacts/field-*')):
+              group = os.path.basename(d)[len('field-'):]
+              plugins = {}
+              for pf in glob.glob(f'{d}/field-results/*-plugins.json'):
+                  for p in json.load(open(pf)):
+                      if p.get('status') == 'active' and p['name'] != 'calucon-third-party-embed-gate':
+                          plugins[p['name']] = p.get('version', '')
+              rep = f'{d}/field-results/report.json'
+              if os.path.exists(rep):
+                  r = json.load(open(rep))
+                  s = r.get('stats', {})
+                  ok, bad = s.get('expected', 0), s.get('unexpected', 0)
+                  result = 'passed' if bad == 0 and ok > 0 else f'FAILED ({bad} failing)'
+              else:
+                  ok, bad, result = 0, 0, 'SETUP FAILED (no report)'
+              if not result.startswith('passed'):
+                  failed += 1
+              rows.append((group, ', '.join(f'{k} {v}' for k, v in sorted(plugins.items())) or '—', result))
+          print('| Group | Plugins (installed version) | Result |')
+          print('|---|---|---|')
+          for g, p, r in rows:
+              print(f'| `{g}` | {p} | {r} |')
+          print()
+          print('Emulated-only (cannot be installed without a licence or account): WP Rocket, Borlabs Cookie, WPBakery, Divi, Bricks, Oxygen, WPML, Weglot, Cookiebot banner, Usercentrics, iubenda — see docs/field-validation.md.')
+          open(os.environ['GITHUB_OUTPUT'], 'a').write(f'failed={failed}\n')
+          PY
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
+          cat summary.md
+
+      - name: Open or update the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED: ${{ steps.summary.outputs.failed }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create field-validation --description "Monthly validation against real plugins" --color B60205 --force >/dev/null 2>&1 || true
+          OPEN=$(gh issue list --label field-validation --state open --json number --jq '.[0].number // empty')
+          {
+            echo "Run: $RUN_URL"
+            echo
+            cat summary.md
+          } > body.md
+          if [ "${FAILED:-0}" != "0" ]; then
+            if [ -n "$OPEN" ]; then
+              gh issue comment "$OPEN" --body-file body.md
+            else
+              gh issue create --title "Field validation: $FAILED group(s) failed against current plugin releases" --label field-validation --body-file body.md
+            fi
+          elif [ -n "$OPEN" ]; then
+            { echo "Green again on $(date -u +%Y-%m-%d)."; echo; cat body.md; } > green.md
+            gh issue comment "$OPEN" --body-file green.md
+          fi

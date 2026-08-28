@@ -211,8 +211,38 @@
 		// URL"). Per-container, so mixed pages resolve independently.
 		// Grant-only: RCB exposes no public revocation event; its own
 		// opt-out machinery handles revoked services.
+		//
+		// THE TRAP, found by the field suite against RCB 5.3 (2026-08-28):
+		// unblock(url) resolves IMMEDIATELY when no content blocker matches
+		// the URL — "not blocked" and "consented" look the same to a caller
+		// that only awaits it. RCB's free tier ships no YouTube blocker, so
+		// on a plain install every gated embed would auto-load with no
+		// consent at all. So the bridge first asks whether RCB governs the
+		// URL — unblockSync(url) returns the matched blocker, or undefined
+		// when none matches; consentSync({url}) returns cookie null when no
+		// service matches — and stays gated unless it does. Fail closed: a
+		// site can only end up gating something RCB would have allowed
+		// (visible), never loading something nobody consented to.
 		'real-cookie-banner': function () {
 			var asked = false;
+			function governs( api, src ) {
+				try {
+					if ( typeof api.unblockSync === 'function' && api.unblockSync( src ) ) {
+						return true;
+					}
+				} catch ( e ) {
+					// Fall through to the second signal.
+				}
+				try {
+					if ( typeof api.consentSync === 'function' ) {
+						var state = api.consentSync( { url: src } );
+						return !! ( state && state.cookie );
+					}
+				} catch ( e ) {
+					// No answer is "no".
+				}
+				return false;
+			}
 			function check() {
 				var api = window.consentApi;
 				if ( asked || ! api || typeof api.unblock !== 'function' ) {
@@ -222,6 +252,9 @@
 				bridge.each( function ( container, payload ) {
 					var src = typeof payload.src === 'string' ? payload.src : '';
 					if ( ! /^(https?:)?\/\//i.test( src ) ) {
+						return;
+					}
+					if ( ! governs( api, src ) ) {
 						return;
 					}
 					try {

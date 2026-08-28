@@ -110,6 +110,23 @@ test( 'real-cookie-banner: per-embed unblock promises resolve to activation', as
 	await expect( page.locator( 'iframe' ) ).toHaveCount( 2 );
 } );
 
+for ( const variant of [ 'rcb-noblocker', 'rcb-legacy' ] ) {
+	test( `real-cookie-banner (${ variant }): an unblock() that resolves at once is not consent — everything stays gated`, async ( { page } ) => {
+		// The trap the field suite found against RCB 5.3: with no content
+		// blocker matching the URL, unblock() resolves immediately. The
+		// adapter as shipped in 0.13.0 granted on that. It must not.
+		const offenders = trackThirdPartyRequests( page );
+		await page.goto( `/page/cmp-${ variant }` );
+		await page.waitForLoadState( 'networkidle' );
+		await page.waitForTimeout( 300 );
+
+		await expect( page.locator( '.cg-embed' ) ).toHaveCount( 2 );
+		await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
+		await expect( page.locator( '.cg-embed__button' ) ).toHaveCount( 2 );
+		expect( offenders ).toEqual( [] );
+	} );
+}
+
 test( 'a clicked embed survives a CMP withdrawal; a bridged one does not', async ( { page } ) => {
 	await abortThirdParty( page );
 	await page.goto( '/page/cmp-complianz' );
