@@ -134,6 +134,26 @@ Manual alternative (no CI): `svn co https://plugins.svn.wordpress.org/calucon-th
 copy the built files into `trunk/`, copy `.wordpress-org/*` into `assets/`,
 `svn cp trunk tags/<version>`, `svn ci`.
 
+## Maintenance — what runs by itself, and what a red result means
+
+Since 1.0 the plugin is in maintenance: no new features, and four automated
+canaries so the things that rot without a code change are noticed without
+anyone watching Actions. Each is informational (never a required check) and
+opens, or comments on, a labelled issue when red; when green again it says
+so on the same issue.
+
+| What | When | Where | Red means |
+|---|---|---|---|
+| Built-in `privacy_url`s still resolve | weekly | `privacy-link-canary.yml` | update the descriptor, release |
+| youtube-nocookie.com and Vimeo `dnt=1` set 0 cookies | weekly | `maintenance-canary.yml` → issue `maintenance` | a provider changed; rethink the load target and the readme's measured numbers |
+| readme `Tested up to` is the current WordPress | weekly | `maintenance-canary.yml` → issue `maintenance` | test on the new version, bump the header, release (header only — no stamp, no German) |
+| Compatibility claims against the real plugins | monthly | `field-validation.yml` → issue `field-validation` | read `docs/field-validation.md`; fix or narrow the claim |
+| GitHub Actions pins | monthly | Dependabot (`.github/dependabot.yml`), one grouped PR labelled `maintenance` | review, merge into `trunk` |
+
+Anything else — a support thread, a security report — arrives by e-mail from
+wordpress.org or GitHub. The fix path is always the same: branch → PR into
+`trunk` → release candidate → PR `trunk → main`.
+
 ## Regenerating assets
 
 - Screenshots: boot a backend (`bash tests/wp/serve-playground.sh`) and run
