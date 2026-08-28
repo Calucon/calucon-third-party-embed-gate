@@ -266,8 +266,8 @@ msgid "Calucon Third-Party Embed Gate replaces third-party embeds with a server-
 msgstr "Calucon Third-Party Embed Gate ersetzt Einbettungen von Drittanbietern durch einen serverseitig gerenderten Platzhalter, bis der Besucher sie per Klick lädt – die Zwei-Klick-Lösung. Vor diesem Klick wird kein Drittanbieter kontaktiert: kein Skript, kein Iframe, kein Vorschaubild, kein Preconnect. Und vor diesem Klick wird auch nichts auf dem Gerät des Besuchers gespeichert – auch nicht von diesem Plugin."
 
 #. Found in description paragraph.
-msgid "When an editor pastes a YouTube URL, WordPress turns it into an iframe — and on every page view, before the visitor has been offered any choice, their browser contacts the provider. Measured on a plain GET to <code>www.youtube.com/embed/…</code> with no playback and no scripts run: five cookies, two of them ~18-month identifiers. The same request on <code>www.youtube-nocookie.com</code> sets zero."
-msgstr "Wer eine YouTube-URL in den Editor einfügt, bekommt von WordPress ein Iframe – und bei jedem Seitenaufruf kontaktiert der Browser des Besuchers den Anbieter, bevor diesem irgendeine Wahl gelassen wurde. Gemessen bei einem einfachen GET auf <code>www.youtube.com/embed/…</code>, ohne Wiedergabe und ohne ausgeführte Skripte: fünf Cookies, zwei davon Kennungen mit rund 18 Monaten Laufzeit. Dieselbe Anfrage an <code>www.youtube-nocookie.com</code> setzt keines."
+msgid "When an editor pastes a YouTube URL, WordPress turns it into an iframe — and on every page view, before the visitor has been offered any choice, their browser contacts the provider. Measured on a plain GET to <code>www.youtube.com/embed/…</code> with no playback and no scripts run: six cookies, four of them identifiers that live about six months (re-measured August 2026; a year earlier it was five, two of them 18-month). The same request on <code>www.youtube-nocookie.com</code> sets zero."
+msgstr "Wer eine YouTube-URL in den Editor einfügt, bekommt von WordPress ein Iframe – und bei jedem Seitenaufruf kontaktiert der Browser des Besuchers den Anbieter, bevor diesem irgendeine Wahl gelassen wurde. Gemessen bei einem einfachen GET auf <code>www.youtube.com/embed/…</code>, ohne Wiedergabe und ohne ausgeführte Skripte: sechs Cookies, vier davon Kennungen mit rund sechs Monaten Laufzeit (neu gemessen im August 2026; ein Jahr zuvor waren es fünf, zwei davon mit 18 Monaten Laufzeit). Dieselbe Anfrage an <code>www.youtube-nocookie.com</code> setzt keines."
 
 #. Found in description list item.
 msgid "WP-CLI: <code>wp calucon-embed-gate scan</code> (is every embed gated? <code>--format=json</code> for CI and automation) and <code>wp calucon-embed-gate providers</code>; the shipped <code>docs/customizing.md</code> is a self-contained customization reference for developers and AI agents."
@@ -318,8 +318,8 @@ msgid "Renders the placeholder server-side, so a visitor without JavaScript stil
 msgstr "Rendert den Platzhalter serverseitig – auch ein Besucher ohne JavaScript bekommt also einen echten, funktionierenden Link zum Inhalt."
 
 #. Found in description list item.
-msgid "Loads from privacy-preserving endpoints after the click where they exist: <code>youtube-nocookie.com</code> (measured: 0 cookies instead of 5), Vimeo with <code>dnt=1</code>."
-msgstr "Lädt nach dem Klick von datenschutzfreundlichen Adressen, wo es sie gibt: <code>youtube-nocookie.com</code> (gemessen: 0 statt 5 Cookies), Vimeo mit <code>dnt=1</code>."
+msgid "Loads from privacy-preserving endpoints after the click where they exist: <code>youtube-nocookie.com</code> (measured: 0 cookies instead of 6), Vimeo with <code>dnt=1</code>."
+msgstr "Lädt nach dem Klick von datenschutzfreundlichen Adressen, wo es sie gibt: <code>youtube-nocookie.com</code> (gemessen: 0 statt 6 Cookies), Vimeo mit <code>dnt=1</code>."
 
 #. Found in description list item.
 msgid "Gates by host, not by a provider allowlist: an unknown third-party iframe is gated by default."

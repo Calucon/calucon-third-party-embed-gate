@@ -23,7 +23,7 @@ by an end-to-end test that is never skipped.
 - Gates **by host, not by allowlist**: an unknown third-party iframe is gated
   by default.
 - After the click, loads from **privacy-preserving endpoints** where they
-  exist: `youtube-nocookie.com` (measured 0 cookies instead of 5), Vimeo with
+  exist: `youtube-nocookie.com` (measured 0 cookies instead of 6), Vimeo with
   `dnt=1`.
 - Rebuilds embeds from an **attribute safelist**: `sandbox` preserved
   exactly, `autoplay` never survives, `style`/`srcdoc`/`on*` never copied.
@@ -105,8 +105,10 @@ where it gates 40 embeds across 22 pages with zero third-party requests
 before interaction. Every measurement quoted in `PLAN.md` is real, taken from
 that site:
 
-- `www.youtube.com/embed/…` sets **5 cookies** on a plain GET with no
-  playback and no scripts run — two of them ~18-month identifiers.
+- `www.youtube.com/embed/…` sets **6 cookies** on a plain GET with no
+  playback and no scripts run — four of them identifiers that live about six
+  months (re-measured 2026-08-28 by the weekly canary; it was 5, two of them
+  18-month, when the plugin was written).
 - `www.youtube-nocookie.com/embed/…` sets **none**.
 - A plain WordPress-to-WordPress oEmbed preview set a cookie with a
   **one-year** lifetime.
