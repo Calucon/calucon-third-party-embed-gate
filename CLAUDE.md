@@ -14,9 +14,19 @@ bridge (opt-in, client-side, fail-closed; adapters for the tested list are
 exercised in CI against simulations of each platform's documented public
 API — `tests/E2E/cmp-bridge.spec.js`; validation against real CMP installs
 remains a manual follow-up). The plugin is LIVE on WordPress.org
-(slug `calucon-third-party-embed-gate`); every merge to main auto-deploys
-there via the release workflow, so version-bump discipline applies to
-every PR. See PLAN.md §13. The bridge never touches
+(slug `calucon-third-party-embed-gate`). **Branch flow mirrors wp.org:**
+`trunk` is development, `main` is stable. Feature branches merge into
+`trunk` only — never `main`. Every merge into `trunk` syncs wp.org SVN
+`/trunk` (the live Stable tag untouched) and publishes a `v{VERSION}-rc.N`
+GitHub pre-release (`.github/workflows/trunk.yml`), so the German can be
+reviewed on translate.wordpress.org's dev projects first. The release is a
+`trunk → main` PR merged with a **merge commit** (never squash or rebase —
+`main` would get its own SHAs and every later release PR would re-present
+old commits): `release.yml` tags `v{VERSION}`, deploys the wp.org tag and
+deletes the rc pre-releases. A PR into `main` fails unless its head is
+`trunk` and `v{VERSION}` is untagged (`main-gate.yml`), so bump the version
+on `trunk` — header, constant, Stable tag — before the release PR. Hotfixes
+take the same path; there is no bypass. The bridge never touches
 Google Consent Mode v2 (no public read API; written by CMPs for Google
 tags; no consent-mode signal governs iframes) — bridging the CMP itself is
 the reliable read of the same choice. Never "fix" the WP Consent API

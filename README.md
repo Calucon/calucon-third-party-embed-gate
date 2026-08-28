@@ -64,9 +64,13 @@ the iframe itself (not the legacy `::before` spacer), which made gated
 panels collapse invisible on current block themes until the CSS was fixed.
 
 CI (`.github/workflows/ci.yml`) runs the coding-standards report and the
-unit suite on PHP 7.4 and 8.4 for every pull request. Every merge to `main`
-publishes a GitHub release with the installable plugin zip
-(`.github/workflows/release.yml`); the same zip can be built locally with
+unit suite on PHP 7.4 and 8.4 for every pull request and on `main` and
+`trunk`. The branches mirror WordPress.org: feature branches merge into
+`trunk`, and every merge there publishes a pre-release (`vX.Y.Z-rc.N`) with
+the installable zip and refreshes the WordPress.org trunk so translations
+can be reviewed first (`.github/workflows/trunk.yml`). Merging `trunk` into
+`main` is the release: `vX.Y.Z` on GitHub and the WordPress.org tag
+(`.github/workflows/release.yml`). The same zip can be built locally with
 `bash bin/build-zip.sh`.
 
 `CLAUDE.md` carries the working rules and traps; `PLAN.md` is the founding
