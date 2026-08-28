@@ -211,7 +211,7 @@ if ( isset( $_GET['cg_builder'] ) && ! defined( 'ELEMENTOR_VERSION' ) ) {
 	define( 'ELEMENTOR_VERSION', '3.21.0' );
 }
 
-// Asset-CDN emulator. The 0.13.0 fix has two halves and only one of them was
+// Asset-CDN emulator. The own-asset fix (1.0) has two halves and only one of them was
 // reachable by a fixture: the path heuristic (/wp-content/ on any host) is
 // covered by tests/Fixtures/cdn-offloaded-assets-*, but Plugin::own_hosts() —
 // which reads content_url(), plugins_url(), includes_url(), the uploads base
@@ -229,7 +229,7 @@ if ( isset( $_GET['cg_builder'] ) && ! defined( 'ELEMENTOR_VERSION' ) ) {
 // because a CDN that rewrites the finished HTML leaves plugins_url() on the
 // origin host. That rescue is a claim about scripts only; an iframe at the
 // same path on a foreign host is a third-party iframe and invariant 6 says
-// it is gated. The review of 0.13.0 found the rescue handed to every rule.
+// it is gated. The pre-1.0 review found the rescue handed to every rule.
 //
 //   ?cg_cdn=1  — content_url()/plugins_url() moved to the CDN host, so the
 //                CDN host is one of the site's own

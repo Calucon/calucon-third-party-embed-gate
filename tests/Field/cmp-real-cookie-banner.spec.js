@@ -7,7 +7,7 @@
 // "immediately" when none does. The free tier ships no YouTube blocker; an
 // owner has to create one. So the first, load-bearing question is what the
 // bridge does on a site where RCB is active and no blocker matches: with
-// the adapter as shipped in 0.13.0, every gated embed would auto-load with
+// the adapter as written before 1.0, every gated embed would auto-load with
 // no consent at all. Phase 1 asserts it must not.
 //
 // Phase 2 creates a YouTube content blocker the way RCB stores one (an

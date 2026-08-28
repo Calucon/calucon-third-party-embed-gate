@@ -7,7 +7,7 @@ const { test, expect } = require( '@playwright/test' );
 // This file states invariant 1 as "no request to any host that is not the
 // page's origin", which is right for this harness because no page here serves
 // a site asset from another host. Note it is NARROWER than the plugin's own
-// definition since 0.13.0: the site's own asset host — a CDN, declared through
+// definition since 1.0: the site's own asset host — a CDN, declared through
 // content_url()/plugins_url() or recognised by a /wp-content/ path — is the
 // site's own, and a request to it is not a third-party contact (PLAN.md §3.4).
 //

@@ -5,7 +5,7 @@ Tags: embeds, privacy, two-click, youtube, iframe
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.13.0
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -162,7 +162,7 @@ Third-party content enters the picture only after a visitor explicitly clicks th
 
 == Upgrade Notice ==
 
-= 0.13.0 =
+= 1.0.0 =
 Fixes a case where a CDN in front of your assets, together with whole-page gating, could make the plugin gate your site's own scripts — in one configuration including its own, which left every placeholder as a button that did nothing. Status & tools now names the files to exclude from your caching or minification plugin and where that plugin keeps its exclusion list. No settings change.
 
 = 0.12.1 =
@@ -179,7 +179,8 @@ The panel looks and behaves as before unless you opt in: the privacy-policy link
 
 == Changelog ==
 
-= 0.13.0 =
+= 1.0.0 =
+* 1.0: the plugin is feature-complete and enters maintenance. From here on the markup contract (the `cg-` classes, `data-cg-*` attributes and `--cg-*` custom properties), the documented filters and actions, the template variables, the settings keys and the WP-CLI commands are stable across minor releases; provider descriptors and the tested-platform lists are data and may change in minors. New features are not planned; fixes, field-validation findings and WordPress/PHP compatibility are.
 * Fixed: Elementor's video widget was not gated at all — Elementor builds the YouTube player from a JSON attribute in its own script, so there was no iframe to find, and the page contacted YouTube and DoubleClick before any click. The widget now gets the same placeholder as any other embed, with the owner's overlay image as its poster; Vimeo and Dailymotion widgets render a real iframe and were already gated. Found by the new field-validation suite, which runs the compatibility claims against the real plugins (see the repository's docs/field-validation.md).
 * Fixed: with a CDN serving your assets from another hostname *and* whole-page gating enabled, the plugin could treat your site's own scripts and stylesheets as third-party and replace them with a placeholder — which broke the page's JavaScript instead of protecting anyone. The site's own asset hosts (from `content_url()`, `includes_url()`, `plugins_url()`, the uploads base and the theme URIs) now count as its own, so a CDN plugin that filters those is trusted automatically. For a CDN that rewrites the finished page instead, a `/wp-content/` or `/wp-includes/` path is left alone whatever host serves it — scripts and stylesheets only, never iframes, and your always-gate list still overrides it.
 * New: Status & tools lists the plugin's own asset paths to paste into a caching or minification plugin's exclusion list, and reports what it could read about the JavaScript settings of the caching plugin you have installed — including, honestly, when it could read nothing.

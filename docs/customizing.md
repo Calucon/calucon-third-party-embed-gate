@@ -4,6 +4,38 @@ A reference for developers and AI agents customizing this plugin on a site —
 from `functions.php`, a small plugin, or WP-CLI. Everything here works
 without touching plugin files (never edit those; updates overwrite them).
 
+## What 1.0 promises
+
+From 1.0 the plugin follows semantic versioning. The surface below is public:
+it changes only in a major version, and a minor release that touched it
+would be a bug. Everything not listed is internal, however tempting it looks.
+
+- **The markup contract** (PLAN.md §5.1): the `cg-embed` container with its
+  `role="group"` and `aria-label`, the `cg-embed__button`, the
+  `data-cg-provider`, `data-cg-host` and `data-cg-payload` attributes, and
+  the eight CSS custom properties `--cg-bg`, `--cg-fg`, `--cg-accent`,
+  `--cg-accent-fg`, `--cg-radius`, `--cg-gap`, `--cg-font` and `--cg-aspect`.
+- **The hooks** listed under "Every hook, with its signature" — filters
+  `calucon_embed_gate_action_text`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_note_text`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_payload`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_providers`, `calucon_embed_gate_render_block_priority`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_www_equivalence`; actions `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated`, `calucon_embed_gate_flush_caches` — and their signatures.
+- **The template variables** documented in `templates/placeholder.php`, and
+  the override path `{theme}/calucon-embed-gate/placeholder.php`.
+- **The settings keys** of `calucon_embed_gate_options` as sanitised by
+  `Options::defaults()`: a key may gain a value, never lose one or change
+  its meaning.
+- **The WP-CLI commands** `wp calucon-embed-gate scan` and `wp
+  calucon-embed-gate providers`, and the shape of their `--format=json`
+  output.
+
+Not promised, because it is data rather than API: the built-in provider
+descriptors (hosts, paths, load targets, privacy URLs — they follow the
+providers), the lists of tested consent platforms, cache plugins, page
+builders and multilingual plugins on the Compatibility screen, and the
+wording of any user-facing text. Those may change in a minor release.
+
+`tests/Unit/StabilityContractTest.php` pins this section to the code: the
+hooks listed here must be exactly the hooks the code fires, and the custom
+properties here must be exactly the ones the stylesheet and renderer use.
+
 ## The contract your customization must keep
 
 Calucon Third-Party Embed Gate's entire product is: **nothing third-party loads before the
@@ -326,7 +358,7 @@ the browser.
 | The button does nothing **at all**, ever | `gate.js` never executed. Usually a combined bundle threw earlier: a top-level error aborts the rest of *that file*, and anything bundled after it never runs | Open the console, find the throwing file, exclude `gate.js` from combining so it is not downstream of somebody else's error |
 | The panel appears but is unstyled | `gate.css` was combined, deferred or stripped | Exclude `gate.css` |
 | Embeds load **without** a click | Gating is server-side, so this means the plugin never saw that markup — typically a page builder rendering outside the WordPress content filters | Settings → Detection → enable whole-page buffering |
-| Your **own** scripts and styles were replaced by placeholders | An asset CDN plus whole-page buffering, on a build older than 0.13.0 | Update; if it persists, add the CDN hostname under Detection → "Additional own hosts" |
+| Your **own** scripts and styles were replaced by placeholders | An asset CDN plus whole-page buffering, on a build older than 1.0 | Update; if it persists, add the CDN hostname under Detection → "Additional own hosts" |
 | Console errors about `wp-i18n`, `wp-data`, `lodash`, `moment` | Not this plugin — those are WordPress core packages whose inline snippets got separated from them by combining | Check the page **logged out** first: these are often enqueued only for logged-in admins, so no visitor ever sees them |
 
 That last row is worth taking seriously before changing anything. An admin bar

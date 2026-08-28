@@ -1489,7 +1489,7 @@ test( 'compatibility: a detected optimiser is named, its risky setting explained
 } );
 
 test( 'an asset CDN plus whole-page buffering: the site\'s own scripts survive', async ( { page } ) => {
-	// The half of the 0.13.0 fix that no test reached. Plugin::own_hosts()
+	// The half of the own-asset fix (1.0) that no test reached. Plugin::own_hosts()
 	// reads content_url(), plugins_url(), includes_url(), the uploads base and
 	// both theme URIs, so a CDN plugin that filters them is trusted
 	// automatically. tests/Support/PipelineFactory builds its HostMatcher from

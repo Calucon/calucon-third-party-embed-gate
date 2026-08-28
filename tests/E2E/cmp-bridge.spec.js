@@ -114,7 +114,7 @@ for ( const variant of [ 'rcb-noblocker', 'rcb-legacy' ] ) {
 	test( `real-cookie-banner (${ variant }): an unblock() that resolves at once is not consent — everything stays gated`, async ( { page } ) => {
 		// The trap the field suite found against RCB 5.3: with no content
 		// blocker matching the URL, unblock() resolves immediately. The
-		// adapter as shipped in 0.13.0 granted on that. It must not.
+		// adapter as written before 1.0 granted on that. It must not.
 		const offenders = trackThirdPartyRequests( page );
 		await page.goto( `/page/cmp-${ variant }` );
 		await page.waitForLoadState( 'networkidle' );

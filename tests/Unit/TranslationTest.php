@@ -294,7 +294,7 @@ final class TranslationTest extends TestCase {
 	 * whole translation gate vacuously: the missing strings were in no file to
 	 * be found missing from.
 	 *
-	 * That is not hypothetical. Four strings added late on the 0.13.0 branch —
+	 * That is not hypothetical. Four strings added late on the optimizer-resilience branch —
 	 * including a status label sitting in a table of otherwise-translated
 	 * statuses — reached no POT and no PO, and every translation test stayed
 	 * green. A German admin would have read them in English.
