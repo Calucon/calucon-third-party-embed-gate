@@ -311,10 +311,13 @@ if ( isset( $_GET['cg_cache'] ) ) {
 		$cg_ls_off = static function () {
 			return '0';
 		};
-		add_filter( 'option_litespeed.optm.js_defer', $cg_ls_off );
-		add_filter( 'default_option_litespeed.optm.js_defer', $cg_ls_off );
-		add_filter( 'option_litespeed.optm.js_comb', $cg_ls_off );
-		add_filter( 'default_option_litespeed.optm.js_comb', $cg_ls_off );
+		// The real option names (litespeed.conf.<id>) — an emulator that
+		// invents its own key proves nothing about the reader, and this one
+		// did exactly that for two releases.
+		add_filter( 'option_litespeed.conf.optm-js_defer', $cg_ls_off );
+		add_filter( 'default_option_litespeed.conf.optm-js_defer', $cg_ls_off );
+		add_filter( 'option_litespeed.conf.optm-js_comb', $cg_ls_off );
+		add_filter( 'default_option_litespeed.conf.optm-js_comb', $cg_ls_off );
 	}
 	if ( 'rocket' === $_GET['cg_cache'] ) {
 		if ( ! defined( 'WP_ROCKET_VERSION' ) ) {

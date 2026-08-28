@@ -12,8 +12,12 @@ The full design rationale lives in `PLAN.md`; this file is the traps and the
 rules. Milestone status: M1–M7 are implemented, including the §6.4 CMP
 bridge (opt-in, client-side, fail-closed; adapters for the tested list are
 exercised in CI against simulations of each platform's documented public
-API — `tests/E2E/cmp-bridge.spec.js`; validation against real CMP installs
-remains a manual follow-up). The plugin is LIVE on WordPress.org
+API — `tests/E2E/cmp-bridge.spec.js` — **and monthly against the real
+plugins** by the field suite: `tests/Field/`, one fresh Docker WordPress per
+wp.org plugin, `npm run test:field:docker`, `docs/field-validation.md`. The
+first field run found two defects the simulations had hidden — read that
+doc before trusting an emulator in `tests/wp/seed.php`, and add a field
+group when you add a tested platform). The plugin is LIVE on WordPress.org
 (slug `calucon-third-party-embed-gate`). **Branch flow mirrors wp.org:**
 `trunk` is development, `main` is stable. Feature branches merge into
 `trunk` only — never `main`. Every merge into `trunk` syncs wp.org SVN

@@ -515,11 +515,26 @@ if ( 0 === strpos( $uri, '/page/cmp-' ) ) {
 				. 'window.__cmpGrant = function () { cgGranted = true; window.dispatchEvent(new CustomEvent("borlabs-cookie-consent-saved")); };'
 				. 'window.__cmpRevoke = function () { cgGranted = false; window.dispatchEvent(new CustomEvent("borlabs-cookie-consent-saved")); };',
 		),
+		// RCB with a content blocker governing the embeds: unblockSync()
+		// returns the matched blocker, unblock() resolves after consent.
 		'rcb'            => array(
 			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
 			'stub'   => 'var cgResolvers = [];'
-				. 'window.consentApi = { unblock: function (url) { return new Promise(function (resolve) { cgResolvers.push(resolve); }); } };'
+				. 'window.consentApi = { unblockSync: function (url) { return { blocker: 1 }; }, consentSync: function (sel) { return { cookie: { id: 1 }, consentGiven: false }; }, unblock: function (url) { return new Promise(function (resolve) { cgResolvers.push(resolve); }); } };'
 				. 'window.__cmpGrant = function () { var r = cgResolvers; cgResolvers = []; for (var i = 0; i < r.length; i++) { r[i](); } };',
+		),
+		// RCB with NO blocker for these URLs — the shape of a plain install
+		// (measured against RCB 5.3): unblockSync() is undefined, consentSync
+		// reports cookie null, and unblock() resolves at once. Must stay gated.
+		'rcb-noblocker'  => array(
+			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
+			'stub'   => 'window.consentApi = { unblockSync: function (url) { return undefined; }, consentSync: function (sel) { return { cookie: null, consentGiven: false, cookieOptIn: true }; }, unblock: function (url) { return Promise.resolve(); } };',
+		),
+		// An older RCB without the sync lookups: nothing to confirm the URL
+		// is governed, so an immediately-resolving unblock() must not grant.
+		'rcb-legacy'     => array(
+			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
+			'stub'   => 'window.consentApi = { unblock: function (url) { return Promise.resolve(); } };',
 		),
 		'tcf'            => array(
 			'config' => array(

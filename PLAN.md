@@ -1134,17 +1134,20 @@ catch a wrong-sounding accessible name.
 
 ### 10.5 Compatibility matrix
 
-CI cannot cover all of this; keep a documented manual matrix and work through it
-before releases.
+The rows marked ★ are covered by the field-validation suite (`tests/Field/`,
+`docs/field-validation.md`): the real wordpress.org plugin, current release,
+in a fresh Docker WordPress, monthly in CI. The rest is a documented manual
+matrix — paid or account-bound plugins the suite cannot install.
 
 | Axis | Values |
 |---|---|
 | WordPress | current, current − 1, minimum supported |
 | PHP | 7.4 → 8.4 |
 | Themes | Twenty Twenty-Four/Five (block), Astra, GeneratePress, Kadence, one classic |
-| Builders | Elementor, Divi, Bricks, WPBakery |
-| Cache | W3TC, WP Rocket, LiteSpeed, WP Super Cache, Cloudflare Auto Minify |
-| CMP | Complianz, Borlabs, Real Cookie Banner, none |
+| Builders | Elementor ★, Beaver Builder ★ (detection), Divi, Bricks, WPBakery |
+| Cache | W3TC ★, LiteSpeed ★, WP Super Cache ★, Autoptimize ★, WP Fastest Cache ★, SiteGround Optimizer ★, WP Rocket, Cloudflare Auto Minify (detection ★) |
+| CMP | Complianz ★, CookieYes ★, WP Consent API ★, Real Cookie Banner ★, Cookiebot (detection ★), Borlabs, none ★ |
+| Multilingual | Polylang ★, TranslatePress ★, WPML, Weglot |
 
 ---
 

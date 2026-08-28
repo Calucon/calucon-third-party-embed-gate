@@ -240,10 +240,15 @@ final class Compatibility {
 				);
 			},
 			'LiteSpeed Cache'      => static function (): array {
-				// LiteSpeed keeps one option row per setting; js_defer is
-				// 0 = off, 1 = deferred, 2 = delayed until interaction.
-				$defer = get_option( 'litespeed.optm.js_defer', null );
-				$comb  = get_option( 'litespeed.optm.js_comb', null );
+				// LiteSpeed keeps one option row per setting, named
+				// litespeed.conf.<id> (Base::conf_name(), LiteSpeed Cache ≥ 3);
+				// js_defer is 0 = off, 1 = deferred, 2 = delayed until
+				// interaction. An earlier build read litespeed.optm.js_defer,
+				// a key no version of the plugin ever wrote, so every real
+				// install rendered "could not be read" while the emulated test
+				// — which mirrored the same wrong key — stayed green.
+				$defer = get_option( 'litespeed.conf.optm-js_defer', null );
+				$comb  = get_option( 'litespeed.conf.optm-js_comb', null );
 				if ( null === $defer && null === $comb ) {
 					return array();
 				}
