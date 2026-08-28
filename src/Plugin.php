@@ -747,9 +747,8 @@ final class Plugin {
 	 * the option is off, or because no platform from the tested list is
 	 * installed (fail closed; an untested CMP gets no adapter).
 	 *
-	 * The filter exists for the documented escape hatches: overriding the
-	 * category a site's CMP files embeds under, or adding TCF vendor ids
-	 * for custom providers. Returning null (or anything non-array) from it
+	 * The filter exists for the documented escape hatch: overriding the
+	 * category a site's CMP files embeds under. Returning null (or anything non-array) from it
 	 * disables the bridge entirely.
 	 *
 	 * @return array|null

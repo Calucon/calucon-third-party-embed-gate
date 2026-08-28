@@ -289,49 +289,4 @@
 	if ( adapter ) {
 		adapter();
 	}
-
-	// IAB TCF v2.2, experimental and separately flagged: a generic bridge
-	// for TCF-running (ad-monetised) sites. v2.2 removed getTCData —
-	// addEventListener is the only read path. A provider can only ever be
-	// granted if it has a Global Vendor List id (most embed providers have
-	// none; those stay click-only), and only with BOTH Purpose 1 consent
-	// (storage on the device — what loading the embed triggers) and vendor
-	// consent. gdprApplies === false is NOT a grant: this gate is not
-	// GDPR-scoped, it is no-third-party-before-the-click.
-	if ( config.tcf && typeof window.__tcfapi === 'function' ) {
-		var vendors = config.tcf.vendors || {};
-		window.__tcfapi( 'addEventListener', 2, function ( tcData, success ) {
-			if ( ! success || ! tcData ) {
-				return;
-			}
-			// cmpuishown means the banner is up and nothing is decided;
-			// only settled states carry a verdict.
-			if ( tcData.eventStatus !== 'tcloaded' && tcData.eventStatus !== 'useractioncomplete' ) {
-				return;
-			}
-			if ( tcData.gdprApplies === false ) {
-				return;
-			}
-			var purposes     = ( tcData.purpose && tcData.purpose.consents ) || {};
-			var vendorGrants = ( tcData.vendor && tcData.vendor.consents ) || {};
-			bridge.each( function ( container ) {
-				var providerId = container.getAttribute( 'data-cg-provider' ) || '';
-				var vendorId   = vendors[ providerId ];
-				if ( vendorId && purposes[ 1 ] && vendorGrants[ vendorId ] ) {
-					bridge.grant( container );
-				}
-			} );
-			// A downgrade after useractioncomplete re-gates what this
-			// bridge (not the visitor's click) loaded for vendors that
-			// lost consent.
-			bridge.regate( function ( container ) {
-				var providerId = container.getAttribute( 'data-cg-provider' ) || '';
-				var vendorId   = vendors[ providerId ];
-				if ( ! vendorId ) {
-					return false;
-				}
-				return ! ( purposes[ 1 ] && vendorGrants[ vendorId ] );
-			} );
-		} );
-	}
 }() );

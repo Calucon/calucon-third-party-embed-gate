@@ -13,9 +13,10 @@
  * - One adapter only, highest priority first: consent state must have a
  *   single authority; merging several platforms' verdicts would let the
  *   most permissive one win.
- * - TCF rides along only when its own flag is set AND at least one
- *   provider declares a TCF vendor id — a vendor-less TCF bridge could
- *   never grant anything and would only add dead code to the page.
+
+ * There is no IAB TCF leg any more: it shipped as "experimental" behind its
+ * own flag, could never be validated (no free TCF platform to test
+ * against), and was removed at 1.0 rather than promised forever.
  *
  * @package CaluconEmbedGate
  */
@@ -42,18 +43,6 @@ final class BridgeConfig {
 	private const CATEGORY_COOKIEYES = 'advertisement';
 
 	/**
-	 * TCF Global Vendor List ids for built-in providers that are registered
-	 * there. Deliberately sparse: most embed providers (Vimeo, OSM, …) are
-	 * not GVL vendors at all — for those TCF simply has no answer and the
-	 * click remains the only signal (fail closed). 755 = Google Advertising
-	 * Products, the GVL entry covering YouTube and Google Maps.
-	 */
-	private const TCF_VENDORS = array(
-		'youtube'     => 755,
-		'google-maps' => 755,
-	);
-
-	/**
 	 * @param array[] $detected    Detector::detected() rows (id, label), priority order.
 	 * @param array   $cmp_options Sanitised options['cmp'] tree.
 	 * @return array|null Config for the bridge script, null when the bridge stays off.
@@ -72,9 +61,7 @@ final class BridgeConfig {
 			}
 		}
 
-		$tcf = self::tcf_config( $cmp_options );
-
-		if ( null === $adapter && null === $tcf ) {
+		if ( null === $adapter ) {
 			return null;
 		}
 
@@ -88,21 +75,6 @@ final class BridgeConfig {
 			$config['borlabsGroup'] = '' !== $group ? $group : 'external-media';
 		}
 
-		if ( null !== $tcf ) {
-			$config['tcf'] = $tcf;
-		}
-
 		return $config;
-	}
-
-	/**
-	 * @param array $cmp_options Sanitised options['cmp'] tree.
-	 * @return array|null TCF sub-config, null when the flag is off.
-	 */
-	private static function tcf_config( array $cmp_options ): ?array {
-		if ( ! isset( $cmp_options['tcf'] ) || true !== $cmp_options['tcf'] ) {
-			return null;
-		}
-		return array( 'vendors' => self::TCF_VENDORS );
 	}
 }

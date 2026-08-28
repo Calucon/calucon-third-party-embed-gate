@@ -46,7 +46,6 @@ final class BridgeConfigTest extends TestCase {
 		// One authority only — the native adapter outranks the generic one.
 		self::assertSame( 'complianz', $config['adapter'] );
 		self::assertSame( 'marketing', $config['category'] );
-		self::assertArrayNotHasKey( 'tcf', $config );
 		self::assertArrayNotHasKey( 'borlabsGroup', $config );
 	}
 
@@ -73,29 +72,5 @@ final class BridgeConfigTest extends TestCase {
 		);
 
 		self::assertSame( 'external-media', $default['borlabsGroup'] );
-	}
-
-	public function test_tcf_needs_its_own_flag(): void {
-		$without = BridgeConfig::build(
-			array( array( 'id' => 'complianz', 'label' => 'Complianz' ) ),
-			$this->cmp_options( array( 'bridge' => true ) )
-		);
-		self::assertArrayNotHasKey( 'tcf', $without );
-
-		$with = BridgeConfig::build(
-			array( array( 'id' => 'complianz', 'label' => 'Complianz' ) ),
-			$this->cmp_options( array( 'bridge' => true, 'tcf' => true ) )
-		);
-		self::assertSame( 755, $with['tcf']['vendors']['youtube'] );
-		self::assertSame( 755, $with['tcf']['vendors']['google-maps'] );
-	}
-
-	public function test_tcf_alone_can_carry_the_bridge(): void {
-		// An ad-monetised site may run a TCF CMP that is not on the plugin
-		// list; the flag alone produces a config with no platform adapter.
-		$config = BridgeConfig::build( array(), $this->cmp_options( array( 'bridge' => true, 'tcf' => true ) ) );
-
-		self::assertNull( $config['adapter'] );
-		self::assertSame( 755, $config['tcf']['vendors']['youtube'] );
 	}
 }

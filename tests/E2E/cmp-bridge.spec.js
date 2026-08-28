@@ -162,20 +162,3 @@ test( 'a clicked embed survives a CMP withdrawal; a bridged one does not', async
 	await expect( page.locator( '.cg-embed__button' ) ).toHaveCount( 1 );
 } );
 
-test( 'TCF: only GVL-registered providers are granted; downgrade re-gates', async ( { page } ) => {
-	await abortThirdParty( page );
-	await page.goto( '/page/cmp-tcf' );
-
-	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 2 );
-	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
-
-	// Purpose 1 + vendor 755 granted: YouTube loads. Vimeo has no Global
-	// Vendor List entry — TCF cannot answer for it, so it keeps the click.
-	await page.evaluate( () => window.__cmpGrant() );
-	await expect( page.locator( 'iframe' ) ).toHaveCount( 1 );
-	await expect( page.locator( '.cg-embed[data-cg-provider="vimeo"] .cg-embed__button' ) ).toHaveCount( 1 );
-
-	await page.evaluate( () => window.__cmpRevoke() );
-	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
-	await expect( page.locator( '.cg-embed__button' ) ).toHaveCount( 2 );
-} );

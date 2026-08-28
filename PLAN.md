@@ -695,8 +695,10 @@ When a real CMP is installed, the plugin must not fight it. Detect and defer:
 - Two modes: *bridge* (a CMP grant for the matching purpose auto-activates
   gated embeds) and *stand aside* (the plugin stops gating providers the CMP
   already handles, to avoid a double prompt).
-- Also support the IAB TCF `__tcfapi` and Google Consent Mode v2 signals behind
-  a feature flag, as a generic bridge.
+- ~~Also support the IAB TCF `__tcfapi` and Google Consent Mode v2 signals behind
+  a feature flag, as a generic bridge.~~ Consent Mode has no public read API
+  (see CLAUDE.md); the TCF leg shipped as "experimental", could never be
+  validated against a real TCF platform, and was removed at 1.0.
 - Always: if the bridge cannot be established, fail **closed** — stay gated.
 
 ---
