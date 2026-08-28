@@ -1523,15 +1523,26 @@ test( 'an asset CDN plus whole-page buffering: the site\'s own scripts survive',
 	try {
 		// Control: the same script, no CDN filters. A foreign host at a path
 		// with no wp segment is exactly what this plugin is for.
+		//
+		// The iframe probe is the mirror image: a foreign host at THIS
+		// plugin's own asset path. Plugin::pipeline() rescues gate.js by
+		// that path, host-blind, so that a CDN rewriting the finished HTML
+		// cannot make the plugin gate its own loader — and that rescue must
+		// reach ScriptRule alone. An iframe is never the site's own loader;
+		// at this path on a foreign host it is exactly the shape-copying
+		// invariant 6 forbids waving through. Two panels: script and iframe.
 		await page.goto( '/no-embeds/?cg_cdn=0' );
 		await expect( page.locator( 'script#cg-cdn-probe' ) ).toHaveCount( 0 );
-		await expect( page.locator( '.cg-embed[data-cg-host="cdn.cg-offload.example"]' ) ).toHaveCount( 1 );
+		await expect( page.locator( 'iframe#cg-cdn-iframe-probe' ) ).toHaveCount( 0 );
+		await expect( page.locator( '.cg-embed[data-cg-host="cdn.cg-offload.example"]' ) ).toHaveCount( 2 );
 
 		// With content_url()/plugins_url() moved to that host, it is the
-		// site's own and the script is left exactly as it was.
+		// site's own and both probes are left exactly as they were — the
+		// iframe by the own-host rule, not by its path.
 		await page.goto( '/no-embeds/?cg_cdn=1' );
 		await expect( page.locator( '.cg-embed[data-cg-host="cdn.cg-offload.example"]' ) ).toHaveCount( 0 );
 		await expect( page.locator( 'script#cg-cdn-probe' ) ).toHaveCount( 1 );
+		await expect( page.locator( 'iframe#cg-cdn-iframe-probe' ) ).toHaveCount( 1 );
 
 		// And the owner's explicit instruction still outranks all of it: a
 		// host on the always-gate list is gated even when own_hosts() would
@@ -1543,8 +1554,17 @@ test( 'an asset CDN plus whole-page buffering: the site\'s own scripts survive',
 		await page.fill( 'textarea[name="calucon_embed_gate_options[detection][always_gate]"]', 'cdn.cg-offload.example' );
 		await save();
 
+		//
+		// Three things on that host now, and they must come out differently:
+		// bundle.js and the iframe are gated (two panels); gate.js — same
+		// host, the plugin's own asset path — is not, because a page whose
+		// loader has been replaced by a placeholder is a page of buttons that
+		// do nothing. That rescue is the one reason the path is consulted at
+		// all, and the iframe next to it proves it stops at scripts.
 		await page.goto( '/no-embeds/?cg_cdn=1' );
-		await expect( page.locator( '.cg-embed[data-cg-host="cdn.cg-offload.example"]' ) ).toHaveCount( 1 );
+		await expect( page.locator( '.cg-embed[data-cg-host="cdn.cg-offload.example"]' ) ).toHaveCount( 2 );
+		await expect( page.locator( 'iframe#cg-cdn-iframe-probe' ) ).toHaveCount( 0 );
+		await expect( page.locator( 'script[src*="cdn.cg-offload.example/wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js"]' ) ).toHaveCount( 1 );
 	} finally {
 		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
 		await page.click( '#cg-tabbtn-detection' );
@@ -1665,12 +1685,28 @@ test( 'compatibility: the remaining exclusion-list advice, and the copy around i
 
 	// No exclusion list at all — the honest answer, and the one a later edit
 	// is most likely to replace with an invented menu path.
+	//
+	// Neither has a settings reader, so both resolve to the 'unknown' state,
+	// whose body ends "and exclude the files below" — one line above a
+	// sentence saying there is nothing to exclude. The row must not carry
+	// that preamble, nor the "wording can differ" tail that refers to menu
+	// labels these sentences do not name. What the owner should read is the
+	// one honest sentence, alone.
 	await status( '&cg_cache=cloudflare' );
 	await expect( optimiser( 'Cloudflare' ) ).toContainText( 'takes no exclusion list' );
 	await expect( optimiser( 'Cloudflare' ) ).toContainText( 'data-cfasync' );
+	await expect( optimiser( 'Cloudflare' ) ).not.toContainText( 'exclude the files below' );
+	await expect( optimiser( 'Cloudflare' ) ).not.toContainText( 'Wording can differ' );
 
 	await status( '&cg_cache=supercache' );
 	await expect( optimiser( 'WP Super Cache' ) ).toContainText( 'nothing to exclude' );
+	await expect( optimiser( 'WP Super Cache' ) ).not.toContainText( 'exclude the files below' );
+	await expect( optimiser( 'WP Super Cache' ) ).not.toContainText( 'Wording can differ' );
+
+	// The control: a plugin that HAS a list keeps the preamble and the tail.
+	await status( '&cg_cache=w3tc' );
+	await expect( optimiser( 'W3 Total Cache' ) ).toContainText( 'exclude the files below' );
+	await expect( optimiser( 'W3 Total Cache' ) ).toContainText( 'Wording can differ' );
 
 	// The copy around the exclusion block: the heading, the reassurance that
 	// excluding costs nothing, and the inline-config handle. That last one is

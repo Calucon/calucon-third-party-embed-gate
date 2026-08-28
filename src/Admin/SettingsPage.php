@@ -1667,14 +1667,29 @@ final class SettingsPage {
 					<tr>
 						<th scope="row"><?php echo esc_html( $optimizer['name'] ); ?></th>
 						<td>
-							<?php echo esc_html( $optimizer_messages[ $optimizer['state'] ] ); ?>
+							<?php
+							// A plugin with no exclusion list has no settings
+							// reader either, so it lands in 'unknown' — whose
+							// body ends "exclude the files below", one line
+							// above its own advice saying there is nothing to
+							// exclude. Its advice is the whole answer; the
+							// preamble and the "wording can differ" tail (about
+							// menu labels the advice does not name) only
+							// contradict it.
+							$lone_advice = ! $optimizer['has_list'] && 'unknown' === $optimizer['state'] && '' !== $optimizer['where'];
+							if ( ! $lone_advice ) {
+								echo esc_html( $optimizer_messages[ $optimizer['state'] ] );
+							}
+							?>
 							<?php if ( '' !== $optimizer['where'] ) : ?>
 								<p class="description" style="margin-top: .5em;">
 									<?php if ( $optimizer['has_list'] ) : ?>
 										<strong><?php esc_html_e( 'Where to exclude them:', 'calucon-third-party-embed-gate' ); ?></strong>
 									<?php endif; ?>
 									<?php echo esc_html( $optimizer['where'] ); ?>
-									<?php esc_html_e( '(Wording can differ between versions of that plugin.)', 'calucon-third-party-embed-gate' ); ?>
+									<?php if ( ! $lone_advice ) : ?>
+										<?php esc_html_e( '(Wording can differ between versions of that plugin.)', 'calucon-third-party-embed-gate' ); ?>
+									<?php endif; ?>
 								</p>
 							<?php endif; ?>
 						</td>

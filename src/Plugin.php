@@ -463,30 +463,41 @@ final class Plugin {
 		// the CDN too.
 		$own_assets = (string) plugins_url( 'assets/', CALUCON_EMBED_GATE_FILE );
 
-		$should_gate = static function ( bool $gate, string $url, array $ctx ) use ( $own_assets ): bool {
-			// Never gate this plugin's own script. It is reachable: put your
-			// asset CDN's hostname on the always-gate list and that list —
-			// correctly — overrides both the own-host rule and the asset-path
-			// exemption, at which point gate.js itself is served from a gated
-			// host and gets replaced by a placeholder. The result is silent
-			// and total: every panel on the page becomes a button that does
-			// nothing, because the script that would have handled the click
-			// was the thing that got gated.
-			//
-			// Short-circuited before the filter deliberately. There is no
-			// configuration under which gating our own loader is what the
-			// owner wanted, so this is not a decision to delegate.
-			// Host match covers a CDN that FILTERS plugins_url(). Path match
-			// covers one that rewrites the finished HTML, where plugins_url()
-			// still reports the origin host and a host comparison therefore
-			// misses the exact setup the own-asset rule exists for.
+		$should_gate = static function ( bool $gate, string $url, array $ctx ): bool {
+			return (bool) apply_filters( 'calucon_embed_gate_should_gate', $gate, $url, $ctx );
+		};
+
+		// Never gate this plugin's own script. It is reachable: put your
+		// asset CDN's hostname on the always-gate list and that list —
+		// correctly — overrides both the own-host rule and the asset-path
+		// exemption, at which point gate.js itself is served from a gated
+		// host and gets replaced by a placeholder. The result is silent
+		// and total: every panel on the page becomes a button that does
+		// nothing, because the script that would have handled the click
+		// was the thing that got gated.
+		//
+		// Short-circuited before the filter deliberately. There is no
+		// configuration under which gating our own loader is what the
+		// owner wanted, so this is not a decision to delegate.
+		// Host match covers a CDN that FILTERS plugins_url(). Path match
+		// covers one that rewrites the finished HTML, where plugins_url()
+		// still reports the origin host and a host comparison therefore
+		// misses the exact setup the own-asset rule exists for.
+		//
+		// Handed to ScriptRule ALONE. The path match is host-blind, and
+		// what it identifies is "our loader" — a claim that only a script
+		// can make. Given to IframeRule, an iframe on any host at all could
+		// copy this path and be waved through with no panel and no link:
+		// the invisible failure invariant 6 exists to forbid. The 0.13.0
+		// review found exactly that; the CDN test in tests/WP pins it.
+		$should_gate_script = static function ( bool $gate, string $url, array $ctx ) use ( $own_assets, $should_gate ): bool {
 			if ( HostMatcher::url_is_under( $own_assets, $url )
 				|| HostMatcher::path_is_under( $own_assets, $url ) ) {
 				return false;
 			}
-			return (bool) apply_filters( 'calucon_embed_gate_should_gate', $gate, $url, $ctx );
+			return $should_gate( $gate, $url, $ctx );
 		};
-		$on_gated    = function ( array $provider, array $ctx ): void {
+		$on_gated           = function ( array $provider, array $ctx ): void {
 			$this->assets->enqueue_assets();
 			do_action( 'calucon_embed_gate_embed_gated', $provider, $ctx );
 		};
@@ -494,7 +505,7 @@ final class Plugin {
 		$this->pipeline = new Pipeline(
 			new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
-			new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
+			new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate_script, $on_gated ),
 			new ImageRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new StylesheetRule( $scanner, $hosts, $registry, $renderer ),
 			$registry,

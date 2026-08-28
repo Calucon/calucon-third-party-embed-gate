@@ -224,6 +224,13 @@ if ( isset( $_GET['cg_builder'] ) && ! defined( 'ELEMENTOR_VERSION' ) ) {
 // so the path heuristic cannot rescue it: if it survives ungated, that is
 // own_hosts() doing the work and nothing else.
 //
+// The emitted iframe is the opposite probe. It sits at this plugin's OWN
+// asset path — the one Plugin::pipeline() rescues gate.js by, host-blind,
+// because a CDN that rewrites the finished HTML leaves plugins_url() on the
+// origin host. That rescue is a claim about scripts only; an iframe at the
+// same path on a foreign host is a third-party iframe and invariant 6 says
+// it is gated. The review of 0.13.0 found the rescue handed to every rule.
+//
 //   ?cg_cdn=1  — content_url()/plugins_url() moved to the CDN host, so the
 //                CDN host is one of the site's own
 //   ?cg_cdn=0  — the same script, without the filters: the control, which
@@ -243,6 +250,7 @@ if ( isset( $_GET['cg_cdn'] ) ) {
 		'wp_footer',
 		static function () {
 			echo '<script src="https://cdn.cg-offload.example/bundle.js" id="cg-cdn-probe"></script>' . "\n";
+			echo '<iframe src="https://cdn.cg-offload.example/wp-content/plugins/calucon-third-party-embed-gate/assets/widget.html" id="cg-cdn-iframe-probe" title="probe"></iframe>' . "\n";
 		},
 		1
 	);

@@ -41,7 +41,7 @@ msgstr ""
 msgid "%s reset to its default."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1677
+#: src/Admin/SettingsPage.php:1691
 msgid "(Wording can differ between versions of that plugin.)"
 msgstr ""
 
@@ -73,8 +73,8 @@ msgstr ""
 msgid "A style fills in every control below; \"Theme default\" clears them all. Nothing changes on your site until you save."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1757
-#: src/Admin/SettingsPage.php:1831
+#: src/Admin/SettingsPage.php:1772
+#: src/Admin/SettingsPage.php:1846
 msgid "Action"
 msgstr ""
 
@@ -122,7 +122,7 @@ msgstr ""
 msgid "Always gate these hosts"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1864
+#: src/Admin/SettingsPage.php:1879
 msgid "Always load this"
 msgstr ""
 
@@ -240,7 +240,7 @@ msgstr ""
 msgid "Check my site for a policy"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1708
+#: src/Admin/SettingsPage.php:1723
 msgid "Check my theme"
 msgstr ""
 
@@ -313,7 +313,7 @@ msgstr ""
 msgid "Could not load your home page from this browser, so nothing could be checked. Try again; if it keeps failing, open the home page in a new tab and look for a Content-Security-Policy header in the browser's developer tools (Network panel)."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1828
+#: src/Admin/SettingsPage.php:1843
 msgid "Count"
 msgstr ""
 
@@ -436,7 +436,7 @@ msgstr ""
 msgid "Embeds from hosts nobody listed are already gated, under their host name. Add a provider here to give such a host a proper name and a kind (for the button icon); after saving it appears in the list above, where you can set its wording and privacy-policy link like for any other provider. Hosts must match exactly — list www. and bare variants separately. Adding a provider never changes what is gated: unknown hosts are gated either way, and hosts a built-in provider handles stay with that provider (they are skipped here). Your own providers are always gated; to let a host through, use the never-gate list under Detection."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1753
+#: src/Admin/SettingsPage.php:1768
 msgid "Embeds from these hosts load for every visitor as soon as the page opens, with no placeholder. This plugin does not stop them being contacted."
 msgstr ""
 
@@ -456,7 +456,7 @@ msgstr ""
 msgid "Every third-party embed is gated, listed here or not. These entries add the provider's name, icon and privacy-policy link, and let you word the panel yourself. Turning one off stops gating its embeds — they then load exactly as WordPress renders them."
 msgstr ""
 
-#: src/Plugin.php:531
+#: src/Plugin.php:542
 msgid "Example embed"
 msgstr ""
 
@@ -468,8 +468,8 @@ msgstr ""
 msgid "File Optimization → “Excluded JavaScript Files”. If “Delay JavaScript execution” is on, it keeps a separate exclusion box — add them there too."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1689
-#: src/Admin/SettingsPage.php:1692
+#: src/Admin/SettingsPage.php:1704
+#: src/Admin/SettingsPage.php:1707
 msgid "Files to exclude from JavaScript and CSS optimisation"
 msgstr ""
 
@@ -493,7 +493,7 @@ msgstr ""
 msgid "Filter providers…"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1830
+#: src/Admin/SettingsPage.php:1845
 msgid "First seen in"
 msgstr ""
 
@@ -525,12 +525,12 @@ msgstr ""
 msgid "Gate %s embeds"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1764
-#: src/Admin/SettingsPage.php:1856
+#: src/Admin/SettingsPage.php:1779
+#: src/Admin/SettingsPage.php:1871
 msgid "Gate it again"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1858
+#: src/Admin/SettingsPage.php:1873
 msgid "Gate it anyway"
 msgstr ""
 
@@ -554,7 +554,7 @@ msgstr ""
 msgid "Gate this embed"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1794
+#: src/Admin/SettingsPage.php:1809
 msgid "Gated"
 msgstr ""
 
@@ -566,8 +566,8 @@ msgstr ""
 msgid "Grants require both the storage purpose and the provider's registered vendor consent; providers without a Global Vendor List entry always keep the click. Leave this off unless your site serves programmatic advertising."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1756
-#: src/Admin/SettingsPage.php:1826
+#: src/Admin/SettingsPage.php:1771
+#: src/Admin/SettingsPage.php:1841
 msgid "Host"
 msgstr ""
 
@@ -575,7 +575,7 @@ msgstr ""
 msgid "Host matching"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1752
+#: src/Admin/SettingsPage.php:1767
 msgid "Hosts you let through"
 msgstr ""
 
@@ -591,7 +591,7 @@ msgstr ""
 msgid "Icon"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1690
+#: src/Admin/SettingsPage.php:1705
 msgid "If a caching, minification or optimisation plugin combines, defers or delays scripts, paste these into its exclusion list. They are small, local and already cached by the browser, so excluding them costs nothing measurable."
 msgstr ""
 
@@ -623,7 +623,7 @@ msgstr ""
 msgid "JavaScript optimisation"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1693
+#: src/Admin/SettingsPage.php:1708
 msgid "Keep the inline configuration next to gate.js as well: some plugins list it separately as \"calucon-embed-gate-js-before\"."
 msgstr ""
 
@@ -644,7 +644,7 @@ msgstr ""
 msgid "Left"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1843
+#: src/Admin/SettingsPage.php:1858
 msgid "Let through by you — not gated"
 msgstr ""
 
@@ -996,15 +996,15 @@ msgstr ""
 msgid "Minimal — transparent with a border"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1799
+#: src/Admin/SettingsPage.php:1814
 msgid "NOT gated — its address is a WordPress asset path, so it is treated as your own file. If this host is not yours, add it to \"Always gate these hosts\" under Detection."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1797
+#: src/Admin/SettingsPage.php:1812
 msgid "NOT gated — its detection rule is disabled"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1798
+#: src/Admin/SettingsPage.php:1813
 msgid "NOT gated — provider disabled in the table above"
 msgstr ""
 
@@ -1017,7 +1017,7 @@ msgstr ""
 msgid "Name of %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1862
+#: src/Admin/SettingsPage.php:1877
 msgid "Name this host"
 msgstr ""
 
@@ -1045,11 +1045,11 @@ msgstr ""
 msgid "No tested consent platform is currently detected. The setting can stay enabled; it takes effect as soon as one is installed."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1822
+#: src/Admin/SettingsPage.php:1837
 msgid "No third-party embeds found in the scanned content."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1796
+#: src/Admin/SettingsPage.php:1811
 msgid "No usable URL — passes through"
 msgstr ""
 
@@ -1058,7 +1058,7 @@ msgstr ""
 msgid "None"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1725
+#: src/Admin/SettingsPage.php:1740
 msgid "None found in your theme's own stylesheets or its functions.php. That covers where a theme usually keeps them, not every file it could use — a theme that builds its CSS into another directory is outside this check."
 msgstr ""
 
@@ -1128,7 +1128,7 @@ msgstr ""
 msgid "Overrides the site-wide setting for this block only."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1795
+#: src/Admin/SettingsPage.php:1810
 msgid "Own host — not gated"
 msgstr ""
 
@@ -1233,7 +1233,7 @@ msgstr ""
 msgid "Readability (WCAG 4.5:1):"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1709
+#: src/Admin/SettingsPage.php:1724
 msgid "Reads your theme's own stylesheets and its functions.php, looking for third-party asset hosts — fonts and CDN files, which load on every page view outside what an embed gate can cover. Read-only; no outbound requests. Runs on request because reading the files takes time."
 msgstr ""
 
@@ -1258,7 +1258,7 @@ msgstr ""
 msgid "Remove poster image"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1777
+#: src/Admin/SettingsPage.php:1792
 msgid "Renders your latest posts and pages in memory and reports every embed found and whether it is gated. Read-only; no outbound requests."
 msgstr ""
 
@@ -1303,11 +1303,11 @@ msgstr ""
 msgid "Save changes"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1776
+#: src/Admin/SettingsPage.php:1791
 msgid "Scan recent content"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1816
+#: src/Admin/SettingsPage.php:1831
 msgid "Scanned the %d most recent published posts and pages. Widgets, template parts and builder-rendered layouts are not part of this scan, and hosts you have let through are listed above rather than here."
 msgstr ""
 
@@ -1410,8 +1410,8 @@ msgstr ""
 msgid "Start from a style"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1743
-#: src/Admin/SettingsPage.php:1829
+#: src/Admin/SettingsPage.php:1758
+#: src/Admin/SettingsPage.php:1844
 msgid "Status"
 msgstr ""
 
@@ -1473,9 +1473,9 @@ msgstr ""
 msgid "Theme default"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1706
-#: src/Admin/SettingsPage.php:1716
-#: src/Admin/SettingsPage.php:1724
+#: src/Admin/SettingsPage.php:1721
+#: src/Admin/SettingsPage.php:1731
+#: src/Admin/SettingsPage.php:1739
 msgid "Third-party assets in your theme"
 msgstr ""
 
@@ -1507,7 +1507,7 @@ msgstr ""
 msgid "Treat www.example.com and example.com as the same site"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1827
+#: src/Admin/SettingsPage.php:1842
 msgid "Type"
 msgstr ""
 
@@ -1555,7 +1555,7 @@ msgstr ""
 msgid "When you save, this host will be gated again: its embeds go back to asking the visitor first."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1674
+#: src/Admin/SettingsPage.php:1687
 msgid "Where to exclude them:"
 msgstr ""
 
@@ -1622,7 +1622,7 @@ msgstr ""
 msgid "Your site sends a report-only policy (Content-Security-Policy-Report-Only). It logs violations but blocks nothing, so embeds still load."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1717
+#: src/Admin/SettingsPage.php:1732
 msgid "Your theme references these third-party asset hosts (found by reading its files — nothing was fetched). Fonts and CDN assets load on every page view without consent, outside what an embed gate can cover. Consider serving them locally; your theme or a localisation plugin can usually do this."
 msgstr ""
 

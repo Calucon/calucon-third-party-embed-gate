@@ -213,6 +213,13 @@ final class HostMatcher {
 	 * the worst outcome is that our own loader runs. Compare that with the
 	 * alternative — the gate silently doing nothing on every page.
 	 *
+	 * That argument holds for scripts and for nothing else. "The worst
+	 * outcome is our own loader runs" is false for an iframe at this path:
+	 * there the worst outcome is a third-party frame with no panel and no
+	 * link, which is invariant 6's invisible failure. Plugin::pipeline()
+	 * consults this for ScriptRule only; never wire it into IframeRule,
+	 * ImageRule or EmbedObjectRule.
+	 *
 	 * @param string $base Absolute URL of the asset directory.
 	 * @param string $url  URL from the markup.
 	 * @return bool
