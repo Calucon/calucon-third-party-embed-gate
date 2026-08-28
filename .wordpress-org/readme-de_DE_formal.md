@@ -1,6 +1,6 @@
 # readme.txt auf Deutsch (de_DE_formal, „Sie“)
 
-<!-- readme.txt: 5c6be2f871688fc6 -->
+<!-- readme.txt: 571e1f06020d77c1 -->
 
 <!-- Dieser Stempel bindet die Übersetzung an den englischen Stand.
      tests/Unit/ReadmeTranslationTest.php schlägt fehl, sobald readme.txt sich ändert. -->
@@ -33,9 +33,9 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 ## Beschreibung
 
-**EN:** When an editor pastes a YouTube URL, WordPress turns it into an iframe — and on every page view, before the visitor has been offered any choice, their browser contacts the provider. Measured on a plain GET to `www.youtube.com/embed/…` with no playback and no scripts run: five cookies, two of them ~18-month identifiers. The same request on `www.youtube-nocookie.com` sets zero.
+**EN:** When an editor pastes a YouTube URL, WordPress turns it into an iframe — and on every page view, before the visitor has been offered any choice, their browser contacts the provider. Measured on a plain GET to `www.youtube.com/embed/…` with no playback and no scripts run: six cookies, four of them identifiers that live about six months (re-measured August 2026; a year earlier it was five, two of them 18-month). The same request on `www.youtube-nocookie.com` sets zero.
 
-**DE:** Wer eine YouTube-URL in den Editor einfügt, bekommt von WordPress ein Iframe – und bei jedem Seitenaufruf kontaktiert der Browser des Besuchers den Anbieter, bevor diesem irgendeine Wahl gelassen wurde. Gemessen bei einem einfachen GET auf `www.youtube.com/embed/…`, ohne Wiedergabe und ohne ausgeführte Skripte: fünf Cookies, zwei davon Kennungen mit rund 18 Monaten Laufzeit. Dieselbe Anfrage an `www.youtube-nocookie.com` setzt keines.
+**DE:** Wer eine YouTube-URL in den Editor einfügt, bekommt von WordPress ein Iframe – und bei jedem Seitenaufruf kontaktiert der Browser des Besuchers den Anbieter, bevor diesem irgendeine Wahl gelassen wurde. Gemessen bei einem einfachen GET auf `www.youtube.com/embed/…`, ohne Wiedergabe und ohne ausgeführte Skripte: sechs Cookies, vier davon Kennungen mit rund sechs Monaten Laufzeit (neu gemessen im August 2026; ein Jahr zuvor waren es fünf, zwei davon mit 18 Monaten Laufzeit). Dieselbe Anfrage an `www.youtube-nocookie.com` setzt keines.
 
 **EN:** Calucon Third-Party Embed Gate replaces third-party embeds with a server-rendered placeholder until the visitor clicks to load them — the two-click pattern (Zwei-Klick-Lösung). Nothing third-party is contacted before that click: no script, no iframe, no thumbnail, no preconnect. Nothing is stored on the visitor's device before that click either — including by this plugin.
 
@@ -63,9 +63,9 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Bringt für fast jeden Einbettungstyp, den WordPress von Haus aus kennt, einen eigenen Eintrag mit – richtiger Name, Symbol, Link zur Datenschutzerklärung und ein funktionierender Link ohne JavaScript – dazu die Loader-Skripte und Stylesheets, die diese Einbettungen mitbringen. Die wenigen, die noch keinen Namen haben, stehen in den FAQ; gesperrt werden sie trotzdem.
 
-**EN:** Loads from privacy-preserving endpoints after the click where they exist: `youtube-nocookie.com` (measured: 0 cookies instead of 5), Vimeo with `dnt=1`.
+**EN:** Loads from privacy-preserving endpoints after the click where they exist: `youtube-nocookie.com` (measured: 0 cookies instead of 6), Vimeo with `dnt=1`.
 
-**DE:** Lädt nach dem Klick von datenschutzfreundlichen Adressen, wo es sie gibt: `youtube-nocookie.com` (gemessen: 0 statt 5 Cookies), Vimeo mit `dnt=1`.
+**DE:** Lädt nach dem Klick von datenschutzfreundlichen Adressen, wo es sie gibt: `youtube-nocookie.com` (gemessen: 0 statt 6 Cookies), Vimeo mit `dnt=1`.
 
 **EN:** Renders the placeholder server-side, so a visitor without JavaScript still gets a real, working link to the content.
 
