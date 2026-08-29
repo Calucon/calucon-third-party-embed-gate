@@ -15,7 +15,7 @@ YouTube, Maps and social embeds load only when the visitor clicks — the two-cl
 
 Every YouTube video, Google Map and Instagram post on your site contacts its provider the moment the page opens — before the visitor has agreed to anything. Calucon Third-Party Embed Gate holds those embeds behind a click-to-load placeholder. Until the visitor presses "Load", nothing is requested from the provider and nothing is stored on their device — not by the provider, and not by this plugin. That is the two-click solution (Zwei-Klick-Lösung), done properly: no cookie banner, no consent platform, no account, no subscription. It works the moment it is activated.
 
-See it on the [live demo](https://calucon.de/third-party-embed-gate-showcase/) — 30 providers on one page, zero third-party requests until you press a button — or read the details on the [plugin page](https://calucon.de/third-party-embed-gate/).
+See it on the [live demo](https://calucon.de/third-party-embed-gate-showcase/) — all 36 providers on one page, 30 of them with live content, and zero third-party requests until you press a button — or read the details on the [plugin page](https://calucon.de/third-party-embed-gate/).
 
 = Why it matters =
 
