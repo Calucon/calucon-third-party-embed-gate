@@ -1,6 +1,6 @@
 # readme.txt auf Deutsch (de_DE_formal, „Sie“)
 
-<!-- readme.txt: 1a6e1e8a7421dc44 -->
+<!-- readme.txt: 62d0ac1a72f01248 -->
 
 <!-- Dieser Stempel bindet die Übersetzung an den englischen Stand.
      tests/Unit/ReadmeTranslationTest.php schlägt fehl, sobald readme.txt sich ändert. -->
@@ -37,9 +37,9 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Jedes YouTube-Video, jede Karte von Google Maps und jeder Instagram-Beitrag auf Ihrer Website kontaktiert seinen Anbieter, sobald die Seite geöffnet wird – noch bevor der Besucher irgendetwas zugestimmt hat. Calucon Third-Party Embed Gate hält diese Einbettungen hinter einem Platzhalter zurück, der erst auf Klick lädt. Bis der Besucher auf „Laden“ drückt, wird beim Anbieter nichts angefragt und auf seinem Gerät nichts gespeichert – weder vom Anbieter noch von diesem Plugin. Das ist die Zwei-Klick-Lösung, sauber umgesetzt: kein Cookie-Banner, keine Consent-Plattform, kein Konto, kein Abonnement. Das Plugin wirkt, sobald es aktiviert ist.
 
-**EN:** See it on the [live demo](…) — 30 providers on one page, zero third-party requests until you press a button — or read the details on the [plugin page](…).
+**EN:** See it on the [live demo](…) — all 36 providers on one page, 30 of them with live content, and zero third-party requests until you press a button — or read the details on the [plugin page](…).
 
-**DE:** Sehen Sie sich die [Live-Demo](https://calucon.de/third-party-embed-gate-showcase/) an – 30 Anbieter auf einer Seite, null Anfragen an Drittanbieter, bis Sie einen Button drücken – oder lesen Sie die Details auf der [Plugin-Seite](https://calucon.de/third-party-embed-gate/).
+**DE:** Sehen Sie sich die [Live-Demo](https://calucon.de/third-party-embed-gate-showcase/) an – alle 36 Anbieter auf einer Seite, 30 davon mit echten Inhalten, null Anfragen an Drittanbieter, bis Sie einen Button drücken – oder lesen Sie die Details auf der [Plugin-Seite](https://calucon.de/third-party-embed-gate/).
 
 ### Warum das wichtig ist
 
