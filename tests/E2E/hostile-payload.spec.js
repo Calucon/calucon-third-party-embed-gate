@@ -1,6 +1,6 @@
 // gate.js is the second, independent sanitisation layer: the documented
 // calucon_embed_gate_payload filter (docs/customizing.md) lets site code put
-// ARBITRARY data into data-cg-payload, so the client must enforce the same
+// ARBITRARY data into the payload element, so the client must enforce the same
 // rules PHP does — non-http(s) src rejected, attributes safelisted, autoplay
 // stripped (invariant 8), never wider privilege (invariant 7). Every other
 // E2E page carries PHP-sanitised payloads, which means gate.js's own guards
@@ -15,10 +15,10 @@ test( 'a javascript: src is rejected: no node built, error shown, fallback kept'
 	await expect( container ).toBeVisible();
 
 	await container.evaluate( ( node ) => {
-		node.setAttribute( 'data-cg-payload', JSON.stringify( {
+		node.querySelector( 'script.cg-embed__payload' ).textContent = JSON.stringify( {
 			src: 'javascript:window.__pwned = 1',
 			attrs: {},
-		} ) );
+		} );
 	} );
 	await container.locator( '.cg-embed__button' ).click();
 
@@ -35,10 +35,10 @@ test( 'a data: src is rejected too', async ( { page } ) => {
 	await expect( container ).toBeVisible();
 
 	await container.evaluate( ( node ) => {
-		node.setAttribute( 'data-cg-payload', JSON.stringify( {
+		node.querySelector( 'script.cg-embed__payload' ).textContent = JSON.stringify( {
 			src: 'data:text/html,<script>window.__pwned = 1</script>',
 			attrs: {},
-		} ) );
+		} );
 	} );
 	await container.locator( '.cg-embed__button' ).click();
 
@@ -53,7 +53,7 @@ test( 'hostile attributes never reach the built frame; autoplay is stripped clie
 
 	// Valid same-origin src so the frame IS built — the attack is in attrs.
 	await container.evaluate( ( node ) => {
-		node.setAttribute( 'data-cg-payload', JSON.stringify( {
+		node.querySelector( 'script.cg-embed__payload' ).textContent = JSON.stringify( {
 			src: window.location.origin + '/frame.html',
 			attrs: {
 				title: 'kept',
@@ -65,7 +65,7 @@ test( 'hostile attributes never reach the built frame; autoplay is stripped clie
 				src: 'https://evil.example/other',
 				'data-evil': 'x',
 			},
-		} ) );
+		} );
 	} );
 	await container.locator( '.cg-embed__button' ).click();
 

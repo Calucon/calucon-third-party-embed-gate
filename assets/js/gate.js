@@ -5,6 +5,15 @@
  * any framework and on old browsers. Does nothing until the visitor clicks —
  * the placeholder itself is server-rendered (invariant 2) and this script
  * stores nothing, ever (invariant 3).
+ *
+ * Trust rule: a payload is read from ONE place — the container's own
+ * <script type="application/json" class="cg-embed__payload"> child
+ * (payloadOf below) — and from nowhere else. WordPress's kses hands every
+ * author `class` and `data-*` on every tag, so anything this script
+ * executed off an attribute (a script URL, an inline document, inline
+ * loader code) would be forgeable by a Contributor. A <script> element is
+ * what kses never lets through. Never read a payload, or anything it
+ * executes, from a data-cg-* attribute.
  */
 ( function () {
 	'use strict';
@@ -36,6 +45,28 @@
 		for ( var i = 0; i < els.length; i++ ) {
 			if ( hasClass( els[ i ], className ) ) {
 				return els[ i ];
+			}
+		}
+		return null;
+	}
+
+	// The payload of a container, or null: the first direct child that is
+	// the renderer's JSON data block. See the trust rule at the top.
+	function payloadOf( container ) {
+		var children = container.childNodes;
+		for ( var i = 0; i < children.length; i++ ) {
+			var child = children[ i ];
+			if ( child.nodeType !== 1 || child.nodeName !== 'SCRIPT' || ! hasClass( child, 'cg-embed__payload' ) ) {
+				continue;
+			}
+			if ( String( child.getAttribute( 'type' ) || '' ).toLowerCase() !== 'application/json' ) {
+				return null;
+			}
+			try {
+				var payload = JSON.parse( child.textContent || child.text || '' );
+				return payload && typeof payload === 'object' ? payload : null;
+			} catch ( e ) {
+				return null; // Malformed: the panel and its fallback link stay.
 			}
 		}
 		return null;
@@ -575,7 +606,7 @@
 		if ( ! providerId || ! document.querySelectorAll ) {
 			return;
 		}
-		var all = document.querySelectorAll( '.cg-embed--silent[data-cg-payload]' );
+		var all = document.querySelectorAll( '.cg-embed--silent' );
 		for ( var i = 0; i < all.length; i++ ) {
 			if ( all[ i ].getAttribute( 'data-cg-provider' ) === providerId
 				&& all[ i ].getAttribute( 'data-cg-activated' ) !== '1' ) {
@@ -589,12 +620,11 @@
 			return;
 		}
 
-		var payload;
-		try {
-			payload = JSON.parse( container.getAttribute( 'data-cg-payload' ) || '' );
-		} catch ( e ) {
-			// Malformed payload: announce it (§8); the panel and its
-			// fallback link are still in place.
+		var payload = payloadOf( container );
+		if ( ! payload ) {
+			// No payload this script may trust (a forged or malformed
+			// panel): announce it (§8); the panel and its fallback link
+			// are still in place, and nothing is executed.
 			if ( options.focus ) {
 				showError( container );
 			}
@@ -668,7 +698,7 @@
 		// One storage read + parse for the whole page; nothing writes during
 		// this read-only pass, so the snapshot cannot go stale.
 		var grants = readGrants( config );
-		var containers = document.querySelectorAll( '.cg-embed[data-cg-payload]' );
+		var containers = document.querySelectorAll( '.cg-embed' );
 		for ( var i = 0; i < containers.length; i++ ) {
 			var container = containers[ i ];
 			// Silent companions belong to a panel and are activated by it,
@@ -677,10 +707,8 @@
 			if ( hasClass( container, 'cg-embed--silent' ) ) {
 				continue;
 			}
-			var payload;
-			try {
-				payload = JSON.parse( container.getAttribute( 'data-cg-payload' ) || '' );
-			} catch ( e ) {
+			var payload = payloadOf( container );
+			if ( ! payload ) {
 				continue;
 			}
 			if ( hasStoredConsent( config, grants, container, payload ) ) {
@@ -744,7 +772,7 @@
 		if ( ! document.querySelectorAll ) {
 			return;
 		}
-		var containers = document.querySelectorAll( '.cg-embed[data-cg-payload]' );
+		var containers = document.querySelectorAll( '.cg-embed' );
 		for ( var i = 0; i < containers.length; i++ ) {
 			var container = containers[ i ];
 			if ( container.getAttribute( 'data-cg-activated' ) === '1' ) {
@@ -755,10 +783,8 @@
 			if ( hasClass( container, 'cg-embed--silent' ) ) {
 				continue;
 			}
-			var payload;
-			try {
-				payload = JSON.parse( container.getAttribute( 'data-cg-payload' ) || '' );
-			} catch ( e ) {
+			var payload = payloadOf( container );
+			if ( ! payload ) {
 				continue;
 			}
 			callback( container, payload );
@@ -780,12 +806,7 @@
 			if ( predicate && ! predicate( container ) ) {
 				continue;
 			}
-			var payload;
-			try {
-				payload = JSON.parse( container.getAttribute( 'data-cg-payload' ) || '' );
-			} catch ( e ) {
-				payload = {};
-			}
+			var payload = payloadOf( container ) || {};
 			if ( payload.strategy === 'script' ) {
 				// A loaded SDK cannot be unloaded, and activating it removed
 				// the companion placeholders from the DOM. Reloading is the

@@ -84,6 +84,13 @@ final class ScriptRule {
 		foreach ( array_reverse( $matches ) as $match ) {
 			$attributes = $match['attributes'];
 
+			// Data, not code: JSON-LD, a template, this plugin's own payload
+			// carrier. A browser executes none of it and neither may the
+			// gate (see ScriptType).
+			if ( ! ScriptType::is_javascript( $attributes ) ) {
+				continue;
+			}
+
 			// Inline scripts cause no request by themselves — unless they
 			// inject a known provider's loader (Scribd, Crowdsignal surveys).
 			// Those are handled in a second pass, after every external script
@@ -321,7 +328,7 @@ final class ScriptRule {
 			return $html;
 		}
 		foreach ( array_reverse( $this->scanner->find_tags( $html, 'script' ) ) as $match ) {
-			if ( isset( $match['attributes']['src'] ) ) {
+			if ( isset( $match['attributes']['src'] ) || ! ScriptType::is_javascript( $match['attributes'] ) ) {
 				continue;
 			}
 			$span = substr( $html, $match['start'], $match['end'] - $match['start'] );

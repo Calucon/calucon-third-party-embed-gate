@@ -137,11 +137,11 @@ the next release lands on `main`.
 | `src/Detection/Visibility.php` | Elements that are invisible by construction (GTM's `<noscript>` iframe) — stripped, never given a panel |
 | `src/Admin/BlockEditor.php` + `assets/js/editor.js` | §7.5 per-block override + withdrawal block (no build step) |
 | `src/Admin/SettingsPage.php` + `assets/js/{admin-appearance,admin-tabs,admin-csp,admin-custom-providers,admin-providers,admin-scan-actions}.js` | Providers tab grouped by kind + filter box; scan rows stage exceptions into the Detection fields (never a direct write — the one form would revert it). | §7.1 tabbed settings; Appearance colour pickers, live preview + contrast check (admin-only JS; may use jQuery/wp-color-picker). Tabs are client-side only — one form, one save; per-tab forms would let `Options::sanitize()` wipe unsent sections |
-| `src/Rendering/PlaceholderRenderer.php` | The §5.1 markup contract — public API, version it |
+| `src/Rendering/PlaceholderRenderer.php` | The §5.1 markup contract — public API, version it. The payload is a `<script type="application/json" class="cg-embed__payload">` first child, **never an attribute** — see the forged-panel trap below |
 | `src/Integration/*.php` | Where WordPress hooks live (content filters, buffer, widgets, comments, hints, shortcode) |
 | `src/Cli/Commands.php` | Read-only WP-CLI (`scan`, `providers`); scan renders via `Plugin::render_ungated()` — plain `the_content` would gate the markup before the scanner sees it |
 | `docs/customizing.md` | Site-level customization reference, ships in the zip; update it when hooks/descriptor keys change |
-| `assets/js/gate.js` | Dependency-free ES5; no build step |
+| `assets/js/gate.js` | Dependency-free ES5; no build step. Reads a payload from `payloadOf()` only — the JSON script child — and executes nothing that comes from a `data-cg-*` attribute |
 | `src/Cmp/{Detector,BridgeConfig}.php` + `assets/js/cmp-bridge.js` | §6.4 CMP bridge: tested-platform detection, pure config builder (fail-closed rules pinned in `BridgeConfigTest`), ES5 adapters; one adapter per page, native before generic |
 | `templates/placeholder.php` | The overridable §5.1 template; ships in the zip |
 
@@ -177,6 +177,34 @@ author could write it; it also spliced a placeholder into `<img alt="<iframe
 src=…">`. The `opener-in-attribute`, `raw-container-in-attribute` and
 `iframe-in-attribute` fixtures pin this. Never add a second regex that walks
 the raw bytes for a tag name.
+
+## The forged-panel trap (`gate.js`, `PlaceholderRenderer`)
+
+gate.js executes what the payload tells it to: it loads a script URL,
+restores an inline `srcdoc` document, re-runs inline loader code. WordPress's
+kses lets users **without** `unfiltered_html` — Contributors, Authors — write
+`class` and any `data-*` attribute on every tag, plus `<div>` and `<button>`
+(`_wp_add_global_attributes` in `wp-includes/kses.php`). So when the payload
+lived in `data-cg-payload` (0.x), a Contributor could author the whole panel
+verbatim in post content — `<div class="cg-embed" data-cg-payload='{"strategy":
+"script","inline":"…"}'><button class="cg-embed__button">` — and the visitor's
+click, a consent-memory restore with scope "all", a CMP-bridge grant, or the
+Editor's preview ran it. A stored XSS with a Contributor account.
+
+The one thing kses never produces is a `<script>` element. The payload is
+therefore the container's first child, `<script type="application/json"
+class="cg-embed__payload">`, and `gate.js` reads a payload from `payloadOf()`
+and **nowhere else**. Rules that follow: never move the payload back into an
+attribute; never add a second executable field that gate.js reads from a
+`data-cg-*` attribute (a data attribute may carry identity — provider, host —
+never anything to execute); a custom template echoes `$payload_tag` raw as a
+direct child; `ScriptRule` must keep skipping non-JavaScript `type`s
+(`ScriptType`), or the carrier itself becomes a companion. Pinned by
+`tests/E2E/forged-panel.spec.js` (forged panels in content next to a real
+one) and the WordPress test that seeds the forgery through `wp_kses_post()` —
+which also proves kses still lets it through. Known cost: a theme that runs
+`wp_kses_post()` over *rendered* content strips the element and shows a dead
+button with a working link — visible, which invariant 6 prefers.
 
 ## The authority-confusion trap (`HostMatcher`, invariant 6)
 

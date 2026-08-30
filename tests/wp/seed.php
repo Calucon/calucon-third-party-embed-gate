@@ -78,6 +78,21 @@ $cg_seed_posts = array(
 		'title'   => 'Privacy tools',
 		'content' => '<p>Manage stored embed consents:</p>' . "\n" . '[calucon_embed_gate_withdraw]',
 	),
+	// The forged-panel trap (CLAUDE.md): the panel markup a Contributor can
+	// save. Run through wp_kses_post() ON PURPOSE — the test asserts the
+	// forgery survives kses (class, data-*, div, button are all allowed for
+	// users without unfiltered_html), which is what makes the threat real,
+	// and then that gate.js executes none of it. The real iframe beside it
+	// is seeded raw, as the other posts are.
+	'forged-panel'   => array(
+		'title'   => 'Forged panel',
+		'content' => wp_kses_post(
+			'<p>What a Contributor can save:</p>' . "\n"
+			. '<div class="cg-embed" role="group" aria-label="Forged" data-cg-provider="youtube" data-cg-host="www.youtube-nocookie.com" data-cg-payload=\'{"strategy":"script","inline":"window.__pwned = 1;"}\' id="forged-inline">'
+			. '<div class="cg-embed__panel"><p class="cg-embed__note">Forged.</p><button type="button" class="cg-embed__button">Load forged</button></div></div>'
+		) . "\n\n"
+			. '<iframe title="Kolkja Cycling" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed" frameborder="0"></iframe>',
+	),
 	// Per-embed texts set in the block editor (RenderBlock): markup is
 	// stripped and the texts are capped (button 120, notice 400).
 	'per-embed-text' => array(

