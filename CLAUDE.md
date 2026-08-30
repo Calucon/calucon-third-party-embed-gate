@@ -169,6 +169,15 @@ production: the source site's first audit missed seven iframes on five pages
 exactly this way. Any change to `HtmlScanner` must keep the minified fixtures
 green, and any new fixture must include a minified variant.
 
+The scanner is **one sequential, attribute-aware pass** (`tokenize()`), and
+must stay one: a tag is opened only where a browser opens one. The byte-level
+scan it replaced saw `<!--` inside `<div data-x="<!--">` and hid every embed
+after it — silently, and kses keeps `<` inside attribute values, so any
+author could write it; it also spliced a placeholder into `<img alt="<iframe
+src=…">`. The `opener-in-attribute`, `raw-container-in-attribute` and
+`iframe-in-attribute` fixtures pin this. Never add a second regex that walks
+the raw bytes for a tag name.
+
 ## The authority-confusion trap (`HostMatcher`, invariant 6)
 
 `parse_url()` and the browser disagree on where a URL's authority ends, and
