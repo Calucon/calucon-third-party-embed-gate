@@ -172,8 +172,12 @@ final class ElementorVideoRule {
 			}
 			$provider['strategy'] = 'iframe';
 			// The watch page is the honest no-JS link (§9.5): a real page, and
-			// the one the owner pasted.
-			$provider['fallback'] = '' !== $watch ? $watch : $src;
+			// the one the owner pasted — but only when it IS a page. The id
+			// above is read from anywhere in the string, so a setting like
+			// `java\tscript:alert(1)//youtu.be/{id}` still yields an id and a
+			// gated player; the link must then fall back to the embed URL,
+			// never carry the setting through to an href.
+			$provider['fallback'] = HostMatcher::FOREIGN === $this->hosts->classify( $watch ) ? $watch : $src;
 
 			$poster_ctx = $this->poster_from_overlay( substr( $html, $wrapper_open_end, $close - $wrapper_open_end ) );
 
@@ -316,9 +320,13 @@ final class ElementorVideoRule {
 	 */
 	private static function replace_data_settings( string $tag, string $json ): string {
 		$encoded = htmlspecialchars( $json, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-		$out     = preg_replace(
+		// Both characters PCRE reads in a replacement string: '$' (a group
+		// reference) and '\' (an escape — a JSON "a\\z" lost one backslash and
+		// came out as invalid JSON, so Elementor could no longer read its own
+		// surviving settings).
+		$out = preg_replace(
 			'#(\sdata-settings\s*=\s*)(?:"[^"]*"|\'[^\']*\'|[^\s>]+)#i',
-			'${1}"' . str_replace( '$', '\\$', $encoded ) . '"',
+			'${1}"' . str_replace( array( '\\', '$' ), array( '\\\\', '\\$' ), $encoded ) . '"',
 			$tag,
 			1
 		);

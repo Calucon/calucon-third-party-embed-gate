@@ -30,6 +30,15 @@ use CaluconEmbedGate\Support\ThemePalette;
  */
 final class SettingsPage {
 
+	/**
+	 * Nonce action for the two on-demand scans (content and theme). They
+	 * write nothing, but they are not free: 50 posts through the_content —
+	 * whatever shortcodes and filters that runs — and up to 40 theme files,
+	 * as the logged-in administrator. Work an outside page can trigger with
+	 * an image tag is work that wants a nonce, capability or not.
+	 */
+	private const SCAN_NONCE = 'calucon-embed-gate-scan';
+
 	/** @var callable Returns the provider descriptors; resolved lazily so
 	 *                providers registered by the theme's functions.php (which
 	 *                loads after plugins_loaded) appear in the table and the
@@ -466,7 +475,7 @@ final class SettingsPage {
 				</p>
 
 				<p class="cg-scan-cta">
-					<a class="button" href="<?php echo esc_url( add_query_arg( 'calucon-embed-gate-scan', '1' ) . '#cg-status' ); ?>"><?php esc_html_e( 'Check what is on my site', 'calucon-third-party-embed-gate' ); ?></a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'calucon-embed-gate-scan', '1' ), self::SCAN_NONCE ) . '#cg-status' ); ?>"><?php esc_html_e( 'Check what is on my site', 'calucon-third-party-embed-gate' ); ?></a>
 					<span class="description"><?php esc_html_e( 'Lists every embed in your recent posts and pages, whether it is gated, and lets you make exceptions without typing a host name. Read-only; nothing leaves your site.', 'calucon-third-party-embed-gate' ); ?></span>
 				</p>
 
@@ -813,6 +822,21 @@ final class SettingsPage {
 	 *
 	 * @return array<string,string> key => SVG inner markup.
 	 */
+	/**
+	 * Was one of the scans requested by a link this page wrote?
+	 *
+	 * @return bool
+	 */
+	private static function scan_requested(): bool {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- verified on the next line.
+		if ( ! isset( $_GET['calucon-embed-gate-scan'] ) ) {
+			return false;
+		}
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wp_verify_nonce() takes the raw string.
+		$nonce = isset( $_GET['_wpnonce'] ) ? (string) wp_unslash( $_GET['_wpnonce'] ) : '';
+		return false !== wp_verify_nonce( $nonce, self::SCAN_NONCE );
+	}
+
 	private static function choice_icons(): array {
 		$rect       = '<rect x="3" y="5" width="18" height="14" rx="%s" fill="currentColor" opacity="0.85"/>';
 		$outline    = '<rect x="3.75" y="5.75" width="16.5" height="12.5" rx="%s" fill="none" stroke="currentColor" stroke-width="1.5"/>';
@@ -1703,13 +1727,12 @@ final class SettingsPage {
 		// "rendering 50 posts through the content filters is not free". This
 		// ran on every load of the settings page instead. Same button, same
 		// query parameter: one click does both expensive reads.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only scan, no state changes; capability-gated by the page.
-		$theme_scan_requested = isset( $_GET['calucon-embed-gate-scan'] );
+		$theme_scan_requested = self::scan_requested();
 		if ( ! $theme_scan_requested ) :
 			?>
 			<h3><?php esc_html_e( 'Third-party assets in your theme', 'calucon-third-party-embed-gate' ); ?></h3>
 			<p>
-				<a class="button" href="<?php echo esc_url( add_query_arg( 'calucon-embed-gate-scan', '1' ) . '#cg-compatibility' ); ?>"><?php esc_html_e( 'Check my theme', 'calucon-third-party-embed-gate' ); ?></a>
+				<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'calucon-embed-gate-scan', '1' ), self::SCAN_NONCE ) . '#cg-compatibility' ); ?>"><?php esc_html_e( 'Check my theme', 'calucon-third-party-embed-gate' ); ?></a>
 				<span class="description"><?php esc_html_e( 'Reads your theme\'s own stylesheets and its functions.php, looking for third-party asset hosts — fonts and CDN files, which load on every page view outside what an embed gate can cover. Read-only; no outbound requests. Runs on request because reading the files takes time.', 'calucon-third-party-embed-gate' ); ?></span>
 			</p>
 			<?php
@@ -1773,11 +1796,10 @@ final class SettingsPage {
 			</table>
 		<?php endif; ?>
 		<?php
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only scan, no state changes; capability-gated by the page.
-		if ( ! isset( $_GET['calucon-embed-gate-scan'] ) ) {
+		if ( ! self::scan_requested() ) {
 			?>
 			<p>
-				<a class="button" href="<?php echo esc_url( add_query_arg( 'calucon-embed-gate-scan', '1' ) . '#cg-status' ); ?>"><?php esc_html_e( 'Scan recent content', 'calucon-third-party-embed-gate' ); ?></a>
+				<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'calucon-embed-gate-scan', '1' ), self::SCAN_NONCE ) . '#cg-status' ); ?>"><?php esc_html_e( 'Scan recent content', 'calucon-third-party-embed-gate' ); ?></a>
 				<span class="description"><?php esc_html_e( 'Renders your latest posts and pages in memory and reports every embed found and whether it is gated. Read-only; no outbound requests.', 'calucon-third-party-embed-gate' ); ?></span>
 			</p>
 			<?php

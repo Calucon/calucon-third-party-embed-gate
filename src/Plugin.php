@@ -732,9 +732,14 @@ final class Plugin {
 		if ( function_exists( 'wp_is_json_request' ) && wp_is_json_request() ) {
 			return current_user_can( 'edit_posts' );
 		}
+		// An editing context claimed by a query parameter is honoured only for
+		// someone who can edit — the same discriminator as the AJAX and REST
+		// branches above. Without the capability check this was a bypass:
+		// any link to `/page/?context=edit` served an anonymous visitor the
+		// raw embeds, and the parameter is in everyone's hands.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only context probe.
 		if ( isset( $_GET['context'] ) && 'edit' === $_GET['context'] ) {
-			return true;
+			return current_user_can( 'edit_posts' );
 		}
 		if ( is_feed() || is_embed() ) {
 			return true;

@@ -256,9 +256,13 @@
 	};
 
 	function runReadyHook( providerId ) {
+		// Own properties only: a provider id is a string off the container's
+		// attribute, and 'constructor' must never resolve to Object and be
+		// called.
 		var custom = window.caluconEmbedGateReadyHooks || {};
-		var hook = custom[ providerId ] || readyHooks[ providerId ];
-		if ( hook ) {
+		var hook = ( Object.prototype.hasOwnProperty.call( custom, providerId ) && custom[ providerId ] )
+			|| ( Object.prototype.hasOwnProperty.call( readyHooks, providerId ) && readyHooks[ providerId ] );
+		if ( typeof hook === 'function' ) {
 			try {
 				hook();
 			} catch ( e ) {
@@ -268,6 +272,15 @@
 	}
 
 	function loadScriptOnce( src, done, fail ) {
+		// Both callers check the scheme first; this is the guard for the
+		// third caller that does not — a script element only ever gets an
+		// http(s) URL from here.
+		if ( ! /^(https?:)?\/\//i.test( src ) ) {
+			if ( fail ) {
+				fail();
+			}
+			return;
+		}
 		var state = scriptStates[ src ];
 		if ( state && state.loaded ) {
 			done();

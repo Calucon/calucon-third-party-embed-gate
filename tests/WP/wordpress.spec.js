@@ -203,6 +203,17 @@ test( 'editor REST content is NOT gated — invariant 4', async ( { page, reques
 	expect( post.content.rendered ).not.toContain( 'cg-embed' );
 } );
 
+test( 'a ?context=edit query string does not ungate the page for a visitor', async ( { request } ) => {
+	// The parameter marks an editing context (invariant 4) and is honoured
+	// only for someone who can edit. Before the capability check any link to
+	// /page/?context=edit served the raw embeds to whoever followed it.
+	const response = await request.get( '/gated-classic/?context=edit' );
+	expect( response.ok() ).toBe( true );
+	const html = await response.text();
+	expect( html ).toContain( 'cg-embed' );
+	expect( html ).not.toMatch( /<iframe[^>]*youtube\.com\/embed/ );
+} );
+
 test( 'withdraw shortcode renders a real button with its live region', async ( { page } ) => {
 	await page.goto( '/withdraw-page/' );
 
@@ -1255,11 +1266,18 @@ test( 'admin: the scan turns a discovered host into a one-click exception, and n
 	// A fresh query each time: navigating to the same URL only moves the
 	// fragment, which would leave a staged (unsaved) value in the DOM. After
 	// staging, the hash points at the Detection tab, so ask for Status by name.
-	const scanUrl = () => `/wp-admin/options-general.php?page=calucon-embed-gate&calucon-embed-gate-scan=1&_=${ Date.now() }#cg-status`;
+	// The scan itself is reached through the link the page writes — it
+	// carries the nonce the scan now requires, so a hand-built URL would show
+	// no results (that is asserted in its own test).
+	const settingsUrl = () => `/wp-admin/options-general.php?page=calucon-embed-gate&_=${ Date.now() }#cg-status`;
 	const partner = () => page.locator( '#cg-scan-results tbody tr', { hasText: 'widgets.example-partner.com' } ).first();
 	const neverGate = () => page.locator( '#cg-never-gate' );
 	const openScan = async () => {
-		await page.goto( scanUrl() );
+		await page.goto( settingsUrl() );
+		await page.waitForSelector( '.cg-tabs' );
+		await page.click( '#cg-tabbtn-status' );
+		await page.locator( '#cg-tab-status a.button', { hasText: 'Scan recent content' } ).click();
+		await page.waitForURL( /_wpnonce=/ );
 		await page.waitForSelector( '.cg-tabs' );
 		await page.click( '#cg-tabbtn-status' );
 	};
@@ -1718,6 +1736,28 @@ test( 'compatibility: the remaining exclusion-list advice, and the copy around i
 	await expect( statusTab ).toContainText( 'costs nothing measurable' );
 	await expect( statusTab ).toContainText( 'calucon-embed-gate-js-before' );
 	await expect( statusTab ).toContainText( 'Wording can differ between versions' );
+} );
+
+test( 'admin: the scans run only from a link this page wrote — a bare query string does nothing', async ( { page } ) => {
+	// Both scans are read-only but not free (50 posts through the_content,
+	// 40 theme files), and they ran on any GET carrying the parameter — the
+	// shape a cross-site image tag produces. Now the parameter needs the
+	// page's own nonce.
+	await login( page );
+
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&calucon-embed-gate-scan=1' );
+	await page.waitForSelector( '.cg-tabs' );
+	await page.click( '#cg-tabbtn-status' );
+	const statusTab = page.locator( '#cg-tab-status' );
+	await expect( statusTab.locator( '#cg-scan-results' ) ).toHaveCount( 0 );
+	await expect( statusTab ).not.toContainText( 'None found in your theme' );
+	await expect( statusTab.locator( 'a.button', { hasText: 'Scan recent content' } ) ).toHaveCount( 1 );
+
+	// The link the page wrote carries the nonce, and that one scans.
+	await statusTab.locator( 'a.button', { hasText: 'Scan recent content' } ).click();
+	await page.waitForURL( /_wpnonce=/ );
+	await page.click( '#cg-tabbtn-status' );
+	await expect( page.locator( '#cg-scan-results' ) ).toHaveCount( 1 );
 } );
 
 test( 'compatibility: the theme scan is on demand, and says what it did not look at', async ( { page } ) => {

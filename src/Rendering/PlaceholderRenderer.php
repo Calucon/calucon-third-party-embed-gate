@@ -15,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use CaluconEmbedGate\Detection\HostMatcher;
+
 /**
  * Renders the §5.1 panel. The panel must work with JavaScript disabled:
  * the fallback link is a real link to a real page (invariant 2), and the
@@ -327,11 +329,7 @@ final class PlaceholderRenderer {
 		if ( ! isset( $ctx['poster'] ) || ! is_string( $ctx['poster'] ) ) {
 			return '';
 		}
-		$poster = trim( $ctx['poster'] );
-		if ( '' === $poster || preg_match( '/^(javascript|data|blob):/i', $poster ) ) {
-			return '';
-		}
-		return $poster;
+		return HostMatcher::navigable( $ctx['poster'] );
 	}
 
 	/**
@@ -358,26 +356,24 @@ final class PlaceholderRenderer {
 	}
 
 	/**
-	 * A fallback link must be navigable. Reject script-capable and opaque
-	 * schemes (javascript:, data:, vbscript:, blob:, …) that esc()'s
+	 * A fallback link must be navigable. Script-capable and opaque schemes
+	 * (javascript:, data:, vbscript:, blob:, …) are exactly what esc()'s
 	 * htmlspecialchars does not neutralise in an href context; http(s),
-	 * protocol-relative and same-origin relative URLs pass. Other URL sinks
-	 * (poster_of, the load src) guard their scheme the same way — this closes
-	 * the one path a filter, provider descriptor or harvested blockquote href
-	 * could otherwise put a `javascript:` URL behind the fallback link.
+	 * protocol-relative and same-origin relative URLs pass. This closes the
+	 * one path a filter, provider descriptor, page-builder setting or
+	 * harvested blockquote href could otherwise put a `javascript:` URL
+	 * behind the fallback link.
+	 *
+	 * Delegated to HostMatcher::navigable() so the scheme is read the way a
+	 * browser reads it — after stripping tab/newline and leading controls.
+	 * The first version of this guard tested the raw string, and
+	 * `java\tscript:alert(1)` walked straight through it into the href.
 	 *
 	 * @param string $url Candidate fallback URL.
 	 * @return string The URL, or '' when its scheme is not navigable.
 	 */
 	private function safe_url( string $url ): string {
-		$url = trim( $url );
-		if ( '' === $url ) {
-			return '';
-		}
-		if ( preg_match( '/^[a-z][a-z0-9+.-]*:/i', $url ) && ! preg_match( '#^https?://#i', $url ) ) {
-			return '';
-		}
-		return $url;
+		return HostMatcher::navigable( $url );
 	}
 
 	/**
