@@ -238,20 +238,44 @@ final class TranslationTest extends TestCase {
 			$swiss = 0 === strpos( $locale, 'de_CH' );
 			foreach ( $from as $msgid => $text ) {
 				// Switzerland writes ss for ß and quotes with guillemets;
-				// everything else is the source translation verbatim.
-				$expected = $swiss ? str_replace( array( 'ß', '„', '“' ), array( 'ss', '«', '»' ), $text ) : $text;
+				// everything else is the source translation verbatim. The one
+				// exemption is a ß with no letter beside it: the character
+				// being named rather than used ("mit ss statt ß"), which
+				// survives — see bin/derive-german-locales.php.
+				$expected = $swiss ? self::swiss( $text ) : $text;
 				self::assertSame( $expected, $to[ $msgid ], "$locale drifted from $source" );
 			}
 
 			if ( $swiss ) {
 				$body = (string) file_get_contents( "$dir$locale.po" );
-				self::assertStringNotContainsString( 'ß', $body, "$locale must not contain a sharp S" );
+				// A ß beside a letter is a word spelt the German-Germany way and
+				// must not survive; an isolated one is the character being
+				// named and does. Checking the rule, not the byte.
+				self::assertSame(
+					0,
+					preg_match( '/(?<=\p{L})ß|ß(?=\p{L})/u', $body ),
+					"$locale must not spell a word with a sharp S"
+				);
 				self::assertStringNotContainsString( '„', $body, "$locale quotes with guillemets" );
 			}
 		}
 
 		// The source locales keep German-Germany orthography.
 		self::assertStringContainsString( 'ß', (string) file_get_contents( $dir . 'de_DE.po' ) );
+	}
+
+	/**
+	 * Swiss orthography, restated here rather than imported from
+	 * bin/derive-german-locales.php so this test stays an independent check of
+	 * what that script did. Keep the two in step.
+	 *
+	 * @param string $text German-Germany translation.
+	 * @return string
+	 */
+	private static function swiss( string $text ): string {
+		$text = preg_replace( '/(?<=\p{L})ß|ß(?=\p{L})/u', 'ss', $text );
+
+		return str_replace( array( '„', '“' ), array( '«', '»' ), (string) $text );
 	}
 
 	/**

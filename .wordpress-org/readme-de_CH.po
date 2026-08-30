@@ -1,5 +1,5 @@
-# Translation of Plugins - Calucon Third-Party Embed Gate - Stable Readme (latest release) in German
-# This file is distributed under the same license as the Plugins - Calucon Third-Party Embed Gate - Stable Readme (latest release) package.
+# Translation of Plugins - Calucon Third-Party Embed Gate - Development Readme (trunk) in German
+# This file is distributed under the same license as the Plugins - Calucon Third-Party Embed Gate - Development Readme (trunk) package.
 msgid ""
 msgstr ""
 "PO-Revision-Date: +0000\n"
@@ -9,12 +9,12 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: GlotPress/4.1.0\n"
 "Language: de-ch\n"
-"Project-Id-Version: Plugins - Calucon Third-Party Embed Gate - Stable Readme (latest release)\n"
+"Project-Id-Version: Plugins - Calucon Third-Party Embed Gate - Development Readme (trunk)\n"
 
 #. Short description.
 #, gp-priority: high
-msgid "YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click pattern. No request, no cookie, no banner."
-msgstr "YouTube, Maps und andere Drittanbieter-Einbettungen laden erst, wenn der Besucher klickt. Zwei-Klick-Lösung: keine Anfrage, kein Cookie, kein Banner."
+msgid "YouTube, Maps and social embeds load only when the visitor clicks — the two-click solution for WordPress. Nothing contacted, nothing stored before."
+msgstr "YouTube, Maps und Social-Media-Einbettungen laden erst auf Klick – die Zwei-Klick-Lösung. Vorher keine Anfrage an Drittanbieter, keine Speicherung."
 
 #. Plugin name.
 #, gp-priority: high
@@ -22,8 +22,172 @@ msgid "Calucon Third-Party Embed Gate"
 msgstr "Calucon Third-Party Embed Gate"
 
 #. Found in faq paragraph.
+msgid "No. Lazy loading defers the request to scroll time — it is still made without consent. Lazy iframes are gated like any other."
+msgstr "Nein. Lazy Loading verschiebt die Anfrage auf den Moment des Scrollens – gestellt wird sie trotzdem ohne Einwilligung. Lazy-Iframes werden gesperrt wie alle anderen auch."
+
+#. Found in faq paragraph.
+msgid "Yes. The Appearance tab has quick styles, colours that can follow your theme's palette, and controls for corners, border, shadow, spacing, the button, the poster image and dark mode, with a live preview and an automatic readability check. One checkbox on the Providers tab adds a link to each provider's own privacy policy to the placeholder (off by default; the URL can differ per provider, and showing the link fetches nothing). Your own CSS still works on top: the panel exposes CSS custom properties and a template override (see docs/customizing.md in the plugin folder)."
+msgstr "Ja. Der Tab «Design» bietet Schnellstile, Farben, die der Palette Ihres Themes folgen können, sowie Einstellungen für Ecken, Rand, Schatten, Abstände, Button, Posterbild und Dunkelmodus – mit Live-Vorschau und automatischer Lesbarkeitsprüfung. Ein Häkchen im Tab «Anbieter» ergänzt in jedem Platzhalter einen Link auf die Datenschutzerklärung des jeweiligen Anbieters; standardmässig ist das aus, die URL lässt sich pro Anbieter abweichend setzen, und durch das Anzeigen des Links wird beim Anbieter nichts abgerufen. Eigenes CSS wirkt weiterhin darüber: Der Platzhalter stellt CSS-Custom-Properties bereit und lässt sich per Template überschreiben (siehe docs/customizing.md im Plugin-Ordner)."
+
+#. Found in faq paragraph.
+msgid "Elementor's HTML and video widgets are gated out of the box. Other builders render outside WordPress's content filters, where the plugin listens by default: enable \"Gate the whole page output\" under Settings → Calucon Third-Party Embed Gate → Detection and the plugin reads the finished page instead. It is off by default because whole-page buffering can conflict with other buffering plugins."
+msgstr "Die HTML- und Video-Widgets von Elementor werden von Haus aus gesperrt. Andere Page-Builder rendern ausserhalb der Inhaltsfilter von WordPress, an denen das Plugin standardmässig ansetzt: Aktivieren Sie «Die gesamte Seitenausgabe sperren» unter Einstellungen → Calucon Third-Party Embed Gate → Erkennung, dann liest das Plugin stattdessen die fertige Seite. Die Option ist standardmässig aus, weil das Puffern der gesamten Seite mit anderen puffernden Plugins kollidieren kann."
+
+#. Found in faq paragraph.
+msgid "And if the placeholder looks unstyled after an update: a minification setup that serves CSS from a long-cached URL can keep browsers on the old stylesheet. A hard reload fixes it; the plugin cannot."
+msgstr "Und wenn der Platzhalter nach einem Update ungestylt aussieht: Liefert Ihre Minifizierung CSS von einer URL aus, die lange im Cache bleibt, halten Browser womöglich am alten Stylesheet fest. Ein harter Reload behebt das; das Plugin kann es nicht."
+
+#. Found in faq paragraph.
+msgid "Yes. Gating happens on the server, so the page that gets cached is the gated one, and minified HTML is expected rather than a problem — the scanner is built for it. Deferring, combining or lazily injecting the plugin's script all work too."
+msgstr "Ja. Gesperrt wird auf dem Server, gespeichert wird also die bereits gesperrte Seite, und minifiziertes HTML ist eingeplant und kein Problem – der Scanner ist dafür gebaut. Auch Deferring, Zusammenfassen oder spätes Nachladen des Plugin-Skripts funktionieren."
+
+#. Found in installation list item.
+msgid "Optional: open <strong>Settings → Calucon Third-Party Embed Gate</strong> to adjust appearance, per-provider behaviour, detection rules, consent memory and the consent-platform bridge. None of it is needed to be protected."
+msgstr "Optional: Unter <strong>Einstellungen → Calucon Third-Party Embed Gate</strong> lassen sich Design, Verhalten pro Anbieter, Erkennungsregeln, das Merken der Einwilligung und die Brücke zur Consent-Plattform anpassen. Für den Schutz ist nichts davon nötig."
+
+#. Found in installation list item.
+msgid "That is all. Third-party embeds on the front end are now click-to-load, and nothing third-party is contacted before the visitor clicks. Editors keep seeing the normal embed in the block editor, so nothing changes about how you write posts."
+msgstr "Das war alles. Einbettungen von Drittanbietern laden im Frontend jetzt erst auf Klick, und vor dem Klick des Besuchers wird kein Drittanbieter kontaktiert. Redakteure sehen im Block-Editor weiterhin die normale Einbettung – am Schreiben ändert sich also nichts."
+
+#. Found in description paragraph.
+msgid "Calucon Third-Party Embed Gate is a technical measure, not a consent management platform. It prevents the embed providers' requests until the visitor acts, and the click is consent for that one embed (or, with consent memory on, for the scope you configure). It does not produce consent records for accountability purposes, it does not audit your site for other trackers, and it makes no legal claim about your site. Your privacy policy still has to name the providers you embed from, and your legal bases remain yours. If you need a documented consent record, you need a consent management platform."
+msgstr "Calucon Third-Party Embed Gate ist eine technische Massnahme, keine Consent-Management-Plattform. Es verhindert die Anfragen der Einbettungsanbieter, bis der Besucher handelt, und der Klick ist die Einwilligung für diese eine Einbettung – oder, wenn das Merken der Einwilligung aktiviert ist, für den von Ihnen eingestellten Bereich. Es erzeugt keine Einwilligungsnachweise für Rechenschaftszwecke, es untersucht Ihre Website nicht auf andere Tracker und es trifft keine rechtlichen Aussagen über Ihre Website. Verantwortlich bleiben Sie: für Ihre Datenschutzerklärung, die weiterhin die Anbieter nennen muss, von denen Sie einbetten, und für Ihre Rechtsgrundlagen. Wer einen dokumentierten Einwilligungsnachweis braucht, braucht eine Consent-Management-Plattform."
+
+#. Found in description paragraph.
+msgid "Every month those claims are re-tested on a real WordPress against the current versions of the plugins that are free to install; the ones that are not (WP Rocket, Borlabs Cookie, WPML, Weglot, Cookiebot's banner) are tested against simulations of their documented behaviour."
+msgstr "Diese Angaben werden monatlich auf einem echten WordPress mit den aktuellen Versionen der frei installierbaren Plugins nachgeprüft. Die übrigen – WP Rocket, Borlabs Cookie, WPML, Weglot und das Banner von Cookiebot – werden anhand von Simulationen ihres dokumentierten Verhaltens geprüft."
+
+#. Found in description paragraph.
+msgid "A plain request to <code>www.youtube.com/embed/…</code> — no playback, no scripts run — sets six cookies, four of them identifiers that live about six months (measured August 2026). Every visitor gets them on every page with a video, whether or not they ever press play. The same request to <code>www.youtube-nocookie.com</code> sets none, and that is where this plugin loads YouTube from after the click."
+msgstr "Eine einfache Anfrage an <code>www.youtube.com/embed/…</code> – ohne Wiedergabe und ohne ausgeführte Skripte – setzt sechs Cookies, vier davon Kennungen mit rund sechs Monaten Laufzeit (gemessen im August 2026). Jeder Besucher bekommt sie auf jeder Seite mit einem Video, ganz gleich, ob er die Wiedergabe je startet. Dieselbe Anfrage an <code>www.youtube-nocookie.com</code> setzt keines – und von dort lädt dieses Plugin YouTube nach dem Klick."
+
+#. Found in description paragraph.
+msgid "See it on the <a href=\"https://calucon.de/third-party-embed-gate-showcase/\">live demo</a> — all 36 providers on one page, 30 of them with live content, and zero third-party requests until you press a button — or read the details on the <a href=\"https://calucon.de/third-party-embed-gate/\">plugin page</a>."
+msgstr "Sehen Sie sich die <a href=\"https://calucon.de/third-party-embed-gate-showcase/\">Live-Demo</a> an – alle 36 Anbieter auf einer Seite, 30 davon mit echten Inhalten, null Anfragen an Drittanbieter, bis Sie einen Button drücken – oder lesen Sie die Details auf der <a href=\"https://calucon.de/third-party-embed-gate/\">Plugin-Seite</a>."
+
+#. Found in description paragraph.
+msgid "Every YouTube video, Google Map and Instagram post on your site contacts its provider the moment the page opens — before the visitor has agreed to anything. Calucon Third-Party Embed Gate holds those embeds behind a click-to-load placeholder. Until the visitor presses \"Load\", nothing is requested from the provider and nothing is stored on their device — not by the provider, and not by this plugin. That is the two-click solution (Zwei-Klick-Lösung), done properly: no cookie banner, no consent platform, no account, no subscription. It works the moment it is activated."
+msgstr "Jedes YouTube-Video, jede Karte von Google Maps und jeder Instagram-Beitrag auf Ihrer Website kontaktiert seinen Anbieter, sobald die Seite geöffnet wird – noch bevor der Besucher irgendetwas zugestimmt hat. Calucon Third-Party Embed Gate hält diese Einbettungen hinter einem Platzhalter zurück, der erst auf Klick lädt. Bis der Besucher auf «Laden» drückt, wird beim Anbieter nichts angefragt und auf seinem Gerät nichts gespeichert – weder vom Anbieter noch von diesem Plugin. Das ist die Zwei-Klick-Lösung, sauber umgesetzt: kein Cookie-Banner, keine Consent-Plattform, kein Konto, kein Abonnement. Das Plugin wirkt, sobald es aktiviert ist."
+
+#. Found in description list item.
+msgid "Stable since 1.0: the markup contract (<code>cg-</code> classes, <code>data-cg-*</code> attributes, <code>--cg-*</code> custom properties), the documented hooks, the template variables, the settings keys and the WP-CLI commands do not change across minor releases; provider descriptors and the tested-platform lists are data and may. <code>docs/customizing.md</code> ships inside the plugin and is written for developers and AI coding agents alike."
+msgstr "Stabil seit 1.0: Der Markup-Vertrag (<code>cg-</code>-Klassen, <code>data-cg-*</code>-Attribute, <code>--cg-*</code>-Custom-Properties), die dokumentierten Hooks, die Template-Variablen, die Einstellungsschlüssel und die WP-CLI-Befehle bleiben über Minor-Releases hinweg unverändert; die Beschreibungen der Anbieter und die Listen der getesteten Plattformen sind Daten und können sich ändern. <code>docs/customizing.md</code> wird im Plugin mitgeliefert und ist für Entwickler wie für KI-Agenten geschrieben."
+
+#. Found in description list item.
+msgid "WP-CLI: <code>wp calucon-embed-gate scan</code> (is every embed gated? <code>--format=json</code> for CI and automation) and <code>wp calucon-embed-gate providers</code>. Both read-only."
+msgstr "WP-CLI: <code>wp calucon-embed-gate scan</code> (ist jede Einbettung gesperrt? <code>--format=json</code> für CI und Automatisierung) und <code>wp calucon-embed-gate providers</code>. Beide lesen nur."
+
+#. Found in description list item.
+msgid "Multilingual sites: WPML, Polylang, TranslatePress, Weglot."
+msgstr "Mehrsprachige Websites: WPML, Polylang, TranslatePress, Weglot."
+
+#. Found in description list item.
+msgid "Page builders: Elementor's HTML and video widgets are gated out of the box. For a builder that renders outside WordPress's content filters, \"Gate the whole page output\" under Detection reads the finished page instead."
+msgstr "Page-Builder: Die HTML- und Video-Widgets von Elementor werden von Haus aus gesperrt. Rendert ein Builder ausserhalb der Inhaltsfilter von WordPress, liest das Plugin mit der Option «Die gesamte Seitenausgabe sperren» unter Erkennung stattdessen die fertige Seite."
+
+#. Found in description list item.
+msgid "Consent platforms, through the optional bridge: WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner. The bridge only reads the platform's answer; with any other platform, or no answer, gating stands."
+msgstr "Consent-Plattformen über die optionale Brücke: WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner. Die Brücke liest nur die Antwort der Plattform; bei jeder anderen Plattform und ohne Antwort bleibt die Sperre bestehen."
+
+#. Found in description list item.
+msgid "Caching and optimisation plugins: W3 Total Cache, WP Super Cache, LiteSpeed Cache, Autoptimize, WP Fastest Cache, SiteGround Optimizer, WP Rocket. Gating happens on the server, so the cached page is the gated one; Status &amp; tools names the files to exclude from \"delay JavaScript\" and where that plugin keeps its list."
+msgstr "Caching- und Optimierungs-Plugins: W3 Total Cache, WP Super Cache, LiteSpeed Cache, Autoptimize, WP Fastest Cache, SiteGround Optimizer, WP Rocket. Gesperrt wird auf dem Server, gespeichert wird also die bereits gesperrte Seite. Unter Status und Werkzeuge stehen die Dateien, die Sie von «JavaScript verzögern» ausnehmen sollten, samt dem Ort, an dem das jeweilige Plugin seine Ausschlussliste führt."
+
+#. Found in description list item.
+msgid "Never phones home. No telemetry, no update check against a private server, no remote font or script — no outbound request from your server or your visitors' browsers, on any path, for any reason."
+msgstr "Funkt nie nach Hause. Keine Telemetrie, keine Update-Prüfung bei einem privaten Server, keine entfernte Schrift, kein entferntes Skript – keine ausgehende Anfrage von Ihrem Server oder aus den Browsern Ihrer Besucher, auf keinem Weg und aus keinem Grund."
+
+#. Found in description list item.
+msgid "Optional and off by default: remember the visitor's choice in their browser (per embed, per provider or for all; for the session or a number of days) with a withdrawal block and shortcode — and a bridge to your consent platform, so a consent given there loads the embeds and a withdrawal there re-gates them."
+msgstr "Optional und standardmässig aus: Die Entscheidung des Besuchers lässt sich in seinem Browser merken – pro Einbettung, pro Anbieter oder für alle Einbettungen, für die Sitzung oder für eine bestimmte Zahl von Tagen. Für den Widerruf gibt es einen Block und einen Shortcode. Dazu kommt eine Brücke zu Ihrer Consent-Plattform: Eine dort erteilte Einwilligung lädt die Einbettungen, ein Widerruf dort sperrt sie wieder."
+
+#. Found in description list item.
+msgid "Speaks German: the plugin ships translated for all five German locales (Germany du and Sie, Austria, Switzerland), and the texts you type are registered for WPML and Polylang."
+msgstr "Deutsch ist dabei: Das Plugin wird für alle fünf deutschen Sprachvarianten übersetzt mitgeliefert (Deutschland du und Sie, Österreich, Schweiz), und die Texte, die Sie selbst eingeben, sind für WPML und Polylang zur Übersetzung angemeldet."
+
+#. Found in description list item.
+msgid "Looks like your site, without CSS: quick styles, colours that follow your theme's palette, corners, borders, shadows, button styles and dark-mode colours, with a live preview and an automatic readability check — plus a poster image per embed from your own media library, never fetched from the provider, and per-embed button and notice text in the block editor."
+msgstr "Passt sich ohne CSS an Ihre Website an: Schnellstile, Farben, die der Palette Ihres Themes folgen, Ecken, Ränder, Schatten, Button-Stile und eigene Farben für den Dunkelmodus. Eine Live-Vorschau zeigt das Ergebnis, eine automatische Lesbarkeitsprüfung achtet auf den Kontrast. Dazu kommen ein Posterbild pro Einbettung aus Ihrer eigenen Mediathek – nie beim Anbieter geholt – sowie Button- und Hinweistext pro Einbettung im Block-Editor."
+
+#. Found in description list item.
+msgid "Loads from privacy-preserving endpoints where they exist: <code>youtube-nocookie.com</code>, Vimeo with <code>dnt=1</code>. Rebuilds every embed from an attribute safelist — <code>sandbox</code> preserved, <code>autoplay</code> never survives — and strips the <code>preconnect</code> and <code>dns-prefetch</code> hints that would contact the provider early."
+msgstr "Lädt von datenschutzfreundlichen Adressen, wo es sie gibt: <code>youtube-nocookie.com</code>, Vimeo mit <code>dnt=1</code>. Baut jede Einbettung aus einer Freigabeliste von Attributen neu auf – <code>sandbox</code> bleibt erhalten, <code>autoplay</code> überlebt nie – und entfernt Resource Hints wie <code>preconnect</code> und <code>dns-prefetch</code>, die den Anbieter vorzeitig kontaktieren würden."
+
+#. Found in description list item.
+msgid "Accessible and JavaScript-free by design: a named group, a real button, visible focus, sufficient contrast, focus kept after loading; zero axe-core violations in CI. Without JavaScript the link still works."
+msgstr "Barrierefrei und auch ohne JavaScript benutzbar: benannte Gruppe, ein echter Button, sichtbarer Fokus, ausreichender Kontrast, der Fokus bleibt nach dem Laden erhalten; null axe-core-Verstösse in der CI. Ohne JavaScript führt der Link weiterhin zum Inhalt."
+
+#. Found in description list item.
+msgid "Finds the embeds your caching and optimisation plugins have already minified — attribute quotes stripped, newlines inside tags — which is where most implementations silently fail. Also lazy-loaded markup (<code>data-src</code>), the loader scripts and stylesheets some embeds bring along, and content delivered over AJAX and the REST API (\"load more\", infinite scroll)."
+msgstr "Findet auch die Einbettungen, die Ihr Caching- oder Optimierungs-Plugin schon minifiziert hat – ohne Anführungszeichen an den Attributen, mit Zeilenumbrüchen mitten im Tag. Genau daran scheitern die meisten Umsetzungen still. Ebenso erkannt werden Lazy-Loading-Markup (<code>data-src</code>), die Loader-Skripte und Stylesheets, die manche Einbettungen mitbringen, und Inhalte, die per AJAX oder REST-API nachgeladen werden («Mehr laden», Endlos-Scrollen)."
+
+#. Found in description list item.
+msgid "Names 36 embed types — every one WordPress offers out of the box, from YouTube and Vimeo to Spotify, Google Maps, X, Instagram, TikTok and Calendly — with an icon, a notice, an optional privacy-policy link and a working no-JavaScript link. Anything it does not know is gated all the same: the plugin gates by host, not by a list, so a new tracker is never let through by accident."
+msgstr "Kennt 36 Einbettungstypen namentlich – jeden, den WordPress von Haus aus anbietet, von YouTube und Vimeo über Spotify, Google Maps, X, Instagram und TikTok bis Calendly. Zu jedem gehören ein Symbol, ein Hinweistext, ein optionaler Link zur Datenschutzerklärung und ein funktionierender Link ohne JavaScript. Was das Plugin nicht kennt, wird genauso gesperrt: Massgeblich ist der Host, nicht eine Liste – so rutscht kein neuer Tracker versehentlich durch."
+
+#. Found in description list item.
+msgid "Works on activation, with no configuration, no account and no external service."
+msgstr "Wirkt sofort nach der Aktivierung – ohne Konfiguration, ohne Konto und ohne externen Dienst."
+
+#. Found in description list item.
+msgid "On the click, that one embed loads — from the privacy-preserving address where the provider has one. Nothing else on the page changes, and nothing loads for embeds the visitor did not ask for."
+msgstr "Mit dem Klick lädt genau diese eine Einbettung – von der datenschutzfreundlichen Adresse, sofern der Anbieter eine hat. Sonst ändert sich auf der Seite nichts, und für Einbettungen, die der Besucher nicht angefordert hat, lädt nichts."
+
+#. Found in description list item.
+msgid "Visitors see a placeholder instead — rendered on the server, so it is there before any JavaScript runs: the provider's name and icon, one sentence on what loading means, a real \"Load\" button, and a plain link to the content for anyone who prefers to open it there."
+msgstr "Besucher sehen stattdessen einen Platzhalter. Er wird auf dem Server gerendert und ist deshalb da, bevor überhaupt JavaScript läuft: Name und Symbol des Anbieters, ein Satz dazu, was das Laden bedeutet, ein echter «Laden»-Button und ein einfacher Link zum Inhalt für alle, die ihn lieber dort öffnen."
+
+#. Found in description list item.
+msgid "You keep writing posts as before: paste a URL, WordPress makes the embed, and editors see the normal embed in the block editor."
+msgstr "Sie schreiben Beiträge wie bisher: URL einfügen, WordPress erzeugt die Einbettung, und im Block-Editor sehen Redakteure die gewohnte Einbettung."
+
+#. Found in description header.
+msgid "For developers"
+msgstr "Für Entwickler"
+
+#. Found in description header.
+msgid "What it is not"
+msgstr "Was es nicht ist"
+
+#. Found in description header.
+msgid "Works with"
+msgstr "Funktioniert mit"
+
+#. Found in description header.
+msgid "What you get"
+msgstr "Was Sie bekommen"
+
+#. Found in description header.
+msgid "How it works"
+msgstr "So funktioniert es"
+
+#. Found in description header.
+msgid "Why it matters"
+msgstr "Warum das wichtig ist"
+
+#. Screenshot description.
+msgid "The content scan on Status &amp; tools: every embed found in your recent posts and pages, the address it would contact, whether it is gated, and one click to name an unknown host or let it through."
+msgstr "Der Inhalts-Scan unter Status und Werkzeuge: jede Einbettung in Ihren neuesten Beiträgen und Seiten, die Adresse, die sie kontaktieren würde, ob sie gesperrt ist, und ein Klick, um einen unbekannten Host zu benennen oder durchzulassen."
+
+#. Screenshot description.
+msgid "The Appearance settings: quick styles, colours that follow your theme's palette, sections for shape, button, poster image, withdraw button and dark mode, a live preview of the real panel and an automatic readability check."
+msgstr "Die Design-Einstellungen: Schnellstile, Farben, die der Palette Ihres Themes folgen, Abschnitte für Form, Button, Posterbild, Widerrufs-Button und Dunkelmodus, eine Live-Vorschau des echten Platzhalters und eine automatische Lesbarkeitsprüfung."
+
+#. Found in faq paragraph.
+msgid "If your assets are served from a CDN hostname, that is recognised as your own: most CDN plugins filter the WordPress functions that say where your files live. A CDN that rewrites the finished page instead is invisible to that, so scripts and stylesheets on a <code>/wp-content/</code> or <code>/wp-includes/</code> path are left alone whatever host serves them — which does not cover images, one reason third-party image gating is off by default."
+msgstr "Werden Ihre Assets über einen CDN-Hostnamen ausgeliefert, gilt dieser als Ihr eigener: Die meisten CDN-Plugins filtern die WordPress-Funktionen, die angeben, wo Ihre Dateien liegen. Ein CDN, das stattdessen die fertige Seite umschreibt, lässt sich so nicht erkennen. Deshalb bleiben Skripte und Stylesheets, deren Pfad <code>/wp-content/</code> oder <code>/wp-includes/</code> enthält, unangetastet – ganz gleich, welcher Host sie ausliefert. Bilder sind davon nicht erfasst, was einer der Gründe dafür ist, dass Bilder von Drittanbietern standardmässig nicht gesperrt werden."
+
+#. Found in faq paragraph.
+msgid "One setting is worth knowing about: \"delay JavaScript until interaction\" holds every script back until the visitor first interacts, and that interaction is spent switching the scripts on — so the first click on a \"Load\" button does nothing and they have to click again. Nothing third-party is contacted by the extra click, but the placeholder feels broken. Settings → Status &amp; tools lists the exact files to paste into your optimisation plugin's exclusion list, and reports what it could read about that plugin's JavaScript settings."
+msgstr "Eine Einstellung sollten Sie kennen: «JavaScript bis zur Interaktion verzögern» hält alle Skripte zurück, bis der Besucher die Seite zum ersten Mal berührt – und diese Interaktion wird dafür verbraucht, die Skripte einzuschalten. Sein erster Klick auf einen «Laden»-Button bewirkt dann nichts und er muss ein zweites Mal klicken. Durch den zusätzlichen Klick wird kein Drittanbieter kontaktiert, aber der Platzhalter wirkt kaputt. Unter Einstellungen → Status und Werkzeuge stehen die genauen Dateien, die Sie in die Ausschlussliste Ihres Optimierungs-Plugins eintragen, samt dem, was sich über die JavaScript-Einstellungen dieses Plugins auslesen liess."
+
+#. Found in faq header.
+msgid "I use a caching or minification plugin — will this still work?"
+msgstr "Ich nutze ein Caching- oder Minifizierungs-Plugin – funktioniert das trotzdem?"
+
+#. Found in faq paragraph.
 msgid "Yes. German ships with the plugin for all five German locales WordPress offers — Deutschland informal and formal (\"de_DE\", \"de_DE_formal\"), Österreich (\"de_AT\"), and Schweiz formal and informal (\"de_CH\", \"de_CH_informal\", spelled with ss instead of ß) — and it covers everything a person reads: the placeholder your visitors see, the settings screen and the block-editor controls. Set your site language and it follows. Other languages are welcome via translate.wordpress.org; a translation from there overrides the bundled one."
-msgstr "Ja. Deutsch wird für alle fünf deutschen Sprachvarianten mitgeliefert, die WordPress anbietet – Deutschland informell und formell («de_DE», «de_DE_formal»), Österreich («de_AT») sowie Schweiz formell und informell («de_CH», «de_CH_informal», mit ss statt ss) – und deckt alles ab, was eine Person liest: den Platzhalter, den Ihre Besucher sehen, die Einstellungsansicht und die Steuerelemente im Block-Editor. Stellen Sie die Sprache Ihrer Website ein, der Rest folgt. Weitere Sprachen sind über translate.wordpress.org willkommen; eine Übersetzung von dort hat Vorrang vor der mitgelieferten."
+msgstr "Ja. Deutsch wird für alle fünf deutschen Sprachvarianten mitgeliefert, die WordPress anbietet – Deutschland informell und formell («de_DE», «de_DE_formal»), Österreich («de_AT») sowie Schweiz formell und informell («de_CH», «de_CH_informal», mit ss statt ß) – und deckt alles ab, was eine Person liest: den Platzhalter, den Ihre Besucher sehen, die Einstellungsansicht und die Steuerelemente im Block-Editor. Stellen Sie die Sprache Ihrer Website ein, der Rest folgt. Weitere Sprachen sind über translate.wordpress.org willkommen; eine Übersetzung von dort hat Vorrang vor der mitgelieferten."
 
 #. Found in faq header.
 msgid "Is the plugin available in German?"
@@ -32,10 +196,6 @@ msgstr "Gibt es das Plugin auf Deutsch?"
 #. Found in description list item.
 msgid "Documented filters: <code>calucon_embed_gate_providers</code>, <code>calucon_embed_gate_provider_for_url</code>, <code>calucon_embed_gate_should_gate</code>, <code>calucon_embed_gate_is_own_host</code>, <code>calucon_embed_gate_own_hosts</code>, <code>calucon_embed_gate_placeholder_html</code>, <code>calucon_embed_gate_payload</code>, <code>calucon_embed_gate_note_text</code>, <code>calucon_embed_gate_action_text</code>, <code>calucon_embed_gate_fallback_url</code>, <code>calucon_embed_gate_www_equivalence</code>, <code>calucon_embed_gate_cmp_config</code>, <code>calucon_embed_gate_asset_version</code>, <code>calucon_embed_gate_the_content_priority</code>, <code>calucon_embed_gate_render_block_priority</code>, plus the <code>calucon_embed_gate_before_render</code>, <code>calucon_embed_gate_embed_gated</code> and <code>calucon_embed_gate_flush_caches</code> actions. Each one's signature, when it fires and what to return are documented in <code>docs/customizing.md</code>, which ships inside the plugin (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) and is readable on GitHub. Adding a provider is a ten-line filter in <code>functions.php</code>."
 msgstr "Dokumentierte Filter: <code>calucon_embed_gate_providers</code>, <code>calucon_embed_gate_provider_for_url</code>, <code>calucon_embed_gate_should_gate</code>, <code>calucon_embed_gate_is_own_host</code>, <code>calucon_embed_gate_own_hosts</code>, <code>calucon_embed_gate_placeholder_html</code>, <code>calucon_embed_gate_payload</code>, <code>calucon_embed_gate_note_text</code>, <code>calucon_embed_gate_action_text</code>, <code>calucon_embed_gate_fallback_url</code>, <code>calucon_embed_gate_www_equivalence</code>, <code>calucon_embed_gate_cmp_config</code>, <code>calucon_embed_gate_asset_version</code>, <code>calucon_embed_gate_the_content_priority</code>, <code>calucon_embed_gate_render_block_priority</code> sowie die Aktionen <code>calucon_embed_gate_before_render</code>, <code>calucon_embed_gate_embed_gated</code> und <code>calucon_embed_gate_flush_caches</code>. Zu jedem Hook sind Signatur, Auslösezeitpunkt und Rückgabewert in <code>docs/customizing.md</code> dokumentiert, die im Plugin mitgeliefert wird (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) und auf GitHub lesbar ist. Einen Anbieter hinzuzufügen ist ein Filter von zehn Zeilen in der <code>functions.php</code>."
-
-#. Found in description list item.
-msgid "German included: the plugin's own texts ship translated for every German locale WordPress offers — Germany (du and Sie), Austria, and Switzerland (with ss for ß) — placeholder wording, the settings screen and the block-editor controls alike."
-msgstr "Deutsch ist dabei: Die Texte des Plugins werden für jede deutsche Sprachvariante mitgeliefert, die WordPress anbietet – Deutschland (du und Sie), Österreich und Schweiz (mit ss statt ss) – Platzhaltertexte, Einstellungsansicht und Block-Editor gleichermassen."
 
 #. Found in faq paragraph.
 msgid "Either is gated, so this is not a privacy question. It is a rendering one: prefer the plain <code>&lt;iframe&gt;</code> embed code where the provider offers one. An iframe renders by itself; a loader script has to notice the embed and draw it, and some providers' scripts only do that while the page is first parsing, so they can come up empty after the visitor clicks — with or without this plugin. If a script-based embed stays blank after loading, try the provider's iframe embed code instead."
@@ -77,33 +237,17 @@ msgstr "Welche Einbettungen erkennt es namentlich?"
 msgid "Does a visitor have to click every single time?"
 msgstr "Muss ein Besucher wirklich jedes Mal klicken?"
 
-#. Found in description list item.
-msgid "Ships a descriptor for almost every embed type WordPress offers out of the box — a proper name, an icon, a privacy-policy link and a working no-JavaScript link — plus the loader scripts and stylesheets those embeds bring with them. The few that are not named yet are listed in the FAQ; they are gated all the same."
-msgstr "Bringt für fast jeden Einbettungstyp, den WordPress von Haus aus kennt, einen eigenen Eintrag mit – richtiger Name, Symbol, Link zur Datenschutzerklärung und ein funktionierender Link ohne JavaScript – dazu die Loader-Skripte und Stylesheets, die diese Einbettungen mitbringen. Die wenigen, die noch keinen Namen haben, stehen in den FAQ; gesperrt werden sie trotzdem."
+#. Screenshot description.
+msgid "The Content-Security-Policy helper: a check of your own site for a policy, the exact lines to add for the providers you have enabled, and which provider needs which host."
+msgstr "Der Content-Security-Policy-Helfer: Er prüft Ihre eigene Website auf eine solche Richtlinie, nennt die genauen Zeilen für die von Ihnen aktivierten Anbieter und zeigt, welcher Anbieter welchen Host braucht."
 
 #. Screenshot description.
-msgid "The Content-Security-Policy helper: what a policy is, a check of your own site for one, the exact lines to add for the providers you have enabled, and which provider needs which host."
-msgstr "Der Abschnitt zur Content-Security-Policy: was eine solche Richtlinie überhaupt ist, ob Ihre Website bereits eine sendet, welche Zeilen für die von Ihnen aktivierten Anbieter zu ergänzen sind und welcher Anbieter welchen Host braucht."
-
-#. Screenshot description.
-msgid "The Providers tab: providers grouped by what the embed is, with a filter box — per-provider on/off, privacy-preserving load variants, custom notice and button text, the privacy-policy link and its per-provider URL, and your own providers — no code required."
-msgstr "Der Tab «Anbieter»: Anbieter gruppiert nach Art der Einbettung, mit Filterfeld – ein/aus pro Anbieter, datenschutzfreundliche Ladevarianten, individuelle Hinweis- und Button-Texte, der Datenschutz-Link samt eigener URL pro Anbieter und Ihre eigenen Anbieter. Ohne Code."
-
-#. Screenshot description.
-msgid "The content scan on Status &amp; tools: every embed found in your recent posts and pages, the address it would contact, and whether it is gated — with a one-click way to give an unknown host a proper name, or let it through, without working out an address yourself. Nothing changes until you save."
-msgstr "Der Inhalts-Scan unter Status und Werkzeuge: jede Einbettung in Ihren neuesten Beiträgen und Seiten, die Adresse, die sie kontaktieren würde, und ob sie gesperrt ist – mit einem Klick, um einem unbekannten Host einen richtigen Namen zu geben oder ihn durchzulassen, ohne selbst eine Adresse herauszufinden. Nichts ändert sich, bis Sie speichern."
-
-#. Found in faq paragraph.
-msgid "Yes. The Appearance tab has quick styles, colours that can follow your theme's palette, and controls for corners, border, shadow, spacing, the button, the poster image and dark mode, with a live preview and an automatic readability check. Your own CSS still works on top: the panel exposes CSS custom properties and a template override (see docs/customizing.md in the plugin folder)."
-msgstr "Ja. Der Tab «Design» bietet Schnellstile, Farben, die der Palette Ihres Themes folgen können, sowie Einstellungen für Ecken, Rand, Schatten, Abstände, Button, Posterbild und Dunkelmodus – mit Live-Vorschau und automatischer Lesbarkeitsprüfung. Eigenes CSS wirkt weiterhin darüber: Der Platzhalter stellt CSS-Custom-Properties bereit und lässt sich per Template überschreiben (siehe docs/customizing.md im Plugin-Ordner)."
+msgid "The Providers tab: providers grouped by what the embed is, with a filter box — per-provider on/off, privacy-preserving load variants, custom notice and button text, the privacy-policy link and your own providers."
+msgstr "Der Tab «Anbieter»: Anbieter gruppiert nach Art der Einbettung, mit Filterfeld – ein/aus pro Anbieter, datenschutzfreundliche Ladevarianten, individueller Hinweis- und Button-Text, der Link zur Datenschutzerklärung und Ihre eigenen Anbieter."
 
 #. Found in faq paragraph.
 msgid "Only if your site sends a Content-Security-Policy header — most WordPress sites do not. The section on Status &amp; tools can check your own home page for one (from your browser, nothing leaves your site) and tells you whether the enabled providers are already allowed; if not, it lists the lines to add."
 msgstr "Nur, wenn Ihre Website einen Content-Security-Policy-Header sendet – die meisten WordPress-Websites tun das nicht. Der Abschnitt unter Status und Werkzeuge kann Ihre eigene Startseite darauf prüfen (aus Ihrem Browser heraus, nichts verlässt Ihre Website) und sagt Ihnen, ob die aktivierten Anbieter bereits erlaubt sind; falls nicht, listet er die Zeilen auf, die zu ergänzen sind."
-
-#. Found in faq paragraph.
-msgid "Yes: one checkbox on the Providers tab adds a link to the provider's own policy page in every placeholder, so a visitor can read what loading the content means before asking for it. It is off by default. You can set a different URL per provider (for example a localised page). The link is plain markup — nothing is fetched from the provider by showing it."
-msgstr "Ja: Ein Häkchen im Tab «Anbieter» ergänzt in jedem Platzhalter einen Link auf die Datenschutzerklärung des jeweiligen Anbieters, damit ein Besucher vor dem Anfordern nachlesen kann, was das Laden bedeutet. Standardmässig ist das aus. Pro Anbieter lässt sich eine abweichende URL setzen (etwa eine deutschsprachige Seite). Der Link ist reines Markup – durch das Anzeigen wird beim Anbieter nichts abgerufen."
 
 #. Found in faq paragraph.
 msgid "Yes, without code: Providers → <em>Your own providers</em> takes a name, the embed hosts (one per line) and, optionally, script hosts and a kind for the button icon. After saving it appears in the provider table with its own notice, button text and privacy-policy link. Unknown hosts are gated either way — a provider of your own only gives such a host a proper name and texts. Hosts the built-in providers handle stay with them, and your own providers are always gated; the never-gate list under Detection is the place to exempt a host."
@@ -118,63 +262,31 @@ msgid "Do I need the Content-Security-Policy section?"
 msgstr "Brauche ich den Abschnitt zur Content-Security-Policy?"
 
 #. Found in faq header.
-msgid "Can placeholders link the provider's privacy policy?"
-msgstr "Können Platzhalter die Datenschutzerklärung des Anbieters verlinken?"
-
-#. Found in faq header.
 msgid "Can I add a provider that is not in the list?"
 msgstr "Kann ich einen Anbieter ergänzen, der nicht in der Liste steht?"
-
-#. Found in description list item.
-msgid "Tabbed settings screen (Providers / Detection / Appearance / Consent memory / Status &amp; tools): your own providers (name + hosts, no code), per-provider on/off, privacy-variant on/off, custom note and button text, an optional provider privacy-policy link in every panel (off by default; one checkbox turns it on); own-host, never-gate and always-gate lists; rule toggles including opt-in third-party image gating; appearance presets, corner styles with a custom radius, border width and colour, shadow, spacing, button size/style/width/hover, an optional kind-aware button icon, notice size, panel alignment, link colour, poster placement and dimming, withdraw-button styles and optional dark-mode colours — sectioned, with quick styles, colour pickers, a live preview (dark page, poster, phone width), a one-click reset and an automatic readability check, no CSS needed; opt-in whole-page buffering for page builders; consent memory; a generated Content-Security-Policy snippet; a Compatibility overview (detected cache plugin, consent platform, page builder — and what the plugin does about each); a Status scan of recent content that can name or let through any host it finds, without you typing an address and without writing anything until you save."
-msgstr "Einstellungsansicht mit Tabs (Anbieter / Erkennung / Design / Einwilligung merken / Status und Werkzeuge): eigene Anbieter (Name + Hosts, ohne Code), ein/aus pro Anbieter, datenschutzfreundliche Variante ein/aus, individueller Hinweis- und Button-Text, ein optionaler Link zur Datenschutzerklärung des Anbieters in jedem Platzhalter (standardmässig aus, ein Häkchen schaltet ihn ein); Listen für eigene Hosts, nie zu sperrende und immer zu sperrende Hosts; Regel-Schalter samt optionaler Sperre für Bilder von Drittanbietern; Design-Vorlagen, Eckenformen mit eigenem Radius, Randbreite und -farbe, Schatten, Abstände, Button-Grösse/-Stil/-Breite/-Hover, ein optionales Symbol passend zur Art der Einbettung, Grösse des Hinweistexts, Ausrichtung des Platzhalters, Linkfarbe, Platzierung und Abdunkeln des Posterbilds, Stile für den Widerrufs-Button und optionale Farben für den Dunkelmodus – in Abschnitte gegliedert, mit Schnellstilen, Farbwählern, Live-Vorschau (dunkle Seite, Posterbild, Smartphone-Breite), Zurücksetzen mit einem Klick und automatischer Lesbarkeitsprüfung, ganz ohne CSS; optionales Puffern der gesamten Seite für Page-Builder; Einwilligung merken; ein erzeugter Content-Security-Policy-Schnipsel; eine Kompatibilitätsübersicht (erkanntes Cache-Plugin, Consent-Plattform, Page-Builder – und was das Plugin jeweils tut); ein Scan der aktuellen Inhalte, der jeden gefundenen Host benennen oder durchlassen kann, ohne dass Sie eine Adresse tippen und ohne dass vor dem Speichern etwas geschrieben wird."
-
-#. Found in description list item.
-msgid "Multilingual sites: the texts you type (per-provider and per-block notices and button labels, provider privacy-policy URLs, your own providers' names) are registered for WPML and Polylang via a shipped wpml-config.xml."
-msgstr "Mehrsprachige Websites: Die Texte, die Sie selbst eingeben (Hinweise und Button-Beschriftungen pro Anbieter und pro Block, Datenschutz-URLs der Anbieter, Namen Ihrer eigenen Anbieter), sind über die mitgelieferte wpml-config.xml für WPML und Polylang zur Übersetzung angemeldet."
-
-#. Found in description list item.
-msgid "Optional poster image behind the consent panel, chosen per embed from your media library — served from your own site, never fetched from the provider. Per-embed button and notice text in the block editor, too."
-msgstr "Optionales Posterbild hinter dem Platzhalter, pro Einbettung aus Ihrer Mediathek gewählt – ausgeliefert von Ihrer eigenen Website, nie beim Anbieter geholt. Button- und Hinweistext lassen sich im Block-Editor ebenfalls pro Einbettung setzen."
 
 #. Screenshot description.
 msgid "The per-embed control in the block editor: gate this embed always, never or per the site default, set a poster image from your own media library, and give it its own button and notice text."
 msgstr "Die Steuerung pro Einbettung im Block-Editor: diese Einbettung immer sperren, nie sperren oder nach Website-Standard behandeln, ein Posterbild aus der eigenen Mediathek setzen und dieser einen Einbettung eigenen Button- und Hinweistext geben."
-
-#. Screenshot description.
-msgid "The Appearance settings — quick styles, colours that follow your theme's palette by name or your own, and sections for shape, button, poster image, withdraw button and dark mode — with a live preview of the real panel and an automatic readability check that flags any colour pair below the 4.5:1 contrast minimum."
-msgstr "Die Design-Einstellungen – Schnellstile, Farben, die der Theme-Palette folgen oder eigene sind, und Abschnitte für Form, Button, Posterbild, Widerrufs-Button und Dunkelmodus – mit Live-Vorschau des echten Platzhalters und automatischer Lesbarkeitsprüfung, die jedes Farbpaar unterhalb des Mindestkontrasts von 4,5:1 markiert."
 
 #. Found in faq paragraph.
 msgid "Privately, please — through GitHub's private vulnerability reporting on the plugin repository (https://github.com/Calucon/calucon-third-party-embed-gate/security/advisories/new), not in a public issue or support topic. The repository's SECURITY.md describes what counts: besides the usual classes, any way to make a page contact a third party before the click is a vulnerability."
 msgstr "Bitte vertraulich – über die private Sicherheitsmeldung («private vulnerability reporting») im Plugin-Repository auf GitHub (https://github.com/Calucon/calucon-third-party-embed-gate/security/advisories/new), nicht in einem öffentlichen Issue oder Support-Thread. Die SECURITY.md im Repository beschreibt, was zählt: neben den üblichen Klassen ist jeder Weg, eine Seite vor dem Klick einen Drittanbieter kontaktieren zu lassen, eine Sicherheitslücke."
 
 #. Found in faq paragraph.
-msgid "No. Lazy loading defers the request to scroll time — it is still made without consent. Calucon Third-Party Embed Gate gates lazy iframes like any other."
-msgstr "Nein. Lazy Loading verschiebt die Anfrage auf den Moment des Scrollens – gestellt wird sie trotzdem ohne Einwilligung. Calucon Third-Party Embed Gate sperrt Lazy-Iframes wie alle anderen."
-
-#. Found in faq paragraph.
-msgid "If your minification setup serves CSS from a long-cached URL that does not change with the file contents, browsers can keep the old stylesheet for a long time. A hard reload fixes it; the plugin cannot."
-msgstr "Wenn Ihre Minifizierung CSS von einer URL ausliefert, die sich mit dem Dateiinhalt nicht ändert, können Browser das alte Stylesheet lange behalten. Ein harter Reload behebt das; das Plugin kann es nicht."
-
-#. Found in faq paragraph.
-msgid "Page builders render outside WordPress's content filters. Enable \"Gate the whole page output\" under Settings → Calucon Third-Party Embed Gate → Detection. It is off by default because whole-page buffering can conflict with other buffering plugins."
-msgstr "Page-Builder rendern ausserhalb der Inhaltsfilter von WordPress. Aktivieren Sie «Die gesamte Seitenausgabe sperren» unter Einstellungen → Calucon Third-Party Embed Gate → Erkennung. Die Option ist standardmässig aus, weil das Puffern der gesamten Seite mit anderen puffernden Plugins kollidieren kann."
-
-#. Found in faq paragraph.
-msgid "Consent Mode is deliberately not read or written directly. It is a signal that consent platforms send to Google's tags; Google publishes no API for other scripts to read it, and no Consent Mode signal governs iframes such as YouTube embeds. The bridge instead connects to the consent platform itself — the same place Consent Mode gets its state from — which is the reliable way to honour the same visitor choice. Calucon Third-Party Embed Gate also never sends <code>gtag('consent', …)</code> updates: a click on one embed is consent for that embed, not a site-wide marketing consent, and misreporting that would be wrong."
+msgid "Consent Mode is deliberately not read or written. It is a signal that consent platforms send to Google's tags; Google publishes no API for other scripts to read it, and no Consent Mode signal governs iframes such as YouTube embeds. The bridge instead connects to the consent platform itself — the same place Consent Mode gets its state from — which is the reliable way to honour the same visitor choice. The plugin also never sends <code>gtag('consent', …)</code> updates: a click on one embed is consent for that embed, not a site-wide marketing consent, and misreporting that would be wrong."
 msgstr "Consent Mode wird bewusst weder gelesen noch geschrieben. Es ist ein Signal, das Consent-Plattformen an Googles Tags senden; Google veröffentlicht keine Schnittstelle, über die andere Skripte es lesen könnten, und kein Consent-Mode-Signal steuert Iframes wie YouTube-Einbettungen. Die Brücke verbindet sich stattdessen mit der Consent-Plattform selbst – also mit der Quelle, aus der Consent Mode seinen Zustand bezieht –, was der verlässliche Weg ist, dieselbe Entscheidung des Besuchers zu berücksichtigen. Calucon Third-Party Embed Gate sendet ausserdem nie <code>gtag('consent', …)</code>-Updates: Ein Klick auf eine Einbettung ist eine Einwilligung für diese Einbettung, keine websiteweite Marketing-Einwilligung – sie als solche zu melden wäre schlicht falsch."
 
 #. Found in faq paragraph.
-msgid "No. Out of the box Calucon Third-Party Embed Gate ignores the banner and keeps gating — visitors see your banner for its categories and the embed placeholder for embeds, and nothing double-blocks (the placeholder contains no iframe or script for a banner's blocker to catch). If you prefer one decision instead of two, enable the consent platform bridge under Settings → Calucon Third-Party Embed Gate → Consent memory: a consent your visitor gives in the platform then loads the embeds automatically, and a withdrawal there re-gates them. The bridge works only with the platforms listed on that screen — with any other platform it stays out of the way and gating stands. If you would rather have your platform's own blocker handle a specific provider, disable that provider under Providers and Calucon Third-Party Embed Gate steps aside for it."
-msgstr "Nein. Von Haus aus ignoriert Calucon Third-Party Embed Gate das Banner und sperrt weiter – Besucher sehen Ihr Banner für dessen Kategorien und den Platzhalter für Einbettungen, und nichts blockiert doppelt (der Platzhalter enthält kein Iframe und kein Skript, das der Blocker eines Banners abfangen könnte). Wenn Ihnen eine Entscheidung statt zweier lieber ist, aktivieren Sie die Brücke zur Consent-Plattform unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken: Eine Einwilligung, die Ihr Besucher in der Plattform gibt, lädt die Einbettungen dann automatisch, und ein Widerruf dort sperrt sie wieder. Die Brücke funktioniert nur mit den in dieser Ansicht genannten Plattformen – bei jeder anderen hält sie sich heraus und die Sperre bleibt bestehen. Soll für einen bestimmten Anbieter lieber der Blocker Ihrer Plattform greifen, deaktivieren Sie diesen Anbieter unter «Anbieter», dann tritt Calucon Third-Party Embed Gate dafür zurück."
+msgid "No. Out of the box the plugin ignores the banner and keeps gating: visitors see your banner for its categories and the placeholder for embeds, and nothing double-blocks, because the placeholder contains no iframe or script for a banner's blocker to catch. If you prefer one decision instead of two, enable the consent-platform bridge under Settings → Calucon Third-Party Embed Gate → Consent memory: a consent given in the platform then loads the embeds, and a withdrawal there re-gates them. The bridge works with the platforms listed on that screen; with any other it stays out of the way. If you would rather have your platform's own blocker handle a specific provider, disable that provider under Providers and the plugin steps aside for it."
+msgstr "Nein. Von Haus aus lässt das Plugin das Banner unbeachtet und sperrt weiter: Besucher sehen Ihr Banner für dessen Kategorien und den Platzhalter für Einbettungen. Doppelt blockiert dabei nichts, denn der Platzhalter enthält kein Iframe und kein Skript, das der Blocker eines Banners abfangen könnte. Wenn Ihnen eine Entscheidung statt zweier lieber ist, aktivieren Sie die Brücke zur Consent-Plattform unter Einstellungen → Calucon Third-Party Embed Gate → Einwilligung merken: Eine in der Plattform erteilte Einwilligung lädt dann die Einbettungen, ein Widerruf dort sperrt sie wieder. Die Brücke arbeitet mit den in dieser Ansicht genannten Plattformen; bei jeder anderen hält sie sich heraus. Soll für einen bestimmten Anbieter lieber der Blocker Ihrer Plattform greifen, deaktivieren Sie diesen Anbieter unter «Anbieter» – dann tritt das Plugin dafür zurück."
 
 #. Found in faq paragraph.
 msgid "Because there is nothing to announce at page load. If nothing third-party loads until the visitor asks for it, there is no third-party storage to consent to on page load. The consent is the click, given for the one embed it belongs to."
 msgstr "Weil es beim Seitenaufruf nichts anzukündigen gibt. Wenn nichts von Drittanbietern lädt, bevor der Besucher es anfordert, gibt es beim Seitenaufruf auch keine Speicherung von Drittanbietern, in die eingewilligt werden müsste. Die Einwilligung ist der Klick – und gilt für die eine Einbettung, zu der er gehört."
 
 #. Found in faq paragraph.
-msgid "No plugin can claim that, and this one does not. Calucon Third-Party Embed Gate implements a technical measure: it prevents third-party embed requests (and the storage they trigger on the visitor's device) until the visitor explicitly asks for the content. Whether your site's overall processing is lawful depends on things a plugin cannot know. The relevant background — § 25 TDDDG / ePrivacy Art. 5(3) for terminal-equipment storage, GDPR Art. 6(1)(a) for the processing after the click — is described in the documentation, and your privacy policy still has to name the providers you use."
+msgid "No plugin can claim that, and this one does not. Calucon Third-Party Embed Gate implements a technical measure: it prevents third-party embed requests, and the storage they trigger on the visitor's device, until the visitor explicitly asks for the content. Whether your site's processing as a whole is lawful depends on things a plugin cannot know. The background — § 25 TDDDG / ePrivacy Art. 5(3) for storage on the visitor's device, GDPR Art. 6(1)(a) for the processing after the click — is described in the documentation, and your privacy policy still has to name the providers you use."
 msgstr "Das kann kein Plugin behaupten, und dieses behauptet es nicht. Calucon Third-Party Embed Gate setzt eine technische Massnahme um: Es verhindert Anfragen an Einbettungsanbieter – und die Speicherung, die diese auf dem Gerät des Besuchers auslösen –, bis der Besucher den Inhalt ausdrücklich anfordert. Ob die Verarbeitung auf Ihrer Website insgesamt rechtmässig ist, hängt von Dingen ab, die ein Plugin nicht wissen kann. Der Hintergrund – § 25 TDDDG bzw. Art. 5 Abs. 3 ePrivacy-Richtlinie für die Speicherung auf Endgeräten, Art. 6 Abs. 1 lit. a DSGVO für die Verarbeitung nach dem Klick – ist in der Dokumentation beschrieben, und Ihre Datenschutzerklärung muss weiterhin die Anbieter nennen, die Sie einsetzen."
 
 #. Found in faq header.
@@ -184,10 +296,6 @@ msgstr "Wie melde ich ein Sicherheitsproblem?"
 #. Found in faq header.
 msgid "Does `loading=\"lazy\"` on an iframe count as consent?"
 msgstr "Zählt `loading=\"lazy\"` an einem Iframe als Einwilligung?"
-
-#. Found in faq header.
-msgid "The placeholder looks unstyled after an update"
-msgstr "Der Platzhalter sieht nach einem Update ungestylt aus"
 
 #. Found in faq header.
 msgid "An embed from my page builder is not being gated"
@@ -214,25 +322,11 @@ msgid "<strong>Requirements:</strong> WordPress 5.9 or newer and PHP 7.4 or newe
 msgstr "<strong>Voraussetzungen:</strong> WordPress 5.9 oder neuer und PHP 7.4 oder neuer. Kein Build-Schritt, keine Laufzeit-Abhängigkeiten und keine ausgehende Anfrage von Ihrer Website, auf keinem Weg."
 
 #. Found in installation paragraph.
-msgid "If you turn on consent memory and want to offer visitors a way to take it back, add the \"Withdraw embed consents\" block, or place the <code>[calucon_embed_gate_withdraw]</code> shortcode on your privacy-policy page."
-msgstr "Wenn Sie das Merken der Einwilligung aktivieren und Besuchern einen Weg zurück anbieten möchten, fügen Sie den Block «Einwilligungen widerrufen» ein oder setzen Sie den Shortcode <code>[calucon_embed_gate_withdraw]</code> in Ihre Datenschutzerklärung."
-
-#. Found in installation paragraph.
-msgid "Calucon Third-Party Embed Gate works the moment it is activated — it gates third-party embeds by default, with no configuration, no account and no external service."
-msgstr "Calucon Third-Party Embed Gate wirkt, sobald es aktiviert ist – es sperrt Einbettungen von Drittanbietern von Haus aus, ohne Konfiguration, ohne Konto und ohne externen Dienst."
+msgid "If you turn on consent memory, give visitors a way back: add the \"Withdraw embed consents\" block, or the <code>[calucon_embed_gate_withdraw]</code> shortcode, to your privacy-policy page."
+msgstr "Wenn Sie das Merken der Einwilligung aktivieren, geben Sie Ihren Besuchern einen Weg zurück: Setzen Sie den Block «Einwilligungen widerrufen» oder den Shortcode <code>[calucon_embed_gate_withdraw]</code> in Ihre Datenschutzerklärung."
 
 #. Found in installation list item.
-msgid "Optional: open <strong>Settings → Calucon Third-Party Embed Gate</strong> to adjust appearance, per-provider behaviour, detection rules, consent memory and the optional consent-platform bridge. None of it is needed to be protected — the defaults gate everything third-party."
-msgstr "Optional: Unter <strong>Einstellungen → Calucon Third-Party Embed Gate</strong> lassen sich Design, Verhalten pro Anbieter, Erkennungsregeln, das Merken der Einwilligung und die optionale Brücke zur Consent-Plattform anpassen. Für den Schutz ist nichts davon nötig – die Standardeinstellungen sperren alles, was von Drittanbietern kommt."
-
-#. Found in installation list item.
-msgid "That is all that is required. Your existing embeds are now replaced with a click-to-load placeholder on the front end, and nothing third-party is contacted before the visitor clicks. Editors keep seeing the normal embed in the block editor, so nothing changes about how you write posts."
-msgstr "Mehr ist nicht erforderlich. Ihre bestehenden Einbettungen werden im Frontend jetzt durch einen Platzhalter zum Anklicken ersetzt, und vor dem Klick des Besuchers wird kein Drittanbieter kontaktiert. Redakteure sehen im Block-Editor weiterhin die normale Einbettung – am Schreiben ändert sich also nichts."
-
-#. Found in installation list item.
-msgid "In your WordPress admin, go to <strong>Plugins → Add New</strong>, search for \"Calucon Third-Party Embed Gate\", click <strong>Install Now</strong>, then <strong>Activate</strong>. To install from a downloaded zip instead, go to <strong>Plugins → Add New → Upload Plugin</strong>.
-2. That is all. Third-party embeds on the front end are now click-to-load, and nothing third-party is contacted before the visitor clicks. Editors keep seeing the normal embed in the block editor, so nothing changes about how you write posts.
-3. Optional: open <strong>Settings → Calucon Third-Party Embed Gate</strong> to adjust appearance, per-provider behaviour, detection rules, consent memory and the consent-platform bridge. None of it is needed to be protected."
+msgid "In your WordPress admin, go to <strong>Plugins → Add New</strong>, search for \"Calucon Third-Party Embed Gate\", click <strong>Install Now</strong>, then <strong>Activate</strong>. To install from a downloaded zip instead, go to <strong>Plugins → Add New → Upload Plugin</strong>."
 msgstr "Gehen Sie im WordPress-Adminbereich zu <strong>Plugins → Installieren</strong>, suchen Sie nach «Calucon Third-Party Embed Gate», klicken Sie auf <strong>Jetzt installieren</strong> und dann auf <strong>Aktivieren</strong>. Aus einer heruntergeladenen ZIP-Datei installieren Sie stattdessen über <strong>Plugins → Installieren → Plugin hochladen</strong>."
 
 #. Found in description paragraph.
@@ -243,38 +337,6 @@ msgstr "Inhalte von Drittanbietern kommen erst ins Spiel, wenn ein Besucher auf 
 msgid "This plugin makes no request to any external service, on any page, at any time. It contacts no API, loads no remote script, font, image or update check, and sends no telemetry. Its entire purpose is the opposite direction: it prevents your pages from contacting embed providers."
 msgstr "Dieses Plugin stellt keine Anfrage an einen externen Dienst – auf keiner Seite, zu keinem Zeitpunkt. Es kontaktiert keine API, lädt kein entferntes Skript, keine Schrift, kein Bild und keine Update-Prüfung und sendet keine Telemetrie. Sein ganzer Zweck ist die Gegenrichtung: Es verhindert, dass Ihre Seiten Einbettungsanbieter kontaktieren."
 
-#. Found in description paragraph.
-msgid "<strong>Customisation</strong>"
-msgstr "<strong>Anpassung</strong>"
-
-#. Found in description paragraph.
-msgid "Calucon Third-Party Embed Gate is a technical measure. It is not a consent management platform, it does not produce consent records for accountability purposes, it does not scan your site, and it does not make legal claims about your site. What it technically does: it prevents the embed providers' requests until the visitor acts, and the click is scoped to the embed (or, if you enable memory, the scope you configure). You remain responsible for your privacy policy, which still has to name the providers you embed from, and for your legal bases. If you need a documented consent record, you need a consent management platform."
-msgstr "Calucon Third-Party Embed Gate ist eine technische Massnahme. Es ist keine Consent-Management-Plattform, es erzeugt keine Einwilligungsnachweise für Rechenschaftszwecke, es durchsucht Ihre Website nicht und es trifft keine rechtlichen Aussagen über Ihre Website. Was es technisch tut: Es verhindert die Anfragen der Einbettungsanbieter, bis der Besucher handelt, und der Klick gilt für die eine Einbettung (oder, wenn Sie das Merken aktivieren, für den von Ihnen eingestellten Bereich). Verantwortlich bleiben Sie – für Ihre Datenschutzerklärung, die weiterhin die Anbieter nennen muss, von denen Sie einbetten, und für Ihre Rechtsgrundlagen. Wer einen dokumentierten Einwilligungsnachweis braucht, braucht eine Consent-Management-Plattform."
-
-#. Found in description paragraph.
-msgid "<strong>What it is not</strong>"
-msgstr "<strong>Was es nicht ist</strong>"
-
-#. Found in description paragraph.
-msgid "<strong>What it does</strong>"
-msgstr "<strong>Was es tut</strong>"
-
-#. Found in description paragraph.
-msgid "See it in action on the <a href=\"https://calucon.de/third-party-embed-gate-showcase/\">live demo</a>, or read the details on the <a href=\"https://calucon.de/third-party-embed-gate/\">plugin page</a>."
-msgstr "Sehen Sie sich die <a href=\"https://calucon.de/third-party-embed-gate-showcase/\">Live-Demo</a> an oder lesen Sie die Details auf der <a href=\"https://calucon.de/third-party-embed-gate/\">Plugin-Seite</a>."
-
-#. Found in description paragraph.
-msgid "Calucon Third-Party Embed Gate replaces third-party embeds with a server-rendered placeholder until the visitor clicks to load them — the two-click pattern (Zwei-Klick-Lösung). Nothing third-party is contacted before that click: no script, no iframe, no thumbnail, no preconnect. Nothing is stored on the visitor's device before that click either — including by this plugin."
-msgstr "Calucon Third-Party Embed Gate ersetzt Einbettungen von Drittanbietern durch einen serverseitig gerenderten Platzhalter, bis der Besucher sie per Klick lädt – die Zwei-Klick-Lösung. Vor diesem Klick wird kein Drittanbieter kontaktiert: kein Skript, kein Iframe, kein Vorschaubild, kein Preconnect. Und vor diesem Klick wird auch nichts auf dem Gerät des Besuchers gespeichert – auch nicht von diesem Plugin."
-
-#. Found in description paragraph.
-msgid "When an editor pastes a YouTube URL, WordPress turns it into an iframe — and on every page view, before the visitor has been offered any choice, their browser contacts the provider. Measured on a plain GET to <code>www.youtube.com/embed/…</code> with no playback and no scripts run: six cookies, four of them identifiers that live about six months (re-measured August 2026; a year earlier it was five, two of them 18-month). The same request on <code>www.youtube-nocookie.com</code> sets zero."
-msgstr "Wer eine YouTube-URL in den Editor einfügt, bekommt von WordPress ein Iframe – und bei jedem Seitenaufruf kontaktiert der Browser des Besuchers den Anbieter, bevor diesem irgendeine Wahl gelassen wurde. Gemessen bei einem einfachen GET auf <code>www.youtube.com/embed/…</code>, ohne Wiedergabe und ohne ausgeführte Skripte: sechs Cookies, vier davon Kennungen mit rund sechs Monaten Laufzeit (neu gemessen im August 2026; ein Jahr zuvor waren es fünf, zwei davon mit 18 Monaten Laufzeit). Dieselbe Anfrage an <code>www.youtube-nocookie.com</code> setzt keines."
-
-#. Found in description list item.
-msgid "WP-CLI: <code>wp calucon-embed-gate scan</code> (is every embed gated? <code>--format=json</code> for CI and automation) and <code>wp calucon-embed-gate providers</code>; the shipped <code>docs/customizing.md</code> is a self-contained customization reference for developers and AI agents."
-msgstr "WP-CLI: <code>wp calucon-embed-gate scan</code> (ist jede Einbettung gesperrt? <code>--format=json</code> für CI und Automatisierung) und <code>wp calucon-embed-gate providers</code>; die mitgelieferte <code>docs/customizing.md</code> ist eine in sich geschlossene Anpassungs-Referenz für Entwickler und KI-Agenten."
-
 #. Found in description list item.
 msgid "CSS custom properties on <code>.cg-embed</code> (<code>--cg-bg</code>, <code>--cg-fg</code>, <code>--cg-accent</code>, …) for restyling without specificity wars."
 msgstr "CSS-Custom-Properties auf <code>.cg-embed</code> (<code>--cg-bg</code>, <code>--cg-fg</code>, <code>--cg-accent</code>, …), um ohne Spezifitäts-Kämpfe umzugestalten."
@@ -283,58 +345,6 @@ msgstr "CSS-Custom-Properties auf <code>.cg-embed</code> (<code>--cg-bg</code>, 
 msgid "Theme override: copy <code>templates/placeholder.php</code> to <code>{your-theme}/calucon-embed-gate/placeholder.php</code>."
 msgstr "Theme-Override: <code>templates/placeholder.php</code> nach <code>{your-theme}/calucon-embed-gate/placeholder.php</code> kopieren."
 
-#. Found in description list item.
-msgid "Never phones home. The plugin makes no outbound request from your server or your visitors' browsers, on any path, for any reason."
-msgstr "Funkt nie nach Hause. Das Plugin stellt keine ausgehende Anfrage – weder von Ihrem Server noch aus den Browsern Ihrer Besucher, auf keinem Weg und aus keinem Grund."
-
-#. Found in description list item.
-msgid "Accessible placeholder: named group, a real button, visible focus, sufficient contrast, focus kept after activation. Zero axe-core violations in CI."
-msgstr "Barrierefreier Platzhalter: benannte Gruppe, ein echter Button, sichtbarer Fokus, ausreichender Kontrast, Fokus bleibt nach der Aktivierung erhalten. Null axe-core-Verstösse in der CI."
-
-#. Found in description list item.
-msgid "Optional, off by default: a bridge to your consent platform. When a tested platform (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner) reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state; with an untested platform, or when the platform gives no answer, gating stands unchanged."
-msgstr "Optional, standardmässig aus: eine Brücke zu Ihrer Consent-Plattform. Meldet eine getestete Plattform (WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner) eine Einwilligung für die Kategorie der Einbettungen, laden gesperrte Einbettungen ohne zweiten Klick – und ein Widerruf dort sperrt sie wieder. Die Brücke liest nur den Zustand der Plattform; bei einer nicht getesteten Plattform und immer dann, wenn die Plattform keine Antwort gibt, bleibt die Sperre unverändert bestehen."
-
-#. Found in description list item.
-msgid "Optional, off by default: remember consent in the visitor's browser (per embed, per provider, or for all embeds; session or with an expiry), with a withdrawal control via the <code>[calucon_embed_gate_withdraw]</code> shortcode."
-msgstr "Optional, standardmässig aus: die Einwilligung im Browser des Besuchers merken (pro Einbettung, pro Anbieter oder für alle Einbettungen; für die Sitzung oder mit Ablaufdatum), samt Widerrufsmöglichkeit über den Shortcode <code>[calucon_embed_gate_withdraw]</code>."
-
-#. Found in description list item.
-msgid "Per-block override in the editor: gate a specific embed always, never, or per the site default."
-msgstr "Überschreiben pro Block im Editor: eine bestimmte Einbettung immer sperren, nie sperren oder nach Website-Standard behandeln."
-
-#. Found in description list item.
-msgid "Removes embeds from feeds and excerpts instead of showing a meaningless placeholder; a plain fallback link to the content stays for feed readers."
-msgstr "Entfernt Einbettungen aus Feeds und Textauszügen, statt dort einen sinnlosen Platzhalter zu zeigen; für Feed-Leser bleibt ein einfacher Link zum Inhalt."
-
-#. Found in description list item.
-msgid "Strips <code>preconnect</code>/<code>dns-prefetch</code>/<code>preload</code>/<code>prefetch</code> resource hints pointing at gated providers and their CDN hosts (<code>i.ytimg.com</code>, <code>pbs.twimg.com</code>, …)."
-msgstr "Entfernt Resource Hints (<code>preconnect</code>/<code>dns-prefetch</code>/<code>preload</code>/<code>prefetch</code>), die auf gesperrte Anbieter und deren CDN-Hosts zeigen (<code>i.ytimg.com</code>, <code>pbs.twimg.com</code>, …)."
-
-#. Found in description list item.
-msgid "Rebuilds embeds from an attribute safelist — <code>sandbox</code> is preserved, <code>autoplay</code> never survives, inline styles and event handlers are never copied."
-msgstr "Baut Einbettungen aus einer Freigabeliste von Attributen neu auf – <code>sandbox</code> bleibt erhalten, <code>autoplay</code> überlebt nie, Inline-Styles und Event-Handler werden nie übernommen."
-
-#. Found in description list item.
-msgid "Renders the placeholder server-side, so a visitor without JavaScript still gets a real, working link to the content."
-msgstr "Rendert den Platzhalter serverseitig – auch ein Besucher ohne JavaScript bekommt also einen echten, funktionierenden Link zum Inhalt."
-
-#. Found in description list item.
-msgid "Loads from privacy-preserving endpoints after the click where they exist: <code>youtube-nocookie.com</code> (measured: 0 cookies instead of 6), Vimeo with <code>dnt=1</code>."
-msgstr "Lädt nach dem Klick von datenschutzfreundlichen Adressen, wo es sie gibt: <code>youtube-nocookie.com</code> (gemessen: 0 statt 6 Cookies), Vimeo mit <code>dnt=1</code>."
-
-#. Found in description list item.
-msgid "Gates by host, not by a provider allowlist: an unknown third-party iframe is gated by default."
-msgstr "Sperrt anhand des Hosts, nicht anhand einer Anbieterliste: Ein unbekanntes Iframe eines Drittanbieters wird standardmässig gesperrt."
-
-#. Found in description list item.
-msgid "Gates content delivered over AJAX and the REST API to visitors (\"load more\", infinite scroll), while editors always see the original markup."
-msgstr "Sperrt auch Inhalte, die per AJAX oder REST-API an Besucher ausgeliefert werden («Mehr laden», Endlos-Scrollen) – Redakteure sehen dagegen immer das ursprüngliche Markup."
-
-#. Found in description list item.
-msgid "Gates third-party iframes, embed SDK scripts and legacy <code>&lt;embed&gt;</code>/<code>&lt;object&gt;</code> markup in post content, blocks, widgets, comments and archive descriptions — including HTML that has been minified by caching plugins, where most implementations silently fail, and lazy-loaded markup that parks the real URL in a <code>data-src</code> attribute."
-msgstr "Sperrt Iframes von Drittanbietern, Einbettungs-Skripte und altes <code>&lt;embed&gt;</code>/<code>&lt;object&gt;</code>-Markup in Beitragsinhalten, Blöcken, Widgets, Kommentaren und Archivbeschreibungen – auch in HTML, das ein Caching-Plugin minifiziert hat, woran die meisten Umsetzungen still scheitern, und in Lazy-Loading-Markup, das die echte URL in einem <code>data-src</code>-Attribut parkt."
-
 #. Found in description header.
 msgid "External services"
 msgstr "Externe Dienste"
@@ -342,6 +352,111 @@ msgstr "Externe Dienste"
 #. Screenshot description.
 msgid "A gated YouTube embed as a visitor sees it: a server-rendered placeholder with a named panel, a real \"Load\" button and a working fallback link — nothing is requested from the provider until the click."
 msgstr "Eine gesperrte YouTube-Einbettung, wie ein Besucher sie sieht: ein serverseitig gerenderter Platzhalter mit benannter Gruppe, einem echten «Laden»-Button und einem funktionierenden Ersatzlink – vor dem Klick wird beim Anbieter nichts angefragt."
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "1.0: the plugin is feature-complete and enters maintenance. From here on the markup contract (the <code>cg-</code> classes — including the <code>cg-embed__payload</code> JSON script element that replaces the 0.x <code>data-cg-payload</code> attribute — the <code>data-cg-*</code> attributes and <code>--cg-*</code> custom properties), the documented filters and actions, the template variables, the settings keys and the WP-CLI commands are stable across minor releases; provider descriptors and the tested-platform lists are data and may change in minors. New features are not planned; fixes, field-validation findings and WordPress/PHP compatibility are."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Security: the HTML scanner reads markup the way a browser does — a tag opens only where a browser opens one. Before, a comment opener or a raw-text tag name inside an attribute value (<code>&lt;div data-x=\"&lt;!--\"&gt;</code>) hid every embed after it from the gate, silently, and an <code>&lt;iframe</code> inside an <code>alt</code> text got a placeholder spliced into the attribute; both are within reach of any author, since WordPress keeps <code>&lt;</code> inside attribute values."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Fixed: an Elementor video setting containing a backslash came out of the gate's rewrite as invalid JSON, so Elementor could not read its own remaining settings."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Fixed: the two on-demand scans on Status &amp; tools (recent content, theme files) require the page's own nonce; a bare query string no longer makes an administrator's browser run them."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Security: the fallback and privacy links and the poster URL are now scheme-checked the way a browser reads a URL — tab, newline and leading control characters stripped first — so a <code>java&lt;TAB&gt;script:</code> URL arriving from a page-builder setting or a filter can no longer land in a link. Elementor's video widget also no longer links to its <code>youtube_url</code> setting unless that setting is a real page."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Security: a <code>?context=edit</code> query string switched gating off for whoever sent it — any visitor following such a link was served the raw embeds. The parameter marks an editing context and is now honoured only for users who can edit posts, like the AJAX and REST editor paths already were."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Security: the placeholder's payload — what the front-end script loads after the click — moves from a <code>data-cg-payload</code> attribute into a <code>&lt;script type=\"application/json\" class=\"cg-embed__payload\"&gt;</code> element inside the panel, and the script reads it from nowhere else. WordPress lets users without the <code>unfiltered_html</code> capability (Contributors, Authors) write <code>class</code> and <code>data-*</code> attributes on any tag, so the attribute form was forgeable in post content and could execute script in a visitor's browser after a click; a <code>&lt;script&gt;</code> element is exactly what WordPress never lets them write. If you override the template, echo <code>$payload_tag</code> (which replaces <code>$payload_attr</code>) as a direct child of the container. Inert script blocks (JSON-LD, templates) are also no longer treated as loaders."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Changed: the wordpress.org listing text was rewritten to say first what the plugin is and why; no functional change."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Removed: the experimental IAB TCF v2.2 bridge and its setting. It could not be validated against any real TCF platform (none is free to test), and 1.0 promises only what is proven. Sites that had the flag on lose nothing that worked: the platform bridge itself is unchanged."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Fixed: Elementor's video widget was not gated at all — Elementor builds the YouTube player from a JSON attribute in its own script, so there was no iframe to find, and the page contacted YouTube and DoubleClick before any click. The widget now gets the same placeholder as any other embed, with the owner's overlay image as its poster; Vimeo and Dailymotion widgets render a real iframe and were already gated. Found by the new field-validation suite, which runs the compatibility claims against the real plugins (see the repository's docs/field-validation.md)."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Tests: gate.js is now exercised deferred, async, and injected after the load event has fired, plus the script order a combiner produces and the \"delay JavaScript until interaction\" setting. All of that already worked; none of it was covered. The own-host list — the half of the CDN fix that reads <code>content_url()</code> and friends — is now covered too, together with whole-page gating, which is the pairing the fix exists for and which neither half had been tested with. The Compatibility screen's consent-platform, page-builder and optimiser rows are exercised for the first time."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "New: a FAQ entry on caching and minification plugins, a symptom → cause → fix table and the per-plugin exclusion-list locations in the shipped <code>docs/customizing.md</code>."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Changed: the check for third-party asset hosts in your theme now runs when you ask for it, on the same button as the content scan, instead of on every load of the settings screen. It reads up to 40 of the theme's stylesheets, which is the same kind of work the content scan has always been on-demand for."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Fixed: the page cache is now flushed on the <em>first</em> save of the settings too. A site that had never opened the settings screen had no stored settings, so WordPress created them rather than updating them — a different event, which the plugin was not listening for. That first save is the one where gating usually gets turned on, so a page cache still holding pre-gate HTML was exactly the case the flush exists to prevent."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Fixed: the plugin could replace its own <code>gate.js</code> with a placeholder. Putting your asset CDN's hostname on the always-gate list is enough — that list correctly overrides both the own-host rule and the path exemption, and the plugin's own script is then served from a gated host. The result was silent and total: every placeholder became a button that did nothing, because the script that would have handled the click was the thing that got gated."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Fixed: a third-party script or stylesheet served from a <code>/wp-content/</code> or <code>/wp-includes/</code> path is no longer exempt from gating when its host belongs to a provider the plugin already knows. The exemption exists for CDNs that rewrite the finished page, and a path is a heuristic about the shape of a URL — shape being something anyone can copy. The failure mode it removes is the invisible one: letting something through, rather than gating something harmless."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "New: Status &amp; tools now also names WHERE that exclusion list lives in the plugin it detected — Performance → Minify → JS for W3 Total Cache, File Optimization for WP Rocket (which keeps a separate box for \"Delay JavaScript execution\"), and so on for LiteSpeed, Autoptimize, WP Fastest Cache and SiteGround Optimizer. Two answer honestly rather than invent a path: Cloudflare's Rocket Loader takes no list and is switched off per script, and WP Super Cache does not touch JavaScript at all."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "New: Status &amp; tools lists the plugin's own asset paths to paste into a caching or minification plugin's exclusion list, and reports what it could read about the JavaScript settings of the caching plugin you have installed — including, honestly, when it could read nothing."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Fixed: with a CDN serving your assets from another hostname <em>and</em> whole-page gating enabled, the plugin could treat your site's own scripts and stylesheets as third-party and replace them with a placeholder — which broke the page's JavaScript instead of protecting anyone. The site's own asset hosts (from <code>content_url()</code>, <code>includes_url()</code>, <code>plugins_url()</code>, the uploads base and the theme URIs) now count as its own, so a CDN plugin that filters those is trusted automatically. For a CDN that rewrites the finished page instead, a <code>/wp-content/</code> or <code>/wp-includes/</code> path is left alone whatever host serves it — scripts and stylesheets only, never iframes, and your always-gate list still overrides it."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Internal: translations now go through a staged pipeline that verifies de_DE and de_DE_formal against the style guide and the glossary <em>before</em> deriving de_AT, de_CH and de_CH_informal — so a wrong word can no longer be copied into five locales at once."
+msgstr ""
+
+#. Found in changelog list item.
+#, gp-priority: low
+msgid "Changed: the German translation was reviewed by the German translation team at translate.wordpress.org and corrected against their glossary and style guide. The Appearance tab is now called \"Design\"; \"Reiter\" became \"Tab\", \"Rahmen\" became \"Rand\", \"Eigene\" became \"Individuell\" where the English says \"custom\", and a few sentences were rewritten because they read like English rather than German. Nothing changed for sites running in English."
+msgstr ""
 
 #. Found in changelog list item.
 #, gp-priority: low

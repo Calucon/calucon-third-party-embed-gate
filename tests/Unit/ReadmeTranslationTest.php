@@ -105,6 +105,11 @@ final class ReadmeTranslationTest extends TestCase {
 	 *
 	 * The two rules are the Swiss team's own: the output was checked against
 	 * their converter at po.wpswitzerland.ch and matched entry for entry.
+	 *
+	 * With one exemption, restated here rather than imported so that this stays
+	 * an independent check of the script: a ß with no letter beside it is the
+	 * character being named, not used ("mit ss statt ß" — the FAQ answer that
+	 * explains the Swiss rule), and it survives the conversion.
 	 */
 	/**
 	 * @group translation-derived
@@ -113,7 +118,9 @@ final class ReadmeTranslationTest extends TestCase {
 		$dir = dirname( __DIR__, 2 ) . '/.wordpress-org/';
 
 		$swiss = static function ( string $text ): string {
-			return str_replace( array( 'ß', '„', '“' ), array( 'ss', '«', '»' ), $text );
+			$text = preg_replace( '/(?<=\p{L})ß|ß(?=\p{L})/u', 'ss', $text );
+
+			return str_replace( array( '„', '“' ), array( '«', '»' ), (string) $text );
 		};
 
 		$cases = array(

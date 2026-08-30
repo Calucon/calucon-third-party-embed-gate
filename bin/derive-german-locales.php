@@ -17,7 +17,8 @@
  * up the conversion, both verified against approved WordPress core strings in
  * those locales ("Dateigrösse", "Sie dürfen «%s» nicht hochladen"):
  *
- *   - Switzerland does not use the sharp S: ß becomes ss.
+ *   - Switzerland does not use the sharp S: ß becomes ss — except where the
+ *     character is being named rather than used; see cg_swiss() below.
  *   - Switzerland quotes with guillemets: „…“ becomes «…», no inner spaces.
  *
  * Austria's differences from standard German (Jänner, currency) live in
@@ -47,11 +48,34 @@ $targets = array(
  * Swiss orthography, applied to translated text only — never to a msgid, a
  * header or a reference comment.
  *
+ * ONE exemption, and it is deliberately narrow: a ß that has no letter on
+ * either side is the character being NAMED, not used. The listing FAQ says
+ * "… mit ss statt ß …" to explain this very rule, and a mechanical
+ * replacement turns that into "mit ss statt ss", which is meaningless to the
+ * reader it is written for. Switzerland does not use the sharp S; it still
+ * writes it when it talks about it.
+ *
+ * The test for "named" is positional and needs no word list: German spells no
+ * word with a lone ß and starts no word with one, so a ß with a letter beside
+ * it is always ordinary spelling (Straße, größer) and always converts, while
+ * an isolated one (space, quote, bracket or hyphen beside it) can only be a
+ * mention. Do not widen this — every other Swiss rule stays mechanical.
+ *
  * @param string $text Translation.
  * @return string
  */
 function cg_swiss( string $text ): string {
-	return str_replace( array( 'ß', '„', '“' ), array( 'ss', '«', '»' ), $text );
+	// See the note above: convert a ß that has a letter beside it (spelling),
+	// keep an isolated one (the character being named).
+	$converted = preg_replace( '/(?<=\p{L})ß|ß(?=\p{L})/u', 'ss', $text );
+	if ( null === $converted ) {
+		// preg_replace() answers null on a UTF-8 error; writing that would
+		// silently blank the line instead of failing.
+		fwrite( STDERR, "Swiss conversion failed (invalid UTF-8): $text\n" );
+		exit( 1 );
+	}
+
+	return str_replace( array( '„', '“' ), array( '«', '»' ), $converted );
 }
 
 foreach ( $targets as $locale => $spec ) {
