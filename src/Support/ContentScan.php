@@ -17,6 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use CaluconEmbedGate\Detection\HostMatcher;
+use CaluconEmbedGate\Detection\ScriptType;
 use CaluconEmbedGate\Detection\HtmlScanner;
 use CaluconEmbedGate\Providers\Registry;
 
@@ -70,6 +71,9 @@ final class ContentScan {
 			$rows[] = $this->row( 'object', $this->url_of( $tag_match['attributes'], array( 'data' ) ), 'iframes' );
 		}
 		foreach ( $this->scanner->find_tags( $html, 'script' ) as $tag_match ) {
+			if ( ! ScriptType::is_javascript( $tag_match['attributes'] ) ) {
+				continue; // JSON-LD and the like: data the browser never runs, not a finding.
+			}
 			$rows[] = $this->row( 'script', $this->url_of( $tag_match['attributes'], array( 'src' ) ), 'scripts', true );
 		}
 		foreach ( $this->scanner->find_tags( $html, 'img' ) as $tag_match ) {

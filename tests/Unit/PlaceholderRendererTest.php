@@ -64,8 +64,8 @@ final class PlaceholderRendererTest extends TestCase {
 	}
 
 	private function payload_of( string $html ): array {
-		self::assertSame( 1, preg_match( '/data-cg-payload="([^"]*)"/', $html, $m ) );
-		return json_decode( html_entity_decode( $m[1], ENT_QUOTES, 'UTF-8' ), true );
+		self::assertSame( 1, preg_match( '#<script type="application/json" class="cg-embed__payload">([^<]*)</script>#', $html, $m ) );
+		return json_decode( $m[1], true );
 	}
 
 	public function test_markup_contract(): void {

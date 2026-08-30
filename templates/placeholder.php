@@ -8,7 +8,9 @@
  * keep working:
  *
  *  - the outer element carries class="cg-embed", role="group", the
- *    aria-label, data-cg-provider, data-cg-host and data-cg-payload;
+ *    aria-label, data-cg-provider and data-cg-host;
+ *  - $payload_tag echoed RAW as the outer element's first child — see
+ *    below; this is the one line a template must not reinterpret;
  *  - a real <button type="button" class="cg-embed__button">;
  *  - a working fallback link (class="cg-embed__fallback" on its wrapper).
  *
@@ -21,7 +23,17 @@
  * @var string $action         Button text (plain text, escape it).
  * @var string $fallback_url   Fallback link target (URL, escape it).
  * @var string $fallback_label Fallback link text (plain text, escape it).
- * @var string $payload_attr   data-cg-payload value, already HTML-escaped.
+ * @var string $payload_tag    The payload element, complete:
+ *                             <script type="application/json"
+ *                             class="cg-embed__payload">{json}</script>.
+ *                             Echo it as is, as a direct child of the
+ *                             container. It is the front end's security
+ *                             boundary: gate.js executes only payloads it
+ *                             finds in this element, because WordPress's
+ *                             kses lets any author write class and data-*
+ *                             attributes but never a <script>. A template
+ *                             that moves the payload into an attribute
+ *                             reopens a Contributor-level XSS.
  * @var string $aspect         CSS aspect ratio ('16/9') or '' — reserve the
  *                             embed's space via the --cg-aspect custom
  *                             property so the page does not reflow (§5.3).
@@ -63,8 +75,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Included through the renderer but without its variables (belt-and-braces):
 // render nothing rather than emit a broken panel.
-if ( ! isset( $provider, $aria_label, $note, $action, $fallback_url, $fallback_label, $payload_attr, $aspect ) ) {
+if ( ! isset( $provider, $aria_label, $note, $action, $fallback_url, $fallback_label, $payload_tag, $aspect ) ) {
 	return;
 }
 ?>
-<div class="cg-embed<?php echo isset( $poster ) && is_string( $poster ) && '' !== $poster ? ' cg-embed--poster' : ''; ?>" role="group" aria-label="<?php echo htmlspecialchars( $aria_label, ENT_QUOTES, 'UTF-8' ); ?>" data-cg-provider="<?php echo htmlspecialchars( $provider['id'], ENT_QUOTES, 'UTF-8' ); ?>"<?php echo isset( $host ) && is_string( $host ) && '' !== $host ? ' data-cg-host="' . htmlspecialchars( $host, ENT_QUOTES, 'UTF-8' ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?><?php echo '' !== $aspect ? ' style="--cg-aspect:' . htmlspecialchars( $aspect, ENT_QUOTES, 'UTF-8' ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?> data-cg-payload="<?php echo $payload_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by the renderer. ?>"><?php echo isset( $poster ) && is_string( $poster ) && '' !== $poster ? '<img class="cg-embed__poster" src="' . htmlspecialchars( $poster, ENT_QUOTES, 'UTF-8' ) . '" alt="" aria-hidden="true" loading="lazy">' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?><div class="cg-embed__panel"><p class="cg-embed__note"><?php echo htmlspecialchars( $note, ENT_QUOTES, 'UTF-8' ); ?></p><?php echo ! isset( $show_button ) || $show_button ? '<button type="button" class="cg-embed__button">' . htmlspecialchars( $action, ENT_QUOTES, 'UTF-8' ) . '</button>' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?><p class="cg-embed__fallback"><a href="<?php echo htmlspecialchars( $fallback_url, ENT_QUOTES, 'UTF-8' ); ?>" rel="noopener nofollow"><?php echo htmlspecialchars( $fallback_label, ENT_QUOTES, 'UTF-8' ); ?></a></p><?php echo isset( $privacy_url, $privacy_label ) && is_string( $privacy_url ) && '' !== $privacy_url ? '<p class="cg-embed__privacy"><a href="' . htmlspecialchars( $privacy_url, ENT_QUOTES, 'UTF-8' ) . '" rel="noopener nofollow">' . htmlspecialchars( (string) $privacy_label, ENT_QUOTES, 'UTF-8' ) . '</a></p>' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?></div></div>
+<div class="cg-embed<?php echo isset( $poster ) && is_string( $poster ) && '' !== $poster ? ' cg-embed--poster' : ''; ?>" role="group" aria-label="<?php echo htmlspecialchars( $aria_label, ENT_QUOTES, 'UTF-8' ); ?>" data-cg-provider="<?php echo htmlspecialchars( $provider['id'], ENT_QUOTES, 'UTF-8' ); ?>"<?php echo isset( $host ) && is_string( $host ) && '' !== $host ? ' data-cg-host="' . htmlspecialchars( $host, ENT_QUOTES, 'UTF-8' ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?><?php echo '' !== $aspect ? ' style="--cg-aspect:' . htmlspecialchars( $aspect, ENT_QUOTES, 'UTF-8' ) . '"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?>><?php echo $payload_tag; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the JSON payload element, built and encoded by the renderer. ?><?php echo isset( $poster ) && is_string( $poster ) && '' !== $poster ? '<img class="cg-embed__poster" src="' . htmlspecialchars( $poster, ENT_QUOTES, 'UTF-8' ) . '" alt="" aria-hidden="true" loading="lazy">' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?><div class="cg-embed__panel"><p class="cg-embed__note"><?php echo htmlspecialchars( $note, ENT_QUOTES, 'UTF-8' ); ?></p><?php echo ! isset( $show_button ) || $show_button ? '<button type="button" class="cg-embed__button">' . htmlspecialchars( $action, ENT_QUOTES, 'UTF-8' ) . '</button>' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?><p class="cg-embed__fallback"><a href="<?php echo htmlspecialchars( $fallback_url, ENT_QUOTES, 'UTF-8' ); ?>" rel="noopener nofollow"><?php echo htmlspecialchars( $fallback_label, ENT_QUOTES, 'UTF-8' ); ?></a></p><?php echo isset( $privacy_url, $privacy_label ) && is_string( $privacy_url ) && '' !== $privacy_url ? '<p class="cg-embed__privacy"><a href="' . htmlspecialchars( $privacy_url, ENT_QUOTES, 'UTF-8' ) . '" rel="noopener nofollow">' . htmlspecialchars( (string) $privacy_label, ENT_QUOTES, 'UTF-8' ) . '</a></p>' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inline. ?></div></div>

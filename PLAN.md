@@ -541,7 +541,8 @@ public API and version it.
      role="group"
      aria-label="{accessible name}"
      data-cg-provider="youtube"
-     data-cg-payload="{json}">
+     data-cg-host="www.youtube-nocookie.com">
+  <script type="application/json" class="cg-embed__payload">{json}</script>
   <div class="cg-embed__panel">
     <p class="cg-embed__note">{note}</p>
     <button type="button" class="cg-embed__button">{action}</button>
@@ -557,16 +558,32 @@ stylesheet that belongs to the panel above it — is part of this contract too:
 ```html
 <span class="cg-embed cg-embed--silent" hidden
       data-cg-provider="wolfram-cloud"
-      data-cg-host="www.wolframcloud.com"
-      data-cg-payload="{json}"></span>
+      data-cg-host="www.wolframcloud.com"><script type="application/json" class="cg-embed__payload">{json}</script></span>
 ```
 
 No panel, no accessible name, no fallback link: the visible panel of the same
 provider stands for both, and gate.js activates the companion **after** that
-panel's script has loaded. Anything sweeping the page for
-`.cg-embed[data-cg-payload]` (consent-memory restore, the CMP bridge, a site's
-own adapter) must skip `.cg-embed--silent`, or the companion runs before the
-script it calls into.
+panel's script has loaded. Anything sweeping the page for `.cg-embed`
+(consent-memory restore, the CMP bridge, a site's own adapter) must skip
+`.cg-embed--silent`, or the companion runs before the script it calls into.
+
+**The payload is an element, not an attribute, and that is the front end's
+security boundary (1.0).** gate.js executes what the payload says: a script
+URL, an inline document, inline loader code. WordPress's kses gives every
+author — Contributors and Authors without `unfiltered_html` — `class` and
+`data-*` on every tag, plus `<div>` and `<button>`, so a payload carried in a
+`data-cg-payload` attribute (0.x) was forgeable verbatim in post content: a
+stored XSS that fired on a visitor's click, on a consent-memory restore with
+scope "all", on a CMP-bridge grant, and for the Editor previewing the post.
+The one thing kses never produces is a `<script>` element. So the payload is
+the container's first child, `<script type="application/json"
+class="cg-embed__payload">`, gate.js reads a payload from nowhere else
+(`payloadOf()`), and a forged panel has no payload at all. The cost, stated:
+a theme that runs `wp_kses_post()` over *rendered* content strips the element
+and leaves a visibly dead button with a working fallback link — the visible
+failure, which is the direction invariant 6 prefers. `ScriptRule` skips every
+`<script>` whose `type` is not a JavaScript MIME type (`ScriptType`), which
+keeps the carrier — and JSON-LD, templates — out of the gate's own hands.
 
 `cg-embed__privacy` (0.10.0) is present only for providers that declare a
 `privacy_url` and only while `display.privacy_link` is on (off by default); the template exposes
@@ -604,8 +621,8 @@ adding noise to the landmark list or the document outline.
 
 ### 5.2 Payload
 
-`data-cg-payload` carries the JSON the front-end needs to build the real node.
-Rules:
+The `cg-embed__payload` element carries the JSON the front-end needs to build
+the real node. Rules:
 
 - Only what is needed. Never the full original tag.
 - Attribute safelist on rebuild: `title`, `width`, `height`, `sandbox`,
@@ -615,6 +632,9 @@ Rules:
   `style="position:absolute;visibility:hidden"` and reveals them from
   `wp-embed.js` after a `postMessage` handshake. Carrying that over means the
   visitor opts in and watches nothing appear.
+- The descriptor's `iframe_allow` is *added* when the original tag carried
+  no `allow` at all — a deliberate capability grant (the player needs
+  `encrypted-media` and `picture-in-picture` to work), never `autoplay`.
 
 ### 5.3 Aspect-ratio preservation
 

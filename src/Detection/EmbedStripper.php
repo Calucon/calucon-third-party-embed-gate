@@ -88,6 +88,9 @@ final class EmbedStripper {
 			if ( ! isset( $attributes[ $url_attribute ] ) || ! is_string( $attributes[ $url_attribute ] ) ) {
 				continue;
 			}
+			if ( 'script' === $tag && ! ScriptType::is_javascript( $attributes ) ) {
+				continue; // Inert data; nothing loads from it.
+			}
 			$src = trim( $attributes[ $url_attribute ] );
 			if ( HostMatcher::FOREIGN !== $this->hosts->classify( $src ) ) {
 				continue;

@@ -55,7 +55,7 @@ final class TemplateLoaderTest extends TestCase {
 		$template = tempnam( sys_get_temp_dir(), 'cg' );
 		file_put_contents(
 			$template,
-			'<div class="cg-embed custom" role="group" aria-label="<?php echo htmlspecialchars( $aria_label, ENT_QUOTES ); ?>" data-cg-provider="<?php echo $provider["id"]; ?>" data-cg-payload="<?php echo $payload_attr; ?>"><button type="button" class="cg-embed__button">GO</button><p class="cg-embed__fallback"><a href="<?php echo htmlspecialchars( $fallback_url, ENT_QUOTES ); ?>">link</a></p></div>'
+			'<div class="cg-embed custom" role="group" aria-label="<?php echo htmlspecialchars( $aria_label, ENT_QUOTES ); ?>" data-cg-provider="<?php echo $provider["id"]; ?>"><?php echo $payload_tag; ?><button type="button" class="cg-embed__button">GO</button><p class="cg-embed__fallback"><a href="<?php echo htmlspecialchars( $fallback_url, ENT_QUOTES ); ?>">link</a></p></div>'
 		);
 
 		$html = $this->renderer_with_template( $template )->render( $this->provider(), 'https://example.org/embed/1', array() );
@@ -63,7 +63,7 @@ final class TemplateLoaderTest extends TestCase {
 
 		self::assertStringContainsString( 'class="cg-embed custom"', $html );
 		self::assertStringContainsString( '>GO</button>', $html );
-		self::assertStringContainsString( 'data-cg-payload=', $html );
+		self::assertStringContainsString( '<script type="application/json" class="cg-embed__payload">', $html );
 	}
 
 	public function test_broken_template_falls_back_to_builtin_markup(): void {

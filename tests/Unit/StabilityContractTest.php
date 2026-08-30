@@ -85,7 +85,7 @@ final class StabilityContractTest extends TestCase {
 	public function test_the_markup_contract_names_are_the_ones_the_renderer_emits(): void {
 		$renderer = (string) file_get_contents( self::root() . '/src/Rendering/PlaceholderRenderer.php' );
 		$section  = self::promise_section();
-		foreach ( array( 'cg-embed', 'cg-embed__button', 'data-cg-provider', 'data-cg-host', 'data-cg-payload' ) as $name ) {
+		foreach ( array( 'cg-embed', 'cg-embed__button', 'cg-embed__payload', 'data-cg-provider', 'data-cg-host' ) as $name ) {
 			self::assertStringContainsString( $name, $renderer, "$name is promised but the renderer no longer emits it" );
 			self::assertStringContainsString( '`' . $name . '`', $section, "$name is emitted but not listed in the promise" );
 		}

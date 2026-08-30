@@ -12,13 +12,21 @@ would be a bug. Everything not listed is internal, however tempting it looks.
 
 - **The markup contract** (PLAN.md §5.1): the `cg-embed` container with its
   `role="group"` and `aria-label`, the `cg-embed__button`, the
-  `data-cg-provider`, `data-cg-host` and `data-cg-payload` attributes, and
+  `data-cg-provider` and `data-cg-host` attributes, the `cg-embed__payload`
+  JSON script element (the container's first child, and the only place
+  gate.js reads a payload from — see §5.1 for why it is an element), and
   the eight CSS custom properties `--cg-bg`, `--cg-fg`, `--cg-accent`,
   `--cg-accent-fg`, `--cg-radius`, `--cg-gap`, `--cg-font` and `--cg-aspect`.
 - **The hooks** listed under "Every hook, with its signature" — filters
   `calucon_embed_gate_action_text`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_note_text`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_payload`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_providers`, `calucon_embed_gate_render_block_priority`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_www_equivalence`; actions `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated`, `calucon_embed_gate_flush_caches` — and their signatures.
 - **The template variables** documented in `templates/placeholder.php`, and
-  the override path `{theme}/calucon-embed-gate/placeholder.php`.
+  the override path `{theme}/calucon-embed-gate/placeholder.php`. One rule
+  for overrides: `$payload_tag` is echoed raw as a direct child of the
+  container, never reinterpreted — gate.js executes only what it finds in
+  that `<script type="application/json">`, because that is the one element
+  WordPress's kses never lets an author write. A note on themes: one that
+  runs `wp_kses_post()` over *rendered* content strips the element and
+  leaves a visibly dead button; the fallback link keeps working.
 - **The settings keys** of `calucon_embed_gate_options` as sanitised by
   `Options::defaults()`: a key may gain a value, never lose one or change
   its meaning.
@@ -439,7 +447,7 @@ means the third party is contacted on page load, for every visitor.
 | Hook | Signature | Fires |
 |---|---|---|
 | `calucon_embed_gate_placeholder_html` | `( string $html, array $provider, array $ctx ): string` | after the placeholder is rendered (template override included) |
-| `calucon_embed_gate_payload` | `( array $payload, array $provider ): array` | before the payload is JSON-encoded into `data-cg-payload` |
+| `calucon_embed_gate_payload` | `( array $payload, array $provider ): array` | before the payload is JSON-encoded into the `cg-embed__payload` element |
 
 **Plumbing**
 

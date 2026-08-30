@@ -214,7 +214,7 @@ final class PlaceholderRenderer {
 			$html = '<span class="cg-embed cg-embed--silent" hidden'
 				. ' data-cg-provider="' . $this->esc( $provider['id'] ) . '"'
 				. ( '' !== $host ? ' data-cg-host="' . $this->esc( $host ) . '"' : '' )
-				. ' data-cg-payload="' . $this->esc_json( $payload ) . '"></span>';
+				. '>' . $this->payload_tag( $payload ) . '</span>';
 		} else {
 			$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host, $poster, $privacy_url, $privacy_label, $show_button );
 		}
@@ -251,7 +251,8 @@ final class PlaceholderRenderer {
 			. ' data-cg-provider="' . $this->esc( $provider['id'] ) . '"'
 			. ( '' !== $host ? ' data-cg-host="' . $this->esc( $host ) . '"' : '' )
 			. ( '' !== $aspect ? ' style="--cg-aspect:' . $this->esc( $aspect ) . '"' : '' )
-			. ' data-cg-payload="' . $this->esc_json( $payload ) . '">'
+			. '>'
+			. $this->payload_tag( $payload )
 			// Decorative: the group's aria-label already names the embed, and
 			// the poster is gone after activation — alt text would be noise.
 			. ( '' !== $poster ? '<img class="cg-embed__poster" src="' . $this->esc( $poster ) . '" alt="" aria-hidden="true" loading="lazy">' : '' )
@@ -306,7 +307,7 @@ final class PlaceholderRenderer {
 				'fallback_label' => $fallback_label,
 				'privacy_url'    => $privacy_url,
 				'privacy_label'  => $privacy_label,
-				'payload_attr'   => $this->esc_json( $payload ),
+				'payload_tag'    => $this->payload_tag( $payload ),
 				'aspect'         => $this->aspect_of( $provider, $payload ),
 				'host'           => $host,
 				'poster'         => $poster,
@@ -527,17 +528,40 @@ final class PlaceholderRenderer {
 	}
 
 	/**
-	 * JSON for an HTML attribute. HEX_TAG guarantees no raw '<iframe'
-	 * substring ever appears inside the payload (PLAN.md §9.1).
+	 * The payload element: a JSON data block that is the container's first
+	 * child, and the ONLY thing gate.js will read a payload from.
+	 *
+	 * Why an element and not a data attribute — this is the security
+	 * boundary of the front end, so read it twice. gate.js executes what
+	 * the payload tells it to: it loads a script URL, restores an inline
+	 * document, re-runs inline loader code. WordPress lets users without
+	 * `unfiltered_html` (Contributors, Authors) write `class` and any
+	 * `data-*` attribute on every tag, plus <div> and <button>, so a
+	 * payload in a data attribute was forgeable verbatim by a Contributor —
+	 * a stored XSS that fired on the visitor's click, on a consent-memory
+	 * restore, or on a CMP-bridge grant, and for the Editor previewing the
+	 * post. What kses never produces is a <script> element. So the payload
+	 * lives in one, gate.js reads it from nowhere else, and a forged panel
+	 * has no payload at all. Never move this back into an attribute, and
+	 * never add a second executable field that gate.js reads from a
+	 * `data-cg-*` attribute.
+	 *
+	 * The cost: a theme that runs wp_kses_post() over RENDERED content
+	 * strips the element and leaves a visible dead button (the fallback
+	 * link still works). Visible beats invisible (invariant 6).
+	 *
+	 * HEX_TAG keeps '<' out of the JSON, so neither '</script>' nor
+	 * '<iframe' can appear inside the block (PLAN.md §9.1); the scanner
+	 * excludes script bodies anyway.
 	 *
 	 * @param array $payload Payload.
 	 * @return string
 	 */
-	private function esc_json( array $payload ): string {
+	private function payload_tag( array $payload ): string {
 		$json = json_encode(
 			$payload,
 			JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
 		);
-		return htmlspecialchars( (string) $json, ENT_QUOTES, 'UTF-8' );
+		return '<script type="application/json" class="cg-embed__payload">' . (string) $json . '</script>';
 	}
 }

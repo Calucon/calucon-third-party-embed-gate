@@ -162,7 +162,11 @@ test( 'feeds strip embeds instead of gating them', async ( { request } ) => {
 	// escaped tutorial sample (&#60;iframe …) legitimately remains.
 	expect( xml ).not.toMatch( /<iframe[^>]*youtube\.com\/embed/ );
 	expect( xml ).not.toMatch( /<script[^>]*platform\.twitter\.com/ );
-	expect( xml ).not.toContain( 'cg-embed' );
+	// No rendered panel: neither its payload element nor its accessible
+	// name. (The forged-panel post legitimately carries the class name in
+	// its own text, so the class alone would be the wrong thing to assert.)
+	expect( xml ).not.toContain( 'cg-embed__payload' );
+	expect( xml ).not.toContain( 'Embedded content from' );
 	expect( xml ).toContain( 'Intro paragraph.' );
 } );
 
@@ -201,6 +205,31 @@ test( 'editor REST content is NOT gated — invariant 4', async ( { page, reques
 	// embed, or gating looks like data loss.
 	expect( post.content.rendered ).toContain( 'youtube.com/embed' );
 	expect( post.content.rendered ).not.toContain( 'cg-embed' );
+} );
+
+test( 'a forged panel that survives kses executes nothing on a real WordPress', async ( { page, request } ) => {
+	// Two facts, both asserted: kses lets the forgery through (so the
+	// threat is real on this WordPress — if core ever changes that, this
+	// says so), and gate.js executes none of it while the real embed next
+	// to it still works. See the forged-panel trap in CLAUDE.md.
+	const raw = await ( await request.get( '/forged-panel/' ) ).text();
+	expect( raw, 'kses must have kept the forged attribute, or the test proves nothing' ).toContain( 'data-cg-payload=' );
+	expect( raw ).toContain( 'id="forged-inline"' );
+
+	await abortThirdParty( page );
+	await page.goto( '/forged-panel/' );
+	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 2 );
+
+	const forged = page.locator( '#forged-inline' );
+	await expect( forged.locator( 'script.cg-embed__payload' ) ).toHaveCount( 0 );
+	await forged.locator( '.cg-embed__button' ).click();
+	await expect( forged.locator( '.cg-embed__error' ) ).toBeVisible();
+	expect( await page.evaluate( () => window.__pwned ) ).toBeUndefined();
+
+	const real = page.locator( '.cg-embed:not(#forged-inline)' );
+	await expect( real.locator( 'script.cg-embed__payload' ) ).toHaveCount( 1 );
+	await real.locator( '.cg-embed__button' ).click();
+	await expect( real.locator( 'iframe' ) ).toHaveAttribute( 'src', /youtube-nocookie\.com/ );
 } );
 
 test( 'a ?context=edit query string does not ungate the page for a visitor', async ( { request } ) => {
