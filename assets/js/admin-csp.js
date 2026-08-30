@@ -120,6 +120,10 @@
 		if ( ! content ) {
 			return '';
 		}
+		// Entity-decode through a detached <textarea>, and ONLY a textarea:
+		// its content is RCDATA, so the attribute text (which comes from the
+		// fetched page and could be anything) parses to characters, never to
+		// elements or handlers. Swapping this for a div would make it a sink.
 		var decoder = document.createElement( 'textarea' );
 		decoder.innerHTML = content[ 1 ] || content[ 2 ] || content[ 3 ] || '';
 		return decoder.value;

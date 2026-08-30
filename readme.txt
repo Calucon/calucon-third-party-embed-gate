@@ -181,6 +181,10 @@ The panel looks and behaves as before unless you opt in: the privacy-policy link
 == Changelog ==
 
 = 1.0.0 =
+* Security: a `?context=edit` query string switched gating off for whoever sent it — any visitor following such a link was served the raw embeds. The parameter marks an editing context and is now honoured only for users who can edit posts, like the AJAX and REST editor paths already were.
+* Security: the fallback and privacy links and the poster URL are now scheme-checked the way a browser reads a URL — tab, newline and leading control characters stripped first — so a `java<TAB>script:` URL arriving from a page-builder setting or a filter can no longer land in a link. Elementor's video widget also no longer links to its `youtube_url` setting unless that setting is a real page.
+* Fixed: the two on-demand scans on Status & tools (recent content, theme files) require the page's own nonce; a bare query string no longer makes an administrator's browser run them.
+* Fixed: an Elementor video setting containing a backslash came out of the gate's rewrite as invalid JSON, so Elementor could not read its own remaining settings.
 * Changed: the wordpress.org listing text was rewritten to say first what the plugin is and why; no functional change.
 * Removed: the experimental IAB TCF v2.2 bridge and its setting. It could not be validated against any real TCF platform (none is free to test), and 1.0 promises only what is proven. Sites that had the flag on lose nothing that worked: the platform bridge itself is unchanged.
 * 1.0: the plugin is feature-complete and enters maintenance. From here on the markup contract (the `cg-` classes, `data-cg-*` attributes and `--cg-*` custom properties), the documented filters and actions, the template variables, the settings keys and the WP-CLI commands are stable across minor releases; provider descriptors and the tested-platform lists are data and may change in minors. New features are not planned; fixes, field-validation findings and WordPress/PHP compatibility are.

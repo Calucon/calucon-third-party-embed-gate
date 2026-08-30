@@ -872,6 +872,13 @@ is the block renderer, `is_customize_preview()`, `wp_is_json_request()` for
 editor endpoints, and any request where `$_GET['context'] === 'edit'`. Gating a
 block in the editor looks like the plugin ate the content.
 
+Every one of those that a request can *claim* — AJAX, REST, a JSON request,
+the `context=edit` parameter — is honoured only for a user with `edit_posts`.
+The parameter is in everyone's hands: before the capability check, any link
+to `/page/?context=edit` served an anonymous visitor the raw embeds, a
+bypass of invariant 1 by URL. Editors are authenticated; visitors are
+gated.
+
 ### 9.3 Feeds, exports, and non-HTML output
 
 `is_feed()` — strip the embed and emit the fallback link instead; a placeholder
@@ -912,6 +919,17 @@ Two refinements learned since the first draft:
   original srcdoc verbatim (equal privilege, invariant 7) and the fallback
   link is harvested from the first foreign `<a href>` inside it. A srcdoc
   that references nothing foreign still passes through.
+- **`srcdoc` next to a foreign `src` is gated on the `src`.** Statically the
+  browser shows the srcdoc document and never requests `src` — but the
+  common snippets that carry both (the lazy-YouTube facade: thumbnail in the
+  srcdoc, the player in `src`) strip the srcdoc from script on click, and
+  that is when `src` fires. Preferring the srcdoc would restore the
+  provider-CDN thumbnail on activation instead of the nocookie player, and a
+  script-driven swap would then load `src` past the gate — the invisible
+  failure. The panel names the `src` host and loads it only after the click
+  on that name, which is not a widening of the original's privilege. The
+  `srcdoc-with-src-*` fixtures pin this; do not "fix" it in either direction
+  without them.
 - **A lazy-load `data-src`/`data-lazy-src`/`data-original` attribute is a
   usable src.** Lazy-load plugins park the real URL there and shim `src` with
   `about:blank` or a `data:` GIF; the parked URL is the one that fires on

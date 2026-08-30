@@ -119,4 +119,28 @@ final class ElementorVideoRuleTest extends TestCase {
 		self::assertStringContainsString( 'class="cg-embed"', $out );
 		self::assertStringNotContainsString( 'i.ytimg.com', $out, 'a provider thumbnail is a third-party request and never a poster (§5.4)' );
 	}
+
+	public function test_a_watch_url_that_is_not_a_page_never_becomes_the_fallback_link(): void {
+		// The id is read from anywhere in the string, so this still gates a
+		// player — and the link must be the embed URL, never the setting.
+		// JSON "\t" decodes to a real tab, which browsers strip from a URL:
+		// `java<TAB>script:` IS javascript: to the browser.
+		$html = self::widget( array( 'video_type' => 'youtube', 'youtube_url' => "java\tscript:alert(1)//youtu.be/y_pjE_p1HwE" ) );
+		$out  = self::rule()->apply( $html );
+
+		self::assertStringContainsString( 'class="cg-embed"', $out );
+		self::assertStringNotContainsString( 'script:', $out );
+		self::assertStringContainsString( 'href="https://www.youtube.com/embed/y_pjE_p1HwE"', $out );
+	}
+
+	public function test_surviving_settings_with_a_backslash_are_still_valid_json_after_the_rewrite(): void {
+		$html = self::widget( array( 'video_type' => 'youtube', 'youtube_url' => 'https://youtu.be/y_pjE_p1HwE', 'title' => 'a\\z $1' ) );
+		$out  = self::rule()->apply( $html );
+
+		self::assertSame( 1, preg_match( '/data-settings="([^"]*)"/', $out, $m ) );
+		$settings = json_decode( html_entity_decode( $m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' ), true );
+		self::assertIsArray( $settings, 'the rewritten data-settings must stay parseable, or Elementor cannot read its own settings' );
+		self::assertSame( 'a\\z $1', $settings['title'] );
+		self::assertSame( ElementorVideoRule::GATED_TYPE, $settings['video_type'] );
+	}
 }

@@ -266,4 +266,48 @@ final class HostMatcherTest extends TestCase {
 		self::assertFalse( HostMatcher::path_is_under( '', 'https://cdn.example.net/anything.js' ) );
 	}
 
+	/**
+	 * navigable() is the one scheme guard for every link the plugin writes,
+	 * and it has to read the URL as a browser does. The raw-string check it
+	 * replaced was defeated by a tab inside the scheme.
+	 *
+	 * @dataProvider navigable_urls
+	 */
+	public function test_navigable_reads_the_scheme_as_a_browser_does( string $url, string $expected ): void {
+		self::assertSame( $expected, HostMatcher::navigable( $url ) );
+	}
+
+	public static function navigable_urls(): array {
+		return array(
+			'https'                     => array( 'https://ok.example/p?q=1#f', 'https://ok.example/p?q=1#f' ),
+			'http'                      => array( 'http://ok.example/', 'http://ok.example/' ),
+			'protocol-relative'         => array( '//ok.example/p', '//ok.example/p' ),
+			'absolute path'             => array( '/frame.html', '/frame.html' ),
+			'relative path'             => array( 'frame.html', 'frame.html' ),
+			'query only'                => array( '?q=1', '?q=1' ),
+			'fragment only'             => array( '#top', '#top' ),
+			'surrounding whitespace'    => array( "  https://ok.example/  ", 'https://ok.example/' ),
+			'javascript'                => array( 'javascript:alert(1)', '' ),
+			'JAVASCRIPT'                => array( 'JAVASCRIPT:alert(1)', '' ),
+			'tab inside the scheme'     => array( "java\tscript:alert(1)//youtu.be/x", '' ),
+			'newline inside the scheme' => array( "java\nscript:alert(1)", '' ),
+			'CR inside the scheme'      => array( "java\rscript:alert(1)", '' ),
+			'leading control'           => array( "\x01javascript:alert(1)", '' ),
+			'leading control and space' => array( "\x00 \x1fjavascript:alert(1)", '' ),
+			'data'                      => array( 'data:text/html,<script>1</script>', '' ),
+			'vbscript'                  => array( 'vbscript:MsgBox(1)', '' ),
+			'blob'                      => array( 'blob:https://a.example/uuid', '' ),
+			'unknown scheme'            => array( 'gopher://x', '' ),
+			'mailto'                    => array( 'mailto:x@example.test', '' ),
+			'empty'                     => array( '', '' ),
+			'only controls'             => array( "\t\n \x00", '' ),
+			// Authority normalisation matches classify(): what the browser
+			// navigates to, not a rejection (the panel keeps its no-JS link).
+			'backslash authority'       => array( 'https:\\\\evil.example/x', 'https://evil.example/x' ),
+			'missing authority slashes' => array( 'https:evil.example/x', 'https://evil.example/x' ),
+			'one authority slash'       => array( 'https:/evil.example/x', 'https://evil.example/x' ),
+			'three leading slashes'     => array( '///evil.example/x', '//evil.example/x' ),
+			'tab inside a good URL'     => array( "https://ok.exam\tple/", 'https://ok.example/' ),
+		);
+	}
 }

@@ -25,6 +25,44 @@ final class PlaceholderRendererTest extends TestCase {
 		return ( new PlaceholderRenderer() )->render( $provider, $src, $attributes );
 	}
 
+	/**
+	 * The fallback URL after the calucon_embed_gate_fallback_url bridge.
+	 */
+	private function render_with_fallback( string $fallback ): string {
+		$provider = Provider::normalize( array( 'id' => 'generic', 'label' => 'x', 'note' => 'n', 'action' => 'a', 'fallback' => '' ) );
+		$renderer = new PlaceholderRenderer(
+			null,
+			null,
+			null,
+			null,
+			array(
+				'fallback' => static function () use ( $fallback ): string {
+					return $fallback;
+				},
+			)
+		);
+		return $renderer->render( $provider, 'https://www.youtube.com/embed/x', array() );
+	}
+
+	public function test_a_control_character_in_the_scheme_does_not_smuggle_javascript_into_the_fallback_link(): void {
+		// Browsers strip tab/newline anywhere in a URL and leading controls
+		// before reading the scheme; a guard on the raw string let these
+		// through as href values that execute on click.
+		foreach ( array( "java\tscript:alert(1)//x", "java\nscript:alert(1)", "\x01javascript:alert(1)", 'JavaScript:alert(1)' ) as $hostile ) {
+			$html = $this->render_with_fallback( $hostile );
+			self::assertStringNotContainsString( 'cg-embed__fallback', $html, $hostile );
+			self::assertStringNotContainsString( 'script:', $html, $hostile );
+		}
+		// A real page keeps its link, tab and all stripped.
+		self::assertStringContainsString( 'href="https://www.youtube.com/watch?v=x"', $this->render_with_fallback( "https://www.you\ttube.com/watch?v=x" ) );
+	}
+
+	public function test_a_poster_with_a_control_character_scheme_is_dropped(): void {
+		foreach ( array( "java\tscript:alert(1)", "\x01javascript:alert(1)", 'vbscript:x', 'data:image/png;base64,AA==' ) as $hostile ) {
+			self::assertStringNotContainsString( 'cg-embed__poster', $this->render_with_ctx( array( 'poster' => $hostile ) ), $hostile );
+		}
+	}
+
 	private function payload_of( string $html ): array {
 		self::assertSame( 1, preg_match( '/data-cg-payload="([^"]*)"/', $html, $m ) );
 		return json_decode( html_entity_decode( $m[1], ENT_QUOTES, 'UTF-8' ), true );

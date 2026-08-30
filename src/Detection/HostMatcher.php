@@ -158,10 +158,53 @@ final class HostMatcher {
 	 * @param string $url Raw URL from the markup.
 	 * @return string
 	 */
-	private static function preprocess( string $url ): string {
+	public static function preprocess( string $url ): string {
 		$url = str_replace( array( "\t", "\n", "\r" ), '', $url );
 		$url = str_replace( '\\', '/', $url );
 		return trim( $url );
+	}
+
+	/**
+	 * A URL a visitor can be sent to from a link the plugin writes, or ''.
+	 *
+	 * An allowlist, not a denylist: http(s), protocol-relative, an absolute
+	 * path, or a scheme-less relative URL. Everything else — javascript:,
+	 * data:, vbscript:, blob:, an unknown scheme — is ''. The browser's own
+	 * preprocessing runs first, and that is the point of the function: a
+	 * scheme check on the raw string is defeated by `java\tscript:` (browsers
+	 * strip tab and newline anywhere in a URL) and by a leading control
+	 * character (browsers strip leading and trailing C0 controls and space),
+	 * both of which a JSON escape in a page-builder setting or a filter
+	 * return value can carry. The renderer's fallback and privacy links and
+	 * the poster URL all go through here.
+	 *
+	 * The authority normalisation is classify()'s, so a URL that classifies
+	 * as FOREIGN — `https:\\evil.example`, `https:evil.example` — comes back
+	 * in the shape the browser will actually navigate to, never rejected
+	 * (a gated embed must keep its no-JS link, invariant 2).
+	 *
+	 * @param string $url Candidate URL.
+	 * @return string The normalised URL, or '' when it is not navigable.
+	 */
+	public static function navigable( string $url ): string {
+		$url = self::preprocess( $url );
+		$url = trim( $url, " \x00..\x1f\x7f" );
+		if ( '' === $url ) {
+			return '';
+		}
+		if ( preg_match( '#^https?:#i', $url ) ) {
+			return (string) preg_replace( '#^(https?:)/*#i', '$1//', $url );
+		}
+		if ( preg_match( '#^/{2,}#', $url ) ) {
+			return (string) preg_replace( '#^/+#', '//', $url );
+		}
+		if ( 0 === strpos( $url, '/' ) ) {
+			return $url;
+		}
+		if ( preg_match( '/^[a-z][a-z0-9+.-]*:/i', $url ) ) {
+			return ''; // A scheme, and not one a link may carry.
+		}
+		return $url; // Relative: resolves against the page, same origin.
 	}
 
 	/**

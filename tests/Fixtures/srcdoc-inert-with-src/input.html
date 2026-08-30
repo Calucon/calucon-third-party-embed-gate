@@ -1,0 +1,2 @@
+<p>A foreign src next to a srcdoc that references nothing foreign. Statically the browser shows the srcdoc and never requests src — but script can strip the srcdoc at any time, and then src fires. Gated on the src: the panel names the host, and the visitor decides (PLAN.md §9.5).</p>
+<iframe src="https://tracker.example/pixelpage" srcdoc="&lt;p&gt;hello&lt;/p&gt;" width="300" height="200" title="Both"></iframe>
