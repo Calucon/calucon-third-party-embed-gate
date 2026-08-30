@@ -267,6 +267,21 @@ A reference attribute pattern that satisfies the quoting rules:
 
 Note the optional value group — that is what makes boolean attributes work.
 
+**Attribute context (1.0).** The scanner is one sequential, tag-aware pass:
+a tag is opened only where a browser opens one — never inside another start
+tag's attribute values, never inside a comment or a raw-text body. The
+byte-level scan before it treated `<div data-x="<!--">` as a comment opener
+and excluded everything after it, so the iframe below went ungated (in
+whole-page mode: the rest of the document), and it spliced a placeholder into
+`<img alt="<iframe src=…">`. kses keeps `<` inside attribute values, so both
+were within any author's reach. Unterminated shapes follow the browser too: an
+unclosed comment, raw-text container or start tag swallows the rest of the
+document, where nothing renders; an unclosed `<pre>`/`<code>` excludes
+nothing, because browsers keep parsing inside those. `<iframe>` content is
+raw text (HTML5), so nothing inside an iframe's fallback content is ever a
+tag. End tags follow the HTML5 boundary: `</iframe foo>` closes, `</iframes>`
+does not.
+
 ### 3.3 Where to hook
 
 No single hook is sufficient. Ship a matrix and let the site owner see which

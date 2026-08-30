@@ -325,7 +325,10 @@ final class ScriptRule {
 				continue;
 			}
 			$span = substr( $html, $match['start'], $match['end'] - $match['start'] );
-			if ( ! preg_match( '#^<script\b[^>]*>(.*)</script\s*>$#is', $span, $m ) ) {
+			// The same end-tag boundary the scanner uses: `</script foo>`
+			// closes a script in a browser too, and a span ending that way
+			// must not be skipped — a skipped inline loader runs.
+			if ( ! preg_match( '#^<script\b[^>]*>(.*)</script(?=[\s/>])[^>]*>$#is', $span, $m ) ) {
 				continue;
 			}
 			$code = $m[1];
