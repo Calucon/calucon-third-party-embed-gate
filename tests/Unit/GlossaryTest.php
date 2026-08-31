@@ -69,6 +69,14 @@ final class GlossaryTest extends TestCase {
 		'Datenschutzseite' => array( 'privacy policy', 'Datenschutzerklärung' ),
 		'Webseite '       => array( 'site', 'Website' ),
 		'Vorschaubildchen' => array( 'thumbnail', 'Vorschaubild' ),
+		// The glossary gives `bundle` exactly one German and no condition, so
+		// there is no context in which „Bündel" is the right word here. It
+		// reached the shipped de_DE and de_DE_formal files describing a
+		// caching plugin that "combines JavaScript into a bundle", and
+		// bin/glossary-report.php named it — first line of its output, in both
+		// locales — for as long as it was there. That is the „Seite"-for-screen
+		// story a second time, which is why it is a gate now and not a note.
+		'Bündel'          => array( 'bundle', 'Paket' ),
 		// The third way to avoid „Tab", after Reiter and Registerkarte. It is
 		// here rather than in CONDITIONAL because the readme .md files carry
 		// German-only chunks — the upgrade notices have no "**EN:**" locator —
@@ -136,6 +144,13 @@ final class GlossaryTest extends TestCase {
 		array( 'aktiv ', 'enabled', 'aktiviert', 'enabled' ),
 		array( 'aktiv,', 'enabled', 'aktiviert', 'enabled' ),
 		array( 'aktiv;', 'enabled', 'aktiviert', 'enabled' ),
+		// "permission" is Berechtigung or Recht. „Erlaubnis" is ordinary
+		// German and was in the CSP section — „Einen Host aufzuführen erteilt
+		// nur eine Erlaubnis" — where the glossary term reads no worse. It is
+		// CONDITIONAL rather than FORBIDDEN because the glossary rules the word
+		// out for "permission" only: nothing prescribes the German for "allow",
+		// and a future string about what a policy permits may well want it.
+		array( 'Erlaubnis', 'permission', 'Berechtigung', 'permission' ),
 	);
 
 	/**
