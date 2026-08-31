@@ -19,9 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 return array(
-	// Defined at src/Rendering/PlaceholderRenderer.php:195.
+	// Defined at src/Rendering/PlaceholderRenderer.php:197.
 	'%s privacy policy' => __( '%s privacy policy', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Rendering/PlaceholderRenderer.php:169.
+	// Defined at src/Rendering/PlaceholderRenderer.php:171.
 	'Embedded content from %s' => __( 'Embedded content from %s', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:263.
 	'Load activity from Strava' => __( 'Load activity from Strava', 'calucon-third-party-embed-gate' ),
@@ -177,7 +177,7 @@ return array(
 	'Loading this video contacts Vimeo, which receives your IP address and which page you are on, and may set cookies.' => __( 'Loading this video contacts Vimeo, which receives your IP address and which page you are on, and may set cookies.', 'calucon-third-party-embed-gate' ),
 	// Defined at src/Providers/Builtin/Descriptors.php:57.
 	'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.' => __( 'Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies.', 'calucon-third-party-embed-gate' ),
-	// Defined at src/Detection/EmbedStripper.php:146.
-	// Defined at src/Rendering/PlaceholderRenderer.php:171.
+	// Defined at src/Detection/EmbedStripper.php:149.
+	// Defined at src/Rendering/PlaceholderRenderer.php:173.
 	'Open on %s' => __( 'Open on %s', 'calucon-third-party-embed-gate' ),
 );
