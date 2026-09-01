@@ -329,6 +329,43 @@ final class TranslationTest extends TestCase {
 	 *
 	 * @group translation-sources
 	 */
+	/**
+	 * The plugin header's own text is translatable and is a gettext call
+	 * nowhere, so the source scan below cannot see it.
+	 *
+	 * WordPress translates Name and Description through the loaded textdomain
+	 * (_get_plugin_data_markup_translate()), which is what puts German on the
+	 * Plugins screen — but only if they reached the .mo. They never did:
+	 * wordpress.org extracts plugin headers with its own parser, so they
+	 * appeared on translate.wordpress.org as originals while the POT, the .po
+	 * files and every completeness check here stayed unaware of them. Simon
+	 * found the Description missing while reviewing de_DE.
+	 *
+	 * Plugin URI, Author and Author URI are deliberately NOT required: a URL
+	 * and a company name are not translatable text.
+	 */
+	public function test_the_plugin_header_text_reached_the_pot(): void {
+		$root   = dirname( __DIR__, 2 );
+		$header = (string) file_get_contents( $root . '/calucon-third-party-embed-gate.php' );
+		$pot    = $this->pot_msgids();
+
+		foreach ( array( 'Plugin Name', 'Description' ) as $field ) {
+			self::assertSame(
+				1,
+				preg_match( '/^ \* ' . preg_quote( $field, '/' ) . ':\s+(.+?)\s*$/m', $header, $found ),
+				"the plugin header has no {$field} field"
+			);
+			self::assertContains(
+				$found[1],
+				$pot,
+				"The plugin header's {$field} is not in the POT, so it has no German in the\n"
+					. "bundled .mo and a German site shows English for it on the Plugins screen.\n"
+					. "It is a gettext call in no file, so no other test can see this. Run:\n\n"
+					. "    php tests/bin/generate-pot.php   (or: composer translations)"
+			);
+		}
+	}
+
 	public function test_every_translatable_string_in_the_source_reached_the_pot(): void {
 		$root = dirname( __DIR__, 2 );
 		$pot  = $this->pot_msgids();

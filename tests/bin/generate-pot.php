@@ -8,7 +8,8 @@
  * i18n calls (__, _e, esc_html_e, esc_attr_e, esc_html__, esc_attr__ with
  * the 'calucon-third-party-embed-gate' domain) and the injected-translator calls
  * ($t( '…' )) used by the WordPress-free layers (see Plugin.php for the
- * bridge). The $t() strings are also mirrored into languages/strings.php as
+ * bridge) — plus the plugin header's own text fields, which are translatable
+ * without being a gettext call anywhere (see below). The $t() strings are also mirrored into languages/strings.php as
  * literal __() calls: translate.wordpress.org builds language packs with its
  * own parser, which only sees literal gettext calls — without the mirror,
  * every provider note and button label would be invisible to translators.
@@ -35,6 +36,7 @@ $files[] = $root . '/assets/js/editor.js';
 sort( $files );
 
 $strings  = array(); // msgid => list of "file:line" references.
+$comments = array(); // msgid => translator comment ("#." line), for the header fields.
 $gettext  = array(); // msgids the wp.org parser sees itself (literal gettext calls).
 $injected = array(); // msgids only visible via $t() — these need the strings.php mirror.
 
@@ -72,6 +74,36 @@ foreach ( $files as $path ) {
 	}
 }
 
+// The plugin header. WordPress translates Name and Description through the
+// loaded textdomain (_get_plugin_data_markup_translate()), so a German site
+// shows German on the Plugins screen — but only if the strings are in the .mo,
+// and they are a gettext call in no file, so nothing above finds them. They
+// were missing for the plugin's whole life: wordpress.org extracts headers
+// itself, so they showed up on translate.wordpress.org as untranslatable-by-us
+// originals, while the POT, the .po files, the .mo and every completeness test
+// stayed unaware. Simon found the Description that way.
+//
+// Name and Description only. Plugin URI, Author and Author URI are extracted by
+// wordpress.org too, but a URL and a company name are not translatable text —
+// "translating" a URI is how a listing ships a broken link.
+$plugin_file   = (string) file_get_contents( $root . '/calucon-third-party-embed-gate.php' );
+$header_fields = array(
+	'Plugin Name' => 'Plugin Name of the plugin',
+	'Description' => 'Description of the plugin',
+);
+foreach ( $header_fields as $field => $comment ) {
+	if ( ! preg_match( '/^ \* ' . preg_quote( $field, '/' ) . ':\s+(.+?)\s*$/m', $plugin_file, $found ) ) {
+		fwrite( STDERR, "Plugin header field '$field' not found — the POT would silently lose it.\n" );
+		exit( 1 );
+	}
+	$text = $found[1];
+	$line = substr_count( substr( $plugin_file, 0, (int) strpos( $plugin_file, $found[0] ) ), "\n" ) + 1;
+
+	$strings[ $text ][]  = 'calucon-third-party-embed-gate.php:' . $line;
+	$comments[ $text ]   = $comment;
+	$gettext[ $text ]    = true; // wordpress.org's own extractor sees the header.
+}
+
 ksort( $strings );
 ksort( $injected );
 
@@ -98,6 +130,9 @@ HEADER;
 $pot = str_replace( '{{VERSION}}', $version, $pot );
 
 foreach ( $strings as $text => $refs ) {
+	if ( isset( $comments[ $text ] ) ) {
+		$pot .= '#. ' . $comments[ $text ] . "\n";
+	}
 	foreach ( array_unique( $refs ) as $ref ) {
 		$pot .= '#: ' . $ref . "\n";
 	}

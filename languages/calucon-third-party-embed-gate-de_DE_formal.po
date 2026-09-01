@@ -213,9 +213,10 @@ msgstr "Button-Text auf dem Button-Hintergrund"
 msgid "Calendar / booking"
 msgstr "Kalender / Buchung"
 
+#. Plugin Name of the plugin
 #: assets/js/editor.js:114 assets/js/editor.js:199
 #: src/Admin/SettingsPage.php:313 src/Admin/SettingsPage.php:314
-#: src/Admin/SettingsPage.php:375
+#: src/Admin/SettingsPage.php:375 calucon-third-party-embed-gate.php:3
 msgid "Calucon Third-Party Embed Gate"
 msgstr "Calucon Third-Party Embed Gate"
 
@@ -1576,6 +1577,11 @@ msgstr "Sie haben ungespeicherte Änderungen am Design."
 msgid "You have unsaved changes."
 msgstr "Sie haben ungespeicherte Änderungen."
 
+#. Description of the plugin
+#: calucon-third-party-embed-gate.php:5
+msgid "YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click solution. No third-party request, no cookie and no banner before that."
+msgstr "YouTube, Maps und andere Einbettungen von Drittanbietern laden erst, wenn der Besucher klickt – die Zwei-Klick-Lösung. Vorher keine Anfrage an Drittanbieter, kein Cookie und kein Banner."
+
 #: src/Admin/SettingsPage.php:247
 msgid "Your home page sends no Content-Security-Policy. You can skip this section."
 msgstr "Ihre Startseite sendet keine Content-Security-Policy. Sie können diesen Abschnitt überspringen."
@@ -1639,6 +1645,9 @@ msgstr "script-src (Anbieterskripte, z. B. für Social-Media-Beiträge)"
 #: src/Admin/SettingsPage.php:137
 msgid "support its development"
 msgstr "die Entwicklung unterstützen"
+
+#~ msgid "YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click pattern. No third-party request, no cookie and no banner before that."
+#~ msgstr "YouTube, Maps und andere Einbettungen von Drittanbietern laden erst, wenn der Besucher klickt – die Zwei-Klick-Lösung. Vorher keine Anfrage an Drittanbieter, kein Cookie und kein Banner."
 
 #~ msgid "Also honour an IAB TCF v2.2 signal (sites running an ad-industry consent framework)"
 #~ msgstr "Auch ein IAB-TCF-v2.2-Signal berücksichtigen (für Websites mit dem Consent-Framework der Werbebranche)"
