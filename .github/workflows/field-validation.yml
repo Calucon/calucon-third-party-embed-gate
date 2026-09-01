@@ -42,7 +42,7 @@ jobs:
     outputs:
       matrix: ${{ steps.list.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - id: list
         env:
           ONLY: ${{ inputs.groups }}
@@ -67,9 +67,9 @@ jobs:
       WP_BASE_URL: http://127.0.0.1:8890
       FIELD_VERSIONS: ${{ inputs.versions }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
@@ -87,7 +87,7 @@ jobs:
 
       - name: Keep the report and the installed versions
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: field-${{ matrix.group }}
           path: |
@@ -106,9 +106,9 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: field-*
           path: artifacts

@@ -17,7 +17,7 @@ jobs:
     name: WordPress Plugin Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # Check the shipped surface only (src/, assets/, readme, …), not tests/
       # or tooling — the same allowlist bin/build-zip.sh stages.
