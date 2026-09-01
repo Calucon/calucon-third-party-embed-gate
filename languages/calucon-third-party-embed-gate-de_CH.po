@@ -601,7 +601,7 @@ msgstr "Läuft auf dieser Website eine Consent-Plattform (Cookie-Banner), kann C
 
 #: src/Admin/SettingsPage.php:253
 msgid "If you later switch it to an enforced policy, it would need these hosts:"
-msgstr "Wenn Sie sie später auf eine durchsetzende Richtlinie umstellen, bräuchte sie diese Hosts:"
+msgstr "Wenn Sie sie später auf eine erzwungene Richtlinie umstellen, bräuchte sie diese Hosts:"
 
 #: src/Admin/SettingsPage.php:616
 msgid "Image / GIF"
@@ -609,7 +609,7 @@ msgstr "Bild / GIF"
 
 #: src/Admin/SettingsPage.php:254
 msgid "It already lists every enabled provider, so switching it to enforced would be safe for the embeds."
-msgstr "Sie führt bereits jeden aktivierten Anbieter auf; sie auf «durchsetzend» umzustellen, wäre für die Einbettungen also unproblematisch."
+msgstr "Sie führt bereits jeden aktivierten Anbieter auf; sie auf «erzwingen» umzustellen, wäre für die Einbettungen also unproblematisch."
 
 #: src/Admin/SettingsPage.php:1667
 msgid "Its JavaScript settings could not be read from here, so this is not an all-clear. If embeds misbehave, check whether it combines, defers or delays JavaScript, and exclude the files below."
