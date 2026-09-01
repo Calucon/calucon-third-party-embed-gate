@@ -194,6 +194,34 @@ final class GlossaryTest extends TestCase {
 		'reiner Text' => array( 'Einfacher Text', 'Simon, 2026-09-01, approved on translate.wordpress.org' ),
 		'reinen Text' => array( 'Einfachen Text', 'Simon, 2026-09-01, approved on translate.wordpress.org' ),
 		'reinem Text' => array( 'Einfachem Text', 'Simon, 2026-09-01, approved on translate.wordpress.org' ),
+
+		// „durchsetzend“ for "enforced" — the two Content-Security-Policy
+		// helper strings about switching a report-only policy to enforcing
+		// mode. Simon, 2026-09-01, approved on translate.wordpress.org.
+		//
+		// The glossary does not decide this one either, and here it is not a
+		// matter of a condition scoping a row away: there is no row. Neither
+		// `enforce`, nor `enforced`, nor `force`, nor `apply`, nor `policy`
+		// appears anywhere in the 537-row CSV. So this is a wording choice,
+		// and citing the glossary for either word would be inventing a rule.
+		//
+		// The argument, so it is not re-made: „durchsetzen" is what one does
+		// to a rule *against resistance* — it carries an opponent with it.
+		// A browser switched out of report-only mode is not overcoming
+		// anything, it is applying the policy instead of only logging what
+		// would have been blocked, and „erzwingen"/„erzwungen" is the word
+		// German security documentation uses for exactly that.
+		//
+		// Both forms are right, in different slots, which is why the two
+		// strings do not read alike: the *name* of the mode is the quoted
+		// infinitive („sie auf „erzwingen“ umzustellen"), the *attribute* of
+		// the policy is the participle („eine erzwungene Richtlinie").
+		//
+		// One key, not one per inflection as above: the match is a substring
+		// match, so „durchsetzend" already reaches „durchsetzende" and every
+		// other ending. Listing both would report one wrong word twice, with
+		// two different suggestions, and read like two defects.
+		'durchsetzend' => array( '„erzwingen“ for the mode, „erzwungen“ for the policy', 'Simon, 2026-09-01, approved on translate.wordpress.org' ),
 	);
 
 	/**
