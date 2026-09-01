@@ -213,9 +213,10 @@ msgstr "Button-Text auf dem Button-Hintergrund"
 msgid "Calendar / booking"
 msgstr "Kalender / Buchung"
 
+#. Plugin Name of the plugin
 #: assets/js/editor.js:114 assets/js/editor.js:199
 #: src/Admin/SettingsPage.php:313 src/Admin/SettingsPage.php:314
-#: src/Admin/SettingsPage.php:375
+#: src/Admin/SettingsPage.php:375 calucon-third-party-embed-gate.php:3
 msgid "Calucon Third-Party Embed Gate"
 msgstr "Calucon Third-Party Embed Gate"
 
@@ -1575,6 +1576,11 @@ msgstr "Sie haben ungespeicherte Änderungen am Design."
 #: src/Admin/SettingsPage.php:418
 msgid "You have unsaved changes."
 msgstr "Sie haben ungespeicherte Änderungen."
+
+#. Description of the plugin
+#: calucon-third-party-embed-gate.php:5
+msgid "YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click pattern. No third-party request, no cookie and no banner before that."
+msgstr "YouTube, Maps und andere Einbettungen von Drittanbietern laden erst, wenn der Besucher klickt – die Zwei-Klick-Lösung. Vorher keine Anfrage an Drittanbieter, kein Cookie und kein Banner."
 
 #: src/Admin/SettingsPage.php:247
 msgid "Your home page sends no Content-Security-Policy. You can skip this section."
