@@ -1581,7 +1581,7 @@ msgstr "Sie haben ungespeicherte Änderungen."
 
 #. Description of the plugin
 #: calucon-third-party-embed-gate.php:5
-msgid "YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click pattern. No third-party request, no cookie and no banner before that."
+msgid "YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click solution. No third-party request, no cookie and no banner before that."
 msgstr "YouTube, Maps und andere Einbettungen von Drittanbietern laden erst, wenn der Besucher klickt – die Zwei-Klick-Lösung. Vorher keine Anfrage an Drittanbieter, kein Cookie und kein Banner."
 
 #: src/Admin/SettingsPage.php:247
@@ -1647,6 +1647,9 @@ msgstr "script-src (Anbieterskripte, z. B. für Social-Media-Beiträge)"
 #: src/Admin/SettingsPage.php:137
 msgid "support its development"
 msgstr "die Entwicklung unterstützen"
+
+#~ msgid "YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click pattern. No third-party request, no cookie and no banner before that."
+#~ msgstr "YouTube, Maps und andere Einbettungen von Drittanbietern laden erst, wenn der Besucher klickt – die Zwei-Klick-Lösung. Vorher keine Anfrage an Drittanbieter, kein Cookie und kein Banner."
 
 #~ msgid "Also honour an IAB TCF v2.2 signal (sites running an ad-industry consent framework)"
 #~ msgstr "Auch ein IAB-TCF-v2.2-Signal berücksichtigen (für Websites mit dem Consent-Framework der Werbebranche)"

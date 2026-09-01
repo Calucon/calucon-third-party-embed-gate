@@ -1590,7 +1590,7 @@ msgstr ""
 
 #. Description of the plugin
 #: calucon-third-party-embed-gate.php:5
-msgid "YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click pattern. No third-party request, no cookie and no banner before that."
+msgid "YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click solution. No third-party request, no cookie and no banner before that."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:247
