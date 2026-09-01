@@ -31,7 +31,7 @@ jobs:
       result: ${{ steps.run.outcome }}
       log: ${{ steps.run.outputs.log }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - id: run
         continue-on-error: true
         run: |
@@ -48,7 +48,7 @@ jobs:
       result: ${{ steps.run.outcome }}
       log: ${{ steps.run.outputs.log }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - id: run
         continue-on-error: true
         run: |
