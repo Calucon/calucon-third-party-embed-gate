@@ -260,7 +260,7 @@ msgstr "Mein Theme prüfen"
 
 #: src/Admin/SettingsPage.php:478
 msgid "Check what is on my site"
-msgstr "Nachsehen, was auf meiner Website läuft"
+msgstr "Prüfen, was auf meiner Website läuft"
 
 #: src/Admin/SettingsPage.php:248
 msgid "Checked just now, as your browser sees the page. If you are sure a policy is set somewhere (some setups only send it on certain pages), add the lines below to it anyway — listing a host that is never loaded is harmless."
@@ -1179,7 +1179,7 @@ msgstr "Dauerhaft, mit Ablaufdatum"
 
 #: assets/js/editor.js:138
 msgid "Plain text, for example “Load the trailer”. Empty keeps the provider’s default."
-msgstr "Reiner Text, zum Beispiel «Trailer laden». Bleibt das Feld leer, gilt weiterhin der Standardtext des Anbieters."
+msgstr "Einfacher Text, zum Beispiel «Trailer laden». Bleibt das Feld leer, gilt weiterhin der Standardtext des Anbieters."
 
 #: src/Admin/SettingsPage.php:1674
 msgid "Plugin"

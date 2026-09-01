@@ -172,6 +172,21 @@ converted to metric.
 
 ---
 
+## 7. Decisions this project has taken
+
+Not handbook rules — wordings Simon has settled for this plugin, recorded so the
+next translation round does not re-argue them. Reopening one is his call.
+
+| String | Decision | Date |
+|---|---|---|
+| „Plain text, for example …" (help under the per-block button label) | **„Einfacher Text"**, not „Reiner Text". The glossary does *not* decide this: its row is `plain,einfach,adjective,"Im Kontext von Permalinks"`, and the condition genuinely scopes it away from this string — "plain text" here means text with no markup. Simon accepted that argument and chose „Einfacher Text" regardless, because he did not want „Reiner", and approved it on translate.wordpress.org, which outranks the repo (a language pack beats the bundled `.mo`). | 2026-09-01 |
+| „Check what is on my site" (Providers tab button) | **„Prüfen, was auf meiner Website läuft"**, not „Nachsehen, …". Approved on translate.wordpress.org. The readme listing quotes this label, so the four `.wordpress-org/readme-de_DE*` files carry the same wording. | 2026-09-01 |
+
+`tests/Unit/GlossaryTest.php::RULED_OUT` holds the machine-checkable half: the
+words that may not come back, with the reason each one is out.
+
+---
+
 ## Source pages
 
 Fetched **2026-08-27** from
