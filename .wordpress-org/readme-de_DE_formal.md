@@ -201,7 +201,7 @@ Und wenn der Platzhalter nach einem Update ungestylt aussieht: Liefert Ihre Mini
 
 **DE:** Etwas auf meiner Website ist gesperrt und soll normal laden
 
-**DE (Antwort):** Öffnen Sie Einstellungen → Calucon Third-Party Embed Gate → Anbieter und klicken Sie auf „Nachsehen, was auf meiner Website läuft“. Der Scan listet jede Einbettung in Ihren neuesten Beiträgen und Seiten auf, samt der Adresse, die sie kontaktieren würde. Neben jeder können Sie sie entweder benennen – die Sperre bleibt dann bestehen, der Platzhalter bekommt aber einen richtigen Namen und ein Symbol – oder durchlassen; dann lädt sie für jeden Besucher ohne Platzhalter. Einen Hostnamen müssen Sie sich nie selbst zusammensuchen, und nichts ändert sich, bis Sie speichern. Von Ihnen durchgelassene Hosts bleiben oben in derselben Ansicht aufgelistet und lassen sich dort mit einem Klick wieder sperren.
+**DE (Antwort):** Öffnen Sie Einstellungen → Calucon Third-Party Embed Gate → Anbieter und klicken Sie auf „Prüfen, was auf meiner Website läuft“. Der Scan listet jede Einbettung in Ihren neuesten Beiträgen und Seiten auf, samt der Adresse, die sie kontaktieren würde. Neben jeder können Sie sie entweder benennen – die Sperre bleibt dann bestehen, der Platzhalter bekommt aber einen richtigen Namen und ein Symbol – oder durchlassen; dann lädt sie für jeden Besucher ohne Platzhalter. Einen Hostnamen müssen Sie sich nie selbst zusammensuchen, und nichts ändert sich, bis Sie speichern. Von Ihnen durchgelassene Hosts bleiben oben in derselben Ansicht aufgelistet und lassen sich dort mit einem Klick wieder sperren.
 
 **EN:** Which embeds does it recognise by name?
 

@@ -154,6 +154,49 @@ final class GlossaryTest extends TestCase {
 	);
 
 	/**
+	 * Wording this project has ruled out that the glossary does *not*: the
+	 * German to avoid => [ what to write instead, the decision ].
+	 *
+	 * Deliberately its own list, and its own test, because these are not
+	 * glossary violations and a rule that claimed they were would be a false
+	 * rule — the next reader would look the term up, find the glossary saying
+	 * something else, and either "fix" the wording back or delete the entry.
+	 *
+	 * Matched case-insensitively, so a sentence-initial hit counts too, and
+	 * unconditionally: unlike CONDITIONAL there is no English trigger, which is
+	 * what also makes it reach the German-only chunks of the readme .md files
+	 * (the upgrade notices have no "**EN:**" locator).
+	 *
+	 * @var array<string,string[]>
+	 */
+	private const RULED_OUT = array(
+		// „Reiner Text" for "Plain text" — the help under the per-block button
+		// label. Simon, 2026-09-01, in two steps, and the second one is what
+		// this rule stands on:
+		//
+		// 1. He accepted the argument that the glossary does not settle this.
+		//    The row is `plain,einfach,adjective,"Im Kontext von Permalinks"`,
+		//    and its condition really does scope it: "plain text" here means
+		//    text with no markup (the block attribute goes through
+		//    wp_strip_all_tags()), not the „Einfach" permalink structure. So
+		//    nobody may cite the glossary as the reason for either word.
+		// 2. He then chose „Einfacher Text" anyway — because he did not want
+		//    „Reiner" — and approved that string on translate.wordpress.org.
+		//    An approval there outranks this repo: a language pack from
+		//    GlotPress takes precedence over the bundled .mo, so a repo that
+		//    disagreed would simply be overridden on every live site.
+		//
+		// The reason this is recorded rather than left to the diff: the
+		// argument in (1) is a good one and was made here twice already —
+		// "plain text means unformatted, so „Reiner Text" is right" — and it
+		// is not wrong about the glossary. It is settled by (2), not by the
+		// CSV, and only a note can carry that.
+		'reiner Text' => array( 'Einfacher Text', 'Simon, 2026-09-01, approved on translate.wordpress.org' ),
+		'reinen Text' => array( 'Einfachen Text', 'Simon, 2026-09-01, approved on translate.wordpress.org' ),
+		'reinem Text' => array( 'Einfachem Text', 'Simon, 2026-09-01, approved on translate.wordpress.org' ),
+	);
+
+	/**
 	 * English fragments that make a CONDITIONAL match a false alarm — the
 	 * English uses the trigger word for something else entirely.
 	 *
@@ -276,6 +319,76 @@ final class GlossaryTest extends TestCase {
 				. "\n\nUse the prescribed term. If the glossary entry genuinely cannot apply here, "
 				. "say so in GlossaryTest::NOT_REALLY with the reason.\n"
 		);
+	}
+
+	/**
+	 * The wording decisions that are Simon's rather than the glossary's.
+	 *
+	 * Separate from the glossary test on purpose: its failure message may not
+	 * say "the glossary says", because for these words it does not.
+	 */
+	public function test_no_wording_ruled_out_by_the_project_comes_back(): void {
+		$found = array();
+
+		foreach ( self::corpus() as list( $relative, $english, $german ) ) {
+			unset( $english );
+			foreach ( self::RULED_OUT as $wrong => list( $right, $decision ) ) {
+				if ( false === stripos( $german, $wrong ) ) {
+					continue;
+				}
+				$found[] = sprintf(
+					"  %s\n    \"%s\" → write %s (%s)\n    %s",
+					basename( $relative ),
+					$wrong,
+					$right,
+					$decision,
+					$german
+				);
+			}
+		}
+
+		self::assertSame(
+			array(),
+			$found,
+			"A wording this project has ruled out has come back.\n\n" . implode( "\n\n", $found )
+				. "\n\nThese are not glossary violations — see the reasons in GlossaryTest::RULED_OUT. "
+				. "Reopening one is Simon's call, not a translator's.\n"
+		);
+	}
+
+	/**
+	 * Every hand-written German string in the repo, as [ file, english, german ].
+	 *
+	 * @return array<int,array{0:string,1:string,2:string}>
+	 */
+	private static function corpus(): array {
+		$out = array();
+
+		foreach ( self::SOURCES as $relative ) {
+			$path = dirname( __DIR__, 2 ) . '/' . $relative;
+			self::assertFileExists( $path );
+			foreach ( PoReader::translations( $path ) as $english => $german ) {
+				$out[] = array( $relative, $english, $german );
+			}
+		}
+
+		foreach ( self::MARKDOWN_SOURCES as $relative ) {
+			$path = dirname( __DIR__, 2 ) . '/' . $relative;
+			self::assertFileExists( $path );
+			$pairs = ReadmeMarkdown::pairs( $path );
+			// Same guard as the glossary test: a parser that returned nothing
+			// would leave the caller's findings empty and its test green.
+			self::assertSame(
+				ReadmeMarkdown::expected_chunk_count( $path ),
+				count( $pairs ),
+				"the parser did not return every German chunk in {$relative} — a partial loss makes this test pass, not fail"
+			);
+			foreach ( $pairs as list( $english, $german ) ) {
+				$out[] = array( $relative, $english, $german );
+			}
+		}
+
+		return $out;
 	}
 
 	/**
