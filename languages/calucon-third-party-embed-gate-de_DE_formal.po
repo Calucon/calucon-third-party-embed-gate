@@ -29,47 +29,51 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Domain: calucon-third-party-embed-gate\n"
 
-#: src/Admin/SettingsPage.php:695
+#: src/Admin/SettingsPage.php:704
 msgid "%1$s is handled by the built-in %2$s provider, which takes precedence — this entry is ignored for that host. Remove it here to clear this note."
 msgstr "%1$s wird vom mitgelieferten Anbieter %2$s abgedeckt, der Vorrang hat – dieser Eintrag wird für diesen Host ignoriert. Entfernen Sie ihn hier, um den Hinweis loszuwerden."
 
-#: src/Admin/SettingsPage.php:343
+#: src/Admin/SettingsPage.php:352
 msgid "%1$s: %2$s skipped — a built-in provider already handles these hosts, with its privacy-preserving load target and texts. Adjust that provider in the table instead."
 msgstr "%1$s: %2$s übersprungen – ein mitgelieferter Anbieter kümmert sich bereits um diese Hosts, samt datenschutzfreundlicher Ladeadresse und Texten. Passen Sie stattdessen diesen Anbieter in der Tabelle an."
 
-#: src/Admin/SettingsPage.php:263
+#: src/Admin/SettingsPage.php:272
 msgid "%1$s: %2$s — %3$s"
 msgstr "%1$s: %2$s – %3$s"
 
-#: src/Admin/SettingsPage.php:206
+#: src/Admin/SettingsPage.php:215
 msgid "%d shown"
 msgstr "%d angezeigt"
 
-#: src/Admin/SettingsPage.php:1024
+#: src/Admin/SettingsPage.php:1048
 msgid "%s (not in the current theme)"
 msgstr "%s (nicht im aktuellen Theme)"
 
-#: src/Admin/SettingsPage.php:188
+#: src/Admin/SettingsPage.php:197
 msgid "%s is ready to be named below. Give it a label, then save."
 msgstr "%s kann unten benannt werden. Vergeben Sie einen Namen und speichern Sie."
 
-#: src/Rendering/PlaceholderRenderer.php:195
+#: src/Rendering/PlaceholderRenderer.php:197
 msgid "%s privacy policy"
 msgstr "Datenschutzerklärung von %s"
 
-#: src/Admin/SettingsPage.php:277
+#: src/Admin/SettingsPage.php:286
 msgid "%s reset to its default."
 msgstr "%s auf den Standard zurückgesetzt."
 
-#: src/Admin/SettingsPage.php:279
+#: src/Admin/SettingsPage.php:1704
+msgid "(Wording can differ between versions of that plugin.)"
+msgstr "(Die Bezeichnungen können je nach Version dieses Plugins abweichen.)"
+
+#: src/Admin/SettingsPage.php:288
 msgid "+%d more"
 msgstr "+%d weitere"
 
-#: src/Admin/SettingsPage.php:608
+#: src/Admin/SettingsPage.php:617
 msgid "3D / virtual tour"
 msgstr "3D / virtuelle Tour"
 
-#: src/Admin/SettingsPage.php:1546
+#: src/Admin/SettingsPage.php:1559
 msgid "A Content-Security-Policy (CSP) is a security setting some sites send to browsers. It lists which other websites a page is allowed to load anything from — and blocks the rest. Most WordPress sites do not send one. If you never set one up in a security plugin, your hosting panel or the web server, you can skip this section."
 msgstr "Eine Content-Security-Policy (CSP) ist eine Sicherheitseinstellung, die manche Websites an Browser senden. Sie legt fest, von welchen anderen Websites eine Seite überhaupt etwas laden darf – alles andere wird blockiert. Die meisten WordPress-Websites senden keine. Wenn Sie nie eine in einem Sicherheits-Plugin, im Hosting-Panel oder im Webserver eingerichtet haben, können Sie diesen Abschnitt überspringen."
 
@@ -77,115 +81,111 @@ msgstr "Eine Content-Security-Policy (CSP) ist eine Sicherheitseinstellung, die 
 msgid "A button visitors use to clear their stored embed consents. Place it on your privacy policy page. It only has an effect when consent memory is enabled."
 msgstr "Ein Button, mit dem Besucher ihre gespeicherten Einwilligungen löschen. Platzieren Sie ihn in Ihrer Datenschutzerklärung. Er wirkt nur, wenn „Einwilligung merken“ aktiviert ist."
 
-#: src/Admin/SettingsPage.php:1290
+#: src/Admin/SettingsPage.php:1314
 msgid "A little"
 msgstr "Etwas"
 
-#: src/Admin/SettingsPage.php:1291
+#: src/Admin/SettingsPage.php:1315
 msgid "A lot, softened"
-msgstr "Viel, abgeschwächt"
+msgstr "Viel, mit Weichzeichner"
 
-#: src/Admin/SettingsPage.php:1106
+#: src/Admin/SettingsPage.php:1130
 msgid "A style fills in every control below; \"Theme default\" clears them all. Nothing changes on your site until you save."
 msgstr "Ein Stil füllt alle Einstellungen unten aus; „Theme-Standard“ leert sie wieder. Auf Ihrer Website ändert sich nichts, bis Sie speichern."
 
-#: src/Admin/SettingsPage.php:1689 src/Admin/SettingsPage.php:1762
+#: src/Admin/SettingsPage.php:1784 src/Admin/SettingsPage.php:1857
 msgid "Action"
 msgstr "Aktion"
 
-#: src/Admin/SettingsPage.php:189
+#: src/Admin/SettingsPage.php:198
 msgid "Add a provider row first, then try again."
 msgstr "Fügen Sie zuerst eine Anbieterzeile hinzu und versuchen Sie es dann erneut."
 
-#: src/Admin/SettingsPage.php:723
+#: src/Admin/SettingsPage.php:732
 msgid "Add another provider"
 msgstr "Weiteren Anbieter hinzufügen"
 
-#: src/Admin/SettingsPage.php:242
+#: src/Admin/SettingsPage.php:251
 msgid "Add the lines below to your policy, where it is defined, and run the check again."
 msgstr "Fügen Sie die Zeilen unten dort zu Ihrer Richtlinie hinzu, wo sie definiert ist, und führen Sie die Prüfung erneut aus."
 
-#: src/Admin/SettingsPage.php:1561
+#: src/Admin/SettingsPage.php:1574
 msgid "Add them wherever your policy is defined — a security plugin, your hosting panel or the web server configuration. Merge, do not replace: if the policy already has a frame-src line, add these hosts to that line instead of adding a second one. If it has neither frame-src nor script-src, the browser falls back to default-src — add the hosts there."
 msgstr "Ergänzen Sie sie dort, wo Ihre Richtlinie definiert ist – in einem Sicherheits-Plugin, im Hosting-Panel oder in der Webserver-Konfiguration. Zusammenführen statt ersetzen: Hat die Richtlinie bereits eine frame-src-Zeile, fügen Sie diese Hosts dieser Zeile hinzu, statt eine zweite anzulegen. Fehlen sowohl frame-src als auch script-src, greift im Browser default-src – dann gehören die Hosts dorthin."
 
-#: src/Admin/SettingsPage.php:776
+#: src/Admin/SettingsPage.php:785
 msgid "Additional own hosts"
 msgstr "Weitere eigene Hosts"
 
-#: src/Admin/SettingsPage.php:1190
+#: src/Admin/SettingsPage.php:1214
 msgid "Alignment"
 msgstr "Ausrichtung"
 
-#: src/Admin/SettingsPage.php:1376
+#: src/Admin/SettingsPage.php:1400
 msgid "All embeds"
 msgstr "Alle Einbettungen"
 
-#: src/Admin/SettingsPage.php:1375
+#: src/Admin/SettingsPage.php:1399
 msgid "All embeds of the same provider"
 msgstr "Alle Einbettungen desselben Anbieters"
-
-#: src/Admin/SettingsPage.php:1509
-msgid "Also honour an IAB TCF v2.2 signal (sites running an ad-industry consent framework)"
-msgstr "Auch ein IAB-TCF-v2.2-Signal berücksichtigen (für Websites mit dem Consent-Framework der Werbebranche)"
 
 #: assets/js/editor.js:120
 msgid "Always gate"
 msgstr "Immer sperren"
 
-#: src/Admin/SettingsPage.php:769
+#: src/Admin/SettingsPage.php:778
 msgid "Always gate these hosts"
 msgstr "Diese Hosts immer sperren"
 
-#: src/Admin/SettingsPage.php:1795
+#: src/Admin/SettingsPage.php:1890
 msgid "Always load this"
 msgstr "Immer laden"
 
-#: src/Admin/SettingsPage.php:376 src/Admin/SettingsPage.php:1085
+#: src/Admin/SettingsPage.php:385 src/Admin/SettingsPage.php:1109
 msgid "Appearance"
 msgstr "Design"
 
-#: src/Admin/SettingsPage.php:271
+#: src/Admin/SettingsPage.php:280
 msgid "Appearance reset to theme defaults."
 msgstr "Design auf die Theme-Standards zurückgesetzt."
 
-#: src/Admin/SettingsPage.php:602
+#: src/Admin/SettingsPage.php:611
 msgid "Audio / podcast"
 msgstr "Audio / Podcast"
 
-#: src/Admin/SettingsPage.php:1280
+#: src/Admin/SettingsPage.php:1304
 msgid "Bar along the bottom"
 msgstr "Leiste am unteren Rand"
 
-#: src/Admin/SettingsPage.php:1118
+#: src/Admin/SettingsPage.php:1142
 msgid "Border"
 msgstr "Rand"
 
-#: src/Admin/SettingsPage.php:1157
+#: src/Admin/SettingsPage.php:1181
 msgid "Border width (px)"
 msgstr "Randbreite (px)"
 
-#: src/Admin/SettingsPage.php:1497
+#: src/Admin/SettingsPage.php:1521
 msgid "Borlabs Cookie service group"
 msgstr "Borlabs-Cookie-Servicegruppe"
 
-#: src/Admin/SettingsPage.php:1097
+#: src/Admin/SettingsPage.php:1121
 msgid "Brand card"
-msgstr "Markenkarte"
+msgstr "Karte in Markenfarbe"
 
-#: src/Admin/SettingsPage.php:1468
+#: src/Admin/SettingsPage.php:1492
 msgid "Bridge"
 msgstr "Brücke"
 
-#: src/Admin/SettingsPage.php:1212
+#: src/Admin/SettingsPage.php:1236
 msgid "Button"
 msgstr "Button"
 
-#: src/Admin/SettingsPage.php:1115
+#: src/Admin/SettingsPage.php:1139
 msgid "Button background"
 msgstr "Button-Hintergrund"
 
-#: src/Admin/SettingsPage.php:1334
+#: src/Admin/SettingsPage.php:1358
 msgid "Button background (dark)"
 msgstr "Button-Hintergrund (dunkel)"
 
@@ -193,11 +193,11 @@ msgstr "Button-Hintergrund (dunkel)"
 msgid "Button label"
 msgstr "Button-Beschriftung"
 
-#: src/Admin/SettingsPage.php:545 src/Admin/SettingsPage.php:1116
+#: src/Admin/SettingsPage.php:554 src/Admin/SettingsPage.php:1140
 msgid "Button text"
 msgstr "Button-Text"
 
-#: src/Admin/SettingsPage.php:1335
+#: src/Admin/SettingsPage.php:1359
 msgid "Button text (dark)"
 msgstr "Button-Text (dunkel)"
 
@@ -205,342 +205,355 @@ msgstr "Button-Text (dunkel)"
 msgid "Button text for this embed"
 msgstr "Button-Text für diese Einbettung"
 
-#: src/Admin/SettingsPage.php:265
+#: src/Admin/SettingsPage.php:274
 msgid "Button text on the button background"
 msgstr "Button-Text auf dem Button-Hintergrund"
 
-#: src/Admin/SettingsPage.php:605
+#: src/Admin/SettingsPage.php:614
 msgid "Calendar / booking"
 msgstr "Kalender / Buchung"
 
+#. Plugin Name of the plugin
 #: assets/js/editor.js:114 assets/js/editor.js:199
-#: src/Admin/SettingsPage.php:304 src/Admin/SettingsPage.php:305
-#: src/Admin/SettingsPage.php:366
+#: src/Admin/SettingsPage.php:313 src/Admin/SettingsPage.php:314
+#: src/Admin/SettingsPage.php:375 calucon-third-party-embed-gate.php:3
 msgid "Calucon Third-Party Embed Gate"
 msgstr "Calucon Third-Party Embed Gate"
 
-#: src/Admin/SettingsPage.php:131
+#: src/Admin/SettingsPage.php:140
 msgid "Calucon Third-Party Embed Gate is free and open source — you can %s."
 msgstr "Calucon Third-Party Embed Gate ist kostenlos und Open Source – Sie können %s."
 
-#: src/Admin/SettingsPage.php:381
+#: src/Admin/SettingsPage.php:390
 msgid "Calucon Third-Party Embed Gate settings sections"
 msgstr "Einstellungsabschnitte von Calucon Third-Party Embed Gate"
 
-#: src/Admin/SettingsPage.php:751
+#: src/Admin/SettingsPage.php:760
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: src/Admin/SettingsPage.php:1134
+#: src/Admin/SettingsPage.php:1158
 msgid "Card — border, rounded corners, shadow"
 msgstr "Karte – Rand, runde Ecken, Schatten"
 
-#: src/Admin/SettingsPage.php:1278
+#: src/Admin/SettingsPage.php:1302
 msgid "Card, bottom-left"
 msgstr "Karte, unten links"
 
-#: src/Admin/SettingsPage.php:1279
+#: src/Admin/SettingsPage.php:1303
 msgid "Card, centred"
 msgstr "Karte, zentriert"
 
-#: src/Admin/SettingsPage.php:1193
+#: src/Admin/SettingsPage.php:1217
 msgid "Centred"
 msgstr "Zentriert"
 
-#: src/Admin/SettingsPage.php:1550
+#: src/Admin/SettingsPage.php:1563
 msgid "Check my site for a policy"
 msgstr "Meine Website auf eine Richtlinie prüfen"
 
-#: src/Admin/SettingsPage.php:469
+#: src/Admin/SettingsPage.php:1735
+msgid "Check my theme"
+msgstr "Mein Theme prüfen"
+
+#: src/Admin/SettingsPage.php:478
 msgid "Check what is on my site"
-msgstr "Nachsehen, was auf meiner Website läuft"
+msgstr "Prüfen, was auf meiner Website läuft"
 
-#: src/Admin/SettingsPage.php:239
+#: src/Admin/SettingsPage.php:248
 msgid "Checked just now, as your browser sees the page. If you are sure a policy is set somewhere (some setups only send it on certain pages), add the lines below to it anyway — listing a host that is never loaded is harmless."
-msgstr "Gerade geprüft, so wie Ihr Browser die Seite sieht. Wenn Sie sicher sind, dass irgendwo eine Richtlinie gesetzt ist (manche Setups senden sie nur auf bestimmten Seiten), fügen Sie die Zeilen unten trotzdem hinzu – einen Host aufzuführen, der nie geladen wird, schadet nicht."
+msgstr "Gerade geprüft, so wie Ihr Browser die Seite sieht. Wenn Sie sicher sind, dass irgendwo eine Richtlinie gesetzt ist (manche Konfigurationen senden sie nur auf bestimmten Seiten), fügen Sie die Zeilen unten trotzdem hinzu – einen Host aufzuführen, der nie geladen wird, schadet nicht."
 
-#: src/Admin/SettingsPage.php:236
+#: src/Admin/SettingsPage.php:245
 msgid "Checking your home page…"
 msgstr "Startseite wird geprüft …"
 
-#: src/Admin/SettingsPage.php:269
+#: src/Admin/SettingsPage.php:278
 msgid "Colour adjusted for readability."
 msgstr "Farbe für bessere Lesbarkeit angepasst."
 
-#: src/Admin/SettingsPage.php:1110
+#: src/Admin/SettingsPage.php:1134
 msgid "Colours"
 msgstr "Farben"
 
-#: src/Admin/SettingsPage.php:1182
+#: src/Admin/SettingsPage.php:1206
 msgid "Compact"
 msgstr "Kompakt"
 
-#: src/Admin/SettingsPage.php:1618
+#: src/Admin/SettingsPage.php:1631
 msgid "Compatibility"
 msgstr "Kompatibilität"
 
-#: src/Admin/SettingsPage.php:377 src/Admin/SettingsPage.php:1357
+#: src/Admin/SettingsPage.php:386 src/Admin/SettingsPage.php:1381
 msgid "Consent memory"
 msgstr "Einwilligung merken"
 
-#: src/Admin/SettingsPage.php:1451
+#: src/Admin/SettingsPage.php:1475
 msgid "Consent platform bridge"
 msgstr "Brücke zur Consent-Plattform"
 
-#: src/Admin/SettingsPage.php:1544
+#: src/Admin/SettingsPage.php:1557
 msgid "Content-Security-Policy (advanced)"
 msgstr "Content-Security-Policy (fortgeschritten)"
 
-#: src/Admin/SettingsPage.php:1556
+#: src/Admin/SettingsPage.php:1569
 msgid "Content-Security-Policy snippet"
 msgstr "Content-Security-Policy-Schnipsel"
 
-#: src/Admin/SettingsPage.php:246
+#: src/Admin/SettingsPage.php:255
 msgid "Copied to the clipboard."
 msgstr "In die Zwischenablage kopiert."
 
-#: src/Admin/SettingsPage.php:1558
+#: src/Admin/SettingsPage.php:1571
 msgid "Copy"
 msgstr "Kopieren"
 
-#: src/Admin/SettingsPage.php:1153
+#: src/Admin/SettingsPage.php:1177
 msgid "Corner radius (px)"
 msgstr "Eckenradius (px)"
 
-#: src/Admin/SettingsPage.php:1141
+#: src/Admin/SettingsPage.php:1165
 msgid "Corners"
 msgstr "Ecken"
 
-#: src/Admin/SettingsPage.php:247
+#: src/Admin/SettingsPage.php:256
 msgid "Could not copy — select the text and copy it by hand."
 msgstr "Kopieren nicht möglich – markieren Sie den Text und kopieren Sie ihn von Hand."
 
-#: src/Admin/SettingsPage.php:237
+#: src/Admin/SettingsPage.php:246
 msgid "Could not load your home page from this browser, so nothing could be checked. Try again; if it keeps failing, open the home page in a new tab and look for a Content-Security-Policy header in the browser's developer tools (Network panel)."
 msgstr "Ihre Startseite konnte in diesem Browser nicht geladen werden, es ließ sich also nichts prüfen. Versuchen Sie es erneut; klappt es weiterhin nicht, öffnen Sie die Startseite in einem neuen Tab und suchen Sie in den Entwicklerwerkzeugen des Browsers (Tab „Netzwerk“) nach einem Content-Security-Policy-Header."
 
-#: src/Admin/SettingsPage.php:1759
+#: src/Admin/SettingsPage.php:1854
 msgid "Count"
 msgstr "Anzahl"
 
-#: src/Admin/SettingsPage.php:1057
+#: src/Admin/SettingsPage.php:1081
 msgid "Custom"
 msgstr "Individuell"
 
-#: src/Admin/SettingsPage.php:1018
+#: src/Admin/SettingsPage.php:1042
 msgid "Custom %s"
 msgstr "Individuell %s"
 
-#: src/Admin/SettingsPage.php:1059
+#: src/Admin/SettingsPage.php:1083
 msgid "Custom colour…"
 msgstr "Individuelle Farbe …"
 
-#: src/Admin/SettingsPage.php:1147
+#: src/Admin/SettingsPage.php:1171
 msgid "Custom radius…"
 msgstr "Individueller Radius …"
 
-#: src/Admin/SettingsPage.php:1095
+#: src/Admin/SettingsPage.php:1119
 msgid "Dark cinema"
 msgstr "Dunkles Kino"
 
-#: src/Admin/SettingsPage.php:1320
+#: src/Admin/SettingsPage.php:1344
 msgid "Dark mode"
 msgstr "Dunkelmodus"
 
-#: src/Admin/SettingsPage.php:1323
+#: src/Admin/SettingsPage.php:1347
 msgid "Dark mode colours"
 msgstr "Farben im Dunkelmodus"
 
-#: src/Admin/SettingsPage.php:1181 src/Admin/SettingsPage.php:1202
-#: src/Admin/SettingsPage.php:1230
+#: src/Admin/SettingsPage.php:1205 src/Admin/SettingsPage.php:1226
+#: src/Admin/SettingsPage.php:1254
 msgid "Default"
 msgstr "Standard"
 
-#: src/Admin/SettingsPage.php:956
+#: src/Admin/SettingsPage.php:980
 msgid "Default — built-in"
 msgstr "Standard – mitgeliefert"
 
-#: src/Admin/SettingsPage.php:934
+#: src/Admin/SettingsPage.php:958
 msgid "Default — same as panel text"
 msgstr "Standard – wie der Platzhalter-Text"
 
-#: src/Admin/SettingsPage.php:950
+#: src/Admin/SettingsPage.php:974
 msgid "Default — theme %s"
 msgstr "Standard – Theme-Farbe %s"
 
-#: src/Admin/SettingsPage.php:1623
+#: src/Admin/SettingsPage.php:1636
 msgid "Detected"
 msgstr "Erkannt"
 
-#: src/Admin/SettingsPage.php:1614
+#: src/Admin/SettingsPage.php:1627
 msgid "Detected and tested for interoperation. Gating currently ignores its choices — the fail-closed default. Enable the consent platform bridge under Consent to load embeds automatically once this platform reports consent for them."
 msgstr "Erkannt und auf Zusammenspiel getestet. Die Sperre ignoriert die Entscheidungen dieser Plattform derzeit – die Standardeinstellung „fail closed“. Aktivieren Sie die Brücke zur Consent-Plattform unter „Einwilligung merken“, damit Einbettungen automatisch laden, sobald diese Plattform eine Einwilligung dafür meldet."
 
-#: src/Admin/SettingsPage.php:1487
+#: src/Admin/SettingsPage.php:1511
 msgid "Detected now: %s."
 msgstr "Jetzt erkannt: %s."
 
-#: src/Admin/SettingsPage.php:1613
+#: src/Admin/SettingsPage.php:1626
 msgid "Detected, bridge active: when this platform reports consent for the embeds' category, gated embeds load without a second click, and a withdrawal re-gates them. If the platform does not answer, gating stands (fail closed). Prefer its own blocker for a provider? Disable that provider under Providers and Calucon Third-Party Embed Gate steps aside for it."
 msgstr "Erkannt, Brücke aktiv: Meldet diese Plattform eine Einwilligung für die Kategorie der Einbettungen, laden gesperrte Einbettungen ohne zweiten Klick; ein Widerruf sperrt sie wieder. Antwortet die Plattform nicht, bleibt die Sperre bestehen (fail closed). Soll für einen Anbieter lieber der Blocker der Plattform greifen? Deaktivieren Sie diesen Anbieter unter „Anbieter“, dann tritt Calucon Third-Party Embed Gate dafür zurück."
 
-#: src/Admin/SettingsPage.php:1615
+#: src/Admin/SettingsPage.php:1628
 msgid "Detected. Calucon Third-Party Embed Gate has no tested bridge to this consent platform and keeps gating regardless of its choices — the fail-closed default. Nothing loads before the embed-level click."
 msgstr "Erkannt. Calucon Third-Party Embed Gate hat keine getestete Brücke zu dieser Consent-Plattform und sperrt unabhängig von deren Entscheidungen weiter – die Standardeinstellung „fail closed“. Vor dem Klick auf die Einbettung lädt nichts."
 
-#: src/Admin/SettingsPage.php:1608
+#: src/Admin/SettingsPage.php:1621
 msgid "Detected. It translates the finished page, so the placeholder texts are translated there like any other text on the page. Nothing to configure here."
 msgstr "Erkannt. Dieses Plugin übersetzt die fertige Seite – die Texte des Platzhalters werden dort also wie jeder andere Text auf der Seite übersetzt. Hier ist nichts einzustellen."
 
-#: src/Admin/SettingsPage.php:1597
+#: src/Admin/SettingsPage.php:1610
 msgid "Detected. Its page cache is flushed automatically when Calucon Third-Party Embed Gate settings change and when the plugin is activated, deactivated or updated. If pages still look stale, clear it once by hand."
-msgstr "Erkannt. Sein Seiten-Cache wird automatisch geleert, wenn sich die Einstellungen von Calucon Third-Party Embed Gate ändern und wenn das Plugin aktiviert, deaktiviert oder aktualisiert wird. Sehen Seiten trotzdem veraltet aus, leeren Sie ihn einmal von Hand."
+msgstr "Erkannt. Der Seiten-Cache wird automatisch geleert, wenn sich die Einstellungen von Calucon Third-Party Embed Gate ändern und wenn das Plugin aktiviert, deaktiviert oder aktualisiert wird. Sehen Seiten trotzdem veraltet aus, leeren Sie ihn einmal von Hand."
 
-#: src/Admin/SettingsPage.php:1600
+#: src/Admin/SettingsPage.php:1613
 msgid "Detected. Page builders render outside the content filters — if its embeds are not being gated, enable \"Gate the whole page output\" under Detection."
 msgstr "Erkannt. Dieser Page-Builder rendert außerhalb der Inhaltsfilter – werden seine Einbettungen nicht gesperrt, aktivieren Sie unter Erkennung „Die gesamte Seitenausgabe sperren“."
 
-#: src/Admin/SettingsPage.php:1607
+#: src/Admin/SettingsPage.php:1620
 msgid "Detected. The texts you type here — a provider's notice and button label, its privacy-policy URL, and the names of your own providers — are registered for translation and are read in the language of the page being shown. Translate them under %s. Everything else is translated by language pack and needs nothing from you; note that typing your own text for a provider replaces a wording that was already translated."
 msgstr "Erkannt. Die Texte, die Sie hier selbst eingeben – Hinweis und Button-Beschriftung eines Anbieters, dessen Datenschutz-URL und die Namen Ihrer eigenen Anbieter – sind zur Übersetzung angemeldet und werden in der Sprache der jeweils angezeigten Seite gelesen. Übersetzen Sie sie unter %s. Alles Übrige wird per Sprachpaket übersetzt und braucht nichts von Ihnen; beachten Sie dabei: Ein eigener Text für einen Anbieter ersetzt eine Formulierung, die bereits übersetzt war."
 
-#: src/Admin/SettingsPage.php:1599
+#: src/Admin/SettingsPage.php:1612
 msgid "Detected. Whole-page gating is enabled, so this builder's embeds are covered."
-msgstr "Erkannt. Die Sperre der gesamten Seitenausgabe ist aktiviert; damit sind die Einbettungen dieses Builders abgedeckt."
+msgstr "Erkannt. Die Sperre der gesamten Seitenausgabe ist aktiviert; damit sind die Einbettungen dieses Page-Builders abgedeckt."
 
-#: src/Admin/SettingsPage.php:375 src/Admin/SettingsPage.php:736
+#: src/Admin/SettingsPage.php:384 src/Admin/SettingsPage.php:745
 msgid "Detection"
 msgstr "Erkennung"
 
-#: src/Admin/SettingsPage.php:1287
+#: src/Admin/SettingsPage.php:1311
 msgid "Dim the poster"
 msgstr "Posterbild abdunkeln"
 
-#: src/Admin/SettingsPage.php:606
+#: src/Admin/SettingsPage.php:615
 msgid "Document / slides"
 msgstr "Dokument / Folien"
 
-#: src/Admin/SettingsPage.php:688
+#: src/Admin/SettingsPage.php:697
 msgid "Embed hosts"
 msgstr "Einbettungs-Hosts"
 
-#: src/Admin/SettingsPage.php:654
+#: src/Admin/SettingsPage.php:663
 msgid "Embed hosts (one per line)"
 msgstr "Einbettungs-Hosts (einer pro Zeile)"
 
-#: src/Admin/SettingsPage.php:669
+#: src/Admin/SettingsPage.php:678
 msgid "Embed hosts of %s"
 msgstr "Einbettungs-Hosts von %s"
 
-#: src/Rendering/PlaceholderRenderer.php:169
+#: src/Rendering/PlaceholderRenderer.php:171
 msgid "Embedded content from %s"
 msgstr "Eingebetteter Inhalt von %s"
 
-#: src/Admin/SettingsPage.php:649
+#: src/Admin/SettingsPage.php:658
 msgid "Embeds from hosts nobody listed are already gated, under their host name. Add a provider here to give such a host a proper name and a kind (for the button icon); after saving it appears in the list above, where you can set its wording and privacy-policy link like for any other provider. Hosts must match exactly — list www. and bare variants separately. Adding a provider never changes what is gated: unknown hosts are gated either way, and hosts a built-in provider handles stay with that provider (they are skipped here). Your own providers are always gated; to let a host through, use the never-gate list under Detection."
-msgstr "Einbettungen von Hosts, die niemand aufgeführt hat, werden bereits gesperrt – unter ihrem Hostnamen. Fügen Sie hier einen Anbieter hinzu, um einem solchen Host einen richtigen Namen und eine Art (für das Button-Symbol) zu geben; nach dem Speichern erscheint er in der Liste oben, wo Sie wie bei jedem anderen Anbieter Texte und Datenschutz-Link festlegen können. Hosts müssen exakt übereinstimmen – führen Sie die Variante mit www. und die ohne www. getrennt auf. Einen Anbieter hinzuzufügen, ändert nie, was gesperrt wird: Unbekannte Hosts werden ohnehin gesperrt, und Hosts, um die sich ein mitgelieferter Anbieter kümmert, bleiben bei diesem (sie werden hier übersprungen). Eigene Anbieter sind immer gesperrt; um einen Host durchzulassen, nutzen Sie die Liste „Diese Hosts nie sperren“ unter Erkennung."
+msgstr "Einbettungen von Hosts, die niemand aufgeführt hat, werden bereits gesperrt – unter ihrem Hostnamen. Fügen Sie hier einen Anbieter hinzu, um einem solchen Host einen richtigen Namen zu geben und ihn einer Art zuzuordnen; die Art bestimmt das Button-Symbol. Nach dem Speichern erscheint der Anbieter in der Liste oben, wo Sie wie bei jedem anderen Anbieter Texte und Datenschutz-Link festlegen können. Hosts müssen exakt übereinstimmen – führen Sie die Variante mit www. und die ohne www. getrennt auf. Einen Anbieter hinzuzufügen, ändert nie, was gesperrt wird: Unbekannte Hosts werden ohnehin gesperrt, und Hosts, um die sich ein mitgelieferter Anbieter kümmert, bleiben bei diesem (sie werden hier übersprungen). Eigene Anbieter sind immer gesperrt; um einen Host durchzulassen, nutzen Sie die Liste „Diese Hosts nie sperren“ unter Erkennung."
 
-#: src/Admin/SettingsPage.php:1685
+#: src/Admin/SettingsPage.php:1780
 msgid "Embeds from these hosts load for every visitor as soon as the page opens, with no placeholder. This plugin does not stop them being contacted."
 msgstr "Einbettungen von diesen Hosts laden für jeden Besucher, sobald die Seite geöffnet wird – ohne Platzhalter. Dieses Plugin verhindert nicht, dass sie kontaktiert werden."
 
-#: src/Admin/SettingsPage.php:786
+#: src/Admin/SettingsPage.php:795
 msgid "Embeds from these hosts load without a placeholder. Use only for third parties you have covered elsewhere — this plugin then no longer prevents their requests. You can paste a whole web address; only the site name is kept."
 msgstr "Einbettungen von diesen Hosts laden ohne Platzhalter. Nutzen Sie das nur für Drittanbieter, die Sie anderweitig abgedeckt haben – dieses Plugin verhindert deren Anfragen dann nicht mehr. Sie können eine ganze Webadresse einfügen; behalten wird nur der Hostname."
 
-#: src/Admin/SettingsPage.php:1569
+#: src/Admin/SettingsPage.php:1582
 msgid "Embeds load from (frame-src)"
-msgstr "Eingebettete Inhalte werden geladen von (frame-src)"
+msgstr "Einbettungen werden geladen von (frame-src)"
 
-#: src/Admin/SettingsPage.php:1160
+#: src/Admin/SettingsPage.php:1184
 msgid "Empty: the panel style decides. 0 removes the border."
 msgstr "Leer: Der Platzhalter-Stil entscheidet. 0 entfernt den Rand."
 
-#: src/Admin/SettingsPage.php:462
+#: src/Admin/SettingsPage.php:471
 msgid "Every third-party embed is gated, listed here or not. These entries add the provider's name, icon and privacy-policy link, and let you word the panel yourself. Turning one off stops gating its embeds — they then load exactly as WordPress renders them."
-msgstr "Jede Einbettung von Drittanbietern wird gesperrt – ob sie hier steht oder nicht. Diese Einträge ergänzen Name, Symbol und Datenschutz-Link des Anbieters und ermöglichen es Ihnen, den Text des Platzhalters selbst zu formulieren. Wenn Sie einen Eintrag abschalten, werden dessen Einbettungen nicht mehr gesperrt: Sie laden dann genau so, wie WordPress sie ausgibt."
+msgstr "Jede Einbettung von Drittanbietern wird gesperrt – ob sie hier steht oder nicht. Diese Einträge ergänzen Name, Symbol und Datenschutz-Link des Anbieters; den Text des Platzhalters können Sie selbst formulieren. Wenn Sie einen Eintrag abschalten, werden dessen Einbettungen nicht mehr gesperrt: Sie laden dann genau so, wie WordPress sie ausgibt."
 
-#: src/Plugin.php:490
+#: src/Plugin.php:544
 msgid "Example embed"
 msgstr "Beispieleinbettung"
 
-#: src/Admin/SettingsPage.php:266
+#: src/Admin/SettingsPage.php:275
 msgid "Fallback link on the panel background"
 msgstr "Ersatzlink auf dem Platzhalter-Hintergrund"
 
-#: src/Admin/SettingsPage.php:1220
+#: src/Admin/Compatibility.php:354
+msgid "File Optimization → “Excluded JavaScript Files”. If “Delay JavaScript execution” is on, it keeps a separate exclusion box — add them there too."
+msgstr "File Optimization → „Excluded JavaScript Files“. Wenn „Delay JavaScript execution“ eingeschaltet ist, hat diese Einstellung eine eigene Ausschlussliste – tragen Sie die Dateien dort ebenfalls ein."
+
+#: src/Admin/SettingsPage.php:1717 src/Admin/SettingsPage.php:1720
+msgid "Files to exclude from JavaScript and CSS optimisation"
+msgstr "Dateien, die von der JavaScript- und CSS-Optimierung ausgeschlossen werden sollten"
+
+#: src/Admin/SettingsPage.php:1244
 msgid "Filled"
 msgstr "Gefüllt"
 
-#: src/Admin/SettingsPage.php:1132
+#: src/Admin/SettingsPage.php:1156
 msgid "Filled panel"
 msgstr "Gefüllter Platzhalter"
 
-#: src/Admin/SettingsPage.php:1308
+#: src/Admin/SettingsPage.php:1332
 msgid "Filled — like the load button"
 msgstr "Gefüllt – wie der Lade-Button"
 
-#: src/Admin/SettingsPage.php:475
+#: src/Admin/SettingsPage.php:484
 msgid "Filter providers by name"
 msgstr "Anbieter nach Namen filtern"
 
-#: src/Admin/SettingsPage.php:476
+#: src/Admin/SettingsPage.php:485
 msgid "Filter providers…"
 msgstr "Anbieter filtern …"
 
-#: src/Admin/SettingsPage.php:1761
+#: src/Admin/SettingsPage.php:1856
 msgid "First seen in"
 msgstr "Zuerst gefunden in"
 
-#: src/Admin/SettingsPage.php:1241
+#: src/Admin/SettingsPage.php:1265
 msgid "Fits its text"
 msgstr "So breit wie der Text"
 
-#: src/Admin/SettingsPage.php:1270
+#: src/Admin/SettingsPage.php:1294
 msgid "For embeds with a poster image set in the block editor. Tick \"Preview with a poster image\" to see these."
 msgstr "Für Einbettungen, denen im Block-Editor ein Posterbild zugewiesen wurde. Aktivieren Sie „Vorschau mit Posterbild“, um diese Einstellungen zu sehen."
 
-#: src/Admin/SettingsPage.php:1365
+#: src/Admin/SettingsPage.php:1389
 msgid "For this browser session"
 msgstr "Für diese Browser-Sitzung"
 
-#: src/Admin/SettingsPage.php:604
+#: src/Admin/SettingsPage.php:613
 msgid "Form / survey"
 msgstr "Formular / Befragung"
 
-#: src/Admin/SettingsPage.php:1242
+#: src/Admin/SettingsPage.php:1266
 msgid "Full panel width"
 msgstr "Volle Platzhalter-Breite"
 
-#: src/Admin/SettingsPage.php:529
+#: src/Admin/SettingsPage.php:538
 msgid "Gate"
 msgstr "Sperren"
 
-#: src/Admin/SettingsPage.php:513
+#: src/Admin/SettingsPage.php:522
 msgid "Gate %s embeds"
 msgstr "%s-Einbettungen sperren"
 
-#: src/Admin/SettingsPage.php:1696 src/Admin/SettingsPage.php:1787
+#: src/Admin/SettingsPage.php:1791 src/Admin/SettingsPage.php:1882
 msgid "Gate it again"
 msgstr "Wieder sperren"
 
-#: src/Admin/SettingsPage.php:1789
+#: src/Admin/SettingsPage.php:1884
 msgid "Gate it anyway"
 msgstr "Trotzdem sperren"
 
-#: src/Admin/SettingsPage.php:793
+#: src/Admin/SettingsPage.php:802
 msgid "Gate the whole page output (for Elementor, Divi, WPBakery, Bricks)"
 msgstr "Die gesamte Seitenausgabe sperren (für Elementor, Divi, WPBakery, Bricks)"
 
-#: src/Admin/SettingsPage.php:761
+#: src/Admin/SettingsPage.php:770
 msgid "Gate third-party iframes"
 msgstr "Iframes von Drittanbietern sperren"
 
-#: src/Admin/SettingsPage.php:765
+#: src/Admin/SettingsPage.php:774
 msgid "Gate third-party images (hotlinked images request the third party with the visitor's IP attached; can affect layouts)"
 msgstr "Bilder von Drittanbietern sperren (direkt verlinkte Bilder rufen den Drittanbieter mit der IP-Adresse des Besuchers auf; das kann das Layout beeinflussen)"
 
-#: src/Admin/SettingsPage.php:763
+#: src/Admin/SettingsPage.php:772
 msgid "Gate third-party scripts in content"
 msgstr "Skripte von Drittanbietern in Inhalten sperren"
 
@@ -548,97 +561,109 @@ msgstr "Skripte von Drittanbietern in Inhalten sperren"
 msgid "Gate this embed"
 msgstr "Diese Einbettung sperren"
 
-#: src/Admin/SettingsPage.php:1726
+#: src/Admin/SettingsPage.php:1820
 msgid "Gated"
 msgstr "Gesperrt"
 
-#: src/Admin/SettingsPage.php:599
+#: src/Admin/SettingsPage.php:608
 msgid "Generic"
 msgstr "Allgemein"
 
-#: src/Admin/SettingsPage.php:1511
-msgid "Grants require both the storage purpose and the provider's registered vendor consent; providers without a Global Vendor List entry always keep the click. Leave this off unless your site serves programmatic advertising."
-msgstr "Eine Einwilligung zählt nur, wenn sowohl der Speicherzweck als auch die Einwilligung für den registrierten Anbieter vorliegen; bei Anbietern ohne Eintrag in der Global Vendor List bleibt es immer beim Klick. Lassen Sie die Option ausgeschaltet, sofern Ihre Website keine programmatische Werbung ausliefert."
-
-#: src/Admin/SettingsPage.php:1688 src/Admin/SettingsPage.php:1757
+#: src/Admin/SettingsPage.php:1783 src/Admin/SettingsPage.php:1852
 msgid "Host"
 msgstr "Host"
 
-#: src/Admin/SettingsPage.php:798
+#: src/Admin/SettingsPage.php:807
 msgid "Host matching"
 msgstr "Host-Zuordnung"
 
-#: src/Admin/SettingsPage.php:1684
+#: src/Admin/SettingsPage.php:1779
 msgid "Hosts you let through"
 msgstr "Von Ihnen durchgelassene Hosts"
 
-#: src/Admin/SettingsPage.php:1249
+#: src/Admin/SettingsPage.php:1273
 msgid "Hover effect"
 msgstr "Hover-Effekt"
 
-#: src/Admin/SettingsPage.php:1504
-msgid "IAB TCF (experimental)"
-msgstr "IAB TCF (experimentell)"
-
-#: src/Admin/SettingsPage.php:1259
+#: src/Admin/SettingsPage.php:1283
 msgid "Icon"
 msgstr "Symbol"
 
-#: src/Admin/SettingsPage.php:1453
+#: src/Admin/SettingsPage.php:1718
+msgid "If a caching, minification or optimisation plugin combines, defers or delays scripts, paste these into its exclusion list. They are small, local and already cached by the browser, so excluding them costs nothing measurable."
+msgstr "Wenn ein Caching-, Minifizierungs- oder Optimierungs-Plugin Skripte zusammenfasst, mit „defer“ lädt oder verzögert, tragen Sie diese Pfade in dessen Ausschlussliste ein. Sie sind klein, liegen auf Ihrer eigenen Website und stehen ohnehin im Browser-Cache – sie auszunehmen kostet nichts Messbares."
+
+#: src/Admin/SettingsPage.php:1477
 msgid "If a consent platform (cookie banner) runs on this site, Calucon Third-Party Embed Gate can honour its decision: once the platform reports consent for the embeds' category, gated embeds load without a second click — and a withdrawal there re-gates them. The bridge only reads the platform's state, stores nothing itself, and works only with platforms it was tested against; with any other platform, and whenever the platform gives no answer, gating stands unchanged (fail closed)."
 msgstr "Läuft auf dieser Website eine Consent-Plattform (Cookie-Banner), kann Calucon Third-Party Embed Gate deren Entscheidung übernehmen: Sobald die Plattform eine Einwilligung für die Kategorie der Einbettungen meldet, laden gesperrte Einbettungen ohne zweiten Klick – und ein Widerruf dort sperrt sie wieder. Die Brücke liest nur den Zustand der Plattform, speichert selbst nichts und funktioniert nur mit Plattformen, mit denen sie getestet wurde; bei jeder anderen Plattform und immer dann, wenn die Plattform keine Antwort gibt, bleibt die Sperre unverändert bestehen (fail closed)."
 
-#: src/Admin/SettingsPage.php:244
+#: src/Admin/SettingsPage.php:253
 msgid "If you later switch it to an enforced policy, it would need these hosts:"
-msgstr "Wenn Sie sie später auf eine durchsetzende Richtlinie umstellen, bräuchte sie diese Hosts:"
+msgstr "Wenn Sie sie später auf eine erzwungene Richtlinie umstellen, bräuchte sie diese Hosts:"
 
-#: src/Admin/SettingsPage.php:607
+#: src/Admin/SettingsPage.php:616
 msgid "Image / GIF"
 msgstr "Bild / GIF"
 
-#: src/Admin/SettingsPage.php:245
+#: src/Admin/SettingsPage.php:254
 msgid "It already lists every enabled provider, so switching it to enforced would be safe for the embeds."
-msgstr "Sie führt bereits jeden aktivierten Anbieter auf; sie auf „durchsetzend“ umzustellen, wäre für die Einbettungen also unproblematisch."
+msgstr "Sie führt bereits jeden aktivierten Anbieter auf; sie auf „erzwingen“ umzustellen, wäre für die Einbettungen also unproblematisch."
 
-#: src/Admin/SettingsPage.php:656 src/Admin/SettingsPage.php:704
+#: src/Admin/SettingsPage.php:1667
+msgid "Its JavaScript settings could not be read from here, so this is not an all-clear. If embeds misbehave, check whether it combines, defers or delays JavaScript, and exclude the files below."
+msgstr "Die JavaScript-Einstellungen ließen sich von hier aus nicht auslesen – das ist also keine Entwarnung. Wenn Einbettungen sich seltsam verhalten, prüfen Sie, ob es JavaScript zusammenfasst, mit „defer“ lädt oder verzögert, und nehmen Sie die unten stehenden Dateien aus."
+
+#: src/Admin/SettingsPage.php:1666
+msgid "Its JavaScript settings were read and none of the ones that cause trouble are on."
+msgstr "Die JavaScript-Einstellungen wurden ausgelesen; keine der problematischen ist aktiv."
+
+#: src/Admin/SettingsPage.php:1670
+msgid "JavaScript optimisation"
+msgstr "JavaScript-Optimierung"
+
+#: src/Admin/SettingsPage.php:1721
+msgid "Keep the inline configuration next to gate.js as well: some plugins list it separately as \"calucon-embed-gate-js-before\"."
+msgstr "Bewahren Sie die Inline-Konfiguration neben gate.js auf: Manche Plugins führen sie separat als „calucon-embed-gate-js-before“ auf."
+
+#: src/Admin/SettingsPage.php:665 src/Admin/SettingsPage.php:713
 msgid "Kind"
 msgstr "Art"
 
-#: src/Admin/SettingsPage.php:673
+#: src/Admin/SettingsPage.php:682
 msgid "Kind of %s"
 msgstr "Art von %s"
 
-#: src/Admin/SettingsPage.php:1232
+#: src/Admin/SettingsPage.php:1256
 msgid "Large"
 msgstr "Groß"
 
-#: src/Admin/SettingsPage.php:1192
+#: src/Admin/SettingsPage.php:1216
 msgid "Left"
 msgstr "Links"
 
-#: src/Admin/SettingsPage.php:1774
+#: src/Admin/SettingsPage.php:1869
 msgid "Let through by you — not gated"
 msgstr "Von Ihnen durchgelassen – nicht gesperrt"
 
-#: src/Admin/SettingsPage.php:1096
+#: src/Admin/SettingsPage.php:1120
 msgid "Light minimal"
 msgstr "Hell und minimal"
 
-#: src/Admin/SettingsPage.php:1555
+#: src/Admin/SettingsPage.php:1568
 msgid "Lines to add"
 msgstr "Hinzuzufügende Zeilen"
 
-#: src/Admin/SettingsPage.php:465
+#: src/Admin/SettingsPage.php:474
 msgid "Link each provider's privacy policy in the placeholder panel, so visitors can read it before loading anything. Applies to the providers listed below; unknown embeds have no known policy to link."
 msgstr "Die Datenschutzerklärung des jeweiligen Anbieters im Platzhalter verlinken, damit Besucher sie lesen können, bevor etwas geladen wird. Gilt für die unten aufgeführten Anbieter; für unbekannte Einbettungen ist keine Datenschutzerklärung bekannt, die sich verlinken ließe."
 
-#: src/Admin/SettingsPage.php:1117
+#: src/Admin/SettingsPage.php:1141
 msgid "Links"
 msgstr "Links"
 
-#: src/Admin/SettingsPage.php:470
+#: src/Admin/SettingsPage.php:479
 msgid "Lists every embed in your recent posts and pages, whether it is gated, and lets you make exceptions without typing a host name. Read-only; nothing leaves your site."
-msgstr "Listet jede Einbettung in Ihren neuesten Beiträgen und Seiten auf – mit der Angabe, ob sie gesperrt ist – und lässt Sie Ausnahmen festlegen, ohne einen Hostnamen zu tippen. Nur lesend; nichts verlässt Ihre Website."
+msgstr "Listet jede Einbettung in Ihren neuesten Beiträgen und Seiten auf, samt der Angabe, ob sie gesperrt ist. Ausnahmen legen Sie direkt dort fest, ohne einen Hostnamen zu tippen. Nur lesend; nichts verlässt Ihre Website."
 
 #: src/Providers/Builtin/Descriptors.php:263
 msgid "Load activity from Strava"
@@ -661,9 +686,9 @@ msgstr "Inhalt von Facebook laden"
 msgid "Load document from Scribd"
 msgstr "Dokument von Scribd laden"
 
-#: src/Admin/SettingsPage.php:1473
+#: src/Admin/SettingsPage.php:1497
 msgid "Load embeds automatically when the detected consent platform reports consent for them"
-msgstr "Eingebettete Inhalte automatisch laden, wenn die erkannte Consent-Plattform eine Einwilligung dafür meldet"
+msgstr "Einbettungen automatisch laden, wenn die erkannte Consent-Plattform eine Einwilligung dafür meldet"
 
 #: src/Providers/Builtin/Descriptors.php:186
 msgid "Load form from Google"
@@ -949,39 +974,43 @@ msgstr "Beim Laden dieses Videos wird Vimeo kontaktiert. Dabei werden Ihre IP-Ad
 msgid "Loading this video contacts YouTube (Google), which receives your IP address and which page you are on, and sets cookies."
 msgstr "Beim Laden dieses Videos wird YouTube (Google) kontaktiert. Dabei werden Ihre IP-Adresse und die aufgerufene Seite übermittelt, und es werden Cookies gesetzt."
 
-#: src/Admin/SettingsPage.php:1551
+#: src/Admin/SettingsPage.php:1564
 msgid "Loads your home page once, in this browser, and reads whether it sends a policy and what it allows. Nothing leaves your site."
 msgstr "Lädt Ihre Startseite einmal in diesem Browser und liest aus, ob sie eine Richtlinie sendet und was diese erlaubt. Nichts verlässt Ihre Website."
 
-#: src/Admin/SettingsPage.php:268
+#: src/Admin/SettingsPage.php:277
 msgid "Make readable"
 msgstr "Lesbar machen"
 
-#: src/Admin/SettingsPage.php:601
+#: src/Admin/SettingsPage.php:610
 msgid "Map"
 msgstr "Karte"
 
-#: src/Admin/SettingsPage.php:1133
+#: src/Admin/SettingsPage.php:1157
 msgid "Minimal — transparent with a border"
 msgstr "Minimal – transparent mit Rand"
 
-#: src/Admin/SettingsPage.php:1729
+#: src/Admin/SettingsPage.php:1825
+msgid "NOT gated — its address is a WordPress asset path, so it is treated as your own file. If this host is not yours, add it to \"Always gate these hosts\" under Detection."
+msgstr "NICHT gesperrt – die Adresse ist ein WordPress-Asset-Pfad und gilt deshalb als Ihre eigene Datei. Gehört dieser Host nicht Ihnen, tragen Sie ihn unter Erkennung in „Diese Hosts immer sperren“ ein."
+
+#: src/Admin/SettingsPage.php:1823
 msgid "NOT gated — its detection rule is disabled"
 msgstr "NICHT gesperrt – die zugehörige Erkennungsregel ist deaktiviert"
 
-#: src/Admin/SettingsPage.php:1730
+#: src/Admin/SettingsPage.php:1824
 msgid "NOT gated — provider disabled in the table above"
 msgstr "NICHT gesperrt – Anbieter in der Tabelle oben deaktiviert"
 
-#: src/Admin/SettingsPage.php:653 src/Admin/SettingsPage.php:684
+#: src/Admin/SettingsPage.php:662 src/Admin/SettingsPage.php:693
 msgid "Name"
 msgstr "Name"
 
-#: src/Admin/SettingsPage.php:667
+#: src/Admin/SettingsPage.php:676
 msgid "Name of %s"
 msgstr "Name von %s"
 
-#: src/Admin/SettingsPage.php:1793
+#: src/Admin/SettingsPage.php:1888
 msgid "Name this host"
 msgstr "Diesen Host benennen"
 
@@ -989,43 +1018,47 @@ msgstr "Diesen Host benennen"
 msgid "Never gate"
 msgstr "Nie sperren"
 
-#: src/Admin/SettingsPage.php:783
+#: src/Admin/SettingsPage.php:792
 msgid "Never gate these hosts"
 msgstr "Diese Hosts nie sperren"
 
-#: src/Admin/SettingsPage.php:1289
+#: src/Admin/SettingsPage.php:1313
 msgid "No"
 msgstr "Nein"
 
-#: src/Admin/SettingsPage.php:1364
+#: src/Admin/SettingsPage.php:1388
 msgid "No (default) — ask on every page view"
 msgstr "Nein (Standard) – bei jedem Seitenaufruf fragen"
 
-#: src/Admin/SettingsPage.php:1620
+#: src/Admin/SettingsPage.php:1633
 msgid "No cache plugin, consent platform, multilingual plugin or page builder detected."
 msgstr "Kein Cache-Plugin, keine Consent-Plattform, kein Mehrsprachigkeits-Plugin und kein Page-Builder erkannt."
 
-#: src/Admin/SettingsPage.php:1478
+#: src/Admin/SettingsPage.php:1502
 msgid "No tested consent platform is currently detected. The setting can stay enabled; it takes effect as soon as one is installed."
 msgstr "Derzeit wird keine getestete Consent-Plattform erkannt. Die Einstellung kann aktiviert bleiben; sie greift, sobald eine installiert ist."
 
-#: src/Admin/SettingsPage.php:1753
+#: src/Admin/SettingsPage.php:1848
 msgid "No third-party embeds found in the scanned content."
 msgstr "In den gescannten Inhalten wurden keine Einbettungen von Drittanbietern gefunden."
 
-#: src/Admin/SettingsPage.php:1728
+#: src/Admin/SettingsPage.php:1822
 msgid "No usable URL — passes through"
 msgstr "Keine verwertbare URL – wird durchgelassen"
 
-#: src/Admin/SettingsPage.php:1170 src/Admin/SettingsPage.php:1252
+#: src/Admin/SettingsPage.php:1194 src/Admin/SettingsPage.php:1276
 msgid "None"
 msgstr "Keiner"
 
-#: src/Admin/SettingsPage.php:749
+#: src/Admin/SettingsPage.php:1752
+msgid "None found in your theme's own stylesheets or its functions.php. That covers where a theme usually keeps them, not every file it could use — a theme that builds its CSS into another directory is outside this check."
+msgstr "In den Stylesheets Ihres Themes und in dessen functions.php wurde nichts gefunden. Damit ist geprüft, wo solche Verweise in einem Theme üblicherweise stehen, nicht jede Datei, die ein Theme verwenden kann – ein Theme, das sein CSS in einem anderen Verzeichnis erzeugt, wird von dieser Prüfung nicht erfasst."
+
+#: src/Admin/SettingsPage.php:758
 msgid "Nothing has changed yet."
 msgstr "Es wurde bisher nichts geändert."
 
-#: src/Admin/SettingsPage.php:541
+#: src/Admin/SettingsPage.php:550
 msgid "Notice text"
 msgstr "Hinweistext"
 
@@ -1033,52 +1066,52 @@ msgstr "Hinweistext"
 msgid "Notice text for this embed"
 msgstr "Hinweistext für diese Einbettung"
 
-#: src/Admin/SettingsPage.php:1200
+#: src/Admin/SettingsPage.php:1224
 msgid "Notice text size"
 msgstr "Größe des Hinweistexts"
 
-#: src/Admin/SettingsPage.php:1358
+#: src/Admin/SettingsPage.php:1382
 msgid "Off by default: consent applies to the one embed clicked and is stored nowhere. When enabled, the choice is stored in the visitor's browser only — after their first click, never before — and a withdrawal control becomes available via the [calucon_embed_gate_withdraw] shortcode for your privacy policy page."
 msgstr "Standardmäßig aus: Die Einwilligung gilt für die eine angeklickte Einbettung und wird nirgends gespeichert. Ist die Option aktiviert, wird die Entscheidung ausschließlich im Browser des Besuchers gespeichert – nach dessen erstem Klick, nie davor – und über den Shortcode [calucon_embed_gate_withdraw] steht eine Widerrufsmöglichkeit für Ihre Datenschutzerklärung bereit."
 
-#: src/Admin/SettingsPage.php:779
+#: src/Admin/SettingsPage.php:788
 msgid "One host per line, e.g. cdn.example.com or *.example.com. These are treated as the site itself and never gated. You can paste a whole web address; only the site name is kept."
 msgstr "Ein Host pro Zeile, z. B. cdn.example.com oder *.example.com. Diese gelten als Teil der eigenen Website und werden nie gesperrt. Sie können eine ganze Webadresse einfügen; behalten wird nur der Hostname."
 
-#: src/Admin/SettingsPage.php:772
+#: src/Admin/SettingsPage.php:781
 msgid "One host per line. These are gated even when they would otherwise count as the site itself — for example a subdomain of your own domain that serves third-party widgets. You can paste a whole web address; only the site name is kept."
 msgstr "Ein Host pro Zeile. Diese werden auch dann gesperrt, wenn sie sonst als Teil der eigenen Website gälten – etwa eine Subdomain Ihrer eigenen Domain, die Widgets von Drittanbietern ausliefert. Sie können eine ganze Webadresse einfügen; behalten wird nur der Hostname."
 
-#: src/Admin/SettingsPage.php:794
+#: src/Admin/SettingsPage.php:803
 msgid "Only enable this if embeds from a page builder are not being gated. It buffers the entire page, which can conflict with other buffering or streaming plugins. Any error inside the buffer returns the page unmodified."
-msgstr "Aktivieren Sie das nur, wenn Einbettungen aus einem Page-Builder nicht gesperrt werden. Dabei wird die komplette Seite zwischengespeichert, was mit anderen Buffering- oder Streaming-Plugins kollidieren kann. Tritt im Puffer ein Fehler auf, wird die Seite unverändert ausgeliefert."
+msgstr "Aktivieren Sie das nur, wenn Einbettungen aus einem Page-Builder nicht gesperrt werden. Dabei wird die gesamte Seitenausgabe gepuffert, was mit anderen Plugins kollidieren kann, die ebenfalls puffern oder streamen. Tritt im Puffer ein Fehler auf, wird die Seite unverändert ausgeliefert."
 
-#: src/Admin/SettingsPage.php:1565
+#: src/Admin/SettingsPage.php:1578
 msgid "Only enabled providers are listed; disable a provider under Providers and its hosts disappear from the lines above. A host can differ from the embed address when the plugin loads a privacy-preserving variant (YouTube loads from youtube-nocookie.com, for example)."
 msgstr "Aufgeführt sind nur aktivierte Anbieter; wird ein Anbieter unter „Anbieter“ deaktiviert, verschwinden seine Hosts aus den Zeilen oben. Ein Host kann von der Einbettungsadresse abweichen, wenn das Plugin eine datenschutzfreundliche Variante lädt (YouTube lädt zum Beispiel von youtube-nocookie.com)."
 
-#: src/Admin/SettingsPage.php:1327
+#: src/Admin/SettingsPage.php:1351
 msgid "Only the colours you set here change; the rest keep the values above. Tick \"Preview on a dark page background\" to check them."
 msgstr "Nur die hier gesetzten Farben ändern sich; alle übrigen behalten die Werte von oben. Aktivieren Sie „Vorschau auf dunklem Seitenhintergrund“, um sie zu prüfen."
 
-#: src/Admin/SettingsPage.php:477
+#: src/Admin/SettingsPage.php:486
 msgid "Only the ones I changed"
 msgstr "Nur die von mir geänderten"
 
-#: src/Admin/SettingsPage.php:1500
+#: src/Admin/SettingsPage.php:1524
 msgid "Only used with Borlabs Cookie, whose consent groups are defined per site: the ID of the group that covers embedded content. The default installation calls it \"external-media\"."
-msgstr "Wird nur mit Borlabs Cookie verwendet, dessen Einwilligungsgruppen pro Website definiert werden: die ID der Gruppe, die eingebettete Inhalte abdeckt. In der Standardinstallation heißt sie „external-media“."
+msgstr "Wird nur mit Borlabs Cookie verwendet, dessen Einwilligungsgruppen pro Website definiert werden. Gemeint ist die ID der Gruppe, die eingebettete Inhalte abdeckt; in der Standardinstallation heißt sie „external-media“."
 
 #: src/Integration/Assets.php:145
 msgid "Open it on the provider’s site."
 msgstr "Beim Anbieter öffnen."
 
-#: src/Detection/EmbedStripper.php:146
-#: src/Rendering/PlaceholderRenderer.php:171
+#: src/Detection/EmbedStripper.php:149
+#: src/Rendering/PlaceholderRenderer.php:173
 msgid "Open on %s"
 msgstr "Auf %s öffnen"
 
-#: src/Admin/SettingsPage.php:1221 src/Admin/SettingsPage.php:1309
+#: src/Admin/SettingsPage.php:1245 src/Admin/SettingsPage.php:1333
 msgid "Outline"
 msgstr "Umrandet"
 
@@ -1086,111 +1119,127 @@ msgstr "Umrandet"
 msgid "Overrides the site-wide setting for this block only."
 msgstr "Überschreibt die websiteweite Einstellung nur für diesen Block."
 
-#: src/Admin/SettingsPage.php:1727
+#: src/Admin/SettingsPage.php:1821
 msgid "Own host — not gated"
 msgstr "Eigener Host – nicht gesperrt"
 
-#: src/Admin/SettingsPage.php:790
+#: src/Admin/Compatibility.php:360
+msgid "Page Optimization → JS Settings → “JS Excludes”. With Guest Mode on, its own exclude list needs them as well."
+msgstr "Page Optimization → JS Settings → „JS Excludes“. Ist Guest Mode eingeschaltet, tragen Sie die Dateien auch in dessen eigene Ausschlussliste ein."
+
+#: src/Admin/SettingsPage.php:799
 msgid "Page builders"
 msgstr "Page-Builder"
 
-#: src/Admin/SettingsPage.php:1113
+#: src/Admin/SettingsPage.php:1137
 msgid "Panel background"
 msgstr "Platzhalter-Hintergrund"
 
-#: src/Admin/SettingsPage.php:1332
+#: src/Admin/SettingsPage.php:1356
 msgid "Panel background (dark)"
 msgstr "Platzhalter-Hintergrund (dunkel)"
 
-#: src/Admin/SettingsPage.php:1276
+#: src/Admin/SettingsPage.php:1300
 msgid "Panel position"
 msgstr "Position des Platzhalters"
 
-#: src/Admin/SettingsPage.php:1130
+#: src/Admin/SettingsPage.php:1154
 msgid "Panel style"
 msgstr "Platzhalter-Stil"
 
-#: src/Admin/SettingsPage.php:1169
+#: src/Admin/SettingsPage.php:1193
 msgid "Panel style decides"
 msgstr "Der Platzhalter-Stil entscheidet"
 
-#: src/Admin/SettingsPage.php:1114
+#: src/Admin/SettingsPage.php:1138
 msgid "Panel text"
 msgstr "Platzhalter-Text"
 
-#: src/Admin/SettingsPage.php:1333
+#: src/Admin/SettingsPage.php:1357
 msgid "Panel text (dark)"
 msgstr "Platzhalter-Text (dunkel)"
 
-#: src/Admin/SettingsPage.php:264
+#: src/Admin/SettingsPage.php:273
 msgid "Panel text on the panel background"
 msgstr "Platzhalter-Text auf dem Platzhalter-Hintergrund"
 
-#: src/Admin/SettingsPage.php:1381
+#: src/Admin/Compatibility.php:357
+msgid "Performance → Minify → JS → “Never minify the following JS files”."
+msgstr "Performance → Minify → JS → „Never minify the following JS files“."
+
+#: src/Admin/SettingsPage.php:1405
 msgid "Persistent lifetime (days)"
 msgstr "Speicherdauer (Tage)"
 
-#: src/Admin/SettingsPage.php:1366
+#: src/Admin/SettingsPage.php:1390
 msgid "Persistently, with an expiry"
 msgstr "Dauerhaft, mit Ablaufdatum"
 
 #: assets/js/editor.js:138
 msgid "Plain text, for example “Load the trailer”. Empty keeps the provider’s default."
-msgstr "Reiner Text, zum Beispiel „Trailer laden“. Bleibt das Feld leer, gilt weiterhin der Standardtext des Anbieters."
+msgstr "Einfacher Text, zum Beispiel „Trailer laden“. Bleibt das Feld leer, gilt weiterhin der Standardtext des Anbieters."
 
-#: src/Admin/SettingsPage.php:1269
+#: src/Admin/SettingsPage.php:1674
+msgid "Plugin"
+msgstr "Plugin"
+
+#: src/Admin/SettingsPage.php:1293
 msgid "Poster image"
 msgstr "Posterbild"
 
-#: src/Admin/SettingsPage.php:1410
+#: src/Admin/SettingsPage.php:1434
 msgid "Preview"
 msgstr "Vorschau"
 
-#: src/Admin/SettingsPage.php:1426
+#: src/Admin/SettingsPage.php:1450
 msgid "Preview at phone width"
 msgstr "Vorschau in Smartphone-Breite"
 
-#: src/Admin/SettingsPage.php:1418
+#: src/Admin/SettingsPage.php:1442
 msgid "Preview on a dark page background"
 msgstr "Vorschau auf dunklem Seitenhintergrund"
 
-#: src/Admin/SettingsPage.php:1422
+#: src/Admin/SettingsPage.php:1446
 msgid "Preview with a poster image"
 msgstr "Vorschau mit Posterbild"
 
-#: src/Admin/SettingsPage.php:549
+#: src/Admin/SettingsPage.php:558
 msgid "Privacy policy URL"
 msgstr "URL der Datenschutzerklärung"
 
-#: src/Admin/SettingsPage.php:533
+#: src/Admin/SettingsPage.php:542
 msgid "Privacy-preserving load"
 msgstr "Datenschutzfreundlich laden"
 
-#: src/Admin/SettingsPage.php:1568
+#: src/Admin/SettingsPage.php:1581
 msgid "Provider"
 msgstr "Anbieter"
 
-#: src/Admin/SettingsPage.php:374 src/Admin/SettingsPage.php:461
+#: src/Admin/SettingsPage.php:383 src/Admin/SettingsPage.php:470
 msgid "Providers"
 msgstr "Anbieter"
 
-#: src/Admin/SettingsPage.php:1429
+#: src/Admin/SettingsPage.php:1453
 msgid "Readability (WCAG 4.5:1):"
 msgstr "Lesbarkeit (WCAG 4,5:1):"
 
-#: src/Admin/SettingsPage.php:745
+#: src/Admin/SettingsPage.php:1736
+msgid "Reads your theme's own stylesheets and its functions.php, looking for third-party asset hosts — fonts and CDN files, which load on every page view outside what an embed gate can cover. Read-only; no outbound requests. Runs on request because reading the files takes time."
+msgstr "Liest die eigenen Stylesheets Ihres Themes und dessen functions.php und sucht darin nach Drittanbieter-Hosts – Schriften und CDN-Dateien, die bei jedem Seitenaufruf laden, außerhalb dessen, was eine Einbettungssperre abdecken kann. Nur lesend; keine ausgehenden Anfragen. Läuft nur auf Anforderung, weil das Lesen der Dateien Zeit kostet."
+
+#: src/Admin/SettingsPage.php:754
 msgid "Ready to add:"
 msgstr "Bereit zum Hinzufügen:"
 
-#: src/Admin/SettingsPage.php:1361
+#: src/Admin/SettingsPage.php:1385
 msgid "Remember consent"
 msgstr "Einwilligung merken"
 
-#: src/Admin/SettingsPage.php:657 src/Admin/SettingsPage.php:712
+#: src/Admin/SettingsPage.php:666 src/Admin/SettingsPage.php:721
 msgid "Remove"
 msgstr "Entfernen"
 
-#: src/Admin/SettingsPage.php:675
+#: src/Admin/SettingsPage.php:684
 msgid "Remove %s"
 msgstr "%s entfernen"
 
@@ -1198,7 +1247,7 @@ msgstr "%s entfernen"
 msgid "Remove poster image"
 msgstr "Posterbild entfernen"
 
-#: src/Admin/SettingsPage.php:1709
+#: src/Admin/SettingsPage.php:1803
 msgid "Renders your latest posts and pages in memory and reports every embed found and whether it is gated. Read-only; no outbound requests."
 msgstr "Rendert Ihre neuesten Beiträge und Seiten im Arbeitsspeicher und meldet jede gefundene Einbettung samt Sperrstatus. Nur lesend; keine ausgehenden Anfragen."
 
@@ -1210,55 +1259,63 @@ msgstr "Posterbild ersetzen"
 msgid "Replaces the notice above the button for this embed only. Keep it honest: the notice tells visitors what loading the content does."
 msgstr "Ersetzt den Hinweis über dem Button nur für diese Einbettung. Bleiben Sie dabei ehrlich: Der Hinweis sagt Besuchern, was das Laden des Inhalts bewirkt."
 
-#: src/Admin/SettingsPage.php:273
+#: src/Admin/SettingsPage.php:282
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: src/Admin/SettingsPage.php:275
+#: src/Admin/SettingsPage.php:284
 msgid "Reset %s to its default"
 msgstr "%s auf den Standard zurücksetzen"
 
-#: src/Admin/SettingsPage.php:1145
+#: src/Admin/Compatibility.php:372
+msgid "Rocket Loader takes no exclusion list: it is switched off per script with a data-cfasync=\"false\" attribute. If embeds misbehave and Rocket Loader is on, turn it off for this site and see whether that is the cause."
+msgstr "Rocket Loader hat keine Ausschlussliste: Er wird pro Skript mit dem Attribut data-cfasync=\"false\" ausgeschaltet. Wenn Einbettungen sich seltsam verhalten und Rocket Loader eingeschaltet ist, schalten Sie ihn für diese Website aus und prüfen Sie, ob es daran liegt."
+
+#: src/Admin/SettingsPage.php:1169
 msgid "Rounded"
 msgstr "Abgerundet"
 
-#: src/Admin/SettingsPage.php:1146
+#: src/Admin/SettingsPage.php:1170
 msgid "Rounded, with a pill-shaped button"
 msgstr "Abgerundet, mit pillenförmigem Button"
 
-#: src/Admin/SettingsPage.php:758
+#: src/Admin/SettingsPage.php:767
 msgid "Rules"
 msgstr "Regeln"
 
-#: src/Admin/SettingsPage.php:411 src/Admin/SettingsPage.php:750
+#: src/Admin/Compatibility.php:369
+msgid "SG Optimizer → Frontend → JavaScript, in the exclusion list under the minify and combine switches."
+msgstr "SG Optimizer → Frontend → JavaScript, in der Ausschlussliste unter den Schaltern zum Minifizieren und Zusammenfassen."
+
+#: src/Admin/SettingsPage.php:420 src/Admin/SettingsPage.php:759
 msgid "Save changes"
 msgstr "Änderungen speichern"
 
-#: src/Admin/SettingsPage.php:1708
+#: src/Admin/SettingsPage.php:1802
 msgid "Scan recent content"
 msgstr "Aktuelle Inhalte scannen"
 
-#: src/Admin/SettingsPage.php:1747
+#: src/Admin/SettingsPage.php:1842
 msgid "Scanned the %d most recent published posts and pages. Widgets, template parts and builder-rendered layouts are not part of this scan, and hosts you have let through are listed above rather than here."
 msgstr "Die %d zuletzt veröffentlichten Beiträge und Seiten wurden gescannt. Widgets, Template-Teile und von Buildern gerenderte Layouts gehören nicht zu diesem Scan; von Ihnen durchgelassene Hosts stehen oben statt hier."
 
-#: src/Admin/SettingsPage.php:1371
+#: src/Admin/SettingsPage.php:1395
 msgid "Scope"
 msgstr "Geltungsbereich"
 
-#: src/Admin/SettingsPage.php:703
+#: src/Admin/SettingsPage.php:712
 msgid "Script hosts"
 msgstr "Skript-Hosts"
 
-#: src/Admin/SettingsPage.php:655
+#: src/Admin/SettingsPage.php:664
 msgid "Script hosts (optional)"
 msgstr "Skript-Hosts (optional)"
 
-#: src/Admin/SettingsPage.php:671
+#: src/Admin/SettingsPage.php:680
 msgid "Script hosts of %s"
 msgstr "Skript-Hosts von %s"
 
-#: src/Admin/SettingsPage.php:1570
+#: src/Admin/SettingsPage.php:1583
 msgid "Scripts load from (script-src)"
 msgstr "Skripte werden geladen von (script-src)"
 
@@ -1266,23 +1323,27 @@ msgstr "Skripte werden geladen von (script-src)"
 msgid "Set poster image"
 msgstr "Posterbild festlegen"
 
-#: src/Admin/SettingsPage.php:103
+#: src/Admin/SettingsPage.php:112
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: src/Admin/SettingsPage.php:1167
+#: src/Admin/Compatibility.php:363
+msgid "Settings → Autoptimize → JavaScript Options → “Exclude scripts from Autoptimize”."
+msgstr "Einstellungen → Autoptimize → JavaScript Options → „Exclude scripts from Autoptimize“."
+
+#: src/Admin/SettingsPage.php:1191
 msgid "Shadow"
 msgstr "Schatten"
 
-#: src/Admin/SettingsPage.php:1124
+#: src/Admin/SettingsPage.php:1148
 msgid "Shape and layout"
 msgstr "Form und Layout"
 
-#: src/Admin/SettingsPage.php:1262
+#: src/Admin/SettingsPage.php:1286
 msgid "Show an icon that matches what the embed is — play for videos, a pin for maps, a note for audio, and so on"
 msgstr "Ein Symbol passend zum Inhalt anzeigen – ein Play-Symbol für Videos, eine Stecknadel für Karten, eine Note für Audio und so weiter"
 
-#: src/Admin/SettingsPage.php:1564
+#: src/Admin/SettingsPage.php:1577
 msgid "Show which provider needs which host"
 msgstr "Anzeigen, welcher Anbieter welchen Host braucht"
 
@@ -1294,95 +1355,95 @@ msgstr "Wird hinter dem Platzhalter angezeigt, bis der Besucher die Einbettung l
 msgid "Site default"
 msgstr "Website-Standard"
 
-#: src/Admin/SettingsPage.php:1228
+#: src/Admin/SettingsPage.php:1252
 msgid "Size"
 msgstr "Größe"
 
-#: src/Admin/SettingsPage.php:1143
+#: src/Admin/SettingsPage.php:1167
 msgid "Slightly rounded (default)"
 msgstr "Leicht abgerundet (Standard)"
 
-#: src/Admin/SettingsPage.php:1203 src/Admin/SettingsPage.php:1231
+#: src/Admin/SettingsPage.php:1227 src/Admin/SettingsPage.php:1255
 msgid "Small"
 msgstr "Klein"
 
-#: src/Admin/SettingsPage.php:603
+#: src/Admin/SettingsPage.php:612
 msgid "Social post"
 msgstr "Social-Media-Beitrag"
 
-#: src/Admin/SettingsPage.php:1171
+#: src/Admin/SettingsPage.php:1195
 msgid "Soft"
 msgstr "Weich"
 
-#: src/Admin/SettingsPage.php:1098
+#: src/Admin/SettingsPage.php:1122
 msgid "Soft pastel"
 msgstr "Sanftes Pastell"
 
-#: src/Admin/SettingsPage.php:1179
+#: src/Admin/SettingsPage.php:1203
 msgid "Spacing"
 msgstr "Abstände"
 
-#: src/Admin/SettingsPage.php:1183
+#: src/Admin/SettingsPage.php:1207
 msgid "Spacious"
 msgstr "Großzügig"
 
-#: src/Admin/SettingsPage.php:1144
+#: src/Admin/SettingsPage.php:1168
 msgid "Square"
 msgstr "Eckig"
 
-#: src/Admin/SettingsPage.php:1091
+#: src/Admin/SettingsPage.php:1115
 msgid "Start from a style"
 msgstr "Mit einem Stil beginnen"
 
-#: src/Admin/SettingsPage.php:1675 src/Admin/SettingsPage.php:1760
+#: src/Admin/SettingsPage.php:1770 src/Admin/SettingsPage.php:1855
 msgid "Status"
 msgstr "Status"
 
-#: src/Admin/SettingsPage.php:378
+#: src/Admin/SettingsPage.php:387
 msgid "Status & tools"
 msgstr "Status und Werkzeuge"
 
 #: src/Integration/Assets.php:142
 msgid "Stored embed consents have been removed. Embeds will ask again."
-msgstr "Gespeicherte Einwilligungen wurden gelöscht. Eingebettete Inhalte fragen wieder nach."
+msgstr "Gespeicherte Einwilligungen wurden gelöscht. Einbettungen fragen wieder nach."
 
-#: src/Admin/SettingsPage.php:1172 src/Admin/SettingsPage.php:1253
+#: src/Admin/SettingsPage.php:1196 src/Admin/SettingsPage.php:1277
 msgid "Strong"
 msgstr "Stark"
 
-#: src/Admin/SettingsPage.php:1218 src/Admin/SettingsPage.php:1306
+#: src/Admin/SettingsPage.php:1242 src/Admin/SettingsPage.php:1330
 msgid "Style"
 msgstr "Stil"
 
-#: src/Admin/SettingsPage.php:270
+#: src/Admin/SettingsPage.php:279
 msgid "Style applied."
 msgstr "Stil angewendet."
 
-#: src/Admin/SettingsPage.php:1086
+#: src/Admin/SettingsPage.php:1110
 msgid "Style the placeholder without writing CSS. Pick a starting point, change what you like, and watch the preview. Colours can follow your theme's palette or be your own; the readability check flags any pair that would be hard to read."
-msgstr "Gestalten Sie den Platzhalter ohne CSS. Wählen Sie einen Ausgangspunkt, ändern Sie, was Sie möchten, und beobachten Sie die Vorschau. Farben können der Palette Ihres Themes folgen oder eigene sein; die Lesbarkeitsprüfung markiert jedes Paar, das schwer zu lesen wäre."
+msgstr "Gestalten Sie den Platzhalter ohne CSS. Wählen Sie einen Ausgangspunkt, ändern Sie, was Sie möchten, und beobachten Sie die Vorschau. Farben können der Palette Ihres Themes folgen, oder Sie wählen eigene. Die Lesbarkeitsprüfung markiert jedes Paar, das schwer zu lesen wäre."
 
-#: src/Admin/SettingsPage.php:1251
+#: src/Admin/SettingsPage.php:1275
 msgid "Subtle"
 msgstr "Dezent"
 
-#: src/Admin/SettingsPage.php:89
+#: src/Admin/SettingsPage.php:98
 msgid "Support development"
 msgstr "Entwicklung unterstützen"
 
-#: src/Admin/SettingsPage.php:1460
+#: src/Admin/SettingsPage.php:1484
 msgid "Tested and interoperable: %s."
 msgstr "Getestet und kompatibel: %s."
 
-#: src/Admin/SettingsPage.php:1310
+#: src/Admin/SettingsPage.php:1334
 msgid "Text link"
 msgstr "Textlink"
 
-#: src/Admin/SettingsPage.php:1117
+#: src/Admin/SettingsPage.php:1141
 msgid "The \"Open on …\" and privacy-policy links. Default: the panel text colour."
 msgstr "Die Links „Auf … öffnen“ und zur Datenschutzerklärung. Standard: die Textfarbe des Platzhalters."
 
-#: src/Admin/SettingsPage.php:1313
+#: src/Admin/SettingsPage.php:1337
 msgid "The \"Withdraw embed consents\" block or shortcode. It uses the colours and corners above."
 msgstr "Der Block bzw. Shortcode „Einwilligungen widerrufen“. Er verwendet die Farben und Ecken von oben."
 
@@ -1390,191 +1451,212 @@ msgstr "Der Block bzw. Shortcode „Einwilligungen widerrufen“. Er verwendet d
 msgid "The embedded content could not be loaded."
 msgstr "Der eingebettete Inhalt konnte nicht geladen werden."
 
-#: src/Admin/SettingsPage.php:1104
+#: src/Admin/SettingsPage.php:1128
 msgid "Theme default"
 msgstr "Theme-Standard"
 
-#: src/Admin/SettingsPage.php:1651
+#: src/Admin/SettingsPage.php:1733 src/Admin/SettingsPage.php:1743
+#: src/Admin/SettingsPage.php:1751
 msgid "Third-party assets in your theme"
 msgstr "Drittanbieter-Dateien in Ihrem Theme"
 
-#: src/Admin/SettingsPage.php:367
+#: src/Admin/SettingsPage.php:376
 msgid "Third-party embeds are replaced with a placeholder until the visitor clicks to load them. Nothing is contacted, and nothing is stored, before that click."
-msgstr "Eingebettete Inhalte von Drittanbietern werden durch einen Platzhalter ersetzt, bis der Besucher sie per Klick lädt. Vor diesem Klick wird nichts kontaktiert und nichts gespeichert."
+msgstr "Einbettungen von Drittanbietern werden durch einen Platzhalter ersetzt, bis der Besucher sie per Klick lädt. Vor diesem Klick wird nichts kontaktiert und nichts gespeichert."
 
 #: assets/js/editor.js:127
 msgid "This block’s embeds will load immediately for every visitor, without a consent click."
 msgstr "Die Einbettungen dieses Blocks laden sofort für jeden Besucher, ohne Einwilligungsklick."
 
-#: src/Admin/SettingsPage.php:1374
+#: src/Admin/SettingsPage.php:1398
 msgid "This embed only"
 msgstr "Nur diese Einbettung"
 
-#: src/Admin/SettingsPage.php:801
+#: src/Admin/Compatibility.php:375
+msgid "This plugin caches pages but does not minify or combine JavaScript, so there is nothing to exclude."
+msgstr "Dieses Plugin legt Seiten im Cache ab, minifiziert JavaScript aber nicht und fasst es auch nicht zusammen. Es gibt also nichts auszunehmen."
+
+#: src/Admin/SettingsPage.php:1665
+msgid "This plugin is set to combine JavaScript into a bundle. Combining moves scripts away from the inline snippets that belong to them, which is a common cause of console errors across a site. Gating survives it, but if anything looks wrong, exclude the files below first."
+msgstr "Dieses Plugin ist so eingestellt, dass es JavaScript zu einem Paket zusammenfasst. Dabei geraten Skripte von den Inline-Schnipseln fort, die zu ihnen gehören – eine häufige Ursache für Konsolenfehler auf der ganzen Website. Die Sperre übersteht das; wenn aber etwas nicht stimmt, nehmen Sie zuerst die unten stehenden Dateien aus."
+
+#: src/Admin/SettingsPage.php:1664
+msgid "This plugin is set to delay JavaScript until the visitor interacts with the page. That first interaction is spent switching the scripts on, so a visitor's first click on a \"Load\" button does nothing and they have to click again. Nothing third-party is contacted by the extra click, and the embed loads on the second one — but the placeholder feels broken. Exclude the files below from that setting."
+msgstr "Dieses Plugin ist so eingestellt, dass es JavaScript verzögert, bis der Besucher mit der Seite interagiert. Diese erste Interaktion dient dann dazu, die Skripte einzuschalten – der erste Klick eines Besuchers auf einen „Laden“-Button bewirkt also nichts, und er muss erneut klicken. Durch den zusätzlichen Klick wird kein Drittanbieter kontaktiert, und beim zweiten lädt die Einbettung – aber der Platzhalter wirkt kaputt. Nehmen Sie die unten stehenden Dateien von dieser Einstellung aus."
+
+#: src/Admin/SettingsPage.php:810
 msgid "Treat www.example.com and example.com as the same site"
 msgstr "www.example.com und example.com als dieselbe Website behandeln"
 
-#: src/Admin/SettingsPage.php:1758
+#: src/Admin/SettingsPage.php:1853
 msgid "Type"
 msgstr "Typ"
 
-#: src/Admin/SettingsPage.php:410
+#: src/Admin/SettingsPage.php:419
 msgid "Undo all changes"
 msgstr "Alle Änderungen rückgängig machen"
 
-#: src/Admin/SettingsPage.php:272
+#: src/Admin/SettingsPage.php:281
 msgid "Undone."
 msgstr "Rückgängig gemacht."
 
-#: src/Admin/SettingsPage.php:1326
+#: src/Admin/SettingsPage.php:1350
 msgid "Use different colours for visitors who prefer a dark colour scheme"
 msgstr "Andere Farben für Besucher verwenden, die ein dunkles Farbschema bevorzugen"
 
-#: src/Admin/SettingsPage.php:515
+#: src/Admin/SettingsPage.php:524
 msgid "Use the privacy-preserving load for %s"
 msgstr "Datenschutzfreundliche Ladeadresse für %s verwenden"
 
-#: src/Admin/SettingsPage.php:1118
+#: src/Admin/SettingsPage.php:1142
 msgid "Used when a border is shown (see Shape). Default: the panel text colour."
 msgstr "Wird verwendet, wenn ein Rand angezeigt wird (siehe Form). Standard: die Textfarbe des Platzhalters."
 
-#: src/Admin/SettingsPage.php:600
+#: src/Admin/SettingsPage.php:609
 msgid "Video"
 msgstr "Video"
 
-#: src/Admin/SettingsPage.php:1623
+#: src/Admin/Compatibility.php:366
+msgid "WP Fastest Cache → the Exclude tab → add a rule for each file."
+msgstr "WP Fastest Cache → Tab „Exclude“ → legen Sie für jede Datei eine Regel an."
+
+#: src/Admin/SettingsPage.php:1636
 msgid "What Calucon Third-Party Embed Gate does"
 msgstr "Was Calucon Third-Party Embed Gate tut"
 
-#: src/Admin/SettingsPage.php:746
+#: src/Admin/SettingsPage.php:1675
+msgid "What it does to the gate"
+msgstr "Auswirkung auf die Sperre"
+
+#: src/Admin/SettingsPage.php:755
 msgid "When you save, embeds from this host will load as soon as the page opens — for every visitor, with no placeholder and no click. This plugin will no longer stop that host from being contacted. Only do this for third parties you have covered another way."
 msgstr "Nach dem Speichern laden Einbettungen von diesem Host, sobald die Seite geöffnet wird – für jeden Besucher, ohne Platzhalter und ohne Klick. Dieses Plugin verhindert dann nicht mehr, dass dieser Host kontaktiert wird. Tun Sie das nur für Drittanbieter, die Sie anderweitig abgedeckt haben."
 
-#: src/Admin/SettingsPage.php:747
+#: src/Admin/SettingsPage.php:756
 msgid "When you save, this host will be gated again: its embeds go back to asking the visitor first."
-msgstr "Nach dem Speichern wird dieser Host wieder gesperrt: Seine Einbettungen fragen den Besucher wieder erst um Einwilligung."
+msgstr "Nach dem Speichern wird dieser Host wieder gesperrt: Seine Einbettungen holen dann wieder zuerst die Einwilligung des Besuchers ein."
 
-#: src/Admin/SettingsPage.php:1547
+#: src/Admin/SettingsPage.php:1700
+msgid "Where to exclude them:"
+msgstr "Wo Sie die Dateien ausschließen können:"
+
+#: src/Admin/SettingsPage.php:1560
 msgid "Why it matters here: when a policy does not list a provider, that provider's embed stays empty after the visitor clicks Load, and the browser console reports “Refused to frame …”. Listing a host only grants permission; it does not load anything — nothing is contacted before the click either way."
-msgstr "Warum das hier wichtig ist: Führt eine Richtlinie einen Anbieter nicht auf, bleibt dessen Einbettung leer, nachdem der Besucher auf „Laden“ geklickt hat, und die Browser-Konsole meldet „Refused to frame …“. Einen Host aufzuführen erteilt nur eine Erlaubnis; geladen wird dadurch nichts – vor dem Klick wird so oder so nichts kontaktiert."
+msgstr "Warum das hier wichtig ist: Führt eine Richtlinie einen Anbieter nicht auf, bleibt dessen Einbettung leer, nachdem der Besucher auf „Laden“ geklickt hat, und die Browser-Konsole meldet „Refused to frame …“. Einen Host aufzuführen, erteilt nur eine Berechtigung; geladen wird dadurch nichts – vor dem Klick wird so oder so nichts kontaktiert."
 
-#: src/Admin/SettingsPage.php:1239
+#: src/Admin/SettingsPage.php:1263
 msgid "Width"
 msgstr "Breite"
 
-#: src/Admin/SettingsPage.php:1300
+#: src/Admin/SettingsPage.php:1324
 msgid "Withdraw button"
 msgstr "Widerrufs-Button"
 
-#: src/Admin/SettingsPage.php:267
+#: src/Admin/SettingsPage.php:276
 msgid "Withdraw button text on its background"
 msgstr "Text des Widerrufs-Buttons auf seinem Hintergrund"
 
 #: assets/js/editor.js:178 assets/js/editor.js:192
-#: src/Admin/SettingsPage.php:1413 src/Integration/WithdrawShortcode.php:63
+#: src/Admin/SettingsPage.php:1437 src/Integration/WithdrawShortcode.php:63
 msgid "Withdraw embed consents"
 msgstr "Einwilligungen widerrufen"
 
-#: src/Admin/SettingsPage.php:538
+#: src/Admin/SettingsPage.php:547
 msgid "Wording and privacy link"
 msgstr "Texte und Datenschutz-Link"
 
-#: src/Admin/SettingsPage.php:752
+#: src/Admin/SettingsPage.php:761
 msgid "You can undo it later under Status & tools."
 msgstr "Sie können das später unter Status und Werkzeuge rückgängig machen."
 
-#: src/Admin/SettingsPage.php:280
+#: src/Admin/SettingsPage.php:289
 msgid "You have unsaved appearance changes."
 msgstr "Sie haben ungespeicherte Änderungen am Design."
 
-#: src/Admin/SettingsPage.php:409
+#: src/Admin/SettingsPage.php:418
 msgid "You have unsaved changes."
 msgstr "Sie haben ungespeicherte Änderungen."
 
-#: src/Admin/SettingsPage.php:238
+#. Description of the plugin
+#: calucon-third-party-embed-gate.php:5
+msgid "YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click solution. No third-party request, no cookie and no banner before that."
+msgstr "YouTube, Maps und andere Einbettungen von Drittanbietern laden erst, wenn der Besucher klickt – die Zwei-Klick-Lösung. Vorher keine Anfrage an Drittanbieter, kein Cookie und kein Banner."
+
+#: src/Admin/SettingsPage.php:247
 msgid "Your home page sends no Content-Security-Policy. You can skip this section."
 msgstr "Ihre Startseite sendet keine Content-Security-Policy. Sie können diesen Abschnitt überspringen."
 
-#: src/Admin/SettingsPage.php:648
+#: src/Admin/SettingsPage.php:657
 msgid "Your own providers"
 msgstr "Eigene Anbieter"
 
-#: src/Admin/SettingsPage.php:526
+#: src/Admin/SettingsPage.php:535
 msgid "Your own providers are always gated. To let a host through, use the never-gate list under Detection."
 msgstr "Eigene Anbieter sind immer gesperrt. Um einen Host durchzulassen, nutzen Sie die Liste „Diese Hosts nie sperren“ unter Erkennung."
 
-#: src/Admin/SettingsPage.php:241
+#: src/Admin/SettingsPage.php:250
 msgid "Your site sends a Content-Security-Policy that does not yet allow these hosts — their embeds would stay empty after the visitor clicks Load:"
 msgstr "Ihre Website sendet eine Content-Security-Policy, die diese Hosts noch nicht erlaubt – deren Einbettungen blieben leer, nachdem der Besucher auf „Laden“ geklickt hat:"
 
-#: src/Admin/SettingsPage.php:240
+#: src/Admin/SettingsPage.php:249
 msgid "Your site sends a Content-Security-Policy, and it already allows every enabled provider. Nothing to do."
 msgstr "Ihre Website sendet eine Content-Security-Policy, und sie erlaubt bereits jeden aktivierten Anbieter. Hier ist nichts zu tun."
 
-#: src/Admin/SettingsPage.php:243
+#: src/Admin/SettingsPage.php:252
 msgid "Your site sends a report-only policy (Content-Security-Policy-Report-Only). It logs violations but blocks nothing, so embeds still load."
 msgstr "Ihre Website sendet eine reine Melde-Richtlinie (Content-Security-Policy-Report-Only). Sie protokolliert Verstöße, blockiert aber nichts – Einbettungen laden also weiterhin."
 
-#: src/Admin/SettingsPage.php:1652
+#: src/Admin/SettingsPage.php:1744
 msgid "Your theme references these third-party asset hosts (found by reading its files — nothing was fetched). Fonts and CDN assets load on every page view without consent, outside what an embed gate can cover. Consider serving them locally; your theme or a localisation plugin can usually do this."
 msgstr "Ihr Theme verweist auf diese Drittanbieter-Hosts (ermittelt durch Lesen seiner Dateien – es wurde nichts abgerufen). Schriften und CDN-Dateien laden bei jedem Seitenaufruf ohne Einwilligung, außerhalb dessen, was eine Einbettungssperre abdecken kann. Liefern Sie sie möglichst lokal aus; Ihr Theme oder ein entsprechendes Plugin kann das meist übernehmen."
 
-#: src/Admin/SettingsPage.php:521
+#: src/Admin/SettingsPage.php:530
 msgid "added by you"
 msgstr "von Ihnen hinzugefügt"
 
-#: src/Admin/SettingsPage.php:526
+#: src/Admin/SettingsPage.php:535
 msgid "always gated"
 msgstr "immer gesperrt"
 
-#: src/Admin/SettingsPage.php:686
+#: src/Admin/SettingsPage.php:695
 msgid "e.g. Example Videos"
 msgstr "z. B. Beispiel-Videos"
 
-#: src/Admin/SettingsPage.php:1525
+#: src/Admin/SettingsPage.php:1538
 msgid "frame-src (embedded players, maps and other iframes)"
 msgstr "frame-src (eingebettete Player, Karten und andere Iframes)"
 
-#: src/Admin/SettingsPage.php:282
+#: src/Admin/SettingsPage.php:291
 msgid "hard to read — below the 4.5:1 minimum. Pick a lighter or darker colour for this pair."
 msgstr "schwer lesbar – unter dem Mindestwert 4,5:1. Wählen Sie für dieses Paar eine hellere oder dunklere Farbe."
 
-#: src/Admin/SettingsPage.php:665
+#: src/Admin/SettingsPage.php:674
 msgid "new provider"
 msgstr "neuer Anbieter"
 
-#: src/Admin/SettingsPage.php:281
+#: src/Admin/SettingsPage.php:290
 msgid "readable (meets the 4.5:1 minimum)"
 msgstr "lesbar (erfüllt den Mindestwert 4,5:1)"
 
-#: src/Admin/SettingsPage.php:1526
+#: src/Admin/SettingsPage.php:1539
 msgid "script-src (provider scripts, e.g. for social-media posts)"
 msgstr "script-src (Anbieterskripte, z. B. für Social-Media-Beiträge)"
 
-#: src/Admin/SettingsPage.php:128
+#: src/Admin/SettingsPage.php:137
 msgid "support its development"
 msgstr "die Entwicklung unterstützen"
 
-#~ msgid "Files to exclude from JavaScript and CSS optimisation"
-#~ msgstr "Dateien, die von der JavaScript- und CSS-Optimierung ausgenommen werden sollten"
+#~ msgid "YouTube, Maps and other third-party embeds load only after the visitor clicks — the two-click pattern. No third-party request, no cookie and no banner before that."
+#~ msgstr "YouTube, Maps und andere Einbettungen von Drittanbietern laden erst, wenn der Besucher klickt – die Zwei-Klick-Lösung. Vorher keine Anfrage an Drittanbieter, kein Cookie und kein Banner."
 
-#~ msgid "If a caching, minification or optimisation plugin combines, defers or delays scripts, paste these into its exclusion list. They are small, local and already cached by the browser, so excluding them costs nothing measurable."
-#~ msgstr "Wenn ein Caching-, Minifizierungs- oder Optimierungs-Plugin Skripte zusammenfasst, mit „defer“ lädt oder verzögert, tragen Sie diese Pfade in dessen Ausschlussliste ein. Sie sind klein, liegen auf Ihrer eigenen Website und stehen ohnehin im Browser-Cache – sie auszunehmen kostet nichts Messbares."
+#~ msgid "Also honour an IAB TCF v2.2 signal (sites running an ad-industry consent framework)"
+#~ msgstr "Auch ein IAB-TCF-v2.2-Signal berücksichtigen (für Websites mit dem Consent-Framework der Werbebranche)"
 
-#~ msgid "Its JavaScript settings could not be read from here, so this is not an all-clear. If embeds misbehave, check whether it combines, defers or delays JavaScript, and exclude the files below."
-#~ msgstr "Seine JavaScript-Einstellungen ließen sich von hier aus nicht auslesen – das ist also keine Entwarnung. Wenn Einbettungen sich seltsam verhalten, prüfen Sie, ob es JavaScript zusammenfasst, mit „defer“ lädt oder verzögert, und nehmen Sie die unten stehenden Dateien aus."
+#~ msgid "Grants require both the storage purpose and the provider's registered vendor consent; providers without a Global Vendor List entry always keep the click. Leave this off unless your site serves programmatic advertising."
+#~ msgstr "Eine Einwilligung zählt nur, wenn sowohl der Speicherzweck als auch die Einwilligung für den registrierten Anbieter vorliegen; bei Anbietern ohne Eintrag in der Global Vendor List bleibt es immer beim Klick. Lassen Sie die Option ausgeschaltet, sofern Ihre Website keine programmatische Werbung ausliefert."
 
-#~ msgid "Its JavaScript settings were read and none of the ones that cause trouble are on."
-#~ msgstr "Seine JavaScript-Einstellungen wurden ausgelesen; keine der problematischen ist aktiv."
+#~ msgid "IAB TCF (experimental)"
+#~ msgstr "IAB TCF (experimentell)"
 
-#~ msgid "JavaScript optimisation"
-#~ msgstr "JavaScript-Optimierung"
-
-#~ msgid "Keep the inline configuration next to gate.js as well: some plugins list it separately as \"calucon-embed-gate-js-before\"."
-#~ msgstr "Lassen Sie auch die Inline-Konfiguration bei gate.js: Manche Plugins führen sie separat als „calucon-embed-gate-js-before“ auf."
-
-#~ msgid "This plugin is set to combine JavaScript into a bundle. Combining moves scripts away from the inline snippets that belong to them, which is a common cause of console errors across a site. Gating survives it, but if anything looks wrong, exclude the files below first."
-#~ msgstr "Dieses Plugin ist so eingestellt, dass es JavaScript zu einem Bündel zusammenfasst. Dabei geraten Skripte von den Inline-Schnipseln fort, die zu ihnen gehören – eine häufige Ursache für Konsolenfehler auf der ganzen Website. Die Sperre übersteht das; wenn aber etwas nicht stimmt, nehmen Sie zuerst die unten stehenden Dateien aus."
-
-#~ msgid "This plugin is set to delay JavaScript until the visitor interacts with the page. That first interaction is spent switching the scripts on, so a visitor's first click on a \"Load\" button does nothing and they have to click again. Nothing third-party is contacted by the extra click, and the embed loads on the second one — but the placeholder feels broken. Exclude the files below from that setting."
-#~ msgstr "Dieses Plugin ist so eingestellt, dass es JavaScript verzögert, bis der Besucher mit der Seite interagiert. Diese erste Interaktion wird dafür verbraucht, die Skripte einzuschalten – der erste Klick eines Besuchers auf einen „Laden“-Button bewirkt also nichts, und er muss erneut klicken. Durch den zusätzlichen Klick wird kein Drittanbieter kontaktiert, und beim zweiten lädt die Einbettung – aber der Platzhalter wirkt kaputt. Nehmen Sie die unten stehenden Dateien von dieser Einstellung aus."
+#~ msgid "Reads your theme's own stylesheets and its functions.php, looking for third-party asset hosts — fonts and CDN files, which load on every page view outside what an embed gate can cover. Read-only; no outbound requests. Runs on request because reading the files costs something."
+#~ msgstr "Liest die eigenen Stylesheets Ihres Themes und dessen functions.php und sucht darin nach Drittanbieter-Hosts – Schriften und CDN-Dateien, die bei jedem Seitenaufruf laden, außerhalb dessen, was eine Einbettungssperre abdecken kann. Nur lesend; keine ausgehenden Anfragen. Läuft nur auf Anforderung, weil das Lesen der Dateien Zeit kostet."

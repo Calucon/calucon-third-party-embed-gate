@@ -18,13 +18,13 @@ use PHPUnit\Framework\TestCase;
 final class SilentCompanionTest extends TestCase {
 
 	private function payloads( string $html ): array {
-		preg_match_all( '/<(div|span) class="cg-embed( cg-embed--silent)?"[^>]*data-cg-provider="([^"]+)"[^>]*data-cg-payload="([^"]*)"/', $html, $m, PREG_SET_ORDER );
+		preg_match_all( '#<(div|span) class="cg-embed( cg-embed--silent)?"[^>]*data-cg-provider="([^"]+)"[^>]*><script type="application/json" class="cg-embed__payload">([^<]*)</script>#', $html, $m, PREG_SET_ORDER );
 		$out = array();
 		foreach ( $m as $row ) {
 			$out[] = array(
 				'silent'   => '' !== $row[2],
 				'provider' => $row[3],
-				'payload'  => json_decode( html_entity_decode( $row[4], ENT_QUOTES | ENT_HTML5, 'UTF-8' ), true ),
+				'payload'  => json_decode( $row[4], true ),
 			);
 		}
 		return $out;
@@ -42,7 +42,9 @@ final class SilentCompanionTest extends TestCase {
 		self::assertSame( 'videopress', $found[1]['provider'] );
 		self::assertSame( 'script', $found[1]['payload']['strategy'] );
 		self::assertSame( 'https://v0.wordpress.com/js/next/videopress-iframe.js', $found[1]['payload']['src'] );
-		self::assertStringNotContainsString( '<script', $html );
+		// The loader is gone; the only script elements left are the inert
+		// JSON payload carriers.
+		self::assertDoesNotMatchRegularExpression( '/<script\b[^>]*\bsrc=/i', $html );
 		self::assertSame( 1, substr_count( $html, 'role="group"' ), 'one accessible panel, not two' );
 	}
 
@@ -201,5 +203,25 @@ final class SilentCompanionTest extends TestCase {
 		self::assertFalse( $found[0]['silent'] );
 		self::assertFalse( $found[1]['silent'], 'a different embed, not a companion' );
 		self::assertSame( 2, substr_count( $html, 'cg-embed__fallback' ), 'each embed keeps a working link' );
+	}
+
+	public function test_a_script_that_is_not_javascript_is_never_a_loader_nor_a_companion(): void {
+		// JSON-LD and a template next to a gated tweet, both naming the
+		// provider host in a string and one of them even shaped like an
+		// injector. The browser executes neither; re-running either as a
+		// classic script after the click would execute data as code.
+		$ld  = '<script type="application/ld+json">{"url":"https://platform.twitter.com/widgets.js"}</script>';
+		$tpl = '<script type="text/template">var s=document.createElement("script");s.src="https://platform.twitter.com/widgets.js";</script>';
+		$html = PipelineFactory::gate(
+			'<blockquote class="twitter-tweet"><a href="https://twitter.com/calucon/status/1234567890123456789">x</a></blockquote>'
+			. '<script async src="https://platform.twitter.com/widgets.js"></script>' . $ld . $tpl
+		);
+
+		self::assertStringContainsString( $ld, $html );
+		self::assertStringContainsString( $tpl, $html );
+		self::assertCount( 1, $this->payloads( $html ), 'the loader alone is gated' );
+		// The plugin\'s own payload element is a non-JavaScript script too, and
+		// a second pass must leave it exactly where it is.
+		self::assertSame( $html, PipelineFactory::gate( $html ) );
 	}
 }

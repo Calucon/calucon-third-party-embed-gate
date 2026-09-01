@@ -28,7 +28,7 @@ final class HtmlScanner {
 	 * document into it — nothing after it can make a request — so excluding
 	 * to end-of-input matches what actually happens in a browser.
 	 */
-	private const RAW_CONTAINERS = array( 'script', 'style', 'textarea', 'title', 'template' );
+	private const RAW_CONTAINERS = array( 'script', 'style', 'textarea', 'title', 'template', 'iframe' );
 
 	/**
 	 * Parsed containers excluded only when properly closed (§9.4): browsers
@@ -37,6 +37,12 @@ final class HtmlScanner {
 	 * nothing and the embed stays gateable.
 	 */
 	private const PARSED_CONTAINERS = array( 'pre', 'code' );
+
+	/** @var string|null The input the memoised tokenisation belongs to. */
+	private ?string $memo_html = null;
+
+	/** @var array{tags:array,excluded:array}|null Tokenisation of $memo_html. */
+	private ?array $memo = null;
 
 	/**
 	 * Find every occurrence of a tag, tolerant of minified markup.
@@ -56,56 +62,53 @@ final class HtmlScanner {
 	 * @return array[] Matches in document order.
 	 */
 	public function find_tags( string $html, string $tag_name ): array {
-		$matches  = array();
-		$excluded = $this->excluded_ranges( $html );
+		$matches = array();
+		$tokens  = $this->tokenize( $html );
 
-		// Candidate start tags. The lookahead requires a real tag boundary so
-		// '<iframexyz' does not match; '&lt;iframe' cannot match at all.
-		if ( ! preg_match_all(
-			'/<' . preg_quote( $tag_name, '/' ) . '(?=[\s\/>])/i',
-			$html,
-			$candidates,
-			PREG_OFFSET_CAPTURE
-		) ) {
-			return $matches;
-		}
-
-		foreach ( $candidates[0] as $candidate ) {
-			$start = $candidate[1];
-			if ( $this->in_excluded_range( $start, $excluded ) ) {
+		foreach ( $tokens['tags'] as $tag ) {
+			if ( $tag['name'] !== $tag_name ) {
 				continue;
 			}
 
-			$parsed = $this->parse_start_tag( $html, $start + strlen( $candidate[0] ) );
-			if ( null === $parsed ) {
-				continue; // Unterminated tag; leave it alone.
-			}
-
-			$end = $parsed['after'];
-			if ( ! $parsed['self_closing'] ) {
+			$end = $tag['after'];
+			if ( ! $tag['self_closing'] ) {
 				// Include the closing tag (and any fallback content between)
 				// in the span. A missing closing tag leaves the span at the
 				// start tag, which is how browsers recover too.
-				if ( preg_match(
-					'/<\/' . preg_quote( $tag_name, '/' ) . '\s*>/i',
-					$html,
-					$close,
-					PREG_OFFSET_CAPTURE,
-					$parsed['after']
-				) ) {
-					$end = $close[0][1] + strlen( $close[0][0] );
+				$close = $this->find_close_tag( $html, $tag_name, $tag['after'] );
+				if ( null !== $close ) {
+					$end = $close[1];
 				}
 			}
 
 			$matches[] = array(
-				'start'        => $start,
+				'start'        => $tag['start'],
 				'end'          => $end,
-				'attributes'   => $parsed['attributes'],
-				'self_closing' => $parsed['self_closing'],
+				'attributes'   => $tag['attributes'],
+				'self_closing' => $tag['self_closing'],
 			);
 		}
 
 		return $matches;
+	}
+
+	/**
+	 * Offset just past the '>' of the start tag that begins at $start, or
+	 * null when it never terminates. find_tags() reports an element's END
+	 * (up to its closing tag); a rule that replaces an element's contents
+	 * needs where its opening tag stops, and this is that, with the same
+	 * tolerance for stripped quotes and newlines inside the tag.
+	 *
+	 * @param string $html  HTML.
+	 * @param int    $start Offset of the '<' of the start tag.
+	 * @return int|null
+	 */
+	public function start_tag_end( string $html, int $start ): ?int {
+		if ( ! preg_match( '/^<([A-Za-z][A-Za-z0-9-]*)/', substr( $html, $start, 64 ), $m ) ) {
+			return null;
+		}
+		$parsed = $this->parse_start_tag( $html, $start + 1 + strlen( $m[1] ) );
+		return null === $parsed ? null : (int) $parsed['after'];
 	}
 
 	/**
@@ -187,22 +190,49 @@ final class HtmlScanner {
 	}
 
 	/**
-	 * Byte ranges the scanner must not match inside.
+	 * One sequential pass over the fragment, the way a browser tokenises:
+	 * every start tag with its attributes, and the byte ranges nothing may
+	 * be matched inside (comments, raw-text containers, closed parsed
+	 * containers).
 	 *
-	 * A single sequential pass in document order, the way a browser tokenises.
-	 * Running comment and container matching as two independent global regexes
-	 * (the previous implementation) cross-contaminates: a literal '<!--'
-	 * inside a script body (JSON-LD, legacy script-hiding) opened a bogus
-	 * comment range to end-of-input and every embed after it went ungated —
-	 * silently, which is the §3.2 failure mode all over again.
+	 * Sequential and tag-aware for two reasons that are both silent
+	 * failures otherwise:
+	 *
+	 * - Running comment and container matching as independent global
+	 *   regexes cross-contaminates: a literal '<!--' inside a script body
+	 *   (JSON-LD, legacy script-hiding) opened a bogus comment range to
+	 *   end-of-input and every embed after it went ungated.
+	 * - Scanning raw bytes is attribute-blind: `<div data-x="<!--">` above
+	 *   an iframe opened a comment the browser never sees, and the iframe —
+	 *   and in whole-page mode the rest of the document — went ungated. The
+	 *   same blindness let `<img alt="<iframe src=…">` produce a placeholder
+	 *   spliced INTO the alt attribute. Both are within reach of any author
+	 *   WordPress lets write attributes (kses keeps '<' inside a value). So
+	 *   a tag is only ever opened where a browser would open one: never
+	 *   inside another start tag's attribute values, never inside a comment
+	 *   or raw-text body.
+	 *
+	 * Unterminated shapes follow the browser too: an unclosed comment,
+	 * raw-text container or start tag swallows the rest of the document, so
+	 * nothing after it can make a request and excluding it all is exact.
+	 * An unclosed <pre>/<code> excludes nothing — browsers keep parsing
+	 * markup inside those, so an iframe there still fires (fail closed).
+	 *
+	 * Memoised for the last input: the rules each ask for a different tag
+	 * name on the same fragment.
 	 *
 	 * @param string $html HTML.
-	 * @return array<int,array{0:int,1:int}> List of [start, end) ranges.
+	 * @return array{tags:array<int,array{start:int,name:string,after:int,attributes:array,self_closing:bool}>,excluded:array<int,array{0:int,1:int}>}
 	 */
-	private function excluded_ranges( string $html ): array {
-		$ranges = array();
-		$len    = strlen( $html );
-		$pos    = 0;
+	private function tokenize( string $html ): array {
+		if ( null !== $this->memo && $this->memo_html === $html ) {
+			return $this->memo;
+		}
+
+		$tags     = array();
+		$excluded = array();
+		$len      = strlen( $html );
+		$pos      = 0;
 
 		// Once a close-tag search for a tag name has failed, every later
 		// search for the same name scans a strict suffix of that failed scan
@@ -210,65 +240,116 @@ final class HtmlScanner {
 		// cost N full-tail scans — quadratic on adversarial input.
 		$no_close = array();
 
-		$opener = '/<!--|<(' . implode( '|', array_merge( self::RAW_CONTAINERS, self::PARSED_CONTAINERS ) ) . ')(?=[\s\/>])/i';
+		while ( $pos < $len ) {
+			$lt = strpos( $html, '<', $pos );
+			if ( false === $lt ) {
+				break;
+			}
+			$next = $lt + 1 < $len ? $html[ $lt + 1 ] : '';
 
-		while ( $pos < $len && preg_match( $opener, $html, $m, PREG_OFFSET_CAPTURE, $pos ) ) {
-			$start = $m[0][1];
-
-			if ( '<!--' === $m[0][0] ) {
-				$close = strpos( $html, '-->', $start + 4 );
-				if ( false === $close ) {
-					// Browsers comment out the rest of the document; nothing
-					// in it can load, so excluding it all matches reality.
-					$ranges[] = array( $start, $len );
-					break;
+			if ( '!' === $next || '?' === $next ) {
+				if ( '<!--' === substr( $html, $lt, 4 ) ) {
+					$close = strpos( $html, '-->', $lt + 4 );
+					if ( false === $close ) {
+						// Browsers comment out the rest of the document.
+						$excluded[] = array( $lt, $len );
+						break;
+					}
+					$excluded[] = array( $lt, $close + 3 );
+					$pos        = $close + 3;
+					continue;
 				}
-				$end      = $close + 3;
-				$ranges[] = array( $start, $end );
-				$pos      = $end;
+				// A doctype, CDATA section or processing instruction: not a
+				// tag, ends at the next '>'.
+				$gt  = strpos( $html, '>', $lt );
+				$pos = false === $gt ? $len : $gt + 1;
 				continue;
 			}
 
-			$tag = strtolower( $m[1][0] );
-			if ( ! isset( $no_close[ $tag ] )
-				&& preg_match( '/<\/' . $tag . '\s*>/i', $html, $close_tag, PREG_OFFSET_CAPTURE, $start + 1 ) ) {
-				$end      = $close_tag[0][1] + strlen( $close_tag[0][0] );
-				$ranges[] = array( $start, $end );
-				$pos      = $end;
+			if ( '/' === $next ) {
+				// An end tag on its own (its opener was somewhere earlier, or
+				// never): skip it whole.
+				$gt  = strpos( $html, '>', $lt );
+				$pos = false === $gt ? $len : $gt + 1;
 				continue;
 			}
-			$no_close[ $tag ] = true;
 
-			if ( in_array( $tag, self::PARSED_CONTAINERS, true ) ) {
+			// The lookahead requires a real tag boundary so '<iframexyz' does
+			// not match; '&lt;iframe' cannot match at all.
+			if ( ! preg_match( '/\G<([A-Za-z][A-Za-z0-9-]*)(?=[\s\/>])/', $html, $m, 0, $lt ) ) {
+				$pos = $lt + 1; // A lone '<' in text.
+				continue;
+			}
+
+			$name   = strtolower( $m[1] );
+			$parsed = $this->parse_start_tag( $html, $lt + strlen( $m[0] ) );
+			if ( null === $parsed ) {
+				// An unterminated start tag: the rest of the document is
+				// attribute soup to a browser; nothing in it renders.
+				$excluded[] = array( $lt, $len );
+				break;
+			}
+
+			$tags[] = array(
+				'start'        => $lt,
+				'name'         => $name,
+				'after'        => $parsed['after'],
+				'attributes'   => $parsed['attributes'],
+				'self_closing' => $parsed['self_closing'],
+			);
+			$pos    = $parsed['after'];
+
+			$raw              = in_array( $name, self::RAW_CONTAINERS, true );
+			$parsed_container = ! $raw && in_array( $name, self::PARSED_CONTAINERS, true );
+			if ( ! $raw && ! $parsed_container ) {
+				continue;
+			}
+			if ( $parsed['self_closing'] && ! $raw ) {
+				continue; // `<pre/>` opens nothing worth excluding.
+			}
+
+			$close = isset( $no_close[ $name ] ) ? null : $this->find_close_tag( $html, $name, $pos );
+			if ( null !== $close ) {
+				$excluded[] = array( $lt, $close[1] );
+				$pos        = $close[1];
+				continue;
+			}
+			$no_close[ $name ] = true;
+
+			if ( $parsed_container ) {
 				// Unterminated <pre>/<code>: browsers still render the markup
 				// inside, so an iframe there still fires. Exclude nothing.
-				$pos = $start + 1;
 				continue;
 			}
 
-			// Unterminated raw-text/inert container: the rest of the document
-			// is its content in browsers; no request can originate there.
-			$ranges[] = array( $start, $len );
+			// Unterminated raw-text container: the rest of the document is
+			// its content in browsers; no request can originate there.
+			$excluded[] = array( $lt, $len );
 			break;
 		}
 
-		return $ranges;
+		$this->memo_html = $html;
+		$this->memo      = array(
+			'tags'     => $tags,
+			'excluded' => $excluded,
+		);
+		return $this->memo;
 	}
 
 	/**
-	 * @param int   $offset Byte offset.
-	 * @param array $ranges Ranges from excluded_ranges().
-	 * @return bool
+	 * The first end tag for $name at or after $from, with the HTML5 boundary
+	 * rule: `</iframe foo>` closes an iframe just as `</iframe>` does, and
+	 * `</iframes>` closes nothing.
+	 *
+	 * @param string $html HTML.
+	 * @param string $name Lowercase tag name.
+	 * @param int    $from Offset to search from.
+	 * @return array{0:int,1:int}|null [start, end) of the end tag.
 	 */
-	private function in_excluded_range( int $offset, array $ranges ): bool {
-		foreach ( $ranges as $range ) {
-			// Strictly inside: a candidate at the range start IS the container
-			// tag itself, which must stay scannable (ScriptRule reads script
-			// tags; their bodies stay off limits).
-			if ( $offset > $range[0] && $offset < $range[1] ) {
-				return true;
-			}
+	private function find_close_tag( string $html, string $name, int $from ): ?array {
+		if ( ! preg_match( '/<\/' . preg_quote( $name, '/' ) . '(?=[\s\/>])[^>]*>/i', $html, $m, PREG_OFFSET_CAPTURE, $from ) ) {
+			return null;
 		}
-		return false;
+		return array( (int) $m[0][1], (int) $m[0][1] + strlen( $m[0][0] ) );
 	}
 }

@@ -44,15 +44,23 @@ final class HostMatcher {
 	/** @var callable|null Extra veto/approve hook: fn( bool $own, string $host ): bool */
 	private $is_own_filter;
 
+	/** @var string[] The owner's always-gate list; beats the asset-path exemption. */
+	private array $always_gate = array();
+
 	/**
 	 * @param string[]      $own_hosts       Hosts that count as "ours". Entries
 	 *                                       starting with '*.' match any subdomain.
 	 * @param bool          $www_equivalence On by default (PLAN.md §3.4).
 	 * @param callable|null $is_own_filter   Bridge for the calucon_embed_gate_is_own_host filter.
+	 * @param string[]      $always_gate     Hosts the owner has said to gate whatever
+	 *                                       else decides — consulted only by
+	 *                                       is_exempt_own_asset(), because the
+	 *                                       own-host veto already lives in the filter.
 	 */
-	public function __construct( array $own_hosts, bool $www_equivalence = true, ?callable $is_own_filter = null ) {
+	public function __construct( array $own_hosts, bool $www_equivalence = true, ?callable $is_own_filter = null, array $always_gate = array() ) {
 		$this->www_equivalence = $www_equivalence;
 		$this->is_own_filter   = $is_own_filter;
+		$this->always_gate     = $always_gate;
 
 		foreach ( $own_hosts as $host ) {
 			$host = trim( (string) $host );
@@ -74,7 +82,7 @@ final class HostMatcher {
 	 * @return string One of the class constants.
 	 */
 	public function classify( string $url ): string {
-		$url = $this->preprocess( $url );
+		$url = self::preprocess( $url );
 		if ( '' === $url ) {
 			return self::SKIP;
 		}
@@ -125,7 +133,7 @@ final class HostMatcher {
 	 * @return string|null Null when the URL carries no host.
 	 */
 	public function host_of( string $url ) {
-		$url = $this->preprocess( $url );
+		$url = self::preprocess( $url );
 		if ( '' === $url ) {
 			return null;
 		}
@@ -150,10 +158,223 @@ final class HostMatcher {
 	 * @param string $url Raw URL from the markup.
 	 * @return string
 	 */
-	private function preprocess( string $url ): string {
+	public static function preprocess( string $url ): string {
 		$url = str_replace( array( "\t", "\n", "\r" ), '', $url );
 		$url = str_replace( '\\', '/', $url );
 		return trim( $url );
+	}
+
+	/**
+	 * A URL a visitor can be sent to from a link the plugin writes, or ''.
+	 *
+	 * An allowlist, not a denylist: http(s), protocol-relative, an absolute
+	 * path, or a scheme-less relative URL. Everything else — javascript:,
+	 * data:, vbscript:, blob:, an unknown scheme — is ''. The browser's own
+	 * preprocessing runs first, and that is the point of the function: a
+	 * scheme check on the raw string is defeated by `java\tscript:` (browsers
+	 * strip tab and newline anywhere in a URL) and by a leading control
+	 * character (browsers strip leading and trailing C0 controls and space),
+	 * both of which a JSON escape in a page-builder setting or a filter
+	 * return value can carry. The renderer's fallback and privacy links and
+	 * the poster URL all go through here.
+	 *
+	 * The authority normalisation is classify()'s, so a URL that classifies
+	 * as FOREIGN — `https:\\evil.example`, `https:evil.example` — comes back
+	 * in the shape the browser will actually navigate to, never rejected
+	 * (a gated embed must keep its no-JS link, invariant 2).
+	 *
+	 * @param string $url Candidate URL.
+	 * @return string The normalised URL, or '' when it is not navigable.
+	 */
+	public static function navigable( string $url ): string {
+		$url = self::preprocess( $url );
+		$url = trim( $url, " \x00..\x1f\x7f" );
+		if ( '' === $url ) {
+			return '';
+		}
+		if ( preg_match( '#^https?:#i', $url ) ) {
+			return (string) preg_replace( '#^(https?:)/*#i', '$1//', $url );
+		}
+		if ( preg_match( '#^/{2,}#', $url ) ) {
+			return (string) preg_replace( '#^/+#', '//', $url );
+		}
+		if ( 0 === strpos( $url, '/' ) ) {
+			return $url;
+		}
+		if ( preg_match( '/^[a-z][a-z0-9+.-]*:/i', $url ) ) {
+			return ''; // A scheme, and not one a link may carry.
+		}
+		return $url; // Relative: resolves against the page, same origin.
+	}
+
+	/**
+	 * Is this URL inside the given asset base — same host, same path prefix?
+	 *
+	 * Used for one thing: never gating the plugin's own script. That check
+	 * lived in Plugin.php as a scheme-stripped string prefix, which two
+	 * ordinary shapes defeated — a protocol-relative URL (several CDN plugins
+	 * emit those from plugins_url()) and an uppercased host. Either made the
+	 * plugin gate its own gate.js again, and the failure is silent: every
+	 * placeholder becomes a button that does nothing.
+	 *
+	 * So it lives here instead, beside the same authority normalisation the
+	 * rest of this class uses, where it is also reachable from a unit test —
+	 * the closure in Plugin.php was not, because PipelineFactory never passes
+	 * one.
+	 *
+	 * Host compares case-insensitively (hostnames are), path prefix compares
+	 * exactly (paths are not).
+	 *
+	 * @param string $base Absolute URL of the asset directory.
+	 * @param string $url  URL from the markup.
+	 * @return bool
+	 */
+	public static function url_is_under( string $base, string $url ): bool {
+		$base_parts = self::authority_and_path( $base );
+		$url_parts  = self::authority_and_path( $url );
+		if ( null === $base_parts || null === $url_parts ) {
+			return false;
+		}
+		if ( $base_parts[0] !== $url_parts[0] ) {
+			return false;
+		}
+		return '' !== $base_parts[1] && 0 === strpos( $url_parts[1], $base_parts[1] );
+	}
+
+	/**
+	 * Is this URL's PATH under the given base's path, whatever host serves it?
+	 *
+	 * The companion to url_is_under(), for the case that rule cannot see. A
+	 * CDN that rewrites the finished HTML leaves plugins_url() reporting the
+	 * origin host while the markup carries the CDN's — so a host comparison
+	 * fails on exactly the setup the own-asset path rule exists for, and the
+	 * plugin gates its own gate.js again.
+	 *
+	 * Host-blind on purpose, and safe because the base is this plugin's own
+	 * asset directory: the path carries the plugin's slug, so a collision
+	 * means somebody is deliberately serving a copy of our own script, and
+	 * the worst outcome is that our own loader runs. Compare that with the
+	 * alternative — the gate silently doing nothing on every page.
+	 *
+	 * That argument holds for scripts and for nothing else. "The worst
+	 * outcome is our own loader runs" is false for an iframe at this path:
+	 * there the worst outcome is a third-party frame with no panel and no
+	 * link, which is invariant 6's invisible failure. Plugin::pipeline()
+	 * consults this for ScriptRule only; never wire it into IframeRule,
+	 * ImageRule or EmbedObjectRule.
+	 *
+	 * @param string $base Absolute URL of the asset directory.
+	 * @param string $url  URL from the markup.
+	 * @return bool
+	 */
+	public static function path_is_under( string $base, string $url ): bool {
+		$base_parts = self::authority_and_path( $base );
+		$url_parts  = self::authority_and_path( $url );
+		if ( null === $base_parts || null === $url_parts || '' === $base_parts[1] ) {
+			return false;
+		}
+		return 0 === strpos( $url_parts[1], $base_parts[1] );
+	}
+
+	/**
+	 * Lowercased host and raw path of a URL, browser-normalised first.
+	 *
+	 * @param string $url URL.
+	 * @return array{0:string,1:string}|null
+	 */
+	private static function authority_and_path( string $url ): ?array {
+		$url = self::preprocess( $url );
+		if ( '' === $url ) {
+			return null;
+		}
+		if ( preg_match( '#^https?:#i', $url ) ) {
+			$url = (string) preg_replace( '#^(https?:)/*#i', '$1//', $url );
+		} elseif ( preg_match( '#^/{2,}#', $url ) ) {
+			$url = 'https:' . (string) preg_replace( '#^/+#', '//', $url );
+		} else {
+			return null;
+		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2).
+		$host = parse_url( $url, PHP_URL_HOST );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2).
+		$path = parse_url( $url, PHP_URL_PATH );
+		if ( ! is_string( $host ) || '' === $host ) {
+			return null;
+		}
+		return array( strtolower( $host ), is_string( $path ) ? $path : '' );
+	}
+
+	/**
+	 * Does this URL's path look like WordPress's own asset tree?
+	 *
+	 * The escape hatch for a CDN that rewrites the finished HTML rather than
+	 * filtering WordPress's URL functions. Plugin::own_hosts() already trusts
+	 * the hosts content_url()/includes_url()/… report, which covers every CDN
+	 * that works through those filters; one that rewrites the output buffer
+	 * instead is invisible to that, and with whole-page buffering on the
+	 * site's own wp-includes scripts then look third-party and get gated —
+	 * which breaks the site's JavaScript rather than protecting anyone.
+	 *
+	 * Callers should use is_exempt_own_asset(), which is this check plus the
+	 * owner's always-gate list. This raw form exists so the shape of the URL
+	 * can be tested on its own.
+	 *
+	 * **Only ScriptRule and StylesheetRule may consult this.** Never
+	 * IframeRule, ImageRule or EmbedObjectRule: invariant 6 — an unknown
+	 * third-party iframe is gated by default — has no exceptions, and a path
+	 * heuristic is exactly the hole it exists to close. For a script or a
+	 * stylesheet the trade is different: to abuse it a third party would have
+	 * to serve from a /wp-content/ or /wp-includes/ path, which in practice
+	 * means hosting a copy of somebody's WordPress, and the owner still has
+	 * always_gate to override it.
+	 *
+	 * Substring, not prefix: WordPress in a subdirectory gives
+	 * '/blog/wp-content/…', and CDNs routinely prefix a pull-zone path.
+	 *
+	 * @param string $url Raw (already entity-decoded) URL from the markup.
+	 * @return bool
+	 */
+	public static function looks_like_own_asset_path( string $url ): bool {
+		$url = self::preprocess( $url );
+		if ( '' === $url ) {
+			return false;
+		}
+		// Normalise the authority the way classify() does, so the path read
+		// here is the path a browser would actually request (§3.4).
+		if ( preg_match( '#^https?:#i', $url ) ) {
+			$url = preg_replace( '#^(https?:)/*#i', '$1//', $url );
+		} elseif ( preg_match( '#^/{2,}#', $url ) ) {
+			$url = 'https:' . preg_replace( '#^/+#', '//', $url );
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2).
+		$path = strtolower( (string) parse_url( (string) $url, PHP_URL_PATH ) );
+
+		return false !== strpos( $path, '/wp-includes/' ) || false !== strpos( $path, '/wp-content/' );
+	}
+
+	/**
+	 * Should this script/stylesheet URL be left alone as one of the site's
+	 * own assets, wherever a CDN has moved it to?
+	 *
+	 * looks_like_own_asset_path() is a heuristic about the shape of a URL, so
+	 * the owner's explicit instruction outranks it: a host on the always-gate
+	 * list is gated even if its path looks like WordPress's own asset tree.
+	 * Without this, typing a host into "Always gate these hosts" would
+	 * silently do nothing for anything served under /wp-content/.
+	 *
+	 * @param string $url Raw (already entity-decoded) URL from the markup.
+	 * @return bool
+	 */
+	public function is_exempt_own_asset( string $url ): bool {
+		if ( ! self::looks_like_own_asset_path( $url ) ) {
+			return false;
+		}
+		$host = $this->host_of( $url );
+		if ( null === $host ) {
+			return false;
+		}
+		return ! self::host_matches_list( $host, $this->always_gate );
 	}
 
 	/**

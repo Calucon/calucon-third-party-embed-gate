@@ -142,9 +142,6 @@ final class Options {
 				// Borlabs Cookie service groups are site-defined; this names
 				// the group whose consent covers embedded content.
 				'borlabs_group' => 'external-media',
-				// IAB TCF v2.2 generic bridge, experimental — only providers
-				// with a Global Vendor List entry can ever be granted.
-				'tcf'           => false,
 			),
 		);
 	}
@@ -352,7 +349,7 @@ final class Options {
 
 		if ( isset( $raw['cmp'] ) && is_array( $raw['cmp'] ) ) {
 			$b = $raw['cmp'];
-			foreach ( array( 'bridge', 'tcf' ) as $flag ) {
+			foreach ( array( 'bridge' ) as $flag ) {
 				if ( array_key_exists( $flag, $b ) ) {
 					$clean['cmp'][ $flag ] = self::truthy( $b[ $flag ] );
 				}

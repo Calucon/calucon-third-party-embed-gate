@@ -1,0 +1,9 @@
+<p>An Elementor video widget whose youtube_url setting is not a page: the JSON \t decodes to a tab, and a browser reads java&lt;TAB&gt;script: as javascript:. The id still yields a gated player; the fallback link must be the embed URL, never the setting.</p>
+<div class="elementor-element elementor-element-cg000009 elementor-widget elementor-widget-video" data-id="cg000009" data-element_type="widget" data-e-type="widget" data-settings="{&quot;video_type&quot;:&quot;youtube&quot;,&quot;youtube_url&quot;:&quot;java\tscript:alert(1)//youtu.be/AbCdEfGhIjK&quot;,&quot;controls&quot;:&quot;yes&quot;}" data-widget_type="video.default">
+	<div class="elementor-widget-container">
+		<div class="elementor-wrapper elementor-open-inline">
+			<div class="elementor-video"></div>
+		</div>
+	</div>
+</div>
+<p>After.</p>

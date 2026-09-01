@@ -2,13 +2,15 @@
 
 # Calucon Third-Party Embed Gate — a two-click embed plugin for WordPress
 
-Hold third-party embeds until the visitor asks for them, so nothing is
-contacted and nothing is stored before a click. No cookie banner, no
-subscription, no consent platform.
+Every YouTube video, Google Map and Instagram post contacts its provider the
+moment the page opens. This plugin holds those embeds behind a click-to-load
+placeholder: until the visitor presses "Load", nothing is requested and nothing
+is stored — the two-click solution, with no cookie banner, no consent platform
+and no subscription.
 
 **[Plugin page](https://calucon.de/third-party-embed-gate/) · [Live demo](https://calucon.de/third-party-embed-gate-showcase/)**
 
-**Status: M1–M7 implemented**, including the §6.4 CMP bridge (see below).
+**Status: 1.0 — feature-complete, in maintenance.** What 1.0 promises to keep stable is in `docs/customizing.md`. Changes from here are fixes, findings from the monthly field validation against real plugins (`docs/field-validation.md`), and WordPress/PHP compatibility.
 The core claim — zero third-party requests before interaction — is enforced
 by an end-to-end test that is never skipped.
 
@@ -23,7 +25,7 @@ by an end-to-end test that is never skipped.
 - Gates **by host, not by allowlist**: an unknown third-party iframe is gated
   by default.
 - After the click, loads from **privacy-preserving endpoints** where they
-  exist: `youtube-nocookie.com` (measured 0 cookies instead of 5), Vimeo with
+  exist: `youtube-nocookie.com` (measured 0 cookies instead of 6), Vimeo with
   `dnt=1`.
 - Rebuilds embeds from an **attribute safelist**: `sandbox` preserved
   exactly, `autoplay` never survives, `style`/`srcdoc`/`on*` never copied.
@@ -40,8 +42,7 @@ by an end-to-end test that is never skipped.
   CookieYes, Borlabs Cookie 3, Real Cookie Banner) reports consent for the
   embeds' category, gated embeds load without a second click, and a
   withdrawal there re-gates them. Read-only, client-side, and fail-closed:
-  an untested platform, or no answer, means gating stands. An IAB TCF v2.2
-  signal can be honoured behind its own experimental flag.
+  an untested platform, or no answer, means gating stands.
 - **Never phones home.** No telemetry, no CDN assets, no outbound request on
   any path.
 
@@ -64,9 +65,13 @@ the iframe itself (not the legacy `::before` spacer), which made gated
 panels collapse invisible on current block themes until the CSS was fixed.
 
 CI (`.github/workflows/ci.yml`) runs the coding-standards report and the
-unit suite on PHP 7.4 and 8.4 for every pull request. Every merge to `main`
-publishes a GitHub release with the installable plugin zip
-(`.github/workflows/release.yml`); the same zip can be built locally with
+unit suite on PHP 7.4 and 8.4 for every pull request and on `main` and
+`trunk`. The branches mirror WordPress.org: feature branches merge into
+`trunk`, and every merge there publishes a pre-release (`vX.Y.Z-rc.N`) with
+the installable zip and refreshes the WordPress.org trunk so translations
+can be reviewed first (`.github/workflows/trunk.yml`). Merging `trunk` into
+`main` is the release: `vX.Y.Z` on GitHub and the WordPress.org tag
+(`.github/workflows/release.yml`). The same zip can be built locally with
 `bash bin/build-zip.sh`.
 
 `CLAUDE.md` carries the working rules and traps; `PLAN.md` is the founding
@@ -101,8 +106,10 @@ where it gates 40 embeds across 22 pages with zero third-party requests
 before interaction. Every measurement quoted in `PLAN.md` is real, taken from
 that site:
 
-- `www.youtube.com/embed/…` sets **5 cookies** on a plain GET with no
-  playback and no scripts run — two of them ~18-month identifiers.
+- `www.youtube.com/embed/…` sets **6 cookies** on a plain GET with no
+  playback and no scripts run — four of them identifiers that live about six
+  months (re-measured 2026-08-28 by the weekly canary; it was 5, two of them
+  18-month, when the plugin was written).
 - `www.youtube-nocookie.com/embed/…` sets **none**.
 - A plain WordPress-to-WordPress oEmbed preview set a cookie with a
   **one-year** lifetime.

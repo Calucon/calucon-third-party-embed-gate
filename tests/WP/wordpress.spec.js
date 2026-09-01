@@ -162,7 +162,11 @@ test( 'feeds strip embeds instead of gating them', async ( { request } ) => {
 	// escaped tutorial sample (&#60;iframe …) legitimately remains.
 	expect( xml ).not.toMatch( /<iframe[^>]*youtube\.com\/embed/ );
 	expect( xml ).not.toMatch( /<script[^>]*platform\.twitter\.com/ );
-	expect( xml ).not.toContain( 'cg-embed' );
+	// No rendered panel: neither its payload element nor its accessible
+	// name. (The forged-panel post legitimately carries the class name in
+	// its own text, so the class alone would be the wrong thing to assert.)
+	expect( xml ).not.toContain( 'cg-embed__payload' );
+	expect( xml ).not.toContain( 'Embedded content from' );
 	expect( xml ).toContain( 'Intro paragraph.' );
 } );
 
@@ -201,6 +205,42 @@ test( 'editor REST content is NOT gated — invariant 4', async ( { page, reques
 	// embed, or gating looks like data loss.
 	expect( post.content.rendered ).toContain( 'youtube.com/embed' );
 	expect( post.content.rendered ).not.toContain( 'cg-embed' );
+} );
+
+test( 'a forged panel that survives kses executes nothing on a real WordPress', async ( { page, request } ) => {
+	// Two facts, both asserted: kses lets the forgery through (so the
+	// threat is real on this WordPress — if core ever changes that, this
+	// says so), and gate.js executes none of it while the real embed next
+	// to it still works. See the forged-panel trap in CLAUDE.md.
+	const raw = await ( await request.get( '/forged-panel/' ) ).text();
+	expect( raw, 'kses must have kept the forged attribute, or the test proves nothing' ).toContain( 'data-cg-payload=' );
+	expect( raw ).toContain( 'id="forged-inline"' );
+
+	await abortThirdParty( page );
+	await page.goto( '/forged-panel/' );
+	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 2 );
+
+	const forged = page.locator( '#forged-inline' );
+	await expect( forged.locator( 'script.cg-embed__payload' ) ).toHaveCount( 0 );
+	await forged.locator( '.cg-embed__button' ).click();
+	await expect( forged.locator( '.cg-embed__error' ) ).toBeVisible();
+	expect( await page.evaluate( () => window.__pwned ) ).toBeUndefined();
+
+	const real = page.locator( '.cg-embed:not(#forged-inline)' );
+	await expect( real.locator( 'script.cg-embed__payload' ) ).toHaveCount( 1 );
+	await real.locator( '.cg-embed__button' ).click();
+	await expect( real.locator( 'iframe' ) ).toHaveAttribute( 'src', /youtube-nocookie\.com/ );
+} );
+
+test( 'a ?context=edit query string does not ungate the page for a visitor', async ( { request } ) => {
+	// The parameter marks an editing context (invariant 4) and is honoured
+	// only for someone who can edit. Before the capability check any link to
+	// /page/?context=edit served the raw embeds to whoever followed it.
+	const response = await request.get( '/gated-classic/?context=edit' );
+	expect( response.ok() ).toBe( true );
+	const html = await response.text();
+	expect( html ).toContain( 'cg-embed' );
+	expect( html ).not.toMatch( /<iframe[^>]*youtube\.com\/embed/ );
 } );
 
 test( 'withdraw shortcode renders a real button with its live region', async ( { page } ) => {
@@ -529,6 +569,22 @@ test( 'admin: settings screen is tabbed — providers, detection, consent, statu
 	// does not.
 	await page.click( '#cg-tabbtn-status' );
 	await expect( page.locator( '#cg-compatibility' ) ).toBeVisible();
+
+	// The exclusion list an owner pastes into a caching/minification plugin.
+	// Always shown, because the optimizer that needs it may be one this
+	// plugin has never heard of. It must name the real installed paths, not
+	// a hard-coded folder name.
+	const exclusions = page.locator( 'pre.cg-exclusions' );
+	await expect( exclusions ).toBeVisible();
+	await expect( exclusions ).toContainText( '/assets/js/gate.js' );
+	await expect( exclusions ).toContainText( '/assets/css/gate.css' );
+	// Paths do not wrap at spaces: this block has to scroll inside its own
+	// box rather than widen the admin page (see the responsive sweep below).
+	const scrolls = await exclusions.evaluate(
+		( el ) => getComputedStyle( el ).overflowX
+	);
+	expect( [ 'auto', 'scroll' ] ).toContain( scrolls );
+
 	// The CSP helper is an advanced, collapsed section at the end.
 	await expect( page.locator( '#cg-csp-snippet' ) ).toBeHidden();
 	await page.locator( '#cg-csp > summary' ).click();
@@ -1195,7 +1251,11 @@ test( 'admin: every settings tab fits phone, tablet and desktop without sideways
 
 	for ( const vp of VIEWPORTS ) {
 		await page.setViewportSize( { width: vp.width, height: vp.height } );
-		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+		// Every emulator on: the Compatibility rows — a detected optimiser with
+		// its exclusion-list advice, a consent platform, a page builder — only
+		// render when the matching plugin exists, so the widest markup on this
+		// screen was never measured at 360px.
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg_cache=rocket&cg_cmp=tested&cg_builder=1&calucon-embed-gate-scan=1' );
 		await page.waitForSelector( '.cg-tabs' );
 		// The admin bar is core's and collapses on its own; measure the
 		// settings screen itself.
@@ -1235,11 +1295,18 @@ test( 'admin: the scan turns a discovered host into a one-click exception, and n
 	// A fresh query each time: navigating to the same URL only moves the
 	// fragment, which would leave a staged (unsaved) value in the DOM. After
 	// staging, the hash points at the Detection tab, so ask for Status by name.
-	const scanUrl = () => `/wp-admin/options-general.php?page=calucon-embed-gate&calucon-embed-gate-scan=1&_=${ Date.now() }#cg-status`;
+	// The scan itself is reached through the link the page writes — it
+	// carries the nonce the scan now requires, so a hand-built URL would show
+	// no results (that is asserted in its own test).
+	const settingsUrl = () => `/wp-admin/options-general.php?page=calucon-embed-gate&_=${ Date.now() }#cg-status`;
 	const partner = () => page.locator( '#cg-scan-results tbody tr', { hasText: 'widgets.example-partner.com' } ).first();
 	const neverGate = () => page.locator( '#cg-never-gate' );
 	const openScan = async () => {
-		await page.goto( scanUrl() );
+		await page.goto( settingsUrl() );
+		await page.waitForSelector( '.cg-tabs' );
+		await page.click( '#cg-tabbtn-status' );
+		await page.locator( '#cg-tab-status a.button', { hasText: 'Scan recent content' } ).click();
+		await page.waitForURL( /_wpnonce=/ );
 		await page.waitForSelector( '.cg-tabs' );
 		await page.click( '#cg-tabbtn-status' );
 	};
@@ -1426,4 +1493,323 @@ test( 'multilingual: translated texts reach the panel, cannot ungate it, and the
 	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
 	await page.click( '#cg-tabbtn-status' );
 	await expect( page.locator( '#cg-tab-status' ) ).not.toContainText( 'String Translation' );
+} );
+
+test( 'compatibility: a detected optimiser is named, its risky setting explained, and its exclusion list located', async ( { page } ) => {
+	// This whole panel renders only when a cache plugin is detected, so on a
+	// clean site it never appears — which is exactly why it went untested.
+	// Telling the owner which files to exclude is useless without telling them
+	// where that list lives, and every one of these plugins hides it somewhere
+	// different.
+
+	await login( page );
+
+	// WP Rocket, with delay_js readable: the setting that costs the visitor a
+	// click, and the only one whose exclusion box is separate from the main one.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg_cache=rocket' );
+	await page.click( '#cg-tabbtn-status' );
+	// Scoped to the optimisation table: the plugin is also listed in the
+	// detected-plugins table above, and an unscoped row locator matches both.
+	const rocket = page.locator( 'h3:has-text("JavaScript optimisation") + table tr', { hasText: 'WP Rocket' } );
+	await expect( rocket ).toHaveCount( 1 );
+	await expect( rocket ).toContainText( 'delay JavaScript until the visitor interacts' );
+	await expect( rocket ).toContainText( 'Where to exclude them:' );
+	await expect( rocket ).toContainText( 'Excluded JavaScript Files' );
+	// The separate box is the part an owner misses; it must be spelled out.
+	await expect( rocket ).toContainText( 'separate exclusion box' );
+
+	// W3 Total Cache, which has no settings reader. The screen must say the
+	// settings could not be read rather than imply an all-clear — a false
+	// "nothing risky is on" stops the owner looking at the plugin that is
+	// actually breaking their embeds — and must still say where the list is.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&cg_cache=w3tc' );
+	await page.click( '#cg-tabbtn-status' );
+	const w3tc = page.locator( 'h3:has-text("JavaScript optimisation") + table tr', { hasText: 'W3 Total Cache' } );
+	await expect( w3tc ).toHaveCount( 1 );
+	await expect( w3tc ).toContainText( 'could not be read' );
+	await expect( w3tc ).toContainText( 'Never minify the following JS files' );
+
+	// And none of it is claimed on a site with no cache plugin at all.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.click( '#cg-tabbtn-status' );
+	await expect( page.locator( '#cg-tab-status' ) ).not.toContainText( 'Where to exclude them:' );
+} );
+
+test( 'an asset CDN plus whole-page buffering: the site\'s own scripts survive', async ( { page } ) => {
+	// The half of the own-asset fix (1.0) that no test reached. Plugin::own_hosts()
+	// reads content_url(), plugins_url(), includes_url(), the uploads base and
+	// both theme URIs, so a CDN plugin that filters them is trusted
+	// automatically. tests/Support/PipelineFactory builds its HostMatcher from
+	// a literal array, so every unit and fixture test goes around that wiring —
+	// this is the only place it runs.
+	//
+	// Buffering is required, not incidental: a script printed into wp_head is
+	// outside the content filters, so only whole-page gating ever sees it. The
+	// pairing "asset CDN + buffering" is the exact scenario docs/customizing.md
+	// says the fix exists for, and neither half was tested with the other.
+	//
+	// The probe script sits at /bundle.js — NO /wp-content/ in the path — so
+	// the path heuristic cannot rescue it. If it survives, own_hosts() did it.
+	await page.goto( '/wp-login.php' );
+	await page.fill( '#user_login', 'admin' );
+	await page.fill( '#user_pass', 'password' );
+	await page.click( '#wp-submit' );
+	await page.waitForURL( /wp-admin/, { timeout: 120000 } );
+
+	const OPTION = 'input[name="calucon_embed_gate_options[detection][output_buffer]"][type="checkbox"]';
+	const save = async () => {
+		await page.click( 'form p.submit input[type="submit"], form input#submit' );
+		await page.waitForURL( /options-general\.php/ );
+	};
+
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.click( '#cg-tabbtn-detection' );
+	await page.check( OPTION );
+	await save();
+
+	try {
+		// Control: the same script, no CDN filters. A foreign host at a path
+		// with no wp segment is exactly what this plugin is for.
+		//
+		// The iframe probe is the mirror image: a foreign host at THIS
+		// plugin's own asset path. Plugin::pipeline() rescues gate.js by
+		// that path, host-blind, so that a CDN rewriting the finished HTML
+		// cannot make the plugin gate its own loader — and that rescue must
+		// reach ScriptRule alone. An iframe is never the site's own loader;
+		// at this path on a foreign host it is exactly the shape-copying
+		// invariant 6 forbids waving through. Two panels: script and iframe.
+		await page.goto( '/no-embeds/?cg_cdn=0' );
+		await expect( page.locator( 'script#cg-cdn-probe' ) ).toHaveCount( 0 );
+		await expect( page.locator( 'iframe#cg-cdn-iframe-probe' ) ).toHaveCount( 0 );
+		await expect( page.locator( '.cg-embed[data-cg-host="cdn.cg-offload.example"]' ) ).toHaveCount( 2 );
+
+		// With content_url()/plugins_url() moved to that host, it is the
+		// site's own and both probes are left exactly as they were — the
+		// iframe by the own-host rule, not by its path.
+		await page.goto( '/no-embeds/?cg_cdn=1' );
+		await expect( page.locator( '.cg-embed[data-cg-host="cdn.cg-offload.example"]' ) ).toHaveCount( 0 );
+		await expect( page.locator( 'script#cg-cdn-probe' ) ).toHaveCount( 1 );
+		await expect( page.locator( 'iframe#cg-cdn-iframe-probe' ) ).toHaveCount( 1 );
+
+		// And the owner's explicit instruction still outranks all of it: a
+		// host on the always-gate list is gated even when own_hosts() would
+		// otherwise vouch for it. This is the wiring from Plugin::pipeline()
+		// into HostMatcher's fourth constructor argument, which is proven by
+		// hand in HostMatcherTest and nowhere as actually passed.
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+		await page.click( '#cg-tabbtn-detection' );
+		await page.fill( 'textarea[name="calucon_embed_gate_options[detection][always_gate]"]', 'cdn.cg-offload.example' );
+		await save();
+
+		//
+		// Three things on that host now, and they must come out differently:
+		// bundle.js and the iframe are gated (two panels); gate.js — same
+		// host, the plugin's own asset path — is not, because a page whose
+		// loader has been replaced by a placeholder is a page of buttons that
+		// do nothing. That rescue is the one reason the path is consulted at
+		// all, and the iframe next to it proves it stops at scripts.
+		await page.goto( '/no-embeds/?cg_cdn=1' );
+		await expect( page.locator( '.cg-embed[data-cg-host="cdn.cg-offload.example"]' ) ).toHaveCount( 2 );
+		await expect( page.locator( 'iframe#cg-cdn-iframe-probe' ) ).toHaveCount( 0 );
+		await expect( page.locator( 'script[src*="cdn.cg-offload.example/wp-content/plugins/calucon-third-party-embed-gate/assets/js/gate.js"]' ) ).toHaveCount( 1 );
+	} finally {
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+		await page.click( '#cg-tabbtn-detection' );
+		await page.fill( 'textarea[name="calucon_embed_gate_options[detection][always_gate]"]', '' );
+		await page.uncheck( OPTION );
+		await save();
+	}
+} );
+
+test( 'compatibility: consent platforms, page builders and the two quiet optimiser states', async ( { page } ) => {
+	// Every row below renders only when the matching plugin is installed, so
+	// on a clean Playground none of them had ever rendered in a test — the CMP
+	// rows (0 of 8 platforms), the builder rows (0 of 6), and two of the four
+	// optimiser states. All of it is copy an owner acts on.
+	await login( page );
+
+	const compat = ( name ) => page.locator( '#cg-compatibility + table tr', { hasText: name } );
+	const optimiser = ( name ) => page.locator( 'h3:has-text("JavaScript optimisation") + table tr', { hasText: name } );
+	const status = async ( query ) => {
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' + query );
+		await page.click( '#cg-tabbtn-status' );
+	};
+
+	// A bridgeable platform with the bridge off: "tested, but we are still
+	// gating" — NOT "we are honouring your banner". Getting this backwards
+	// would tell an owner their embeds follow a consent they never wired up.
+	await status( '&cg_cmp=tested' );
+	await expect( compat( 'Complianz' ) ).toContainText( 'tested for interoperation' );
+	await expect( compat( 'Complianz' ) ).toContainText( 'fail-closed default' );
+
+	// A platform with no tested bridge: gating stands regardless.
+	await status( '&cg_cmp=untested' );
+	await expect( compat( 'Usercentrics' ) ).toContainText( 'no tested bridge' );
+
+	// A page builder, with whole-page gating off — the state where its embeds
+	// may NOT be covered, which is the whole reason the row exists.
+	await status( '&cg_builder=1' );
+	await expect( compat( 'Elementor' ) ).toContainText( 'render outside the content filters' );
+
+	// "Combine" and "off" are the two optimiser states nothing had rendered.
+	// Off must never read as an all-clear about the plugin generally: it says
+	// the settings were read and the risky ones are not on.
+	await status( '&cg_cache=autoptimize' );
+	await expect( optimiser( 'Autoptimize' ) ).toContainText( 'combine JavaScript' );
+	await expect( optimiser( 'Autoptimize' ) ).toContainText( 'Exclude scripts from Autoptimize' );
+
+	await status( '&cg_cache=litespeed' );
+	await expect( optimiser( 'LiteSpeed Cache' ) ).toContainText( 'none of the ones that cause trouble are on' );
+	await expect( optimiser( 'LiteSpeed Cache' ) ).toContainText( 'JS Excludes' );
+
+	// The empty state, asserted positively rather than by absence.
+	await status( '' );
+	await expect( page.locator( '#cg-tab-status' ) ).toContainText( 'No cache plugin, consent platform, multilingual plugin or page builder detected.' );
+} );
+
+test( 'the promised cache flush happens on the first save too, not just later ones', async ( { page } ) => {
+	// The Compatibility screen tells the owner "its page cache is flushed
+	// automatically when Calucon Third-Party Embed Gate settings change".
+	// Support/CacheFlush implements that on update_option_, and a site that
+	// has never opened the settings screen has no option row at all — so its
+	// FIRST save is an add_option, which fires a different hook and used to
+	// flush nothing.
+	//
+	// That is the save where it matters most: it is where an owner turns
+	// gating on, and a page cache still holding pre-gate HTML is exactly the
+	// stale-cache problem the flush exists to prevent.
+	const readback = async ( query ) => {
+		await page.goto( '/?cg_flushes=' + query );
+		return ( await page.locator( 'body' ).innerText() ).trim();
+	};
+	const flushes = ( text ) => parseInt( ( text.match( /flushes=(\d+)/ ) || [ , '0' ] )[1], 10 );
+	const rowExists = ( text ) => '1' === ( text.match( /row_exists=(\d+)/ ) || [ , '0' ] )[1];
+
+	await login( page );
+
+	// Back to "never saved" — earlier tests in this run have saved settings.
+	const fresh = await readback( 'reset' );
+	expect( rowExists( fresh ), 'the reset did not remove the option row' ).toBe( false );
+	expect( flushes( fresh ) ).toBe( 0 );
+
+	const OPTION = 'input[name="calucon_embed_gate_options[detection][images]"][type="checkbox"]';
+	const saveToggled = async () => {
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+		await page.click( '#cg-tabbtn-detection' );
+		await page.setChecked( OPTION, ! ( await page.isChecked( OPTION ) ) );
+		await page.click( 'form p.submit input[type="submit"], form input#submit' );
+		await page.waitForURL( /options-general\.php/ );
+	};
+
+	await saveToggled();
+	const afterFirst = await readback( '1' );
+	expect( rowExists( afterFirst ), 'the first save should have created the option row' ).toBe( true );
+	expect( flushes( afterFirst ), 'the FIRST save did not flush the cache the screen promises' ).toBe( 1 );
+
+	// And an ordinary save still flushes, which is the path that always worked.
+	await saveToggled();
+	expect( flushes( await readback( '1' ) ) ).toBe( 2 );
+} );
+
+test( 'compatibility: the remaining exclusion-list advice, and the copy around it', async ( { page } ) => {
+	// Four of the eight per-plugin advice strings had never rendered, and two
+	// of those four are the ones that do NOT name a menu path — they say there
+	// is no list to add to. Those are the easiest to get wrong later, because
+	// a future edit "fixing" them would invent a path that does not exist.
+	await login( page );
+
+	const optimiser = ( name ) => page.locator( 'h3:has-text("JavaScript optimisation") + table tr', { hasText: name } );
+	const status = async ( query ) => {
+		await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' + query );
+		await page.click( '#cg-tabbtn-status' );
+	};
+
+	await status( '&cg_cache=fastest' );
+	await expect( optimiser( 'WP Fastest Cache' ) ).toContainText( 'Exclude tab' );
+
+	await status( '&cg_cache=siteground' );
+	await expect( optimiser( 'SiteGround Optimizer' ) ).toContainText( 'Frontend → JavaScript' );
+
+	// No exclusion list at all — the honest answer, and the one a later edit
+	// is most likely to replace with an invented menu path.
+	//
+	// Neither has a settings reader, so both resolve to the 'unknown' state,
+	// whose body ends "and exclude the files below" — one line above a
+	// sentence saying there is nothing to exclude. The row must not carry
+	// that preamble, nor the "wording can differ" tail that refers to menu
+	// labels these sentences do not name. What the owner should read is the
+	// one honest sentence, alone.
+	await status( '&cg_cache=cloudflare' );
+	await expect( optimiser( 'Cloudflare' ) ).toContainText( 'takes no exclusion list' );
+	await expect( optimiser( 'Cloudflare' ) ).toContainText( 'data-cfasync' );
+	await expect( optimiser( 'Cloudflare' ) ).not.toContainText( 'exclude the files below' );
+	await expect( optimiser( 'Cloudflare' ) ).not.toContainText( 'Wording can differ' );
+
+	await status( '&cg_cache=supercache' );
+	await expect( optimiser( 'WP Super Cache' ) ).toContainText( 'nothing to exclude' );
+	await expect( optimiser( 'WP Super Cache' ) ).not.toContainText( 'exclude the files below' );
+	await expect( optimiser( 'WP Super Cache' ) ).not.toContainText( 'Wording can differ' );
+
+	// The control: a plugin that HAS a list keeps the preamble and the tail.
+	await status( '&cg_cache=w3tc' );
+	await expect( optimiser( 'W3 Total Cache' ) ).toContainText( 'exclude the files below' );
+	await expect( optimiser( 'W3 Total Cache' ) ).toContainText( 'Wording can differ' );
+
+	// The copy around the exclusion block: the heading, the reassurance that
+	// excluding costs nothing, and the inline-config handle. That last one is
+	// a literal an owner pastes into another plugin, so a rename that misses
+	// it is invisible from here.
+	await status( '&cg_cache=rocket' );
+	const statusTab = page.locator( '#cg-tab-status' );
+	await expect( statusTab ).toContainText( 'Files to exclude from JavaScript and CSS optimisation' );
+	await expect( statusTab ).toContainText( 'costs nothing measurable' );
+	await expect( statusTab ).toContainText( 'calucon-embed-gate-js-before' );
+	await expect( statusTab ).toContainText( 'Wording can differ between versions' );
+} );
+
+test( 'admin: the scans run only from a link this page wrote — a bare query string does nothing', async ( { page } ) => {
+	// Both scans are read-only but not free (50 posts through the_content,
+	// 40 theme files), and they ran on any GET carrying the parameter — the
+	// shape a cross-site image tag produces. Now the parameter needs the
+	// page's own nonce.
+	await login( page );
+
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate&calucon-embed-gate-scan=1' );
+	await page.waitForSelector( '.cg-tabs' );
+	await page.click( '#cg-tabbtn-status' );
+	const statusTab = page.locator( '#cg-tab-status' );
+	await expect( statusTab.locator( '#cg-scan-results' ) ).toHaveCount( 0 );
+	await expect( statusTab ).not.toContainText( 'None found in your theme' );
+	await expect( statusTab.locator( 'a.button', { hasText: 'Scan recent content' } ) ).toHaveCount( 1 );
+
+	// The link the page wrote carries the nonce, and that one scans.
+	await statusTab.locator( 'a.button', { hasText: 'Scan recent content' } ).click();
+	await page.waitForURL( /_wpnonce=/ );
+	await page.click( '#cg-tabbtn-status' );
+	await expect( page.locator( '#cg-scan-results' ) ).toHaveCount( 1 );
+} );
+
+test( 'compatibility: the theme scan is on demand, and says what it did not look at', async ( { page } ) => {
+	// The theme scan moved behind a button because it reads up to 40 theme
+	// stylesheets. Three branches, none of which was asserted: the button, the
+	// "asked and found nothing" state, and the absence of the scan on a plain
+	// page load — that last one is what would catch a revert to running it on
+	// every render.
+	await login( page );
+
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.click( '#cg-tabbtn-status' );
+	const statusTab = page.locator( '#cg-tab-status' );
+	await expect( statusTab.locator( 'a.button', { hasText: 'Check my theme' } ) ).toHaveCount( 1 );
+	// Not scanned yet, so no verdict either way.
+	await expect( statusTab ).not.toContainText( 'None found in your theme' );
+
+	await statusTab.locator( 'a.button', { hasText: 'Check my theme' } ).click();
+	await page.waitForURL( /calucon-embed-gate-scan/ );
+	await page.click( '#cg-tabbtn-status' );
+	// The default theme bundles its fonts locally, so nothing is found — and
+	// the screen says so, including what it did not cover, rather than showing
+	// an empty space that reads as "all clear".
+	await expect( page.locator( '#cg-tab-status' ) ).toContainText( 'None found in your theme' );
+	await expect( page.locator( '#cg-tab-status' ) ).toContainText( 'builds its CSS into another directory is outside this check' );
 } );

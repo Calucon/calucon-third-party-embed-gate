@@ -5,6 +5,8 @@
 
 namespace CaluconEmbedGate\Tests\Unit;
 
+use CaluconEmbedGate\Tests\Support\PoReader;
+use CaluconEmbedGate\Tests\Support\ReadmeMarkdown;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -103,6 +105,11 @@ final class ReadmeTranslationTest extends TestCase {
 	 *
 	 * The two rules are the Swiss team's own: the output was checked against
 	 * their converter at po.wpswitzerland.ch and matched entry for entry.
+	 *
+	 * With one exemption, restated here rather than imported so that this stays
+	 * an independent check of the script: a ß with no letter beside it is the
+	 * character being named, not used ("mit ss statt ß" — the FAQ answer that
+	 * explains the Swiss rule), and it survives the conversion.
 	 */
 	/**
 	 * @group translation-derived
@@ -111,7 +118,9 @@ final class ReadmeTranslationTest extends TestCase {
 		$dir = dirname( __DIR__, 2 ) . '/.wordpress-org/';
 
 		$swiss = static function ( string $text ): string {
-			return str_replace( array( 'ß', '„', '“' ), array( 'ss', '«', '»' ), $text );
+			$text = preg_replace( '/(?<=\p{L})ß|ß(?=\p{L})/u', 'ss', $text );
+
+			return str_replace( array( '„', '“' ), array( '«', '»' ), (string) $text );
 		};
 
 		$cases = array(
@@ -189,4 +198,118 @@ final class ReadmeTranslationTest extends TestCase {
 		}
 		return stripcslashes( substr( $quoted, 1, -1 ) );
 	}
+
+	/**
+	 * The listing German exists in two shapes, and they must not drift apart.
+	 *
+	 * `.md` is where it is authored — chunked, English as locator, stamped
+	 * against readme.txt. `.po` is the shape GlotPress imports. Neither is
+	 * generated from the other, they are not isomorphic (56 German chunks
+	 * against 175 msgids), and until now nothing compared them. Commit
+	 * ace3c9e already changed one without the other.
+	 *
+	 * Exact equality is impossible, so this pairs a chunk with a msgstr that
+	 * begins the same way and then requires them to be identical. That is the
+	 * shape a real drift takes: someone fixes a wording in the file they had
+	 * open, and the twin keeps the old sentence with the same opening.
+	 *
+	 * @group translation-sources
+	 */
+	public function test_the_markdown_and_po_listing_text_agree(): void {
+		$root  = dirname( __DIR__, 2 );
+		$pairs = array(
+			'.wordpress-org/readme-de_DE.md'        => '.wordpress-org/readme-de_DE.po',
+			'.wordpress-org/readme-de_DE_formal.md' => '.wordpress-org/readme-de_DE_formal.po',
+		);
+
+		$drifted = array();
+		foreach ( $pairs as $markdown => $po ) {
+			$md_path = $root . '/' . $markdown;
+			$po_path = $root . '/' . $po;
+			self::assertFileExists( $md_path );
+			self::assertFileExists( $po_path );
+
+			$translations = array_map( 'self::markup_free', array_values( PoReader::translations( $po_path ) ) );
+
+			$chunks = ReadmeMarkdown::chunks( $md_path );
+			self::assertSame(
+				ReadmeMarkdown::expected_chunk_count( $md_path ),
+				count( $chunks ),
+				"the parser did not return every German chunk in {$markdown} — a partial loss makes this test pass, not fail"
+			);
+
+			foreach ( array_map( 'self::markup_free', $chunks ) as $chunk ) {
+				// Short chunks are headings and labels; several legitimately
+				// share an opening, and they are not where drift hides.
+				if ( mb_strlen( $chunk ) < 60 ) {
+					continue;
+				}
+				$closest = '';
+				$best    = 0.0;
+				foreach ( $translations as $german ) {
+					if ( $chunk === $german ) {
+						$closest = '';
+						break;
+					}
+					// Similarity, not a shared opening: a wording fix often
+					// lands in the first sentence, and a prefix pairing then
+					// fails to pair the two at all and reports nothing —
+					// silence that looks exactly like agreement.
+					similar_text( $chunk, $german, $percent );
+					if ( $percent > $best ) {
+						$best    = $percent;
+						$closest = $german;
+					}
+				}
+
+				if ( '' !== $closest && $best >= 90.0 ) {
+					$german = $closest;
+					$drifted[] = sprintf(
+						"  %s vs %s\n    .md: …%s\n    .po: …%s",
+						basename( $markdown ),
+						basename( $po ),
+						mb_substr( $chunk, 0, 150 ),
+						mb_substr( $german, 0, 150 )
+					);
+				}
+			}
+		}
+
+		self::assertSame(
+			array(),
+			$drifted,
+			"The two shapes of the German listing text have drifted apart. These pairs are\n"
+				. "90%+ the same sentence and not identical, which means a wording change reached\n"
+				. "one file and not the other — and only the .po is imported to GlotPress.\n\n"
+				. implode( "\n\n", $drifted )
+		);
+	}
+
+
+	/**
+	 * The German of a chunk with its markup removed.
+	 *
+	 * The two files carry the same sentences in different markup — the .md in
+	 * markdown, the .po in the HTML subset wordpress.org renders — so
+	 * comparing them raw reports every code span as a difference. Only the
+	 * markup is stripped: the words, punctuation and protected spaces are what
+	 * this test is about and are left exactly as they are.
+	 *
+	 * @param string $text Chunk or translation.
+	 * @return string
+	 */
+	private static function markup_free( string $text ): string {
+		// Entities first: the .po escapes literal tag names the owner reads
+		// (&lt;iframe&gt;) where the markdown just writes them.
+		$text = html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		// Link text survives, target does not: [text](url) and <a …>text</a>.
+		$text = (string) preg_replace( '#\[([^\]]*)\]\([^)]*\)#u', '$1', $text );
+		$text = (string) preg_replace( '#<a [^>]*>(.*?)</a>#su', '$1', $text );
+		$text = (string) preg_replace( '#</?(?:code|strong|em)>#u', '', $text );
+		$text = str_replace( array( '`', '**', '*' ), '', $text );
+		// The markdown carries the readme's list numbering; the PO does not.
+		$text = (string) preg_replace( '/^\\s*(?:\\d+\\.|[-–])\\s+/u', '', $text );
+		return trim( (string) preg_replace( '/\s+/u', ' ', $text ) );
+	}
+
 }

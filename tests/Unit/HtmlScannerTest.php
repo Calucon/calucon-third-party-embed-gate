@@ -148,4 +148,69 @@ final class HtmlScannerTest extends TestCase {
 		self::assertCount( 1, $tags );
 		self::assertSame( 'https://a.example/visible', $tags[0]['attributes']['src'] );
 	}
+
+	/**
+	 * A tag is opened only where a browser opens one. Everything inside a
+	 * start tag's attribute values is data — a comment opener, a raw-text
+	 * container name, an iframe — and kses keeps '<' inside attribute values,
+	 * so any author can write these. The byte-level scan this replaced saw
+	 * an opener there and hid every embed after it (silently), or spliced a
+	 * placeholder into the attribute.
+	 */
+	public function test_openers_inside_attribute_values_open_nothing(): void {
+		$after = '<iframe src="https://a.example/after"></iframe>';
+		foreach ( array(
+			'comment in double quotes' => '<div data-x="<!--">x</div>',
+			'comment in single quotes' => "<div data-x='<!--'>x</div>",
+			'comment bare'             => '<div data-x=<!-->x</div>',
+			'textarea'                 => '<a title="<textarea>">x</a>',
+			'title'                    => '<span data-t="<title>">x</span>',
+			'script'                   => "<em data-s='<script>'>x</em>",
+			'style'                    => '<b data-s="<style>">x</b>',
+			'pre'                      => '<i data-p="<pre>">x</i>',
+		) as $label => $before ) {
+			$tags = $this->scanner->find_tags( $before . $after, 'iframe' );
+			self::assertCount( 1, $tags, $label );
+			self::assertSame( 'https://a.example/after', $tags[0]['attributes']['src'], $label );
+		}
+	}
+
+	public function test_an_iframe_inside_an_attribute_value_is_not_a_tag(): void {
+		self::assertSame( array(), $this->scanner->find_tags( '<img alt="<iframe src=https://a.example/x>" src="/y.png">', 'iframe' ) );
+		self::assertSame( array(), $this->scanner->find_tags( "<div title='<iframe src=\"https://a.example/x\"></iframe>'>q</div>", 'iframe' ) );
+	}
+
+	public function test_an_unterminated_start_tag_swallows_the_rest_as_a_browser_does(): void {
+		// The quote never closes: to a browser everything after it is the
+		// attribute value, and nothing in it renders or requests.
+		self::assertSame( array(), $this->scanner->find_tags( '<div title="unterminated <iframe src="https://a.example/x"></iframe>', 'iframe' ) );
+	}
+
+	public function test_end_tag_boundary_follows_html5(): void {
+		// `</iframe foo>` closes; `</iframes>` does not.
+		$html = '<iframe src="https://a.example/1">a</iframe foo><iframe src="https://a.example/2">b </iframes> c</iframe>';
+		$tags = $this->scanner->find_tags( $html, 'iframe' );
+
+		self::assertCount( 2, $tags );
+		self::assertSame( strlen( '<iframe src="https://a.example/1">a</iframe foo>' ), $tags[0]['end'] );
+		self::assertSame( strlen( $html ), $tags[1]['end'] );
+	}
+
+	public function test_iframe_content_is_raw_text(): void {
+		// Browsers never parse an iframe's fallback content as markup, so a
+		// script or image in it fires nothing — and is found by no rule.
+		$html = '<iframe src="https://a.example/x"><script src="https://b.example/s.js"></script><img src="https://c.example/p.png"></iframe>';
+
+		self::assertSame( array(), $this->scanner->find_tags( $html, 'script' ) );
+		self::assertSame( array(), $this->scanner->find_tags( $html, 'img' ) );
+		self::assertCount( 1, $this->scanner->find_tags( $html, 'iframe' ) );
+	}
+
+	public function test_doctype_cdata_and_end_tags_on_their_own_are_skipped(): void {
+		$html = '<!DOCTYPE html><![CDATA[ <iframe src="https://a.example/cdata"> ]]></div><iframe src="https://a.example/x"></iframe>';
+		$tags = $this->scanner->find_tags( $html, 'iframe' );
+
+		self::assertCount( 1, $tags );
+		self::assertSame( 'https://a.example/x', $tags[0]['attributes']['src'] );
+	}
 }

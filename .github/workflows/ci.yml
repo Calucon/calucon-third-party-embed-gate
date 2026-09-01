@@ -1,18 +1,26 @@
 # Unit tests + coding standards + E2E/axe + real-WordPress integration on
-# every pull request and on main (PLAN.md §11: lint → unit → E2E → axe,
-# block merge on any failure).
+# every pull request and on main and trunk (PLAN.md §11: lint → unit → E2E →
+# axe, block merge on any failure).
 #
 # To make merging impossible while tests fail, require these checks under
-# Settings > Branches (or Rulesets) for main:
+# Settings > Branches for BOTH main and trunk:
 #   "PHP 7.4 lint + unit tests", "PHP 8.4 lint + unit tests",
 #   "E2E + axe (Chromium)", "WordPress integration (Playground)"
+# main additionally requires the two from main-gate.yml:
+#   "Source branch is trunk", "Version is unreleased"
 # GitHub only offers a check for selection after it has run at least once.
+#
+# trunk is "strict" (the branch must be up to date with trunk); main is NOT.
+# Releases merge trunk into main with a merge commit, which trunk never
+# receives, so a strict main would demand "Update branch" on trunk — and
+# trunk's own protection forbids that push. The PR's checks already ran on
+# the merge ref, which is the merged result, so main loses nothing.
 name: CI
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, trunk]
 
 jobs:
   php:

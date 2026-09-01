@@ -12,21 +12,43 @@ The full design rationale lives in `PLAN.md`; this file is the traps and the
 rules. Milestone status: M1–M7 are implemented, including the §6.4 CMP
 bridge (opt-in, client-side, fail-closed; adapters for the tested list are
 exercised in CI against simulations of each platform's documented public
-API — `tests/E2E/cmp-bridge.spec.js`; validation against real CMP installs
-remains a manual follow-up). The plugin is LIVE on WordPress.org
-(slug `calucon-third-party-embed-gate`); every merge to main auto-deploys
-there via the release workflow, so version-bump discipline applies to
-every PR. See PLAN.md §13. The bridge never touches
+API — `tests/E2E/cmp-bridge.spec.js` — **and monthly against the real
+plugins** by the field suite: `tests/Field/`, one fresh Docker WordPress per
+wp.org plugin, `npm run test:field:docker`, `docs/field-validation.md`. The
+first field run found two defects the simulations had hidden — read that
+doc before trusting an emulator in `tests/wp/seed.php`, and add a field
+group when you add a tested platform). The plugin is LIVE on WordPress.org
+(slug `calucon-third-party-embed-gate`) and **1.0 is the feature freeze**: no new
+features; changes are fixes, field-validation findings and WordPress/PHP
+compatibility, and `docs/customizing.md` "What 1.0 promises" is the public
+surface — a change to it is a major version. **Branch flow mirrors wp.org:**
+`trunk` is development, `main` is stable. Feature branches merge into
+`trunk` only — never `main`. Every merge into `trunk` syncs wp.org SVN
+`/trunk` (the live Stable tag untouched) and publishes a `v{VERSION}-rc.N`
+GitHub pre-release (`.github/workflows/trunk.yml`), so the German can be
+reviewed on translate.wordpress.org's dev projects first. The release is a
+`trunk → main` PR merged with a **merge commit** (never squash or rebase —
+`main` would get its own SHAs and every later release PR would re-present
+old commits): `release.yml` tags `v{VERSION}`, deploys the wp.org tag and
+deletes the rc pre-releases. A PR into `main` fails unless its head is
+`trunk` and `v{VERSION}` is untagged (`main-gate.yml`), so bump the version
+on `trunk` — header, constant, Stable tag — before the release PR. Hotfixes
+take the same path; there is no bypass. The bridge never touches
 Google Consent Mode v2 (no public read API; written by CMPs for Google
 tags; no consent-mode signal governs iframes) — bridging the CMP itself is
 the reliable read of the same choice. Never "fix" the WP Consent API
 adapter to trust `wp_has_consent()` without a consent type set: that
 function is fail-open by design and would ungate everything when the CMP
-deactivates. Thumbnails shipped as **owner-supplied posters** (media-library image
+deactivates. Never let the Real Cookie Banner adapter decide on
+`consentApi` before `wrapFn()` exists on it: RCB inlines a stub first whose
+`unblockSync()` answers `undefined` for every URL — read as "no blocker",
+it gates a governed embed forever; read as "unblocked", it ungates
+everything (see `docs/field-validation.md`). Thumbnails shipped as **owner-supplied posters** (media-library image
 per block, own-host-validated, `$ctx['poster']`); the §5.4 server-side
 auto-fetch was **rejected** — it is an outbound request, and a cached
 provider thumbnail goes stale with no invalidation signal. Never propose it
-(or a Google-Fonts downloader) again.
+(or a Google-Fonts downloader) again. The **IAB TCF bridge** was removed at
+1.0 (shipped "experimental", never validatable); do not reintroduce it.
 
 **Naming (Aug 2026 wp.org review + pre-launch identifier alignment):** the
 plugin was "Consent Gate" until the review flagged that name as
@@ -72,6 +94,16 @@ stay that way; never make it automatic or point it anywhere else.
 HEAD every built-in `privacy_url` weekly **from CI only** — the plugin itself
 never may (invariant 9). A MOVED/FAIL line means: update the descriptor and
 ship a release; the canary is informational, not a required check.
+`.github/workflows/maintenance-canary.yml` (weekly, same standing) runs two
+more: `bin/check-load-endpoints.sh` re-measures that youtube-nocookie.com
+and Vimeo `dnt=1` still set **0 cookies** on a plain GET — the numbers the
+readme states as measured — and `bin/check-tested-up-to.sh` compares the
+readme's `Tested up to` with WordPress's version API. Red opens an issue
+labelled `maintenance`. Together with the monthly field validation and
+Dependabot for the Actions pins, that is the whole maintenance routine:
+nothing rots silently, and nothing needs watching. Scheduled and dispatched
+workflows run from `main` only — a canary merged into `trunk` is live once
+the next release lands on `main`.
 
 ## Invariants (PLAN.md §1) — if a change would break one of these, stop and ask
 
@@ -93,8 +125,9 @@ ship a release; the canary is informational, not a required check.
 | `calucon-third-party-embed-gate.php` | Plugin header + bootstrap only |
 | `src/Plugin.php` | Wiring; no logic |
 | `src/Detection/HtmlScanner.php` | Attribute-tolerant tag reader (§3.2) |
-| `src/Detection/HostMatcher.php` | "is this ours?" (§3.4) |
+| `src/Detection/HostMatcher.php` | "is this ours?" (§3.4) — including the **own-asset path rule**: a script or stylesheet at a `/wp-content/`/`/wp-includes/` path is the site's own whatever host serves it. Scripts and stylesheets only, never iframes; never for a known provider host; always-gate overrides it. Read §3.4 before touching it — it is a claim about identity, not an exemption from invariant 1 |
 | `src/Detection/IframeRule.php` | Gates cross-origin iframes; consumes the WP blockquote pair (§9.7) |
+| `src/Detection/ElementorVideoRule.php` | Elementor's YouTube video widget — a player that exists only in a `data-settings` JSON, built client-side by Elementor's script. Replaces the wrapper's contents with the panel and rewrites `data-settings` so Elementor's handler stands down. Runs **before** IframeRule. **Any rule that matches on something other than a tag name must be added to `Plugin::has_gateable_markup()`** — the zero-embed fast path skipped this rule silently on `the_content` until it was |
 | `src/Detection/{ScriptRule,EmbedObjectRule,ImageRule,StylesheetRule}.php` | SDK scripts (+ inline loaders naming a provider host); legacy embed/object; opt-in third-party images; provider stylesheets as silent companions. **Silent companions** (§3.5): a loader/inline script/stylesheet next to a panel of the same provider is gated without a panel (`span.cg-embed--silent`) and loaded by gate.js after that panel's click — never give it a second panel. Two rules keep that from misfiring, both pinned in `SilentCompanionTest`: a companion is silent only when the same provider's panel is **adjacent** (no block-level tag and no blank line between them), or a second embed of one provider loses its panel and its link; and an inline script counts as a loader only when the provider host sits in a **string literal**, or a site's own script that merely names a provider URL in a comment gets deleted and replaced by a panel |
 | `src/Providers/{Registry,Provider}.php` | Descriptors are data, not classes (§4.1) |
 | `src/Providers/CustomProviders.php` | Owner-defined providers from the `custom_providers` option rows → descriptors. **Can never weaken the gate**: built-ins first, their hosts refused at save (`Options::sanitize_report` + notice) and stripped at run time (`reserved_hosts()`), `enabled` ignored for custom ids (always gated), no load-target rewrite. `CustomProvidersTest` pins corpus byte-identity under custom rows — keep it green |
@@ -104,11 +137,11 @@ ship a release; the canary is informational, not a required check.
 | `src/Detection/Visibility.php` | Elements that are invisible by construction (GTM's `<noscript>` iframe) — stripped, never given a panel |
 | `src/Admin/BlockEditor.php` + `assets/js/editor.js` | §7.5 per-block override + withdrawal block (no build step) |
 | `src/Admin/SettingsPage.php` + `assets/js/{admin-appearance,admin-tabs,admin-csp,admin-custom-providers,admin-providers,admin-scan-actions}.js` | Providers tab grouped by kind + filter box; scan rows stage exceptions into the Detection fields (never a direct write — the one form would revert it). | §7.1 tabbed settings; Appearance colour pickers, live preview + contrast check (admin-only JS; may use jQuery/wp-color-picker). Tabs are client-side only — one form, one save; per-tab forms would let `Options::sanitize()` wipe unsent sections |
-| `src/Rendering/PlaceholderRenderer.php` | The §5.1 markup contract — public API, version it |
+| `src/Rendering/PlaceholderRenderer.php` | The §5.1 markup contract — public API, version it. The payload is a `<script type="application/json" class="cg-embed__payload">` first child, **never an attribute** — see the forged-panel trap below |
 | `src/Integration/*.php` | Where WordPress hooks live (content filters, buffer, widgets, comments, hints, shortcode) |
 | `src/Cli/Commands.php` | Read-only WP-CLI (`scan`, `providers`); scan renders via `Plugin::render_ungated()` — plain `the_content` would gate the markup before the scanner sees it |
 | `docs/customizing.md` | Site-level customization reference, ships in the zip; update it when hooks/descriptor keys change |
-| `assets/js/gate.js` | Dependency-free ES5; no build step |
+| `assets/js/gate.js` | Dependency-free ES5; no build step. Reads a payload from `payloadOf()` only — the JSON script child — and executes nothing that comes from a `data-cg-*` attribute |
 | `src/Cmp/{Detector,BridgeConfig}.php` + `assets/js/cmp-bridge.js` | §6.4 CMP bridge: tested-platform detection, pure config builder (fail-closed rules pinned in `BridgeConfigTest`), ES5 adapters; one adapter per page, native before generic |
 | `templates/placeholder.php` | The overridable §5.1 template; ships in the zip |
 
@@ -135,6 +168,43 @@ A pattern that assumes quoted attributes will pass code review and fail in
 production: the source site's first audit missed seven iframes on five pages
 exactly this way. Any change to `HtmlScanner` must keep the minified fixtures
 green, and any new fixture must include a minified variant.
+
+The scanner is **one sequential, attribute-aware pass** (`tokenize()`), and
+must stay one: a tag is opened only where a browser opens one. The byte-level
+scan it replaced saw `<!--` inside `<div data-x="<!--">` and hid every embed
+after it — silently, and kses keeps `<` inside attribute values, so any
+author could write it; it also spliced a placeholder into `<img alt="<iframe
+src=…">`. The `opener-in-attribute`, `raw-container-in-attribute` and
+`iframe-in-attribute` fixtures pin this. Never add a second regex that walks
+the raw bytes for a tag name.
+
+## The forged-panel trap (`gate.js`, `PlaceholderRenderer`)
+
+gate.js executes what the payload tells it to: it loads a script URL,
+restores an inline `srcdoc` document, re-runs inline loader code. WordPress's
+kses lets users **without** `unfiltered_html` — Contributors, Authors — write
+`class` and any `data-*` attribute on every tag, plus `<div>` and `<button>`
+(`_wp_add_global_attributes` in `wp-includes/kses.php`). So when the payload
+lived in `data-cg-payload` (0.x), a Contributor could author the whole panel
+verbatim in post content — `<div class="cg-embed" data-cg-payload='{"strategy":
+"script","inline":"…"}'><button class="cg-embed__button">` — and the visitor's
+click, a consent-memory restore with scope "all", a CMP-bridge grant, or the
+Editor's preview ran it. A stored XSS with a Contributor account.
+
+The one thing kses never produces is a `<script>` element. The payload is
+therefore the container's first child, `<script type="application/json"
+class="cg-embed__payload">`, and `gate.js` reads a payload from `payloadOf()`
+and **nowhere else**. Rules that follow: never move the payload back into an
+attribute; never add a second executable field that gate.js reads from a
+`data-cg-*` attribute (a data attribute may carry identity — provider, host —
+never anything to execute); a custom template echoes `$payload_tag` raw as a
+direct child; `ScriptRule` must keep skipping non-JavaScript `type`s
+(`ScriptType`), or the carrier itself becomes a companion. Pinned by
+`tests/E2E/forged-panel.spec.js` (forged panels in content next to a real
+one) and the WordPress test that seeds the forgery through `wp_kses_post()` —
+which also proves kses still lets it through. Known cost: a theme that runs
+`wp_kses_post()` over *rendered* content strips the element and shows a dead
+button with a working link — visible, which invariant 6 prefers.
 
 ## The authority-confusion trap (`HostMatcher`, invariant 6)
 

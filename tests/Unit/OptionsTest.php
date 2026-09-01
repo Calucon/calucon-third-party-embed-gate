@@ -366,7 +366,6 @@ final class OptionsTest extends TestCase {
 		$defaults = Options::defaults();
 
 		self::assertFalse( $defaults['cmp']['bridge'] );
-		self::assertFalse( $defaults['cmp']['tcf'] );
 		self::assertSame( 'external-media', $defaults['cmp']['borlabs_group'] );
 	}
 
@@ -375,13 +374,11 @@ final class OptionsTest extends TestCase {
 			array(
 				'cmp' => array(
 					'bridge' => '1',
-					'tcf'    => '0',
 				),
 			)
 		);
 
 		self::assertTrue( $clean['cmp']['bridge'] );
-		self::assertFalse( $clean['cmp']['tcf'] );
 	}
 
 	public function test_cmp_borlabs_group_accepts_slugs_only(): void {
@@ -458,7 +455,7 @@ final class OptionsTest extends TestCase {
 			'detection'  => array( 'iframes' => true, 'scripts' => true, 'images' => false, 'own_hosts' => array( 'cdn.example' ), 'never_gate' => array(), 'always_gate' => array(), 'www_equivalence' => true, 'output_buffer' => false ),
 			'appearance' => array( 'preset' => 'card', 'bg' => '#123456', 'fg' => '#ffffff', 'accent' => '', 'accent_fg' => '', 'corners' => 'rounded' ),
 			'consent'    => array( 'memory' => 'session', 'scope' => 'provider', 'duration_days' => 180 ),
-			'cmp'        => array( 'bridge' => false, 'borlabs_group' => 'external-media', 'tcf' => false ),
+			'cmp'        => array( 'bridge' => false, 'borlabs_group' => 'external-media' ),
 		);
 
 		$clean = Options::sanitize( $stored );

@@ -238,20 +238,44 @@ final class TranslationTest extends TestCase {
 			$swiss = 0 === strpos( $locale, 'de_CH' );
 			foreach ( $from as $msgid => $text ) {
 				// Switzerland writes ss for ß and quotes with guillemets;
-				// everything else is the source translation verbatim.
-				$expected = $swiss ? str_replace( array( 'ß', '„', '“' ), array( 'ss', '«', '»' ), $text ) : $text;
+				// everything else is the source translation verbatim. The one
+				// exemption is a ß with no letter beside it: the character
+				// being named rather than used ("mit ss statt ß"), which
+				// survives — see bin/derive-german-locales.php.
+				$expected = $swiss ? self::swiss( $text ) : $text;
 				self::assertSame( $expected, $to[ $msgid ], "$locale drifted from $source" );
 			}
 
 			if ( $swiss ) {
 				$body = (string) file_get_contents( "$dir$locale.po" );
-				self::assertStringNotContainsString( 'ß', $body, "$locale must not contain a sharp S" );
+				// A ß beside a letter is a word spelt the German-Germany way and
+				// must not survive; an isolated one is the character being
+				// named and does. Checking the rule, not the byte.
+				self::assertSame(
+					0,
+					preg_match( '/(?<=\p{L})ß|ß(?=\p{L})/u', $body ),
+					"$locale must not spell a word with a sharp S"
+				);
 				self::assertStringNotContainsString( '„', $body, "$locale quotes with guillemets" );
 			}
 		}
 
 		// The source locales keep German-Germany orthography.
 		self::assertStringContainsString( 'ß', (string) file_get_contents( $dir . 'de_DE.po' ) );
+	}
+
+	/**
+	 * Swiss orthography, restated here rather than imported from
+	 * bin/derive-german-locales.php so this test stays an independent check of
+	 * what that script did. Keep the two in step.
+	 *
+	 * @param string $text German-Germany translation.
+	 * @return string
+	 */
+	private static function swiss( string $text ): string {
+		$text = preg_replace( '/(?<=\p{L})ß|ß(?=\p{L})/u', 'ss', $text );
+
+		return str_replace( array( '„', '“' ), array( '«', '»' ), (string) $text );
 	}
 
 	/**
@@ -284,4 +308,114 @@ final class TranslationTest extends TestCase {
 				. 'or bundled editor translations are ignored on WordPress below 6.7'
 		);
 	}
+
+	/**
+	 * Every translatable string in the source is in the POT.
+	 *
+	 * The other tests here assert PO ⊇ POT — every string the POT knows about
+	 * has German. None of them asserted POT ⊇ SOURCE, so a POT that had not
+	 * been regenerated since the last few strings were added satisfied the
+	 * whole translation gate vacuously: the missing strings were in no file to
+	 * be found missing from.
+	 *
+	 * That is not hypothetical. Four strings added late on the optimizer-resilience branch —
+	 * including a status label sitting in a table of otherwise-translated
+	 * statuses — reached no POT and no PO, and every translation test stayed
+	 * green. A German admin would have read them in English.
+	 *
+	 * The extraction is deliberately a SECOND implementation of the one in
+	 * tests/bin/generate-pot.php. A test that reused the generator's own
+	 * extraction could only ever agree with it.
+	 *
+	 * @group translation-sources
+	 */
+	/**
+	 * The plugin header's own text is translatable and is a gettext call
+	 * nowhere, so the source scan below cannot see it.
+	 *
+	 * WordPress translates Name and Description through the loaded textdomain
+	 * (_get_plugin_data_markup_translate()), which is what puts German on the
+	 * Plugins screen — but only if they reached the .mo. They never did:
+	 * wordpress.org extracts plugin headers with its own parser, so they
+	 * appeared on translate.wordpress.org as originals while the POT, the .po
+	 * files and every completeness check here stayed unaware of them. Simon
+	 * found the Description missing while reviewing de_DE.
+	 *
+	 * Plugin URI, Author and Author URI are deliberately NOT required: a URL
+	 * and a company name are not translatable text.
+	 */
+	public function test_the_plugin_header_text_reached_the_pot(): void {
+		$root   = dirname( __DIR__, 2 );
+		$header = (string) file_get_contents( $root . '/calucon-third-party-embed-gate.php' );
+		$pot    = $this->pot_msgids();
+
+		foreach ( array( 'Plugin Name', 'Description' ) as $field ) {
+			self::assertSame(
+				1,
+				preg_match( '/^ \* ' . preg_quote( $field, '/' ) . ':\s+(.+?)\s*$/m', $header, $found ),
+				"the plugin header has no {$field} field"
+			);
+			self::assertContains(
+				$found[1],
+				$pot,
+				"The plugin header's {$field} is not in the POT, so it has no German in the\n"
+					. "bundled .mo and a German site shows English for it on the Plugins screen.\n"
+					. "It is a gettext call in no file, so no other test can see this. Run:\n\n"
+					. "    php tests/bin/generate-pot.php   (or: composer translations)"
+			);
+		}
+	}
+
+	public function test_every_translatable_string_in_the_source_reached_the_pot(): void {
+		$root = dirname( __DIR__, 2 );
+		$pot  = $this->pot_msgids();
+		self::assertGreaterThan( 300, count( $pot ), 'the POT looks truncated' );
+
+		$files = array( $root . '/templates/placeholder.php', $root . '/assets/js/editor.js' );
+		$dir   = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $root . '/src' ) );
+		foreach ( $dir as $file ) {
+			if ( $file->isFile() && 'php' === $file->getExtension() ) {
+				$files[] = $file->getPathname();
+			}
+		}
+
+		$missing = array();
+		foreach ( $files as $path ) {
+			$source = (string) file_get_contents( $path );
+			$found  = array();
+			preg_match_all(
+				'/(?:__|_e|esc_html__|esc_html_e|esc_attr__|esc_attr_e)\(\s*'
+					. '(?:\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)")\s*,\s*\'calucon-third-party-embed-gate\'\s*\)/s',
+				$source,
+				$found,
+				PREG_SET_ORDER
+			);
+			$inline = array();
+			preg_match_all(
+				'/\$t\(\s*(?:\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)")\s*\)/s',
+				$source,
+				$inline,
+				PREG_SET_ORDER
+			);
+
+			foreach ( array_merge( $found, $inline ) as $match ) {
+				$raw  = '' !== $match[1] ? $match[1] : ( $match[2] ?? '' );
+				$text = stripcslashes( $raw );
+				if ( '' === $text || in_array( $text, $pot, true ) ) {
+					continue;
+				}
+				$missing[] = substr( $path, strlen( $root ) + 1 ) . ': ' . mb_substr( $text, 0, 90 );
+			}
+		}
+
+		self::assertSame(
+			array(),
+			array_values( array_unique( $missing ) ),
+			"These strings are translatable in the source and absent from the POT, so they\n"
+				. "have no German anywhere and no other test can see it. Run:\n\n"
+				. "    php tests/bin/generate-pot.php   (or: composer translations)\n\n"
+				. implode( "\n", array_unique( $missing ) )
+		);
+	}
+
 }

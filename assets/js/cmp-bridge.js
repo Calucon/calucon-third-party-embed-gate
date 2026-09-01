@@ -211,17 +211,64 @@
 		// URL"). Per-container, so mixed pages resolve independently.
 		// Grant-only: RCB exposes no public revocation event; its own
 		// opt-out machinery handles revoked services.
+		//
+		// THE TRAP, found by the field suite against RCB 5.3 (2026-08-28):
+		// unblock(url) resolves IMMEDIATELY when no content blocker matches
+		// the URL — "not blocked" and "consented" look the same to a caller
+		// that only awaits it. RCB's free tier ships no YouTube blocker, so
+		// on a plain install every gated embed would auto-load with no
+		// consent at all. So the bridge first asks whether RCB governs the
+		// URL — unblockSync(url) returns the matched blocker, or undefined
+		// when none matches; consentSync({url}) returns cookie null when no
+		// service matches — and stays gated unless it does. Fail closed: a
+		// site can only end up gating something RCB would have allowed
+		// (visible), never loading something nobody consented to.
 		'real-cookie-banner': function () {
+			// RCB inlines a STUB consentApi before its banner script loads:
+			// unblockSync() answers undefined and consentSync() "no cookie",
+			// while unblock()/consent() are queued until the real API
+			// replaces the stub and announces itself with a "consentApi"
+			// event on window (its own snippet, measured against RCB 5.3).
+			// Asking the stub is asking nobody: it looks exactly like "no
+			// blocker". So the bridge decides only once the real API is
+			// there — recognised by wrapFn(), which the stub never has — and
+			// listens for the announcement in case that is after page load.
 			var asked = false;
+			function real( api ) {
+				return !! ( api && typeof api.unblock === 'function'
+					&& typeof api.unblockSync === 'function'
+					&& typeof api.wrapFn === 'function' );
+			}
+			function governs( api, src ) {
+				try {
+					if ( api.unblockSync( src ) ) {
+						return true;
+					}
+				} catch ( e ) {
+					// Fall through to the second signal.
+				}
+				try {
+					if ( typeof api.consentSync === 'function' ) {
+						var state = api.consentSync( { url: src } );
+						return !! ( state && state.cookie );
+					}
+				} catch ( e ) {
+					// No answer is "no".
+				}
+				return false;
+			}
 			function check() {
 				var api = window.consentApi;
-				if ( asked || ! api || typeof api.unblock !== 'function' ) {
+				if ( asked || ! real( api ) ) {
 					return;
 				}
 				asked = true;
 				bridge.each( function ( container, payload ) {
 					var src = typeof payload.src === 'string' ? payload.src : '';
 					if ( ! /^(https?:)?\/\//i.test( src ) ) {
+						return;
+					}
+					if ( ! governs( api, src ) ) {
 						return;
 					}
 					try {
@@ -233,6 +280,7 @@
 					}
 				} );
 			}
+			window.addEventListener( 'consentApi', check, false );
 			onSettled( check );
 		}
 	};
@@ -240,50 +288,5 @@
 	var adapter = adapters[ config.adapter ];
 	if ( adapter ) {
 		adapter();
-	}
-
-	// IAB TCF v2.2, experimental and separately flagged: a generic bridge
-	// for TCF-running (ad-monetised) sites. v2.2 removed getTCData —
-	// addEventListener is the only read path. A provider can only ever be
-	// granted if it has a Global Vendor List id (most embed providers have
-	// none; those stay click-only), and only with BOTH Purpose 1 consent
-	// (storage on the device — what loading the embed triggers) and vendor
-	// consent. gdprApplies === false is NOT a grant: this gate is not
-	// GDPR-scoped, it is no-third-party-before-the-click.
-	if ( config.tcf && typeof window.__tcfapi === 'function' ) {
-		var vendors = config.tcf.vendors || {};
-		window.__tcfapi( 'addEventListener', 2, function ( tcData, success ) {
-			if ( ! success || ! tcData ) {
-				return;
-			}
-			// cmpuishown means the banner is up and nothing is decided;
-			// only settled states carry a verdict.
-			if ( tcData.eventStatus !== 'tcloaded' && tcData.eventStatus !== 'useractioncomplete' ) {
-				return;
-			}
-			if ( tcData.gdprApplies === false ) {
-				return;
-			}
-			var purposes     = ( tcData.purpose && tcData.purpose.consents ) || {};
-			var vendorGrants = ( tcData.vendor && tcData.vendor.consents ) || {};
-			bridge.each( function ( container ) {
-				var providerId = container.getAttribute( 'data-cg-provider' ) || '';
-				var vendorId   = vendors[ providerId ];
-				if ( vendorId && purposes[ 1 ] && vendorGrants[ vendorId ] ) {
-					bridge.grant( container );
-				}
-			} );
-			// A downgrade after useractioncomplete re-gates what this
-			// bridge (not the visitor's click) loaded for vendors that
-			// lost consent.
-			bridge.regate( function ( container ) {
-				var providerId = container.getAttribute( 'data-cg-provider' ) || '';
-				var vendorId   = vendors[ providerId ];
-				if ( ! vendorId ) {
-					return false;
-				}
-				return ! ( purposes[ 1 ] && vendorGrants[ vendorId ] );
-			} );
-		} );
 	}
 }() );

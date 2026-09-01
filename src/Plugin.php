@@ -24,6 +24,7 @@ use CaluconEmbedGate\Detection\EmbedObjectRule;
 use CaluconEmbedGate\Detection\EmbedStripper;
 use CaluconEmbedGate\Detection\HostMatcher;
 use CaluconEmbedGate\Detection\HtmlScanner;
+use CaluconEmbedGate\Detection\ElementorVideoRule;
 use CaluconEmbedGate\Detection\IframeRule;
 use CaluconEmbedGate\Detection\ImageRule;
 use CaluconEmbedGate\Detection\ScriptRule;
@@ -204,6 +205,18 @@ final class Plugin {
 		// (§9.12) — flush the caches we can reach.
 		add_action(
 			'update_option_' . Options::OPTION,
+			static function (): void {
+				CacheFlush::flush_all();
+			}
+		);
+
+		// And the FIRST save, which is not an update: a site that has never
+		// opened this screen has no option row at all, so WordPress adds one
+		// and fires add_option_ instead. That save is the one most likely to
+		// change what visitors are served — it is where gating gets turned on
+		// — and it was the one save that did not flush the page cache.
+		add_action(
+			'add_option_' . Options::OPTION,
 			static function (): void {
 				CacheFlush::flush_all();
 			}
@@ -398,7 +411,11 @@ final class Plugin {
 					return false;
 				}
 				return (bool) apply_filters( 'calucon_embed_gate_is_own_host', $own, $host );
-			}
+			},
+			// Also handed over whole: the asset-path exemption for scripts and
+			// stylesheets is a heuristic, and the owner's explicit list has to
+			// outrank it (HostMatcher::is_exempt_own_asset()).
+			$always_gate
 		);
 
 		$providers = $this->providers();
@@ -441,19 +458,56 @@ final class Plugin {
 			! empty( $this->options['display']['privacy_link'] )
 		);
 
-		$scanner     = new HtmlScanner();
+		$scanner = new HtmlScanner();
+		// The plugin's own assets, as the browser will see them — which is not
+		// a constant: an asset CDN filters plugins_url(), so this resolves to
+		// the CDN too.
+		$own_assets = (string) plugins_url( 'assets/', CALUCON_EMBED_GATE_FILE );
+
 		$should_gate = static function ( bool $gate, string $url, array $ctx ): bool {
 			return (bool) apply_filters( 'calucon_embed_gate_should_gate', $gate, $url, $ctx );
 		};
-		$on_gated    = function ( array $provider, array $ctx ): void {
+
+		// Never gate this plugin's own script. It is reachable: put your
+		// asset CDN's hostname on the always-gate list and that list —
+		// correctly — overrides both the own-host rule and the asset-path
+		// exemption, at which point gate.js itself is served from a gated
+		// host and gets replaced by a placeholder. The result is silent
+		// and total: every panel on the page becomes a button that does
+		// nothing, because the script that would have handled the click
+		// was the thing that got gated.
+		//
+		// Short-circuited before the filter deliberately. There is no
+		// configuration under which gating our own loader is what the
+		// owner wanted, so this is not a decision to delegate.
+		// Host match covers a CDN that FILTERS plugins_url(). Path match
+		// covers one that rewrites the finished HTML, where plugins_url()
+		// still reports the origin host and a host comparison therefore
+		// misses the exact setup the own-asset rule exists for.
+		//
+		// Handed to ScriptRule ALONE. The path match is host-blind, and
+		// what it identifies is "our loader" — a claim that only a script
+		// can make. Given to IframeRule, an iframe on any host at all could
+		// copy this path and be waved through with no panel and no link:
+		// the invisible failure invariant 6 exists to forbid. The pre-1.0
+		// review found exactly that; the CDN test in tests/WP pins it.
+		$should_gate_script = static function ( bool $gate, string $url, array $ctx ) use ( $own_assets, $should_gate ): bool {
+			if ( HostMatcher::url_is_under( $own_assets, $url )
+				|| HostMatcher::path_is_under( $own_assets, $url ) ) {
+				return false;
+			}
+			return $should_gate( $gate, $url, $ctx );
+		};
+		$on_gated           = function ( array $provider, array $ctx ): void {
 			$this->assets->enqueue_assets();
 			do_action( 'calucon_embed_gate_embed_gated', $provider, $ctx );
 		};
 
 		$this->pipeline = new Pipeline(
+			new ElementorVideoRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
-			new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
+			new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate_script, $on_gated ),
 			new ImageRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new StylesheetRule( $scanner, $hosts, $registry, $renderer ),
 			$registry,
@@ -541,6 +595,12 @@ final class Plugin {
 	 * opt-in image rule is on: it is by far the most common tag, and probing
 	 * it unconditionally would defeat the fast path everywhere.
 	 *
+	 * Not only tags: Elementor's video widget is a <div> whose player exists
+	 * only in a data-settings JSON (ElementorVideoRule), so its class name
+	 * is part of the probe — the field suite found the rule silently skipped
+	 * on the the_content path while the buffered page, which always carries
+	 * a <script>, passed.
+	 *
 	 * @param string $html Content.
 	 * @return bool
 	 */
@@ -551,8 +611,8 @@ final class Plugin {
 		// alternation scans the string once instead of once per tag name
 		// (measured ~4x on a 60 KB text-only post).
 		$pattern = $this->options['detection']['images']
-			? '/<(?:iframe|script|embed|object|img)/i'
-			: '/<(?:iframe|script|embed|object)/i';
+			? '/<(?:iframe|script|embed|object|img)|elementor-widget-video/i'
+			: '/<(?:iframe|script|embed|object)|elementor-widget-video/i';
 		return 1 === preg_match( $pattern, $html );
 	}
 
@@ -566,6 +626,10 @@ final class Plugin {
 	public function gate( string $html, array $ctx ): string {
 		$pipeline = $this->pipeline();
 		if ( $this->options['detection']['iframes'] ) {
+			// Before the iframe rule: this one turns a player that exists only
+			// as JSON into a panel, and must not leave an iframe behind for
+			// the next rule to gate twice.
+			$html = $pipeline->elementor_video_rule->apply( $html, $ctx );
 			$html = $pipeline->iframe_rule->apply( $html, $ctx );
 			// <embed>/<object> are frame-shaped embeds under the same toggle:
 			// Flash-era markup requests third-party content on load too.
@@ -668,9 +732,14 @@ final class Plugin {
 		if ( function_exists( 'wp_is_json_request' ) && wp_is_json_request() ) {
 			return current_user_can( 'edit_posts' );
 		}
+		// An editing context claimed by a query parameter is honoured only for
+		// someone who can edit — the same discriminator as the AJAX and REST
+		// branches above. Without the capability check this was a bypass:
+		// any link to `/page/?context=edit` served an anonymous visitor the
+		// raw embeds, and the parameter is in everyone's hands.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only context probe.
 		if ( isset( $_GET['context'] ) && 'edit' === $_GET['context'] ) {
-			return true;
+			return current_user_can( 'edit_posts' );
 		}
 		if ( is_feed() || is_embed() ) {
 			return true;
@@ -683,9 +752,8 @@ final class Plugin {
 	 * the option is off, or because no platform from the tested list is
 	 * installed (fail closed; an untested CMP gets no adapter).
 	 *
-	 * The filter exists for the documented escape hatches: overriding the
-	 * category a site's CMP files embeds under, or adding TCF vendor ids
-	 * for custom providers. Returning null (or anything non-array) from it
+	 * The filter exists for the documented escape hatch: overriding the
+	 * category a site's CMP files embeds under. Returning null (or anything non-array) from it
 	 * disables the bridge entirely.
 	 *
 	 * @return array|null
@@ -699,14 +767,47 @@ final class Plugin {
 	/**
 	 * Hosts that count as the site itself. Naive home_url() comparison is
 	 * wrong on real sites (PLAN.md §3.4): include site_url() for
-	 * WordPress-in-a-subdirectory, and let sites declare their CDN via the
-	 * calucon_embed_gate_own_hosts filter.
+	 * WordPress-in-a-subdirectory, every domain on a multisite network, and
+	 * let sites declare a host via the calucon_embed_gate_own_hosts filter.
+	 *
+	 * Since 1.0 it also reads the site's own ASSET bases — content_url(),
+	 * includes_url(), plugins_url(), the uploads base and both theme URIs — so
+	 * that a CDN plugin filtering those declares its host as ours and the
+	 * owner configures nothing. Those functions only ever answer "where do MY
+	 * assets live", so they cannot introduce a third party.
 	 *
 	 * @return string[]
 	 */
 	private function own_hosts(): array {
+		// wp_get_upload_dir(), not wp_upload_dir(): the latter defaults to
+		// creating the directory, and own_hosts() runs on every front-end
+		// render. A gate has no business running mkdir on a page view.
+		$uploads = wp_get_upload_dir();
+
+		// The site's own asset bases, not just its pages. A CDN plugin that
+		// filters these functions (WP Offload Media, BunnyCDN, Cloudflare and
+		// most others) reports the CDN host here — so WordPress itself tells
+		// us the offloaded host is ours, and we stop treating the site's own
+		// scripts, stylesheets and uploads as third party. It can never let a
+		// third party through: these functions only ever answer "where do MY
+		// assets live". A CDN that rewrites the finished HTML instead is
+		// invisible here; HostMatcher::looks_like_own_asset_path() covers that.
+		$own_urls = array(
+			home_url(),
+			site_url(),
+			content_url(),
+			includes_url(),
+			plugins_url( '', CALUCON_EMBED_GATE_FILE ),
+			isset( $uploads['baseurl'] ) ? (string) $uploads['baseurl'] : '',
+			get_stylesheet_directory_uri(),
+			get_template_directory_uri(),
+		);
+
 		$hosts = array();
-		foreach ( array( home_url(), site_url() ) as $url ) {
+		foreach ( $own_urls as $url ) {
+			if ( ! is_string( $url ) || '' === $url ) {
+				continue;
+			}
 			$host = wp_parse_url( $url, PHP_URL_HOST );
 			if ( is_string( $host ) && '' !== $host ) {
 				$hosts[] = $host;

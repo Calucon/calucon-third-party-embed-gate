@@ -4,6 +4,16 @@
 // @ts-check
 const { test, expect } = require( '@playwright/test' );
 
+// This file states invariant 1 as "no request to any host that is not the
+// page's origin", which is right for this harness because no page here serves
+// a site asset from another host. Note it is NARROWER than the plugin's own
+// definition since 1.0: the site's own asset host — a CDN, declared through
+// content_url()/plugins_url() or recognised by a /wp-content/ path — is the
+// site's own, and a request to it is not a third-party contact (PLAN.md §3.4).
+//
+// So if a harness page ever serves an asset from a foreign host, do NOT quietly
+// add it to OWN_HOSTS: that would narrow the product claim in the one test that
+// states it. Give it its own spec with its own explicit reasoning.
 const OWN_HOSTS = [ '127.0.0.1', 'localhost' ];
 
 function trackThirdPartyRequests( page ) {

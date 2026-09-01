@@ -1,0 +1,15 @@
+# The plugin has no runtime dependencies (SECURITY.md); the only pins that
+# rot are the GitHub Actions in .github/workflows/. Monthly, grouped into one
+# PR, so the maintenance routine stays one review a month at most.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: [ "*" ]
+    labels: [ maintenance ]
+    commit-message:
+      prefix: "ci"

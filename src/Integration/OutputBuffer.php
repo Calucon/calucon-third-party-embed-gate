@@ -21,6 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use CaluconEmbedGate\Detection\HtmlScanner;
 use CaluconEmbedGate\Plugin;
 
 /**
@@ -143,19 +144,23 @@ final class OutputBuffer {
 	 * @return array{0:int,1:int}
 	 */
 	private function body_span( string $buffer ): array {
-		$open = stripos( $buffer, '<body' );
-		if ( false === $open ) {
+		// A tag boundary after the name (`<bodyguard` is not a body), and the
+		// start tag's end read by the attribute-aware scanner rather than the
+		// first '>' — a '>' inside a quoted attribute value would otherwise
+		// put the split point mid-tag.
+		if ( ! preg_match( '/<body(?=[\s\/>])/i', $buffer, $m, PREG_OFFSET_CAPTURE ) ) {
 			return array( 0, strlen( $buffer ) );
 		}
-		$open_end = strpos( $buffer, '>', $open );
-		if ( false === $open_end ) {
+		$open     = (int) $m[0][1];
+		$open_end = ( new HtmlScanner() )->start_tag_end( $buffer, $open );
+		if ( null === $open_end ) {
 			return array( 0, strlen( $buffer ) );
 		}
 		$close = strripos( $buffer, '</body' );
 		if ( false === $close || $close < $open_end ) {
 			$close = strlen( $buffer );
 		}
-		return array( $open_end + 1, $close );
+		return array( $open_end, $close );
 	}
 
 

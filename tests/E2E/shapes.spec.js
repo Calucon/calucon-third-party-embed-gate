@@ -35,9 +35,17 @@ test( 'hardened shapes: all gated, zero third-party requests, pixel removed', as
 test( 'srcdoc placeholder restores the original inline document on click', async ( { page } ) => {
 	await page.goto( '/page/shapes' );
 
-	// Stable selector: the srcdoc payload is the container's own attribute,
-	// unaffected by the panel's removal on activation.
-	const container = page.locator( '.cg-embed[data-cg-payload*="srcdoc"]' );
+	// Stable selector: the payload element is the container's own child and
+	// survives the panel's removal on activation; only the srcdoc embed's
+	// payload carries a srcdoc.
+	const index = await page.evaluate( () => {
+		return Array.prototype.findIndex.call( document.querySelectorAll( '.cg-embed' ), ( node ) => {
+			const payload = node.querySelector( 'script.cg-embed__payload' );
+			return !! payload && payload.textContent.indexOf( '"srcdoc"' ) !== -1;
+		} );
+	} );
+	expect( index ).toBeGreaterThanOrEqual( 0 );
+	const container = page.locator( '.cg-embed' ).nth( index );
 	await container.locator( 'button' ).click();
 
 	const frame = container.locator( 'iframe' );

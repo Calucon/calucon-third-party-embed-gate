@@ -22,16 +22,20 @@ offered any choice at all, the browser contacts Google.
 Measured on `www.youtube.com/embed/<id>`, plain GET, **no playback, no scripts
 run**:
 
-| Cookie | Lifetime |
-|---|---|
-| `VISITOR_INFO1_LIVE` | ~18 months |
-| `__Secure-ROLLOUT_TOKEN` | ~18 months |
-| `YSC` | session |
-| `__Secure-YNID` | session |
-| `__Secure-YEC` | (cleared) |
+| Cookie | Lifetime (2026-08-28) | Lifetime (original measurement) |
+|---|---|---|
+| `VISITOR_INFO1_LIVE` | ~6 months | ~18 months |
+| `VISITOR_PRIVACY_METADATA` | ~6 months | — (new) |
+| `__Secure-ROLLOUT_TOKEN` | ~6 months | ~18 months |
+| `__Secure-YNID` | ~6 months | session |
+| `YSC` | session | session |
+| `__Secure-YEC` | (cleared) | (cleared) |
 
-Five cookies. Two of them long-lived identifiers. The same request on
-`www.youtube-nocookie.com/embed/<id>` sets **zero**.
+Six cookies today, four of them persistent identifiers; five (two of them
+18-month) when this was first measured. Google changes the set without
+notice — `bin/check-load-endpoints.sh` re-measures it weekly and prints the
+names. The same request on `www.youtube-nocookie.com/embed/<id>` sets
+**zero**, then and now.
 
 That is storage on the visitor's terminal equipment. Under **§ 25(1) TDDDG**
 (Germany's implementation of ePrivacy Art. 5(3)) it requires prior informed
@@ -263,6 +267,21 @@ A reference attribute pattern that satisfies the quoting rules:
 
 Note the optional value group — that is what makes boolean attributes work.
 
+**Attribute context (1.0).** The scanner is one sequential, tag-aware pass:
+a tag is opened only where a browser opens one — never inside another start
+tag's attribute values, never inside a comment or a raw-text body. The
+byte-level scan before it treated `<div data-x="<!--">` as a comment opener
+and excluded everything after it, so the iframe below went ungated (in
+whole-page mode: the rest of the document), and it spliced a placeholder into
+`<img alt="<iframe src=…">`. kses keeps `<` inside attribute values, so both
+were within any author's reach. Unterminated shapes follow the browser too: an
+unclosed comment, raw-text container or start tag swallows the rest of the
+document, where nothing renders; an unclosed `<pre>`/`<code>` excludes
+nothing, because browsers keep parsing inside those. `<iframe>` content is
+raw text (HTML5), so nothing inside an iframe's fallback content is ever a
+tag. End tags follow the HTML5 boundary: `</iframe foo>` closes, `</iframes>`
+does not.
+
 ### 3.3 Where to hook
 
 No single hook is sufficient. Ship a matrix and let the site owner see which
@@ -306,6 +325,39 @@ Naive `$host === parse_url(home_url(), PHP_URL_HOST)` is wrong on real sites.
 - `data:`, `blob:`, `about:blank`, `javascript:` — never gated, never rebuilt.
 - IDN/punycode normalisation before comparison.
 - Optional subdomain-wildcard entries (`*.example.com`).
+
+**Asset hosts, added for 1.0.** WordPress already knows where the site's own
+assets live, so `own_hosts()` also reads `content_url()`, `includes_url()`,
+`plugins_url()`, the uploads base and both theme URIs. A CDN plugin that filters
+those — most of them do — thereby declares its host as the site's own, and the
+owner has to configure nothing. These functions only ever answer "where do MY
+assets live", so they cannot introduce a third party.
+
+**The path rule, and why it is not an exemption from invariant 1.** A CDN that
+rewrites the finished HTML instead of filtering those functions is invisible to
+all of the above, and with whole-page buffering on, the site's own `wp-includes`
+scripts then look third-party and get gated — breaking the page rather than
+protecting anyone. So a `<script>` or `<link rel=stylesheet>` whose path
+contains `/wp-content/` or `/wp-includes/` is treated as the site's own,
+whatever host serves it.
+
+This is a claim about **identity**, not a licence: it says "this host is serving
+my assets", and a request to the site's own asset host is not a third-party
+contact. Invariant 1 is intact in principle. What the rule really costs is
+precision — the identity test is a heuristic about the shape of a URL, and shape
+is copyable — so it is fenced accordingly:
+
+- scripts and stylesheets only, **never iframes** (invariant 6 has no
+  exceptions, and a path heuristic is the hole it exists to close)
+- never for a host that already belongs to a known provider
+- the owner's always-gate list overrides it
+- the Status screen reports such a row as **not** gated, and says why, so the
+  owner can see the one case they might want to override
+
+The residue is a genuinely third-party host that chooses to serve from a
+`/wp-content/` path. Nothing in the plugin can distinguish that from the case
+the rule exists for; closing it needs a different mechanism than a heuristic,
+not a tighter heuristic.
 
 ### 3.5 What to detect beyond iframes
 
@@ -489,7 +541,8 @@ public API and version it.
      role="group"
      aria-label="{accessible name}"
      data-cg-provider="youtube"
-     data-cg-payload="{json}">
+     data-cg-host="www.youtube-nocookie.com">
+  <script type="application/json" class="cg-embed__payload">{json}</script>
   <div class="cg-embed__panel">
     <p class="cg-embed__note">{note}</p>
     <button type="button" class="cg-embed__button">{action}</button>
@@ -505,16 +558,32 @@ stylesheet that belongs to the panel above it — is part of this contract too:
 ```html
 <span class="cg-embed cg-embed--silent" hidden
       data-cg-provider="wolfram-cloud"
-      data-cg-host="www.wolframcloud.com"
-      data-cg-payload="{json}"></span>
+      data-cg-host="www.wolframcloud.com"><script type="application/json" class="cg-embed__payload">{json}</script></span>
 ```
 
 No panel, no accessible name, no fallback link: the visible panel of the same
 provider stands for both, and gate.js activates the companion **after** that
-panel's script has loaded. Anything sweeping the page for
-`.cg-embed[data-cg-payload]` (consent-memory restore, the CMP bridge, a site's
-own adapter) must skip `.cg-embed--silent`, or the companion runs before the
-script it calls into.
+panel's script has loaded. Anything sweeping the page for `.cg-embed`
+(consent-memory restore, the CMP bridge, a site's own adapter) must skip
+`.cg-embed--silent`, or the companion runs before the script it calls into.
+
+**The payload is an element, not an attribute, and that is the front end's
+security boundary (1.0).** gate.js executes what the payload says: a script
+URL, an inline document, inline loader code. WordPress's kses gives every
+author — Contributors and Authors without `unfiltered_html` — `class` and
+`data-*` on every tag, plus `<div>` and `<button>`, so a payload carried in a
+`data-cg-payload` attribute (0.x) was forgeable verbatim in post content: a
+stored XSS that fired on a visitor's click, on a consent-memory restore with
+scope "all", on a CMP-bridge grant, and for the Editor previewing the post.
+The one thing kses never produces is a `<script>` element. So the payload is
+the container's first child, `<script type="application/json"
+class="cg-embed__payload">`, gate.js reads a payload from nowhere else
+(`payloadOf()`), and a forged panel has no payload at all. The cost, stated:
+a theme that runs `wp_kses_post()` over *rendered* content strips the element
+and leaves a visibly dead button with a working fallback link — the visible
+failure, which is the direction invariant 6 prefers. `ScriptRule` skips every
+`<script>` whose `type` is not a JavaScript MIME type (`ScriptType`), which
+keeps the carrier — and JSON-LD, templates — out of the gate's own hands.
 
 `cg-embed__privacy` (0.10.0) is present only for providers that declare a
 `privacy_url` and only while `display.privacy_link` is on (off by default); the template exposes
@@ -552,8 +621,8 @@ adding noise to the landmark list or the document outline.
 
 ### 5.2 Payload
 
-`data-cg-payload` carries the JSON the front-end needs to build the real node.
-Rules:
+The `cg-embed__payload` element carries the JSON the front-end needs to build
+the real node. Rules:
 
 - Only what is needed. Never the full original tag.
 - Attribute safelist on rebuild: `title`, `width`, `height`, `sandbox`,
@@ -563,6 +632,9 @@ Rules:
   `style="position:absolute;visibility:hidden"` and reveals them from
   `wp-embed.js` after a `postMessage` handshake. Carrying that over means the
   visitor opts in and watches nothing appear.
+- The descriptor's `iframe_allow` is *added* when the original tag carried
+  no `allow` at all — a deliberate capability grant (the player needs
+  `encrypted-media` and `picture-in-picture` to work), never `autoplay`.
 
 ### 5.3 Aspect-ratio preservation
 
@@ -658,8 +730,10 @@ When a real CMP is installed, the plugin must not fight it. Detect and defer:
 - Two modes: *bridge* (a CMP grant for the matching purpose auto-activates
   gated embeds) and *stand aside* (the plugin stops gating providers the CMP
   already handles, to avoid a double prompt).
-- Also support the IAB TCF `__tcfapi` and Google Consent Mode v2 signals behind
-  a feature flag, as a generic bridge.
+- ~~Also support the IAB TCF `__tcfapi` and Google Consent Mode v2 signals behind
+  a feature flag, as a generic bridge.~~ Consent Mode has no public read API
+  (see CLAUDE.md); the TCF leg shipped as "experimental", could never be
+  validated against a real TCF platform, and was removed at 1.0.
 - Always: if the bridge cannot be established, fail **closed** — stay gated.
 
 ---
@@ -833,6 +907,13 @@ is the block renderer, `is_customize_preview()`, `wp_is_json_request()` for
 editor endpoints, and any request where `$_GET['context'] === 'edit'`. Gating a
 block in the editor looks like the plugin ate the content.
 
+Every one of those that a request can *claim* — AJAX, REST, a JSON request,
+the `context=edit` parameter — is honoured only for a user with `edit_posts`.
+The parameter is in everyone's hands: before the capability check, any link
+to `/page/?context=edit` served an anonymous visitor the raw embeds, a
+bypass of invariant 1 by URL. Editors are authenticated; visitors are
+gated.
+
 ### 9.3 Feeds, exports, and non-HTML output
 
 `is_feed()` — strip the embed and emit the fallback link instead; a placeholder
@@ -873,6 +954,17 @@ Two refinements learned since the first draft:
   original srcdoc verbatim (equal privilege, invariant 7) and the fallback
   link is harvested from the first foreign `<a href>` inside it. A srcdoc
   that references nothing foreign still passes through.
+- **`srcdoc` next to a foreign `src` is gated on the `src`.** Statically the
+  browser shows the srcdoc document and never requests `src` — but the
+  common snippets that carry both (the lazy-YouTube facade: thumbnail in the
+  srcdoc, the player in `src`) strip the srcdoc from script on click, and
+  that is when `src` fires. Preferring the srcdoc would restore the
+  provider-CDN thumbnail on activation instead of the nocookie player, and a
+  script-driven swap would then load `src` past the gate — the invisible
+  failure. The panel names the `src` host and loads it only after the click
+  on that name, which is not a widening of the original's privilege. The
+  `srcdoc-with-src-*` fixtures pin this; do not "fix" it in either direction
+  without them.
 - **A lazy-load `data-src`/`data-lazy-src`/`data-original` attribute is a
   usable src.** Lazy-load plugins park the real URL there and shim `src` with
   `about:blank` or a `data:` GIF; the parked URL is the one that fires on
@@ -1101,17 +1193,20 @@ catch a wrong-sounding accessible name.
 
 ### 10.5 Compatibility matrix
 
-CI cannot cover all of this; keep a documented manual matrix and work through it
-before releases.
+The rows marked ★ are covered by the field-validation suite (`tests/Field/`,
+`docs/field-validation.md`): the real wordpress.org plugin, current release,
+in a fresh Docker WordPress, monthly in CI. The rest is a documented manual
+matrix — paid or account-bound plugins the suite cannot install.
 
 | Axis | Values |
 |---|---|
 | WordPress | current, current − 1, minimum supported |
 | PHP | 7.4 → 8.4 |
 | Themes | Twenty Twenty-Four/Five (block), Astra, GeneratePress, Kadence, one classic |
-| Builders | Elementor, Divi, Bricks, WPBakery |
-| Cache | W3TC, WP Rocket, LiteSpeed, WP Super Cache, Cloudflare Auto Minify |
-| CMP | Complianz, Borlabs, Real Cookie Banner, none |
+| Builders | Elementor ★, Beaver Builder ★ (detection), Divi, Bricks, WPBakery |
+| Cache | W3TC ★, LiteSpeed ★, WP Super Cache ★, Autoptimize ★, WP Fastest Cache ★, SiteGround Optimizer ★, WP Rocket, Cloudflare Auto Minify (detection ★) |
+| CMP | Complianz ★, CookieYes ★, WP Consent API ★, Real Cookie Banner ★, Cookiebot (detection ★), Borlabs, none ★ |
+| Multilingual | Polylang ★, TranslatePress ★, WPML, Weglot |
 
 ---
 
@@ -1270,7 +1365,7 @@ expectations, and README evidence.
 
 | Measurement | Value |
 |---|---|
-| YouTube `/embed/` cookies on plain GET | 5 (2 × ~18 months) |
+| YouTube `/embed/` cookies on plain GET | 6 (4 × ~6 months) as of 2026-08-28; was 5 (2 × ~18 months) |
 | `youtube-nocookie.com/embed/` cookies on plain GET | 0 |
 | WordPress-to-WordPress oEmbed cookie | `pll_language`, 1 year |
 | Strava embed on page load | `sp` on `.strava.com`, plus 6 hosts contacted |

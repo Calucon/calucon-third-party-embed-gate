@@ -13,7 +13,7 @@ up. This file is the checklist and the steps.
   `Donate link`; `Tested up to: 7.0`; Description, Installation, FAQ,
   Screenshots and Changelog sections; no compliance claims.
 - **Assets** in `.wordpress-org/` — `icon-128x128.png`, `icon-256x256.png`,
-  `icon.svg`, and `screenshot-1..4.png` (matching the readme captions).
+  `icon.svg`, and `screenshot-1..6.png` (matching the readme captions).
 - **Direct-access guards** on every shipped PHP file; `uninstall.php` guarded
   by `WP_UNINSTALL_PLUGIN`.
 - **No outbound requests** anywhere in the shipped code — the core product
@@ -55,38 +55,70 @@ The SVN repository only exists once approved. Then:
 1. Add two repository **secrets** (Settings → Secrets and variables →
    Actions): `SVN_USERNAME` and `SVN_PASSWORD` — your WordPress.org login.
 2. Add a repository **variable**: `WPORG_DEPLOY` = `true`.
-3. From then on, the `deploy` job in `.github/workflows/release.yml` runs on
-   every merge to `main` (right after the release is built), pushing trunk +
-   a version tag to SVN and syncing `.wordpress-org/` to the SVN `/assets`
-   directory (icons + screenshots). The shipped set is the inverse of
-   `.distignore`. Until the `WPORG_DEPLOY` variable is `true`, that job is
+3. From then on, the `deploy` job in `.github/workflows/release.yml` runs
+   whenever `trunk` is merged into `main` (right after the release is built),
+   pushing trunk + a version tag to SVN and syncing `.wordpress-org/` to the
+   SVN `/assets` directory (icons + screenshots). The shipped set is the
+   zip's — `bin/build-zip.sh`'s staging directory, handed to the deploy as
+   `BUILD_DIR` — so SVN, the GitHub release and the trunk sync carry
+   identical files. Until the `WPORG_DEPLOY` variable is `true`, that job is
    skipped, so nothing deploys before you are ready.
 
 The deploy lives in the release workflow on purpose: GitHub does not fire
 `release`/tag events for releases created with the default `GITHUB_TOKEN`, so
 a separate release-triggered workflow would silently never run.
 
-To cut a release: bump the `Version` header (and `Stable tag`), merge to
-`main`. The release job tags and publishes the GitHub release and, when
-`WPORG_DEPLOY` is on, the deploy job pushes it to SVN.
+## The branches, and how a release happens
 
-## Pushing trunk without releasing
+GitHub mirrors WordPress.org: **`trunk` is development, `main` is stable.**
+Feature branches merge into `trunk` — never into `main`. A pull request into
+`main` is refused by CI (`.github/workflows/main-gate.yml`) unless its head is
+`trunk` and its version has no tag yet, and `main` only accepts *Create a
+merge commit*. Hotfixes take the same path; `enforce_admins` is on, so there
+is no bypass for anyone.
 
-`.github/workflows/wporg-trunk.yml` — **Actions → Push trunk to WordPress.org
-→ Run workflow** — copies the current branch into SVN `trunk` and stops there.
-No tag, no release.
+To cut a release:
+
+1. On a feature branch, bump the version in all three places — the `Version`
+   header and `CALUCON_EMBED_GATE_VERSION` in
+   `calucon-third-party-embed-gate.php`, and `Stable tag` in `readme.txt` —
+   write the changelog and upgrade notice, and merge the PR into `trunk`.
+   (`bin/plugin-version.sh` checks the three agree.)
+2. The merge runs `.github/workflows/trunk.yml`: SVN trunk is synced and a
+   GitHub **pre-release** `vX.Y.Z-rc.N` is published with the zip. Review the
+   German on the GlotPress dev projects (links below) and sync the readme
+   translation from `.wordpress-org/readme-de_*.md`. Every further merge into
+   `trunk` produces the next `rc`.
+3. Open the release: `gh pr create --base main --head trunk`. Both gates
+   must be green.
+4. Merge it with **Create a merge commit**. Squash or rebase would give `main`
+   its own commit SHAs, and every later `trunk → main` PR would re-present
+   the old commits. `release.yml` then tags `vX.Y.Z`, publishes the GitHub
+   release, deletes the `rc` pre-releases for that version and, when
+   `WPORG_DEPLOY` is on, deploys the SVN tag.
+
+`trunk` shows as "behind `main`" by one merge commit per release. That is
+expected; never "update" it with a squash. A plain merge of `main` into
+`trunk` is harmless if ever wanted.
+
+## Trunk and translations
+
+`.github/workflows/trunk.yml` copies the shipped file set into SVN `trunk`
+and stops there — no SVN tag, no stable release. It runs automatically on
+every merge into `trunk` (where it also publishes the release candidate), and
+by hand — **Actions → Trunk → Run workflow** — from any ref, to preview a sync
+or refresh trunk without a merge. The manual run defaults to a **dry run**:
+the first click shows the diff and commits nothing. Untick *Dry run* to push.
+A manual run never publishes a release candidate.
 
 Its purpose is translation. translate.wordpress.org builds its *Development*
-and *Development Readme* projects from trunk, so pushing trunk makes
+and *Development Readme* projects from trunk, so syncing trunk makes
 wordpress.org re-parse the readme and the plugin strings. The German can then
 be translated and inspected on GlotPress **before** that text becomes the
 Stable version the public plugin page shows.
 
-It defaults to a **dry run**: the first click shows the diff and commits
-nothing. Untick *Dry run* to push.
-
 What keeps it safe is that it never writes trunk's `Stable tag:` line. That
-line is what wordpress.org serves; this branch's readme names the version being
+line is what wordpress.org serves; the branch's readme names the version being
 developed, which has no tag yet, and pointing the directory at a tag that does
 not exist is the handbook's own "pushing bad code to users" scenario. The
 workflow reads the live value out of trunk, restores it into the readme it
@@ -102,10 +134,36 @@ Manual alternative (no CI): `svn co https://plugins.svn.wordpress.org/calucon-th
 copy the built files into `trunk/`, copy `.wordpress-org/*` into `assets/`,
 `svn cp trunk tags/<version>`, `svn ci`.
 
+## Maintenance — what runs by itself, and what a red result means
+
+Since 1.0 the plugin is in maintenance: no new features, and four automated
+canaries so the things that rot without a code change are noticed without
+anyone watching Actions. Each is informational (never a required check) and
+opens, or comments on, a labelled issue when red; when green again it says
+so on the same issue.
+
+| What | When | Where | Red means |
+|---|---|---|---|
+| Built-in `privacy_url`s still resolve | weekly | `privacy-link-canary.yml` | update the descriptor, release |
+| youtube-nocookie.com and Vimeo `dnt=1` set 0 cookies | weekly | `maintenance-canary.yml` → issue `maintenance` | a provider changed; rethink the load target and the readme's measured numbers |
+| readme `Tested up to` is the current WordPress | weekly | `maintenance-canary.yml` → issue `maintenance` | test on the new version, bump the header, release (header only — no stamp, no German) |
+| Compatibility claims against the real plugins | monthly | `field-validation.yml` → issue `field-validation` | read `docs/field-validation.md`; fix or narrow the claim |
+| GitHub Actions pins | monthly | Dependabot (`.github/dependabot.yml`), one grouped PR labelled `maintenance` | review, merge into `trunk` |
+
+GitHub runs `schedule` and `workflow_dispatch` workflows **only from the
+default branch (`main`)**. A canary added on `trunk` therefore starts on the
+release that carries it to `main`; until then it can neither be scheduled
+nor run by hand (`gh workflow run` answers 404). Pushes to `trunk` are the
+exception — `trunk.yml` runs from the pushed ref.
+
+Anything else — a support thread, a security report — arrives by e-mail from
+wordpress.org or GitHub. The fix path is always the same: branch → PR into
+`trunk` → release candidate → PR `trunk → main`.
+
 ## Regenerating assets
 
 - Screenshots: boot a backend (`bash tests/wp/serve-playground.sh`) and run
-  `node bin/capture-screenshots.cjs` → `.wordpress-org/screenshot-1..4.png`.
+  `node bin/capture-screenshots.cjs` → `.wordpress-org/screenshot-1..6.png`.
   Screenshot 5 (block-editor control) is best captured by hand from a real
   editing session.
 - Translations: `php tests/bin/generate-pot.php`.

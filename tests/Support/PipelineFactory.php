@@ -12,6 +12,7 @@ namespace CaluconEmbedGate\Tests\Support;
 use CaluconEmbedGate\Detection\EmbedObjectRule;
 use CaluconEmbedGate\Detection\HostMatcher;
 use CaluconEmbedGate\Detection\HtmlScanner;
+use CaluconEmbedGate\Detection\ElementorVideoRule;
 use CaluconEmbedGate\Detection\IframeRule;
 use CaluconEmbedGate\Detection\ScriptRule;
 use CaluconEmbedGate\Detection\StylesheetRule;
@@ -32,20 +33,28 @@ final class PipelineFactory {
 	 * @return string
 	 */
 	public static function gate( string $html, array $own_hosts = array( 'example.test' ), array $ctx = array(), ?array $providers = null ): string {
-		$scanner  = new HtmlScanner();
-		$hosts    = new HostMatcher( $own_hosts );
+		$scanner = new HtmlScanner();
+		// A fixture declares the owner's always-gate list in ctx.json, e.g.
+		// {"always_gate":["cdn.example.net"]}. Without this the fourth
+		// constructor argument was unreachable from every fixture and E2E
+		// path, so the rule that the owner's explicit list outranks the
+		// own-asset path heuristic was proven in HostMatcherTest and nowhere
+		// through the pipeline that actually applies it.
+		$always_gate = isset( $ctx['always_gate'] ) && is_array( $ctx['always_gate'] ) ? $ctx['always_gate'] : array();
+		$hosts       = new HostMatcher( $own_hosts, true, null, $always_gate );
 		$registry = new Registry( null === $providers ? Descriptors::all() : $providers );
 		// The provider privacy link is off by default; a fixture opts in
 		// through ctx.json {"privacy_link": true} (the E2E app turns it on
 		// for every page).
 		$renderer = new PlaceholderRenderer( null, null, null, null, array(), ! empty( $ctx['privacy_link'] ) );
 
+		$elementor = new ElementorVideoRule( $scanner, $hosts, $registry, $renderer );
 		$iframe = new IframeRule( $scanner, $hosts, $registry, $renderer );
 		$embed  = new EmbedObjectRule( $scanner, $hosts, $registry, $renderer );
 		$script = new ScriptRule( $scanner, $hosts, $registry, $renderer );
 		$styles = new StylesheetRule( $scanner, $hosts, $registry, $renderer );
 
-		return $styles->apply( $script->apply( $embed->apply( $iframe->apply( $html, $ctx ), $ctx ), $ctx ), $ctx );
+		return $styles->apply( $script->apply( $embed->apply( $iframe->apply( $elementor->apply( $html, $ctx ), $ctx ), $ctx ), $ctx ), $ctx );
 	}
 
 	/**

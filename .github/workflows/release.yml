@@ -1,11 +1,17 @@
 # Build and publish a release with the installable plugin zip on every push
 # to main (i.e. every merge).
 #
-# The tag comes from the Version header in calucon-third-party-embed-gate.php: v0.1.0 for the
-# first merge at that version. If that tag already exists (a merge without a
-# version bump), the release is still created, as v0.1.0-build.<run number>,
-# so every merge yields a downloadable zip. Bump the Version header to cut a
-# clean vX.Y.Z.
+# main only ever receives `trunk` (main-gate.yml refuses anything else), and
+# every merge into it IS a release: the tag comes from the Version header in
+# calucon-third-party-embed-gate.php, and that version must not be tagged
+# yet. The "Version is unreleased" gate checks that before the merge; this
+# workflow checks it again and fails hard rather than minting a second
+# release for the same version. There is no -build.N fallback any more.
+#
+# The release candidates trunk.yml published for this version
+# (v{VERSION}-rc.N pre-releases) are deleted here, before the release is
+# created, so the generated notes start from the previous release and the
+# release list ends up with one entry per version.
 #
 # The unit suite runs again here as a backstop: branch protection guards PR
 # merges, this guards direct pushes.
@@ -53,13 +59,27 @@ jobs:
           fi
           TAG="v${VERSION}"
           if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" > /dev/null 2>&1; then
-            TAG="v${VERSION}-build.${{ github.run_number }}"
+            echo "::error::${TAG} already exists. main only takes bumped versions — the 'Version is unreleased' gate should have caught this. Bump the version on trunk and open a new release PR." >&2
+            exit 1
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Build plugin zip
         run: bash bin/build-zip.sh
+
+      # The rc tag's release may be missing if trunk.yml failed between the
+      # tag and the release; the fallback deletes the bare tag.
+      - name: Remove the release candidates for this version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git ls-remote --refs --tags origin "refs/tags/v${VERSION}-rc.*" \
+            | sed -E 's|.*refs/tags/||' | while read -r tag; do
+              echo "Deleting pre-release ${tag}"
+              gh release delete "$tag" --cleanup-tag --yes || git push origin --delete "$tag"
+            done
 
       - name: Create release
         uses: softprops/action-gh-release@v3
@@ -73,10 +93,13 @@ jobs:
   # triggered by `release: published`, because GitHub does not fire release/tag
   # events created with the default GITHUB_TOKEN (as the release job above does)
   # — a standalone deploy workflow would silently never run. Inert until the
-  # plugin is approved and the maintainer opts in: sets vars.WPORG_DEPLOY=true
-  # and adds the SVN_USERNAME/SVN_PASSWORD secrets. Deploys trunk + a version
-  # tag and syncs .wordpress-org/ to the SVN /assets directory; the shipped set
-  # is the inverse of .distignore. See .github/WORDPRESS-ORG-SUBMISSION.md.
+  # maintainer opts in: sets vars.WPORG_DEPLOY=true and adds the
+  # SVN_USERNAME/SVN_PASSWORD secrets. Deploys trunk + a version tag and syncs
+  # .wordpress-org/ to the SVN /assets directory. The shipped set is the zip's
+  # (BUILD_DIR = bin/build-zip.sh's staging directory), so SVN, the GitHub
+  # release and the trunk sync in trunk.yml carry identical files — the
+  # .distignore route shipped one file the zip strips. See
+  # .github/WORDPRESS-ORG-SUBMISSION.md.
   deploy:
     name: Deploy to WordPress.org
     needs: release
@@ -85,6 +108,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Build the shipped file set
+        run: bash bin/build-zip.sh > /dev/null && ls build/calucon-third-party-embed-gate
+
       - name: Deploy to WordPress.org SVN
         uses: 10up/action-wordpress-plugin-deploy@2.3.0
         env:
@@ -92,3 +118,4 @@ jobs:
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           SLUG: calucon-third-party-embed-gate
           VERSION: ${{ needs.release.outputs.version }}
+          BUILD_DIR: build/calucon-third-party-embed-gate

@@ -29,6 +29,7 @@
 namespace CaluconEmbedGate\Tests\Unit;
 
 use CaluconEmbedGate\Tests\Support\PoReader;
+use CaluconEmbedGate\Tests\Support\ReadmeMarkdown;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -42,12 +43,14 @@ final class StyleGuideTest extends TestCase {
 	private const INFORMAL = array(
 		'languages/calucon-third-party-embed-gate-de_DE.po',
 		'.wordpress-org/readme-de_DE.po',
+		'.wordpress-org/readme-de_DE.md',
 	);
 
 	/** The formal branch. */
 	private const FORMAL = array(
 		'languages/calucon-third-party-embed-gate-de_DE_formal.po',
 		'.wordpress-org/readme-de_DE_formal.po',
+		'.wordpress-org/readme-de_DE_formal.md',
 	);
 
 	/**
@@ -293,6 +296,25 @@ final class StyleGuideTest extends TestCase {
 		foreach ( $files as $relative ) {
 			$path = dirname( __DIR__, 2 ) . '/' . $relative;
 			self::assertFileExists( $path );
+
+			// The listing German is authored as markdown, not as a PO. It is
+			// the same German, published on the same plugin page, and it was
+			// unchecked here until a reviewer-grade word turned up in it.
+			if ( '.md' === substr( $relative, -3 ) ) {
+				$chunks = ReadmeMarkdown::chunks( $path );
+				// Same trap as GlossaryTest: an empty parse means an empty
+				// corpus, and every rule below then passes over nothing.
+				self::assertSame(
+					ReadmeMarkdown::expected_chunk_count( $path ),
+					count( $chunks ),
+					"the parser did not return every German chunk in {$relative} — a partial loss makes this test pass, not fail"
+				);
+				foreach ( $chunks as $index => $german ) {
+					$out[ basename( $relative ) . ' :: chunk ' . $index ] = $german;
+				}
+				continue;
+			}
+
 			foreach ( PoReader::translations( $path ) as $english => $german ) {
 				$key = basename( $relative ) . ' :: ' . mb_substr( $english, 0, 60 );
 				$out[ $key ] = $german;
@@ -301,6 +323,7 @@ final class StyleGuideTest extends TestCase {
 
 		return $out;
 	}
+
 
 	/**
 	 * The German with markup removed, so a quote inside an HTML attribute or a
@@ -313,6 +336,14 @@ final class StyleGuideTest extends TestCase {
 		$german = preg_replace( '#<code>.*?</code>#su', '', $german );
 		$german = preg_replace( '#`[^`]*`#u', '', $german );
 		$german = preg_replace( '#<[^>]*>#u', '', $german );
+		// A bare HTML attribute, outside any tag: the Compatibility screen
+		// tells the owner to switch Cloudflare's Rocket Loader off with
+		// data-cfasync="false", and a German reader copies that verbatim. It
+		// is markup quoted as an example, which is the same reason the three
+		// rules above exist — but it has no tag around it to be caught by
+		// them, and the cell is rendered with esc_html(), so <code> would
+		// show up literally on the screen.
+		$german = preg_replace( '#\b[a-z][a-z0-9-]*="[^"]*"#u', '', $german );
 		return preg_replace( '#\[[a-z_]+\]#u', '', $german );
 	}
 }

@@ -32,7 +32,7 @@ final class ImageRuleTest extends TestCase {
 		// alt survives into the payload — dropping it on rebuild would be an
 		// accessibility regression.
 		self::assertStringContainsString( 'Video poster', $out );
-		self::assertStringContainsString( '&quot;tag&quot;:&quot;img&quot;', $out );
+		self::assertStringContainsString( '"tag":"img"', $out );
 		self::assertStringNotContainsString( '<img', $out );
 	}
 
