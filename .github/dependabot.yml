@@ -5,6 +5,13 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
+    # Dependabot opens against the default branch, which here is `main` — and
+    # main-gate.yml refuses any pull request into main whose head is not
+    # `trunk` at an untagged version, because every merge into main is a
+    # release. Without this line the monthly bump lands on main and fails both
+    # gates the moment it arrives, which is what happened to #62. Feature
+    # branches merge into trunk; so does Dependabot.
+    target-branch: trunk
     schedule:
       interval: monthly
     groups:
