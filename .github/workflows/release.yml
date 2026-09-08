@@ -35,7 +35,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -106,7 +106,7 @@ jobs:
     if: ${{ vars.WPORG_DEPLOY == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Build the shipped file set
         run: bash bin/build-zip.sh > /dev/null && ls build/calucon-third-party-embed-gate

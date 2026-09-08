@@ -79,7 +79,7 @@ jobs:
       SLUG: calucon-third-party-embed-gate
       SVN_URL: https://plugins.svn.wordpress.org/calucon-third-party-embed-gate
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
