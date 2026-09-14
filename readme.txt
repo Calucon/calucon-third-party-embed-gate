@@ -5,7 +5,7 @@ Tags: privacy, gdpr, embeds, youtube, cookies
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -179,6 +179,11 @@ Names the rest of WordPress's built-in embed types, and the content scan can now
 The panel looks and behaves as before unless you opt in: the privacy-policy link and the new Appearance controls are off by default. Clear your page cache once after updating. Adds your own providers, a CSP helper and a much larger Appearance tab.
 
 == Changelog ==
+
+= 1.0.1 =
+* Changed: nothing that runs on your site. The files this release installs are the files 1.0.0 installed; it exists to carry two repository fixes onto the branch the scheduled workflows run from.
+* Fixed: the weekly maintenance canary — are the privacy-preserving load targets still setting no cookies, is "Tested up to" still the current WordPress — ran both checks but could never report them. The reporting job had no repository context, so it failed before it could open an issue or close one, on every run it had ever had. Both checks were green throughout.
+* Fixed: the monthly updates to the repository's own CI pins opened against the release branch, where a gate refuses anything that is not a release. They now open against the development branch, like every other change.
 
 = 1.0.0 =
 * Security: the placeholder's payload — what the front-end script loads after the click — moves from a `data-cg-payload` attribute into a `<script type="application/json" class="cg-embed__payload">` element inside the panel, and the script reads it from nowhere else. WordPress lets users without the `unfiltered_html` capability (Contributors, Authors) write `class` and `data-*` attributes on any tag, so the attribute form was forgeable in post content and could execute script in a visitor's browser after a click; a `<script>` element is exactly what WordPress never lets them write. If you override the template, echo `$payload_tag` (which replaces `$payload_attr`) as a direct child of the container. Inert script blocks (JSON-LD, templates) are also no longer treated as loaders.
