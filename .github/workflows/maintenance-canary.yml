@@ -65,6 +65,15 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
+      # gh reads the repository off the checkout's git remote, and this job
+      # deliberately has no checkout — it only writes a summary and calls the
+      # API. Without GH_REPO every gh call here died with "fatal: not a git
+      # repository": the label's `|| true` swallowed it (which is why the
+      # `maintenance` label the config asks for was never created), and the
+      # next line then killed the step under `bash -e`. The reporting half of this canary had therefore
+      # never run once, green or red. field-validation.yml's report job gets
+      # the same context from a checkout it does need.
+      GH_REPO: ${{ github.repository }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       R_ENDPOINTS: ${{ needs.load-endpoints.outputs.result }}
       R_TESTED: ${{ needs.tested-up-to.outputs.result }}
