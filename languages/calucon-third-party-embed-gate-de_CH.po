@@ -465,7 +465,7 @@ msgstr "Leer: Der Platzhalter-Stil entscheidet. 0 entfernt den Rand."
 
 #: src/Admin/SettingsPage.php:471
 msgid "Every third-party embed is gated, listed here or not. These entries add the provider's name, icon and privacy-policy link, and let you word the panel yourself. Turning one off stops gating its embeds — they then load exactly as WordPress renders them."
-msgstr "Jede Einbettung von Drittanbietern wird gesperrt – ob sie hier steht oder nicht. Diese Einträge ergänzen Name, Symbol und Datenschutz-Link des Anbieters; den Text des Platzhalters können Sie selbst formulieren. Wenn Sie einen Eintrag abschalten, werden dessen Einbettungen nicht mehr gesperrt: Sie laden dann genau so, wie WordPress sie ausgibt."
+msgstr "Jede Einbettung von Drittanbietern wird gesperrt – ob sie hier steht oder nicht. Diese Einträge ergänzen Name, Symbol und Datenschutz-Link des Anbieters; den Text des Platzhalters können Sie selbst formulieren. Wenn Sie einen Eintrag abschalten, werden dessen Einbettungen nicht mehr gesperrt: Diese laden dann genau so, wie WordPress sie ausgibt."
 
 #: src/Plugin.php:544
 msgid "Example embed"
