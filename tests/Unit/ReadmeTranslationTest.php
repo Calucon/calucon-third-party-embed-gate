@@ -229,7 +229,7 @@ final class ReadmeTranslationTest extends TestCase {
 			self::assertFileExists( $md_path );
 			self::assertFileExists( $po_path );
 
-			$translations = array_map( 'self::markup_free', array_values( PoReader::translations( $po_path ) ) );
+			$translations = array_map( array( self::class, 'markup_free' ), array_values( PoReader::translations( $po_path ) ) );
 
 			$chunks = ReadmeMarkdown::chunks( $md_path );
 			self::assertSame(
@@ -238,7 +238,7 @@ final class ReadmeTranslationTest extends TestCase {
 				"the parser did not return every German chunk in {$markdown} — a partial loss makes this test pass, not fail"
 			);
 
-			foreach ( array_map( 'self::markup_free', $chunks ) as $chunk ) {
+			foreach ( array_map( array( self::class, 'markup_free' ), $chunks ) as $chunk ) {
 				// Short chunks are headings and labels; several legitimately
 				// share an opening, and they are not where drift hides.
 				if ( mb_strlen( $chunk ) < 60 ) {

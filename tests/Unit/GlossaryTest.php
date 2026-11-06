@@ -426,7 +426,16 @@ final class GlossaryTest extends TestCase {
 		$path = dirname( __DIR__ ) . '/Support/data/de-glossary.csv';
 		self::assertFileExists( $path, 'export it from translate.wordpress.org/locale/de/default/glossary/' );
 
-		$rows = array_filter( array_map( 'str_getcsv', file( $path ) ) );
+		$rows = array_filter(
+			array_map(
+				static function ( string $line ): array {
+					// Escape '' = none (RFC 4180, and PHP 9's default); PHP 8.5
+					// deprecates leaving it implicit. The export has no backslashes.
+					return str_getcsv( $line, ',', '"', '' );
+				},
+				file( $path )
+			)
+		);
 		self::assertSame( array( 'en', 'de', 'pos', 'description' ), $rows[0] );
 		self::assertGreaterThan( 400, count( $rows ), 'the vendored glossary looks truncated' );
 

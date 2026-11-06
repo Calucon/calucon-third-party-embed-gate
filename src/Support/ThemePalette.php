@@ -25,8 +25,20 @@ final class ThemePalette {
 	/** Slug grammar — the only thing ever interpolated into a custom-property name. */
 	public const SLUG_PATTERN = '/^[a-z0-9-]{1,64}$/';
 
-	/** Hex grammar — the same rule Options::sanitize() applies to colours. */
-	public const HEX_PATTERN = '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/';
+	/**
+	 * Hex grammar for a THEME colour: #rgb, #rgba, #rrggbb or #rrggbbaa.
+	 *
+	 * Themes do ship translucent presets — WordPress 7.2's default theme,
+	 * Ipsum, paints its text with `contrast: #000000bf`. Rejecting those as
+	 * "not a colour" left the Appearance preview on a stock 7.2 site without
+	 * the theme's text colour: the built-in light-grey fallback on Ipsum's
+	 * near-white base, and two false "hard to read" lines on an untouched
+	 * site. A theme colour is only ever referenced by its slug and painted
+	 * as-is (every browser has read 8-digit hex since 2016), so the alpha
+	 * passes straight through. The owner's OWN hex stays opaque — 3 or 6
+	 * digits, Options::sanitize() — because the colour picker has no alpha.
+	 */
+	public const HEX_PATTERN = '/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/';
 
 	/**
 	 * Palette entries: theme.json colours (the theme's, then the site's
@@ -53,6 +65,19 @@ final class ThemePalette {
 			}
 		}
 
+		return self::normalize( $raw );
+	}
+
+	/**
+	 * The pure half of entries(): raw palette rows (theme.json shape —
+	 * slug, color, name) to the validated list. Entries without a valid slug
+	 * AND hex are dropped; duplicates by slug collapse to the first; at most
+	 * 32 survive. WordPress-free so the grammar is unit-testable.
+	 *
+	 * @param array<int,mixed> $raw Raw palette rows.
+	 * @return array<int,array{name:string,slug:string,color:string}>
+	 */
+	public static function normalize( array $raw ): array {
 		$entries = array();
 		$seen    = array();
 		foreach ( $raw as $entry ) {
