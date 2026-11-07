@@ -312,6 +312,13 @@ test( 'admin: appearance controls are novice-usable — pickers, live preview, c
 	await expect( sample ).toBeVisible();
 	await expect( sample.locator( '.cg-embed__button' ) ).toBeVisible();
 	await expect( page.locator( '#cg-contrast-report' ) ).toContainText( ':1' );
+	// Regression (WordPress 7.2): an untouched site has nothing to flag.
+	// 7.2's default theme, Ipsum, paints its text with a translucent preset
+	// (contrast: #000000bf); read as "not a colour", the preview fell back to
+	// light grey on Ipsum's near-white base and reported two false fails —
+	// while the visitor's panel, which follows the theme directly, was fine.
+	await expect( page.locator( '#cg-contrast-report .cg-contrast-line--fail' ) ).toHaveCount( 0 );
+	await expect( page.locator( '.cg-color[data-cg-color-key="fg"] .cg-color__dot--missing' ) ).toHaveCount( 0 );
 
 	// Switching the panel style restyles the preview immediately.
 	await choose( 'cg-preset', 'minimal' );

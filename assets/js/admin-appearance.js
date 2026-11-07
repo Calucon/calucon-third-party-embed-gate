@@ -745,18 +745,32 @@
 			return out;
 		}
 
+		// #rgb, #rgba, #rrggbb or #rrggbbaa. A theme preset may be translucent
+		// (WordPress 7.2's Ipsum paints text with #000000bf); reading its
+		// eight digits as one number made that candidate blue. The alpha is
+		// kept so the caller composites over the real backdrop before it
+		// measures, exactly as the report does for a computed rgba().
+		function hexToRgb( hex ) {
+			var h = hex.replace( '#', '' );
+			if ( 3 === h.length || 4 === h.length ) {
+				h = h.replace( /./g, function ( c ) {
+					return c + c;
+				} );
+			}
+			if ( 6 !== h.length && 8 !== h.length ) {
+				return null;
+			}
+			return {
+				r: parseInt( h.slice( 0, 2 ), 16 ),
+				g: parseInt( h.slice( 2, 4 ), 16 ),
+				b: parseInt( h.slice( 4, 6 ), 16 ),
+				a: 8 === h.length ? parseInt( h.slice( 6, 8 ), 16 ) / 255 : 1
+			};
+		}
 		// The fix: among the theme's colours (plus black and white) pick the
 		// one that passes 4.5:1 against the pair's real backdrop and is
 		// closest to the current colour — a theme colour becomes a reference,
 		// black/white a custom hex.
-		function hexToRgb( hex ) {
-			var h = hex.replace( '#', '' );
-			if ( 3 === h.length ) {
-				h = h[ 0 ] + h[ 0 ] + h[ 1 ] + h[ 1 ] + h[ 2 ] + h[ 2 ];
-			}
-			var n = parseInt( h, 16 );
-			return { r: ( n >> 16 ) & 255, g: ( n >> 8 ) & 255, b: n & 255, a: 1 };
-		}
 		function fixPair( pair, bg ) {
 			var key = pair.key;
 			if ( darkPreviewActive() && VARS[ key ] ) {
@@ -780,6 +794,12 @@
 			var best = null;
 			for ( var c = 0; c < candidates.length; c++ ) {
 				var rgb = hexToRgb( candidates[ c ].hex );
+				if ( ! rgb ) {
+					continue;
+				}
+				if ( rgb.a < 1 ) {
+					rgb = over( rgb, bg );
+				}
 				if ( ratio( rgb, bg ) < 4.5 ) {
 					continue;
 				}
@@ -1136,10 +1156,18 @@
 		// the classic editor palette, resolved server-side). Iris shows
 		// swatches without names; label them so hover and screen readers
 		// get the theme's own colour names.
+		//
+		// Only OPAQUE presets become Iris swatches: Iris and WordPress's
+		// Color.js read 3- and 6-digit hex, so a translucent preset
+		// (#000000bf) would land as a wrong opaque colour — and a custom hex
+		// has no alpha to keep anyway. Translucent presets stay reachable the
+		// right way, as "preset:" references in the swatch menu above.
 		var paletteEntries = window.caluconEmbedGateAdminPalette || [];
+		var paletteSwatches = [];
 		var paletteColors = [];
 		for ( var p = 0; p < paletteEntries.length; p++ ) {
-			if ( paletteEntries[ p ] && paletteEntries[ p ].color ) {
+			if ( paletteEntries[ p ] && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test( paletteEntries[ p ].color || '' ) ) {
+				paletteSwatches.push( paletteEntries[ p ] );
 				paletteColors.push( paletteEntries[ p ].color );
 			}
 		}
@@ -1167,9 +1195,9 @@
 			} );
 			if ( paletteColors.length ) {
 				$( this ).closest( '.wp-picker-container' ).find( '.iris-palette' ).each( function ( i ) {
-					if ( paletteEntries[ i ] && paletteEntries[ i ].name ) {
-						this.setAttribute( 'title', paletteEntries[ i ].name );
-						this.setAttribute( 'aria-label', paletteEntries[ i ].name );
+					if ( paletteSwatches[ i ] && paletteSwatches[ i ].name ) {
+						this.setAttribute( 'title', paletteSwatches[ i ].name );
+						this.setAttribute( 'aria-label', paletteSwatches[ i ].name );
 					}
 				} );
 			}

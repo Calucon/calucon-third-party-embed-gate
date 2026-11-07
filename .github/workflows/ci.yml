@@ -29,8 +29,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The plugin declares "Requires PHP: 7.4" — test the floor and current.
-        php: ['7.4', '8.4']
+        # The plugin declares "Requires PHP: 7.4" — test the floor, and the
+        # two current releases (8.5 since November 2025).
+        php: ['7.4', '8.4', '8.5']
     steps:
       - uses: actions/checkout@v7
 
@@ -130,6 +131,13 @@ jobs:
             php: '7.4'
           - wp: '6.7'
             php: '8.2'
+          # And CURRENT WordPress on the newest PHP — Playground's PHP-WASM
+          # trails the PHP release train, so this is the only run of the
+          # admin and front end on PHP 8.5. `image` overrides the tag
+          # pattern below: the official image has no "latest-php8.5" tag.
+          - wp: 'current'
+            php: '8.5'
+            image: 'wordpress:php8.5-apache'
     steps:
       - uses: actions/checkout@v7
 
@@ -147,7 +155,7 @@ jobs:
 
       - name: Start WordPress ${{ matrix.wp }}
         env:
-          CG_WP_IMAGE: wordpress:${{ matrix.wp }}-php${{ matrix.php }}-apache
+          CG_WP_IMAGE: ${{ matrix.image || format('wordpress:{0}-php{1}-apache', matrix.wp, matrix.php) }}
           CG_WP_CLI_IMAGE: wordpress:cli-php${{ matrix.php }}
         run: bash tests/wp/setup.sh
 

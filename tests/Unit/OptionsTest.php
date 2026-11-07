@@ -486,4 +486,25 @@ final class OptionsTest extends TestCase {
 		$pristine['appearance'] = array( 'preset' => 'default', 'bg' => '', 'fg' => '', 'accent' => '', 'accent_fg' => '', 'corners' => '' );
 		self::assertSame( $defaults['appearance'], Options::sanitize( $pristine )['appearance'] );
 	}
+
+	public function test_a_custom_colour_never_carries_alpha(): void {
+		// A THEME preset may be translucent (ThemePalette accepts #rrggbbaa);
+		// the owner's own hex may not: the picker has no alpha channel, and a
+		// stored 8-digit value would be a grammar nothing downstream promised.
+		$clean = Options::sanitize(
+			array(
+				'appearance' => array(
+					'bg'        => '#000000bf',
+					'fg'        => '#000b',
+					'accent'    => 'custom',
+					'accent_fg' => 'preset:contrast',
+				),
+				'accent_custom' => '#ffffff80',
+			)
+		);
+		self::assertSame( '', $clean['appearance']['bg'] );
+		self::assertSame( '', $clean['appearance']['fg'] );
+		self::assertSame( '', $clean['appearance']['accent'] );
+		self::assertSame( 'preset:contrast', $clean['appearance']['accent_fg'], 'following a translucent theme colour by slug is the supported way' );
+	}
 }

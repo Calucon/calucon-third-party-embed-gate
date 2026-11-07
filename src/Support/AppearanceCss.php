@@ -278,10 +278,11 @@ final class AppearanceCss {
 			return $value;
 		}
 		if ( preg_match( '/^preset:([a-z0-9-]{1,64})$/', $value, $m ) ) {
-			$slug     = $m[1];
-			$fallback = isset( $palette[ $slug ] ) && preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i', (string) $palette[ $slug ] )
-				? ',' . $palette[ $slug ]
-				: '';
+			$slug = $m[1];
+			// The theme's hex may carry alpha (ThemePalette::HEX_PATTERN) —
+			// a var() fallback is painted verbatim, so that is fine here.
+			$hex      = isset( $palette[ $slug ] ) ? strtolower( (string) $palette[ $slug ] ) : '';
+			$fallback = preg_match( ThemePalette::HEX_PATTERN, $hex ) ? ',' . $hex : '';
 			return 'var(--wp--preset--color--' . $slug . $fallback . ')';
 		}
 		return 'inherit';

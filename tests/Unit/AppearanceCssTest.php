@@ -367,6 +367,22 @@ final class AppearanceCssTest extends TestCase {
 		self::assertStringContainsString( '@media (prefers-color-scheme:dark){.cg-embed,.cg-withdraw{--cg-bg:var(--wp--preset--color--contrast,#111111);}}', $css );
 	}
 
+	public function test_a_translucent_theme_colour_reaches_the_fallback_but_never_a_custom_value(): void {
+		// WordPress 7.2's Ipsum: contrast is #000000bf. Referenced by slug,
+		// the theme's own hex rides along as the var() fallback, alpha and all
+		// (CSS paints 8-digit hex) — upper-case input normalised like the rest.
+		$palette = array( 'contrast' => '#000000BF', 'accent-5' => '#0a0a0a08' );
+		self::assertSame(
+			'.cg-embed,.cg-withdraw{--cg-fg:var(--wp--preset--color--contrast,#000000bf);}',
+			AppearanceCss::build( self::appearance( array( 'fg' => 'preset:contrast' ) ), array(), $palette )
+		);
+		self::assertSame( 'var(--wp--preset--color--accent-5,#0a0a0a08)', AppearanceCss::color( 'preset:accent-5', $palette ) );
+		// A stored custom value is a different grammar — opaque only, the
+		// picker has no alpha — so an 8-digit value there is not a colour.
+		self::assertSame( 'inherit', AppearanceCss::color( '#000000bf' ) );
+		self::assertSame( 'inherit', AppearanceCss::color( '#000b' ) );
+	}
+
 	public function test_colour_resolver_never_emits_anything_but_hex_or_a_slug_var(): void {
 		self::assertSame( '#abc', AppearanceCss::color( '#abc' ) );
 		self::assertSame( 'var(--wp--preset--color--base)', AppearanceCss::color( 'preset:base' ) );

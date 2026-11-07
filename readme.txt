@@ -180,6 +180,10 @@ The panel looks and behaves as before unless you opt in: the privacy-policy link
 
 == Changelog ==
 
+= 1.0.2 =
+* Fixed: on WordPress 7.2's new default theme, Ipsum, the Appearance preview showed near-invisible panel text and two "hard to read" warnings on an untouched site, and the theme's text colour was missing from the colour menus. Ipsum paints its text with a translucent colour (`#000000bf`), which the plugin's palette reader rejected as "not a colour". Theme colours with transparency are now read, previewed and measured like any other. The placeholder your visitors see was never affected: it follows the theme directly.
+* Tests: the unit suite and the WordPress integration suite also run on PHP 8.5.
+
 = 1.0.1 =
 * Changed: nothing that runs on your site. The files this release installs are the files 1.0.0 installed; it exists to carry two repository fixes onto the branch the scheduled workflows run from.
 * Fixed: the weekly maintenance canary — are the privacy-preserving load targets still setting no cookies, is "Tested up to" still the current WordPress — ran both checks but could never report them. The reporting job had no repository context, so it failed before it could open an issue or close one, on every run it had ever had. Both checks were green throughout.
