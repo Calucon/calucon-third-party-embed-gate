@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use CaluconEmbedGate\Detection\BackgroundVideoRule;
 use CaluconEmbedGate\Detection\ElementorVideoRule;
 use CaluconEmbedGate\Detection\EmbedObjectRule;
 use CaluconEmbedGate\Detection\EmbedStripper;
@@ -36,8 +37,13 @@ use CaluconEmbedGate\Rendering\PlaceholderRenderer;
  */
 final class Pipeline {
 
-	/** @var IframeRule */
+	/** @var BackgroundVideoRule */
+	public BackgroundVideoRule $background_video_rule;
+
+	/** @var ElementorVideoRule */
 	public ElementorVideoRule $elementor_video_rule;
+
+	/** @var IframeRule */
 	public IframeRule $iframe_rule;
 
 	/** @var EmbedObjectRule */
@@ -71,6 +77,8 @@ final class Pipeline {
 	public PlaceholderRenderer $renderer;
 
 	/**
+	 * @param BackgroundVideoRule $background_video_rule Third-party background videos, removed.
+	 * @param ElementorVideoRule  $elementor_video_rule  Elementor players that exist only as JSON.
 	 * @param IframeRule          $iframe_rule       Cross-origin iframe gate.
 	 * @param EmbedObjectRule     $embed_object_rule Legacy embed/object gate.
 	 * @param ScriptRule          $script_rule       SDK-script gate.
@@ -84,6 +92,7 @@ final class Pipeline {
 	 * @param PlaceholderRenderer $renderer          The §5.1 markup contract.
 	 */
 	public function __construct(
+		BackgroundVideoRule $background_video_rule,
 		ElementorVideoRule $elementor_video_rule,
 		IframeRule $iframe_rule,
 		EmbedObjectRule $embed_object_rule,
@@ -97,17 +106,18 @@ final class Pipeline {
 		ResourceHints $hint_scrubber,
 		PlaceholderRenderer $renderer
 	) {
-		$this->elementor_video_rule = $elementor_video_rule;
-		$this->iframe_rule          = $iframe_rule;
-		$this->embed_object_rule    = $embed_object_rule;
-		$this->script_rule          = $script_rule;
-		$this->image_rule           = $image_rule;
-		$this->stylesheet_rule      = $stylesheet_rule;
-		$this->registry             = $registry;
-		$this->host_matcher         = $host_matcher;
-		$this->stripper             = $stripper;
-		$this->scanner              = $scanner;
-		$this->hint_scrubber        = $hint_scrubber;
-		$this->renderer             = $renderer;
+		$this->background_video_rule = $background_video_rule;
+		$this->elementor_video_rule  = $elementor_video_rule;
+		$this->iframe_rule           = $iframe_rule;
+		$this->embed_object_rule     = $embed_object_rule;
+		$this->script_rule           = $script_rule;
+		$this->image_rule            = $image_rule;
+		$this->stylesheet_rule       = $stylesheet_rule;
+		$this->registry              = $registry;
+		$this->host_matcher          = $host_matcher;
+		$this->stripper              = $stripper;
+		$this->scanner               = $scanner;
+		$this->hint_scrubber         = $hint_scrubber;
+		$this->renderer              = $renderer;
 	}
 }

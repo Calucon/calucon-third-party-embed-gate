@@ -20,6 +20,7 @@ use CaluconEmbedGate\Admin\SettingsPage;
 use CaluconEmbedGate\Cli\Commands as CliCommands;
 use CaluconEmbedGate\Cmp\BridgeConfig;
 use CaluconEmbedGate\Cmp\Detector;
+use CaluconEmbedGate\Detection\BackgroundVideoRule;
 use CaluconEmbedGate\Detection\EmbedObjectRule;
 use CaluconEmbedGate\Detection\EmbedStripper;
 use CaluconEmbedGate\Detection\HostMatcher;
@@ -504,6 +505,7 @@ final class Plugin {
 		};
 
 		$this->pipeline = new Pipeline(
+			new BackgroundVideoRule( $scanner, $hosts, $registry, $should_gate ),
 			new ElementorVideoRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
@@ -599,7 +601,9 @@ final class Plugin {
 	 * only in a data-settings JSON (ElementorVideoRule), so its class name
 	 * is part of the probe — the field suite found the rule silently skipped
 	 * on the the_content path while the buffered page, which always carries
-	 * a <script>, passed.
+	 * a <script>, passed. The same goes for Elementor's atomic YouTube
+	 * element (data-e-type="e-youtube") and its background videos, which
+	 * are a `background_video_link` setting on a section and nothing else.
 	 *
 	 * @param string $html Content.
 	 * @return bool
@@ -611,8 +615,8 @@ final class Plugin {
 		// alternation scans the string once instead of once per tag name
 		// (measured ~4x on a 60 KB text-only post).
 		$pattern = $this->options['detection']['images']
-			? '/<(?:iframe|script|embed|object|img)|elementor-widget-video/i'
-			: '/<(?:iframe|script|embed|object)|elementor-widget-video/i';
+			? '/<(?:iframe|script|embed|object|img)|elementor-widget-video|e-youtube|background_video_link/i'
+			: '/<(?:iframe|script|embed|object)|elementor-widget-video|e-youtube|background_video_link/i';
 		return 1 === preg_match( $pattern, $html );
 	}
 
@@ -626,6 +630,9 @@ final class Plugin {
 	public function gate( string $html, array $ctx ): string {
 		$pipeline = $this->pipeline();
 		if ( $this->options['detection']['iframes'] ) {
+			// First: a background video is removed, not given a panel, so the
+			// iframe rule must never see the Cover block's.
+			$html = $pipeline->background_video_rule->apply( $html, $ctx );
 			// Before the iframe rule: this one turns a player that exists only
 			// as JSON into a panel, and must not leave an iframe behind for
 			// the next rule to gate twice.

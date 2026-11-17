@@ -110,11 +110,12 @@ PHP;
 }
 
 // ---------------------------------------------------------------------------
-// builder-elementor: two pages built the way Elementor stores them, so the
+// builder-elementor: pages built the way Elementor stores them, so the
 // builder renders them on the front end. One HTML widget carrying the same
 // YouTube iframe as the fixture corpus; one native video widget, which is
 // the case nothing server-side can see if Elementor fetches YouTube's
-// player API itself.
+// player API itself; and, further down, the other players Elementor builds
+// in the browser.
 // ---------------------------------------------------------------------------
 if ( 'builder-elementor' === $cg_field_group ) {
 	$cg_iframe = '<iframe title="Kolkja Cycling" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
@@ -174,6 +175,137 @@ if ( 'builder-elementor' === $cg_field_group ) {
 		update_post_meta( $cg_post_id, '_elementor_template_type', 'wp-page' );
 		update_post_meta( $cg_post_id, '_elementor_version', defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : '3.0.0' );
 		update_post_meta( $cg_post_id, '_elementor_data', wp_slash( wp_json_encode( $cg_data ) ) );
+	}
+
+	// -----------------------------------------------------------------------
+	// Players Elementor builds in the browser, which no server-side rule sees
+	// unless it reads the same settings Elementor does (measured 2026-11-18,
+	// Elementor 4.4.1 — every one of these contacted YouTube before a click):
+	//
+	// - the ATOMIC YouTube element (Editor V4, on by default for a site
+	//   first installed at 4.0 or later): an empty <div data-e-type=
+	//   "e-youtube"> and its own handler script;
+	// - a section's and a container's BACKGROUND video: a
+	//   background_video_link setting on the element and nothing else.
+	//
+	// The atomic Google Maps element renders a real iframe; it is here so a
+	// change of that is noticed.
+	// -----------------------------------------------------------------------
+	$cg_yt     = 'https://www.youtube.com/watch?v=y_pjE_p1HwE';
+	$cg_string = static function ( $value ) {
+		return array(
+			'$$type' => 'string',
+			'value'  => $value,
+		);
+	};
+	$cg_atomic = static function ( string $id, string $type, array $settings ) {
+		return array(
+			array(
+				'id'       => $id . 'f',
+				'elType'   => 'e-flexbox',
+				'settings' => new stdClass(),
+				'styles'   => new stdClass(),
+				'elements' => array(
+					array(
+						'id'         => $id,
+						'elType'     => 'widget',
+						'widgetType' => $type,
+						'settings'   => $settings,
+						'elements'   => array(),
+						'styles'     => new stdClass(),
+					),
+				),
+			),
+		);
+	};
+	$cg_heading = array(
+		'id'         => 'cg0000h9',
+		'elType'     => 'widget',
+		'widgetType' => 'heading',
+		'settings'   => array( 'title' => 'Over a background video' ),
+		'elements'   => array(),
+	);
+	$cg_built   = array(
+		'elementor-atomic-youtube'         => array(
+			'Elementor atomic YouTube element',
+			$cg_atomic( 'cgat001', 'e-youtube', array( 'source' => $cg_string( $cg_yt ) ) ),
+		),
+		'elementor-atomic-youtube-privacy' => array(
+			'Elementor atomic YouTube element, privacy mode and lazy load',
+			$cg_atomic(
+				'cgat002',
+				'e-youtube',
+				array(
+					'source'       => $cg_string( $cg_yt ),
+					'privacy_mode' => array(
+						'$$type' => 'boolean',
+						'value'  => true,
+					),
+					'lazyload'     => array(
+						'$$type' => 'boolean',
+						'value'  => true,
+					),
+				)
+			),
+		),
+		'elementor-atomic-maps'            => array(
+			'Elementor atomic Google Maps element',
+			$cg_atomic( 'cgat003', 'e-google-maps', array( 'location' => $cg_string( 'Tallinn' ) ) ),
+		),
+		'elementor-background-section'     => array(
+			'Elementor section with a YouTube background',
+			array(
+				array(
+					'id'       => 'cg0000s9',
+					'elType'   => 'section',
+					'settings' => array(
+						'background_background'     => 'video',
+						'background_video_link'     => $cg_yt,
+						'background_play_on_mobile' => 'yes',
+					),
+					'elements' => array(
+						array(
+							'id'       => 'cg0000c9',
+							'elType'   => 'column',
+							'settings' => array( '_column_size' => 100 ),
+							'elements' => array( $cg_heading ),
+						),
+					),
+				),
+			),
+		),
+		'elementor-background-container'   => array(
+			'Elementor container with a Vimeo background',
+			array(
+				array(
+					'id'       => 'cg0000k9',
+					'elType'   => 'container',
+					'settings' => array(
+						'background_background'     => 'video',
+						'background_video_link'     => 'https://vimeo.com/76979871',
+						'background_play_on_mobile' => 'yes',
+					),
+					'elements' => array( $cg_heading ),
+				),
+			),
+		),
+	);
+	foreach ( $cg_built as $cg_slug => $cg_page ) {
+		$cg_existing = get_page_by_path( $cg_slug, OBJECT, 'page' );
+		$cg_post_id  = $cg_existing ? (int) $cg_existing->ID : (int) wp_insert_post(
+			array(
+				'post_type'    => 'page',
+				'post_status'  => 'publish',
+				'post_name'    => $cg_slug,
+				'post_title'   => $cg_page[0],
+				'post_content' => '<p>Elementor page: content lives in _elementor_data.</p>',
+			),
+			true
+		);
+		update_post_meta( $cg_post_id, '_elementor_edit_mode', 'builder' );
+		update_post_meta( $cg_post_id, '_elementor_template_type', 'wp-page' );
+		update_post_meta( $cg_post_id, '_elementor_version', defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : '4.0.0' );
+		update_post_meta( $cg_post_id, '_elementor_data', wp_slash( wp_json_encode( $cg_page[1] ) ) );
 	}
 }
 
