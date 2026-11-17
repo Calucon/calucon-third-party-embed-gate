@@ -483,7 +483,32 @@
 		setStatus( container, '' );
 	}
 
-	function activateScript( container, payload, focus ) {
+	// Tell the page that an embed has loaded (docs/customizing.md, "When an
+	// embed has loaded"): a bubbling DOM event on the container, so a site
+	// can resize a layout, start its own player API or count a view without
+	// polling for an iframe. Public surface since 1.1 — the name and the
+	// detail keys do not change in a minor release. Never for a silent
+	// companion: it is part of its panel's embed, not an embed of its own.
+	function announceLoaded( container, strategy, trigger, element ) {
+		var detail = {
+			provider: container.getAttribute( 'data-cg-provider' ) || '',
+			host: container.getAttribute( 'data-cg-host' ) || '',
+			strategy: strategy,
+			trigger: trigger,
+			element: element || null
+		};
+		var event;
+		try {
+			event = new CustomEvent( 'calucon-embed-gate:loaded', { bubbles: true, detail: detail } );
+		} catch ( e ) {
+			// Browsers without the constructor.
+			event = document.createEvent( 'CustomEvent' );
+			event.initCustomEvent( 'calucon-embed-gate:loaded', true, false, detail );
+		}
+		container.dispatchEvent( event );
+	}
+
+	function activateScript( container, payload, focus, trigger ) {
 		var providerId = container.getAttribute( 'data-cg-provider' ) || '';
 		var host = container.getAttribute( 'data-cg-host' ) || '';
 
@@ -498,6 +523,7 @@
 			runInline( payload.inline, container );
 			activateSilentSiblings( providerId );
 			runReadyHook( providerId );
+			announceLoaded( container, 'script', trigger, null );
 			return;
 		}
 
@@ -539,6 +565,7 @@
 			setStatus( container, '' );
 			activateSilentSiblings( providerId );
 			runReadyHook( providerId );
+			announceLoaded( container, 'script', trigger, null );
 		}, function () {
 			container.removeAttribute( 'data-cg-activated' );
 			showError( container );
@@ -689,8 +716,12 @@
 			return;
 		}
 
+		// Who asked: the visitor's click, a remembered consent, or the
+		// consent platform. Reported with the loaded event.
+		var trigger = options.bridged ? 'bridge' : ( options.remember ? 'click' : 'memory' );
+
 		if ( payload.strategy === 'script' ) {
-			activateScript( container, payload, !! options.focus );
+			activateScript( container, payload, !! options.focus, trigger );
 			return;
 		}
 
@@ -707,6 +738,9 @@
 		setStatus( container, i18n( 'loading', 'Loading embedded content…' ) );
 		frame.onload = function () {
 			setStatus( container, '' );
+			// Once: an embed that navigates inside its frame fires load again.
+			frame.onload = null;
+			announceLoaded( container, 'iframe', trigger, frame );
 		};
 		frame.onerror = function () {
 			showError( container );

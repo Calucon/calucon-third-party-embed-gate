@@ -33,6 +33,11 @@ would be a bug. Everything not listed is internal, however tempting it looks.
 - **The WP-CLI commands** `wp calucon-embed-gate scan` and `wp
   calucon-embed-gate providers`, and the shape of their `--format=json`
   output.
+- **The `calucon-embed-gate:loaded` DOM event** (since 1.1): its name, that
+  it bubbles from the `.cg-embed` container, and the five keys of its
+  `detail` — `provider`, `host`, `strategy`, `trigger`, `element` — with the
+  values listed under "When an embed has loaded". A key may be added, never
+  removed or given another meaning.
 
 Not promised, because it is data rather than API: the built-in provider
 descriptors (hosts, paths, load targets, privacy URLs — they follow the
@@ -241,6 +246,42 @@ class="cg-withdraw__status">…</span></span>`. The wrapper is block-level so a
 block theme's constrained layout can place it — auto margins do nothing to a
 bare inline-level button, which then hugs the page edge. Style the button
 with `.cg-withdraw`; the wrapper only carries layout.
+
+## When an embed has loaded
+
+Since 1.1 the placeholder says so. Once an embed has loaded, `gate.js`
+dispatches a `calucon-embed-gate:loaded` event on the placeholder's
+container (`.cg-embed`); it bubbles, so one listener on `document` hears
+every embed on the page — including placeholders that arrive later:
+
+```js
+document.addEventListener( 'calucon-embed-gate:loaded', function ( event ) {
+	var d = event.detail;
+	// d.provider  'youtube', 'vimeo', … or 'generic' / 'generic-script'
+	// d.host      the host the embed was loaded from ('www.youtube-nocookie.com')
+	// d.strategy  'iframe' or 'script'
+	// d.trigger   'click'  — the visitor pressed the button
+	//             'memory' — a consent remembered from an earlier click
+	//             'bridge' — the consent platform granted it
+	// d.element   the <iframe>, or null for a script embed (its SDK draws
+	//             its own nodes)
+	// event.target is the .cg-embed container the embed now lives in.
+} );
+```
+
+When it fires: for an iframe, on the frame's `load` — once, not again when
+the embed navigates inside its frame; for a script embed, after the
+provider's script has loaded and its ready hook (below) has run. It does not
+fire when the load failed — a blocked SDK shows the error link instead — and
+never for the loader scripts and stylesheets that accompany an embed.
+
+Two things it is good for, and one it is not. Good: adjusting your own
+layout around the loaded embed, and handing the frame to a provider's player
+API (`new YT.Player( event.detail.element )` — the embed's `id` survives the
+rebuild). Also good: counting views in your **own** first-party statistics;
+`trigger` tells a click from a restore. Not good: using it to load something
+else from a third party the visitor did not ask for. The click was consent
+for that one embed.
 
 ## After a script embed loads
 
