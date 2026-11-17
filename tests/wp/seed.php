@@ -132,6 +132,9 @@ foreach ( $cg_seed_posts as $cg_slug => $cg_post ) {
 // API fetches the next page and swaps the loop's HTML in without a page
 // load. One post per page, newest first — page 1 has no embed, page 2 has
 // one — so the placeholder arrives on a page that was rendered without it.
+// The category is named twice: `taxQuery` is what the block reads today,
+// `categoryIds` what it read on 5.9, where the loop would otherwise list
+// every post on the site.
 $cg_loop_term = term_exists( 'cg-loop', 'category' );
 if ( ! $cg_loop_term ) {
 	$cg_loop_term = wp_insert_term( 'CG loop', 'category', array( 'slug' => 'cg-loop' ) );
@@ -163,7 +166,7 @@ if ( null === get_page_by_path( 'loop-page', OBJECT, 'page' ) ) {
 			'post_title'   => 'Query loop with enhanced pagination',
 			'post_status'  => 'publish',
 			'post_type'    => 'page',
-			'post_content' => '<!-- wp:query {"queryId":7,"query":{"perPage":1,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","inherit":false,"taxQuery":{"category":[' . $cg_loop_cat . ']}},"enhancedPagination":true} -->' . "\n"
+			'post_content' => '<!-- wp:query {"queryId":7,"query":{"perPage":1,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","inherit":false,"categoryIds":[' . $cg_loop_cat . '],"taxQuery":{"category":[' . $cg_loop_cat . ']}},"enhancedPagination":true} -->' . "\n"
 				. '<div class="wp-block-query"><!-- wp:post-template -->' . "\n"
 				. '<!-- wp:post-title /-->' . "\n"
 				. '<!-- wp:post-content /-->' . "\n"
