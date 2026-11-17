@@ -200,7 +200,7 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 		'kind'        => 'video', // video | map | audio | social | form | calendar | document | image | 3d | '' — picks the optional button glyph.
 		// Reserved: 'custom' (bool) marks owner-defined providers from the
 		// settings screen — never set it on a code-registered descriptor.
-		'aspect'      => '16/9',
+		'aspect'      => '16:9',
 	);
 	return $providers;
 } );
@@ -365,6 +365,7 @@ the browser.
 | The button does nothing **at all**, ever | `gate.js` never executed. Usually a combined bundle threw earlier: a top-level error aborts the rest of *that file*, and anything bundled after it never runs | Open the console, find the throwing file, exclude `gate.js` from combining so it is not downstream of somebody else's error |
 | The panel appears but is unstyled | `gate.css` was combined, deferred or stripped | Exclude `gate.css` |
 | Embeds load **without** a click | Gating is server-side, so this means the plugin never saw that markup — typically a page builder rendering outside the WordPress content filters | Settings → Detection → enable whole-page buffering |
+| A **background video** (Cover block, Elementor section or container) no longer plays, and there is no placeholder for it | Deliberate. A YouTube or Vimeo background contacts the provider on page load, and a placeholder behind a section's content cannot be pressed, so the video is left out and the section keeps its overlay, its content and its fallback image | Upload the video to your media library (a file from your own site is not gated), or let the provider through under Providers if that is what you want for every visitor |
 | Your **own** scripts and styles were replaced by placeholders | An asset CDN plus whole-page buffering, on a build older than 1.0 | Update; if it persists, add the CDN hostname under Detection → "Additional own hosts" |
 | Console errors about `wp-i18n`, `wp-data`, `lodash`, `moment` | Not this plugin — those are WordPress core packages whose inline snippets got separated from them by combining | Check the page **logged out** first: these are often enqueued only for logged-in admins, so no visitor ever sees them |
 

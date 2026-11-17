@@ -95,6 +95,17 @@ $cg_seed_posts = array(
 	),
 	// Per-embed texts set in the block editor (RenderBlock): markup is
 	// stripped and the texts are capped (button 120, notice 400).
+	// The Cover block's embedded background video (WordPress 7.0+): core's
+	// render callback swaps the figure for an autoplaying player iframe
+	// behind the overlay. On an older WordPress the figure stays a figure
+	// and there is nothing to gate — the test skips itself there.
+	'cover-background' => array(
+		'title'   => 'Cover with a video background',
+		'content' => "<!-- wp:cover {\"url\":\"https://www.youtube.com/watch?v=y_pjE_p1HwE\",\"dimRatio\":50,\"backgroundType\":\"embed-video\",\"isDark\":false} -->\n"
+			. '<div class="wp-block-cover is-light"><figure class="wp-block-cover__video-background wp-block-embed wp-block-cover__embed-background"><div class="wp-block-embed__wrapper">https://www.youtube.com/watch?v=y_pjE_p1HwE</div></figure><span aria-hidden="true" class="wp-block-cover__background has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:paragraph {"align":"center"} -->' . "\n"
+			. '<p class="has-text-align-center">Cover text over a video</p>' . "\n"
+			. "<!-- /wp:paragraph --></div></div>\n<!-- /wp:cover -->",
+	),
 	'per-embed-text' => array(
 		'title'   => 'Per-embed text',
 		'content' => "<!-- wp:html {\"caluconEmbedGateAction\":\"Load <b>the trailer</b>\",\"caluconEmbedGateNote\":\"<em>Own notice.</em> " . str_repeat( 'x', 500 ) . "\"} -->\n"
@@ -113,6 +124,55 @@ foreach ( $cg_seed_posts as $cg_slug => $cg_post ) {
 			'post_content' => $cg_post['content'],
 			'post_status'  => 'publish',
 			'post_type'    => 'post',
+		)
+	);
+}
+
+// A Query Loop with enhanced pagination (WordPress 6.4+): the Interactivity
+// API fetches the next page and swaps the loop's HTML in without a page
+// load. One post per page, newest first — page 1 has no embed, page 2 has
+// one — so the placeholder arrives on a page that was rendered without it.
+$cg_loop_term = term_exists( 'cg-loop', 'category' );
+if ( ! $cg_loop_term ) {
+	$cg_loop_term = wp_insert_term( 'CG loop', 'category', array( 'slug' => 'cg-loop' ) );
+}
+$cg_loop_cat = is_array( $cg_loop_term ) ? (int) $cg_loop_term['term_id'] : 0;
+foreach ( array(
+	'loop-newer-plain' => array( 'Loop: newer, no embed', '2026-06-02 10:00:00', '<!-- wp:paragraph --><p>Nothing embedded here.</p><!-- /wp:paragraph -->' ),
+	'loop-older-embed' => array( 'Loop: older, with an embed', '2026-06-01 10:00:00', "<!-- wp:html -->\n<iframe title=\"Kolkja Cycling\" width=\"500\" height=\"281\" src=\"https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed\" frameborder=\"0\" allowfullscreen></iframe>\n<!-- /wp:html -->" ),
+) as $cg_slug => $cg_loop_post ) {
+	if ( null !== get_page_by_path( $cg_slug, OBJECT, 'post' ) ) {
+		continue;
+	}
+	wp_insert_post(
+		array(
+			'post_name'     => $cg_slug,
+			'post_title'    => $cg_loop_post[0],
+			'post_date'     => $cg_loop_post[1],
+			'post_content'  => $cg_loop_post[2],
+			'post_status'   => 'publish',
+			'post_type'     => 'post',
+			'post_category' => array( $cg_loop_cat ),
+		)
+	);
+}
+if ( null === get_page_by_path( 'loop-page', OBJECT, 'page' ) ) {
+	wp_insert_post(
+		array(
+			'post_name'    => 'loop-page',
+			'post_title'   => 'Query loop with enhanced pagination',
+			'post_status'  => 'publish',
+			'post_type'    => 'page',
+			'post_content' => '<!-- wp:query {"queryId":7,"query":{"perPage":1,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","inherit":false,"taxQuery":{"category":[' . $cg_loop_cat . ']}},"enhancedPagination":true} -->' . "\n"
+				. '<div class="wp-block-query"><!-- wp:post-template -->' . "\n"
+				. '<!-- wp:post-title /-->' . "\n"
+				. '<!-- wp:post-content /-->' . "\n"
+				. '<!-- /wp:post-template -->' . "\n"
+				. '<!-- wp:query-pagination -->' . "\n"
+				. '<!-- wp:query-pagination-previous /-->' . "\n"
+				. '<!-- wp:query-pagination-next /-->' . "\n"
+				. '<!-- /wp:query-pagination --></div>' . "\n"
+				. '<!-- /wp:query -->',
 		)
 	);
 }
@@ -153,6 +213,32 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 		'kind'        => 'document',
 	);
 	return $providers;
+} );
+// The Cover block's embedded background video asks oEmbed for the player.
+// Answered here: the harness must not contact YouTube either, and
+// Playground has no network to do it with.
+add_filter( 'pre_oembed_result', function ( $result, $url ) {
+	if ( is_string( $url ) && false !== strpos( $url, 'y_pjE_p1HwE' ) ) {
+		return '<iframe title="Kolkja Cycling" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed" frameborder="0" allowfullscreen></iframe>';
+	}
+	return $result;
+}, 10, 2 );
+// Whether THIS WordPress turned that block into a player (7.0+), seen at
+// priority 1 — before the plugin's own render_block filter takes it out.
+// Without the marker the Cover test would pass on a page with nothing to
+// gate.
+add_filter( 'render_block', function ( $content, $block ) {
+	if ( isset( $block['blockName'] ) && 'core/cover' === $block['blockName']
+		&& false !== strpos( (string) $content, 'wp-block-cover__embed-background' )
+		&& false !== stripos( (string) $content, '<iframe' ) ) {
+		$GLOBALS['cg_test_cover_background'] = true;
+	}
+	return $content;
+}, 1, 2 );
+add_action( 'wp_footer', function () {
+	if ( ! empty( $GLOBALS['cg_test_cover_background'] ) ) {
+		echo '<span hidden data-cg-test-cover-background="1"></span>' . "\n";
+	}
 } );
 add_action( 'wp_head', function () {
 	echo '<link rel="preconnect" href="https://www.youtube.com">' . "\n";

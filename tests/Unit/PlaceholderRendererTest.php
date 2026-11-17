@@ -293,6 +293,42 @@ final class PlaceholderRendererTest extends TestCase {
 		return ( new PlaceholderRenderer() )->render( $provider, 'https://www.youtube.com/embed/x', array( 'title' => 'T' ), $ctx );
 	}
 
+	/** @dataProvider aspects */
+	public function test_a_descriptors_aspect_reserves_the_box_in_either_spelling( $aspect, string $expected ): void {
+		$provider = Provider::normalize(
+			array(
+				'id'       => 'example-video',
+				'label'    => 'Example Videos',
+				'note'     => 'n',
+				'action'   => 'a',
+				'fallback' => 'https://example-videos.com/watch/1',
+				'aspect'   => $aspect,
+			)
+		);
+		// No width/height on the embed: the descriptor is the only source.
+		$html = ( new PlaceholderRenderer() )->render( $provider, 'https://example-videos.com/embed/1', array( 'title' => 'T' ) );
+
+		if ( '' === $expected ) {
+			self::assertStringNotContainsString( '--cg-aspect', $html );
+		} else {
+			self::assertStringContainsString( 'style="--cg-aspect:' . $expected . '"', $html );
+		}
+	}
+
+	public static function aspects(): array {
+		return array(
+			'the built-ins\' spelling'      => array( '16:9', '16/9' ),
+			// docs/customizing.md showed this one until 1.0.2, and the
+			// renderer ignored it.
+			'the CSS spelling'              => array( '16/9', '16/9' ),
+			'portrait'                      => array( '9:16', '9/16' ),
+			'not a ratio'                   => array( 'wide', '' ),
+			'a zero would divide by zero'   => array( '16:0', '' ),
+			'nothing CSS could be fed with' => array( '16/9;color:red', '' ),
+			'unset'                         => array( null, '' ),
+		);
+	}
+
 	public function test_poster_renders_decorative_site_origin_image(): void {
 		$html = $this->render_with_ctx( array( 'poster' => 'https://example.test/wp-content/uploads/p.jpg' ) );
 

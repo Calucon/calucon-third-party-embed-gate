@@ -614,9 +614,47 @@
 			}
 		}
 	}
+	// A prerendered page (Speculation Rules — WordPress's speculative
+	// loading can be switched to it, and since 7.1 a host can make it the
+	// default) runs its scripts BEFORE the visitor has gone there, and may
+	// never be visited at all. A consent the visitor gave earlier covers
+	// the pages they open, not the ones a browser guesses at: Chrome holds
+	// cross-origin iframes back until the page is shown, but a provider's
+	// script would load at once. So nothing activates while prerendering;
+	// it waits for the visitor to arrive. Only the unattended paths can get
+	// here — consent memory and the consent-platform bridge — since nobody
+	// can click a page that is not on screen.
+	var arrivalBound = false;
+
+	function activateDeferred() {
+		if ( ! document.querySelectorAll ) {
+			return;
+		}
+		var containers = document.querySelectorAll( '.cg-embed' );
+		for ( var i = 0; i < containers.length; i++ ) {
+			var options = containers[ i ]._cgDeferred;
+			if ( options ) {
+				containers[ i ]._cgDeferred = null;
+				activate( containers[ i ], options );
+			}
+		}
+	}
+
+	function deferUntilArrival( container, options ) {
+		container._cgDeferred = options;
+		if ( ! arrivalBound ) {
+			arrivalBound = true;
+			document.addEventListener( 'prerenderingchange', activateDeferred, false );
+		}
+	}
+
 	function activate( container, options ) {
 		options = options || {};
 		if ( container.getAttribute( 'data-cg-activated' ) === '1' ) {
+			return;
+		}
+		if ( document.prerendering === true ) {
+			deferUntilArrival( container, options );
 			return;
 		}
 
@@ -798,6 +836,16 @@
 	function bridgeRegate( predicate ) {
 		if ( ! document.querySelectorAll ) {
 			return;
+		}
+		// A grant that is still waiting for the visitor to arrive on a
+		// prerendered page is withdrawn like one that already loaded —
+		// otherwise it would load on arrival, after the platform said no.
+		var waiting = document.querySelectorAll( '.cg-embed' );
+		for ( var w = 0; w < waiting.length; w++ ) {
+			if ( waiting[ w ]._cgDeferred && waiting[ w ]._cgDeferred.bridged
+				&& ( ! predicate || predicate( waiting[ w ] ) ) ) {
+				waiting[ w ]._cgDeferred = null;
+			}
 		}
 		var bridged = document.querySelectorAll( '.cg-embed[data-cg-bridged="1"]' );
 		var reload  = false;

@@ -77,9 +77,9 @@ it says so on the same issue.
 | `cache-wp-super-cache` | wp-super-cache | Cache row; the lone "nothing to exclude" sentence; the supercache **file WPSC writes** is the gated page (marker-matched to the live response) and a settings save deletes it; click loads (see the port note below) |
 | `cache-litespeed` | litespeed-cache | The **real option rows** (`litespeed.conf.optm-js_defer` / `optm-js_comb`): off → "nothing risky on", comb → "combine", 2 → "delay"; click loads with defer + combine; the delay symptom on touch (below) |
 | `cache-autoptimize` | autoptimize | Reader states; click loads with aggregation, and with the inline config folded into the bundle |
-| `cache-wp-fastest-cache` | wp-fastest-cache | Reader "could not be read" + Exclude tab; cached page gated; click loads with minify + combine |
+| `cache-wp-fastest-cache` | wp-fastest-cache | Reader "could not be read" + Exclude tab; cached page gated; a settings save flushes; click loads with minify + combine |
 | `cache-sg-cachepress` | sg-cachepress | Reader combine on/off; click loads with combine |
-| `builder-elementor` | elementor | Row text follows the buffer setting; HTML widget gated with the buffer off (Elementor renders through `the_content`) and on; the **video widget** — a player that exists only as a JSON attribute — gated by `ElementorVideoRule` on both paths, Load loads, Elementor's handler stands down without an error |
+| `builder-elementor` | elementor | Row text follows the buffer setting; HTML widget gated with the buffer off (Elementor renders through `the_content`) and on; the **video widget** — a player that exists only as a JSON attribute — gated by `ElementorVideoRule` on both paths, Load loads, Elementor's handler stands down without an error; the **atomic YouTube element** (Editor V4) the same, plus its panel not clipped on a phone and the loaded player filling Elementor's box; the atomic Google Maps element; a section's YouTube and a container's Vimeo **background video** — nothing requested, no panel, content intact |
 | `detect-only` | cookiebot, cloudflare, polylang, translatepress-multilingual, beaver-builder-lite-version | Each row and its advice; zero third-party requests on a gated page with all five active |
 
 ### Not field-validated (emulated only)
@@ -162,6 +162,37 @@ all the plugin claims for them).
   rule was silently skipped on the `the_content` path while the buffered
   page — which always carries a `<script>` — passed. The widget's class name
   is part of the probe now; the buffer-off field test is the pin.
+- **The same defect, twice more, in the same plugin — and the group stayed
+  green for three months.** The video-widget tests above pin the *classic*
+  widget. Elementor 4 ships a second generation ("atomic" elements, Editor
+  V4), on by default for a site whose first Elementor was 4.0 or later, and
+  its YouTube element is a different element with a different script:
+  `<div data-e-type="e-youtube" data-settings="…source…">`, empty, filled
+  by `youtube-handler.js`. Measured 2026-11-17 on Elementor 4.4.1: 19
+  third-party requests before any click, no placeholder, buffer on or off.
+  A day later, looking at what else Elementor builds in the browser: a
+  section's or container's YouTube/Vimeo **background video** is a
+  `background_video_link` setting and an empty div — 30 to 39 requests. A
+  competitor's changelog pointed at the first; nothing pointed at the
+  second. `ElementorVideoRule` now reads the atomic element (the panel is
+  its content; `source` is emptied, not removed, because the handler calls
+  `source.match()`), and `BackgroundVideoRule` empties the background link
+  — no panel, because nothing behind a section's content can be clicked.
+  The lesson is about the suite, not the rule: **a field group covers the
+  shapes someone seeded, not "the plugin".** When a builder ships a new
+  generation of widgets, the old tests keep passing against the old ones.
+  Three habits follow. Seed by *what the builder can embed*, not by the
+  widget that was reported. Port the builder's own URL test rather than
+  writing a tidier one — Elementor loads YouTube's API for anything on
+  youtube.com, video id or not, so "is this a video URL" is the wrong
+  question; "will their script contact the provider" is the right one. And
+  give every such test a positive guard (the atomic element must be in the
+  page) so a renamed element fails loudly instead of passing on nothing.
+- **WP Fastest Cache was promised a flush it never got.** The Compatibility
+  row says "flushed automatically" for every detected cache, and
+  `CacheFlush` had calls for six of the seven. The group had no flush test,
+  so nothing noticed. It has one now (`wpfc_clear_all_cache()`, verified
+  against 1.5.5).
 - **Elementor fetches Google Fonts on every page** (`fonts.googleapis.com`,
   `fonts.gstatic.com`) — its typography, not an embed, and outside the
   plugin's remit; the harness turns it off the way an owner would

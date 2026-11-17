@@ -75,6 +75,77 @@ test( 'block content: gated via render_block', async ( { page } ) => {
 	expect( await page.locator( 'iframe' ).count() ).toBe( 0 );
 } );
 
+// WordPress 7.0 gave the Cover block an embedded video background: core's
+// render callback writes an autoplaying YouTube/Vimeo iframe behind the
+// overlay. Until BackgroundVideoRule, the iframe rule gated it like any
+// other — nothing was contacted, but the panel sat UNDER the overlay, where
+// mouse and touch could reach neither the button nor the link (measured on
+// 7.2 beta 4: elementFromPoint() at the button was the overlay span). A
+// decoration has no honest two-click, so the background is removed.
+test( 'a Cover block with a YouTube background: the video is removed, not given a panel nobody can reach', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+	await page.goto( '/cover-background/' );
+	await page.waitForLoadState( 'networkidle' );
+	await expect( page.locator( '.wp-block-cover' ) ).toHaveCount( 1 );
+	// The seed's mu-plugin prints this marker when core really rendered the
+	// player — so on a WordPress without the feature the test says so
+	// instead of passing on a page with nothing to gate.
+	test.skip(
+		0 === ( await page.locator( '[data-cg-test-cover-background]' ).count() ),
+		'this WordPress has no embedded-video Cover background (7.0+)'
+	);
+
+	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
+	await expect( page.locator( '.wp-block-cover__embed-background' ) ).toHaveCount( 0 );
+	await expect( page.locator( '.wp-block-cover .cg-embed' ) ).toHaveCount( 0 );
+	expect( await page.content() ).not.toContain( 'youtube.com/embed' );
+	expect( offenders ).toEqual( [] );
+	// What the owner put ON the video is still there, and reachable.
+	const text = page.locator( '.wp-block-cover__inner-container p' );
+	await expect( text ).toHaveText( 'Cover text over a video' );
+	await expect( text ).toBeVisible();
+} );
+
+// A Query Loop with enhanced pagination swaps the next page's HTML into the
+// loop without a page load, and of that page's assets the Interactivity
+// router loads stylesheets and script modules — never a classic script. The
+// next page arrives gated (it is an ordinary request), but on a page whose
+// own render had nothing to gate there was no gate.js: the panel's button
+// did nothing. The plugin now ships its assets with any page that carries
+// such a loop.
+test( 'a placeholder that arrives through a Query Loop\'s client-side pagination has a working button', async ( { page } ) => {
+	await abortThirdParty( page );
+	await page.goto( '/loop-page/' );
+	await expect( page.locator( '.wp-block-query' ) ).toHaveCount( 1 );
+	await expect( page.getByText( 'Nothing embedded here.' ) ).toBeVisible();
+	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 0 );
+
+	// A marker on the window survives a client-side swap and dies with a
+	// full page load — it says which of the two this WordPress did.
+	await page.evaluate( () => {
+		window.__cgSamePage = true;
+	} );
+	await page.locator( '.wp-block-query-pagination-next' ).click();
+	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 1 );
+	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
+	const swapped = await page.evaluate( () => true === window.__cgSamePage );
+	test.info().annotations.push( { type: 'navigation', description: swapped ? 'client-side (Interactivity router)' : 'full page load' } );
+
+	// Either way the button must load the embed.
+	await page.locator( '.cg-embed__button' ).click();
+	await expect( page.locator( '.cg-embed iframe' ) ).toHaveCount( 1 );
+	await expect( page.locator( '.cg-embed iframe' ) ).toHaveAttribute( 'src', /youtube-nocookie\.com/ );
+	// And on a WordPress that does swap, that is what was tested.
+	const wpVersion = await page.evaluate( () => {
+		const generator = document.querySelector( 'meta[name="generator"][content^="WordPress"]' );
+		const found = /WordPress (\d+)\.(\d+)/.exec( generator ? generator.getAttribute( 'content' ) || '' : '' );
+		return found ? Number( found[ 1 ] ) + Number( found[ 2 ] ) / 100 : 0;
+	} );
+	if ( wpVersion >= 6.09 ) {
+		expect( swapped, 'this WordPress should have paginated client-side — the test did not exercise the case it exists for' ).toBe( true );
+	}
+} );
+
 test( 'click activates through the plugin-enqueued gate.js, loading the privacy-preserving host', async ( { page } ) => {
 	await abortThirdParty( page );
 	await page.goto( '/gated-blocks/' );

@@ -16,9 +16,12 @@
 	var __ = wp.i18n.__;
 	var el = wp.element.createElement;
 
-	// Blocks that can carry third-party embeds. core/html because pasted
-	// iframe markup lives there; the rest are the embed-bearing cores.
-	var GATED_BLOCKS = [ 'core/embed', 'core/html', 'core/video', 'core/audio' ];
+	// Blocks that can carry third-party embeds: core/embed, and core/html
+	// because pasted iframe markup lives there. Not core/video or
+	// core/audio, which were in this list until 1.0.2: they render a <video>
+	// or <audio> element, which no detection rule reads, so the panel there
+	// offered "Always gate" and a poster for something that is never gated.
+	var GATED_BLOCKS = [ 'core/embed', 'core/html' ];
 
 	function isGatedBlock( name ) {
 		return GATED_BLOCKS.indexOf( name ) !== -1;

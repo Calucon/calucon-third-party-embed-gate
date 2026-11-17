@@ -621,6 +621,17 @@ final class Plugin {
 	}
 
 	/**
+	 * Put the front-end script and stylesheet on this page although nothing
+	 * has been gated on it (yet) — for an integration that knows gated
+	 * content can still arrive without a page load.
+	 *
+	 * @return void
+	 */
+	public function enqueue_assets(): void {
+		$this->assets->enqueue_assets();
+	}
+
+	/**
 	 * Run the enabled detection rules over a fragment.
 	 *
 	 * @param string $html Content.

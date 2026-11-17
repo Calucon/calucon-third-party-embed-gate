@@ -48,6 +48,22 @@ final class RenderBlock {
 	public function filter( $content, $block ): string {
 		$content = (string) $content;
 
+		// A Query Loop with "enhanced pagination" (the Interactivity API's
+		// client-side navigation) fetches the next page and swaps only the
+		// loop's HTML in — and of that page's assets it loads stylesheets
+		// and script modules, never a classic script. So a placeholder can
+		// arrive on a page whose own first render had no embed and
+		// therefore no gate.js: a panel whose button does nothing. Any page
+		// that carries such a loop gets the assets up front. The click
+		// handler is delegated from the document, so it serves content
+		// that arrives later.
+		if ( isset( $block['blockName'], $block['attrs']['enhancedPagination'] )
+			&& 'core/query' === $block['blockName']
+			&& $block['attrs']['enhancedPagination']
+			&& ! $this->plugin->should_bail() ) {
+			$this->plugin->enqueue_assets();
+		}
+
 		if ( ! $this->plugin->has_gateable_markup( $content ) || $this->plugin->should_bail() ) {
 			return $content;
 		}
