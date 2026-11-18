@@ -266,7 +266,7 @@ final class AppearanceCssTest extends TestCase {
 			AppearanceCss::build( self::appearance( array( 'poster_dim' => 'strong' ) ) )
 		);
 		self::assertSame(
-			'.cg-embed .cg-embed__fallback a,.cg-embed .cg-embed__privacy a{color:#0a5bd3;}',
+			'.cg-embed .cg-embed__fallback a,.cg-embed .cg-embed__alternative a,.cg-embed .cg-embed__privacy a{color:#0a5bd3;}',
 			AppearanceCss::build( self::appearance( array( 'link' => '#0a5bd3' ) ) )
 		);
 	}

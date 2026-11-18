@@ -28,10 +28,14 @@
 		<gutenberg-block type="core/embed" translate="1">
 			<key name="caluconEmbedGateAction" />
 			<key name="caluconEmbedGateNote" />
+			<key name="caluconEmbedGateAltText" />
+			<key name="caluconEmbedGateAltUrl" />
 		</gutenberg-block>
 		<gutenberg-block type="core/html" translate="1">
 			<key name="caluconEmbedGateAction" />
 			<key name="caluconEmbedGateNote" />
+			<key name="caluconEmbedGateAltText" />
+			<key name="caluconEmbedGateAltUrl" />
 		</gutenberg-block>
 	</gutenberg-blocks>
 </wpml-config>

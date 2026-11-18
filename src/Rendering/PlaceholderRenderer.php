@@ -93,6 +93,10 @@ final class PlaceholderRenderer {
 	 *            'note'     fn( string $note, array $provider, array $ctx ): string
 	 *            'action'   fn( string $action, array $provider, array $ctx ): string
 	 *            'fallback' fn( string $url, array $provider, array $ctx ): string
+	 *            'alternative' fn( string $url, array $provider, array $ctx ): string —
+	 *                       the owner's alternative WITHOUT the provider for
+	 *                       this embed; must return '' unless the address
+	 *                       is on the site itself
 	 *            'poster'   fn( array $provider, array $ctx ): string — the
 	 *                       owner's default poster for this provider, used
 	 *                       when the embed brings none of its own
@@ -201,6 +205,24 @@ final class PlaceholderRenderer {
 			}
 		}
 
+		// An alternative that needs no third party (1.1): a transcript, a
+		// download, a self-hosted copy — whatever the owner offers on their
+		// own site for a visitor who would rather not load the embed. The
+		// integration layer vouches that the address is on this site; the
+		// guard here only rejects what could not be a link at all.
+		$alternative_url   = isset( $ctx['alternative_url'] ) && is_string( $ctx['alternative_url'] ) ? $ctx['alternative_url'] : '';
+		$alternative_label = '';
+		if ( isset( $this->bridges['alternative'] ) ) {
+			$bridged         = call_user_func( $this->bridges['alternative'], $alternative_url, $provider, $ctx );
+			$alternative_url = is_string( $bridged ) ? $bridged : '';
+		}
+		$alternative_url = $this->safe_url( $alternative_url );
+		if ( '' !== $alternative_url ) {
+			$alternative_label = isset( $ctx['alternative_text'] ) && is_string( $ctx['alternative_text'] ) && '' !== trim( $ctx['alternative_text'] )
+				? trim( $ctx['alternative_text'] )
+				: $t( 'View an alternative on this site' );
+		}
+
 		// Inside <noscript> the panel is shown ONLY to visitors with
 		// scripting off — the one condition under which gate.js does not
 		// exist. Its button could therefore never do anything, and the
@@ -219,11 +241,11 @@ final class PlaceholderRenderer {
 				. ( '' !== $host ? ' data-cg-host="' . $this->esc( $host ) . '"' : '' )
 				. '>' . $this->payload_tag( $payload ) . '</span>';
 		} else {
-			$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host, $poster, $privacy_url, $privacy_label, $show_button );
+			$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host, $poster, $privacy_url, $privacy_label, $show_button, $alternative_url, $alternative_label );
 		}
 
 		if ( '' === $html ) {
-			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $host, $poster, $privacy_url, $privacy_label, $show_button );
+			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $host, $poster, $privacy_url, $privacy_label, $show_button, $alternative_url, $alternative_label );
 		}
 
 		if ( null !== $this->filter_html ) {
@@ -243,9 +265,14 @@ final class PlaceholderRenderer {
 	 * @param string $fallback_label Fallback link text.
 	 * @param string $host           Host the embed will contact.
 	 * @param string $poster         Site-origin poster image URL, '' for none.
+	 * @param string $privacy_url    Provider privacy-policy URL, '' when off.
+	 * @param string $privacy_label  Link text for the privacy link.
+	 * @param bool   $show_button    False inside <noscript>.
+	 * @param string $alternative_url   The owner's own-site alternative, '' for none.
+	 * @param string $alternative_label Link text for the alternative.
 	 * @return string
 	 */
-	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '', bool $show_button = true ): string {
+	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '', bool $show_button = true, string $alternative_url = '', string $alternative_label = '' ): string {
 		$aspect = $this->aspect_of( $provider, $payload );
 
 		return '<div class="cg-embed' . ( '' !== $poster ? ' cg-embed--poster' : '' ) . '"'
@@ -264,6 +291,10 @@ final class PlaceholderRenderer {
 			. ( $show_button ? '<button type="button" class="cg-embed__button">' . $this->esc( $provider['action'] ) . '</button>' : '' )
 			. ( '' !== $fallback_url
 				? '<p class="cg-embed__fallback"><a href="' . $this->esc( $fallback_url ) . '" rel="noopener nofollow">' . $this->esc( $fallback_label ) . '</a></p>'
+				: '' )
+			// The site's own page: no rel, it is not somebody else's link.
+			. ( '' !== $alternative_url
+				? '<p class="cg-embed__alternative"><a href="' . $this->esc( $alternative_url ) . '">' . $this->esc( $alternative_label ) . '</a></p>'
 				: '' )
 			. ( '' !== $privacy_url
 				? '<p class="cg-embed__privacy"><a href="' . $this->esc( $privacy_url ) . '" rel="noopener nofollow">' . $this->esc( $privacy_label ) . '</a></p>'
@@ -287,9 +318,11 @@ final class PlaceholderRenderer {
 	 * @param string $privacy_label  Link text for the privacy link.
 	 * @param bool   $show_button    False inside <noscript>, where a button
 	 *                               could never work.
+	 * @param string $alternative_url   The owner's own-site alternative, '' for none.
+	 * @param string $alternative_label Link text for the alternative.
 	 * @return string '' when no template applies.
 	 */
-	private function render_via_template( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, array $ctx, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '', bool $show_button = true ): string {
+	private function render_via_template( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, array $ctx, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '', bool $show_button = true, string $alternative_url = '', string $alternative_label = '' ): string {
 		if ( null === $this->templates ) {
 			return '';
 		}
@@ -313,8 +346,10 @@ final class PlaceholderRenderer {
 				'payload_tag'    => $this->payload_tag( $payload ),
 				'aspect'         => $this->aspect_of( $provider, $payload ),
 				'host'           => $host,
-				'poster'         => $poster,
-				'show_button'    => $show_button,
+				'poster'            => $poster,
+				'show_button'       => $show_button,
+				'alternative_url'   => $alternative_url,
+				'alternative_label' => $alternative_label,
 			)
 		);
 	}

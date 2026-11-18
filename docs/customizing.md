@@ -18,7 +18,7 @@ would be a bug. Everything not listed is internal, however tempting it looks.
   the eight CSS custom properties `--cg-bg`, `--cg-fg`, `--cg-accent`,
   `--cg-accent-fg`, `--cg-radius`, `--cg-gap`, `--cg-font` and `--cg-aspect`.
 - **The hooks** listed under "Every hook, with its signature" — filters
-  `calucon_embed_gate_action_text`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_note_text`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_payload`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_providers`, `calucon_embed_gate_render_block_priority`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_www_equivalence`; actions `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated`, `calucon_embed_gate_flush_caches` — and their signatures.
+  `calucon_embed_gate_action_text`, `calucon_embed_gate_alternative_url`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_note_text`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_payload`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_providers`, `calucon_embed_gate_render_block_priority`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_www_equivalence`; actions `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated`, `calucon_embed_gate_flush_caches` — and their signatures.
 - **The template variables** documented in `templates/placeholder.php`, and
   the override path `{theme}/calucon-embed-gate/placeholder.php`. One rule
   for overrides: `$payload_tag` is echoed raw as a direct child of the
@@ -247,6 +247,56 @@ block theme's constrained layout can place it — auto margins do nothing to a
 bare inline-level button, which then hugs the page edge. Style the button
 with `.cg-withdraw`; the wrapper only carries layout.
 
+## An alternative without the provider
+
+Since 1.1 a placeholder can carry a second link: the same content **on your
+own site**, for a visitor who would rather not load the embed at all — a
+transcript, a download, a copy of the video you host yourself, the text of
+the form as a PDF. In the block editor it is the **Alternative on this site
+(address)** field of the Calucon Third-Party Embed Gate panel, with an
+optional link text; in the placeholder it is
+`<p class="cg-embed__alternative"><a href="…">…</a></p>`, after the "Open
+on …" link.
+
+The one rule: the address has to be on this site. A path (`/transcripts/42/`),
+a fragment (`#transcript`, for a transcript further down the same page) or a
+URL on one of the site's own hosts is shown; anything else is dropped and no
+link appears — the link says "without the provider", and pointing it at
+another third party would make that untrue. A CDN-offloaded file counts once
+its host is listed under **Detection → Additional own hosts**.
+
+For embeds that are not blocks — classic content, a shortcode, a widget — or
+to derive the address from your own data, use the filter. The same rule
+applies to what it returns:
+
+```php
+add_filter( 'calucon_embed_gate_alternative_url', function ( $url, $provider, $ctx ) {
+	if ( '' === $url && 'youtube' === $provider['id'] && ! empty( $ctx['post_id'] ) ) {
+		$transcript = get_post_meta( $ctx['post_id'], 'video_transcript_url', true );
+		return is_string( $transcript ) ? $transcript : '';
+	}
+	return $url;
+}, 10, 3 );
+```
+
+## A default poster per provider
+
+A poster is the image behind a placeholder. Per embed it is set in the block
+editor; since 1.1 each provider can also carry a default one — **Providers →
+(a provider) → Wording, privacy link and poster image → Poster image** —
+which is used wherever an embed of that provider has no poster of its own:
+classic content, widgets, page-builder elements, older posts. It is stored as
+`providers[<id>][poster]`, a media-library attachment ID:
+
+```sh
+wp option patch update calucon_embed_gate_options providers youtube poster 123
+```
+
+Same rule as every poster: an image from this site's media library, resolved
+when the page is rendered and refused unless it is served from one of the
+site's own hosts. Nothing is ever fetched from the provider — which is why
+this is a picture you choose and not the video's thumbnail.
+
 ## When an embed has loaded
 
 Since 1.1 the placeholder says so. Once an embed has loaded, `gate.js`
@@ -453,8 +503,10 @@ add_filter( 'calucon_embed_gate_should_gate', fn( $gate, $url, $ctx ) =>
 (`the_content`, `render_block`, `widget`, `comment`, `description`,
 `output_buffer`, `admin-preview`), plus — where the integration knows them —
 `post_id`, `block` (block name), `force_gate` (the per-block "always" override),
-`poster`, `note_text` and `action_text` (the per-block texts), and `noscript`
-inside a `<noscript>` element. Treat a key as possibly absent.
+`poster`, `note_text` and `action_text` (the per-block texts),
+`alternative_url` and `alternative_text` (the per-block alternative, since
+1.1), and `noscript` inside a `<noscript>` element. Treat a key as possibly
+absent.
 
 `$provider` is the resolved descriptor (PLAN.md §4.1): `id`, `label`, `note`,
 `action`, `fallback`, `privacy_url`, `kind`, `match`, `strategy`, `enabled` …
@@ -483,6 +535,7 @@ means the third party is contacted on page load, for every visitor.
 | `calucon_embed_gate_note_text` | `( string $note, array $provider, array $ctx ): string` | per placeholder |
 | `calucon_embed_gate_action_text` | `( string $action, array $provider, array $ctx ): string` | per placeholder |
 | `calucon_embed_gate_fallback_url` | `( string $url, array $provider, array $ctx ): string` | per placeholder; a non-navigable scheme is rejected afterwards |
+| `calucon_embed_gate_alternative_url` | `( string $url, array $provider, array $ctx ): string` | per placeholder (since 1.1); `$url` is the block's "Alternative on this site" address or `''`. Whatever comes back is shown only if it is on this site — a path, a `#fragment` or an own-host URL — and dropped otherwise |
 
 **Markup and payload** — the §5.1 contract is public API; keep its shape.
 

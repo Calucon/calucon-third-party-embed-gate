@@ -173,6 +173,7 @@
 }
 
 .cg-embed__fallback,
+.cg-embed__alternative,
 .cg-embed__privacy {
 	margin: 0;
 	font-size: 0.875em;
@@ -182,6 +183,7 @@
    to the browser default (#0000EE on a dark panel is 1.3:1 — a WCAG 1.4.3
    failure, PLAN.md §7.3). Underline stays: affordance not by colour alone. */
 .cg-embed__fallback a,
+.cg-embed__alternative a,
 .cg-embed__privacy a {
 	color: var( --cg-fg );
 	text-decoration: underline;

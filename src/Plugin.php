@@ -461,6 +461,9 @@ final class Plugin {
 				'fallback' => static function ( string $url, array $provider, array $ctx ): string {
 					return (string) apply_filters( 'calucon_embed_gate_fallback_url', $url, $provider, $ctx );
 				},
+				'alternative' => function ( string $url, array $provider, array $ctx ): string {
+					return $this->own_site_url( (string) apply_filters( 'calucon_embed_gate_alternative_url', $url, $provider, $ctx ) );
+				},
 				'poster'   => function ( array $provider, array $ctx ): string {
 					return $this->provider_poster_url( isset( $provider['id'] ) ? (string) $provider['id'] : '' );
 				},
@@ -701,6 +704,36 @@ final class Plugin {
 			return '';
 		}
 		return $url;
+	}
+
+	/**
+	 * An address on this site, or nothing.
+	 *
+	 * The alternative link in a placeholder promises the content WITHOUT a
+	 * third party. That promise is only as good as this check: a page on
+	 * the site's own host (or a path or #fragment, which cannot be anywhere
+	 * else) passes, everything else comes back empty and no link is shown.
+	 *
+	 * @param string $url Candidate address.
+	 * @return string The address, or '' when it is not on this site.
+	 */
+	public function own_site_url( string $url ): string {
+		$url = trim( $url );
+		if ( '' === $url || strlen( $url ) > 2000 ) {
+			return '';
+		}
+		// Path and fragment forms first: no host to check, and '//' is a
+		// host, so it does not count as a path.
+		if ( preg_match( '~^(?:/(?![/\\\\])|#)~', $url ) ) {
+			return HostMatcher::navigable( $url );
+		}
+		if ( ! preg_match( '~^https?://~i', $url ) ) {
+			return '';
+		}
+		if ( HostMatcher::OWN !== $this->pipeline()->host_matcher->classify( $url ) ) {
+			return '';
+		}
+		return HostMatcher::navigable( $url );
 	}
 
 	/**

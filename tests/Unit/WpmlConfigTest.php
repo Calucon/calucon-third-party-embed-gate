@@ -21,8 +21,10 @@ final class WpmlConfigTest extends TestCase {
 		$option = (string) $xml->{'admin-texts'}->key['name'];
 		self::assertSame( \CaluconEmbedGate\Support\Options::OPTION, $option );
 
-		// Every gated block type the editor integration knows gets both
-		// attribute keys — derived from editor.js so the two cannot drift.
+		// Every gated block type the editor integration knows gets every
+		// owner-typed attribute key — derived from editor.js so the two
+		// cannot drift. The alternative's address is one of them: the page
+		// it points at differs per language.
 		$editor = (string) file_get_contents( dirname( __DIR__, 2 ) . '/assets/js/editor.js' );
 		self::assertSame( 1, preg_match( '/GATED_BLOCKS = \[([^\]]+)\]/', $editor, $m ) );
 		preg_match_all( "/'([a-z\/-]+)'/", $m[1], $ids );
@@ -34,7 +36,7 @@ final class WpmlConfigTest extends TestCase {
 			foreach ( $block->key as $key ) {
 				$keys[] = (string) $key['name'];
 			}
-			self::assertSame( array( 'caluconEmbedGateAction', 'caluconEmbedGateNote' ), $keys, (string) $block['type'] );
+			self::assertSame( array( 'caluconEmbedGateAction', 'caluconEmbedGateNote', 'caluconEmbedGateAltText', 'caluconEmbedGateAltUrl' ), $keys, (string) $block['type'] );
 			$declared[] = (string) $block['type'];
 		}
 		self::assertSame( $expected, $declared );

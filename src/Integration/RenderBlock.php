@@ -110,6 +110,24 @@ final class RenderBlock {
 			}
 		}
 
+		// Per-block alternative without the provider (1.1): an address on
+		// this site and, optionally, its link text. Only shape and length
+		// here — whether the address really is on this site is decided
+		// where the link is rendered (Plugin::own_site_url), for this
+		// attribute and for the filter alike.
+		if ( isset( $attrs['caluconEmbedGateAltUrl'] ) && is_string( $attrs['caluconEmbedGateAltUrl'] ) ) {
+			$alternative = trim( $attrs['caluconEmbedGateAltUrl'] );
+			if ( '' !== $alternative && strlen( $alternative ) <= 2000 ) {
+				$ctx['alternative_url'] = $alternative;
+			}
+		}
+		if ( isset( $attrs['caluconEmbedGateAltText'] ) && is_string( $attrs['caluconEmbedGateAltText'] ) ) {
+			$text = trim( wp_strip_all_tags( $attrs['caluconEmbedGateAltText'], true ) );
+			if ( '' !== $text ) {
+				$ctx['alternative_text'] = mb_substr( $text, 0, 120 );
+			}
+		}
+
 		return $this->plugin->gate( $content, $ctx );
 	}
 }

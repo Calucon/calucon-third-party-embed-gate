@@ -329,6 +329,95 @@ final class PlaceholderRendererTest extends TestCase {
 		);
 	}
 
+	private function render_with_alternative( array $ctx, ?callable $bridge = null ): string {
+		$provider = Provider::normalize(
+			array(
+				'id'       => 'youtube',
+				'label'    => 'YouTube',
+				'note'     => 'n',
+				'action'   => 'a',
+				'fallback' => 'https://www.youtube.com/watch?v=x',
+			)
+		);
+		$renderer = new PlaceholderRenderer( null, null, null, null, null === $bridge ? array() : array( 'alternative' => $bridge ) );
+
+		return $renderer->render( $provider, 'https://www.youtube.com/embed/x', array( 'title' => 'T' ), $ctx );
+	}
+
+	public function test_the_alternative_is_a_plain_link_after_the_fallback_with_the_owners_text(): void {
+		$html = $this->render_with_alternative(
+			array(
+				'alternative_url'  => '/transcripts/42/',
+				'alternative_text' => '  Read the <transcript>  ',
+			)
+		);
+
+		self::assertStringContainsString( '<p class="cg-embed__alternative"><a href="/transcripts/42/">Read the &lt;transcript&gt;</a></p>', $html );
+		// After the provider link, and not dressed as somebody else's link.
+		self::assertLessThan( strpos( $html, 'cg-embed__alternative' ), strpos( $html, 'cg-embed__fallback' ) );
+		self::assertSame( 1, substr_count( $html, 'rel="noopener nofollow"' ), 'only the provider link carries rel' );
+	}
+
+	public function test_the_alternative_has_a_default_text_and_none_without_an_address(): void {
+		self::assertStringContainsString( '<a href="#transcript">View an alternative on this site</a>', $this->render_with_alternative( array( 'alternative_url' => '#transcript' ) ) );
+		self::assertStringContainsString( '>View an alternative on this site</a>', $this->render_with_alternative( array( 'alternative_url' => '/t/', 'alternative_text' => '   ' ) ) );
+
+		foreach ( array( array(), array( 'alternative_url' => '' ), array( 'alternative_text' => 'Read the transcript' ), array( 'alternative_url' => array( '/t/' ) ) ) as $ctx ) {
+			self::assertStringNotContainsString( 'cg-embed__alternative', $this->render_with_alternative( $ctx ), (string) json_encode( $ctx ) );
+		}
+	}
+
+	public function test_the_alternative_is_what_the_integration_vouches_for(): void {
+		// The bridge is where "is this on our site" is decided (and where
+		// the filter runs): what it returns is what is linked.
+		$seen   = array();
+		$bridge = static function ( string $url, array $provider, array $ctx ) use ( &$seen ): string {
+			$seen[] = array( $url, $provider['id'], $ctx['alternative_url'] ?? null );
+			return 'https://example.test/transcripts/42/';
+		};
+		$html = $this->render_with_alternative( array( 'alternative_url' => '/draft/' ), $bridge );
+		self::assertSame( array( array( '/draft/', 'youtube', '/draft/' ) ), $seen );
+		self::assertStringContainsString( 'href="https://example.test/transcripts/42/"', $html );
+		self::assertStringNotContainsString( '/draft/', $html );
+
+		// It is asked without an address too — a filter may supply one —
+		// and "no" means no link, whatever the block said.
+		$refuse = static function (): string {
+			return '';
+		};
+		self::assertStringNotContainsString( 'cg-embed__alternative', $this->render_with_alternative( array( 'alternative_url' => 'https://elsewhere.example/t/' ), $refuse ) );
+		$supply = static function ( string $url ): string {
+			return '' === $url ? '/from-a-filter/' : $url;
+		};
+		self::assertStringContainsString( 'href="/from-a-filter/"', $this->render_with_alternative( array(), $supply ) );
+	}
+
+	public function test_an_alternative_that_could_not_be_a_link_is_dropped(): void {
+		foreach ( array( 'javascript:alert(1)', "java\tscript:alert(1)", 'data:text/html,x', 42, null ) as $junk ) {
+			$html = $this->render_with_alternative(
+				array(),
+				static function () use ( $junk ) {
+					return $junk;
+				}
+			);
+			self::assertStringNotContainsString( 'cg-embed__alternative', $html, var_export( $junk, true ) );
+			self::assertStringNotContainsString( 'script:', $html );
+		}
+	}
+
+	public function test_a_noscript_panel_keeps_the_alternative(): void {
+		// No button there, but a link is exactly what a visitor without
+		// scripting can use.
+		$html = $this->render_with_alternative(
+			array(
+				'noscript'        => true,
+				'alternative_url' => '/transcripts/42/',
+			)
+		);
+		self::assertStringNotContainsString( 'cg-embed__button', $html );
+		self::assertStringContainsString( 'cg-embed__alternative', $html );
+	}
+
 	private function render_with_default_poster( callable $default, array $ctx = array() ): string {
 		$provider = Provider::normalize(
 			array(

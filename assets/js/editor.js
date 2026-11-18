@@ -41,7 +41,12 @@
 				caluconEmbedGatePoster: { type: 'number', default: 0 },
 				caluconEmbedGatePosterUrl: { type: 'string', default: '' },
 				caluconEmbedGateAction: { type: 'string', default: '' },
-				caluconEmbedGateNote: { type: 'string', default: '' }
+				caluconEmbedGateNote: { type: 'string', default: '' },
+				// An alternative without the provider (1.1): an address on
+				// this site and its link text. The server shows the link only
+				// when the address really is on this site.
+				caluconEmbedGateAltUrl: { type: 'string', default: '' },
+				caluconEmbedGateAltText: { type: 'string', default: '' }
 			} );
 			return settings;
 		}
@@ -149,6 +154,25 @@
 									props.setAttributes( { caluconEmbedGateNote: next } );
 								},
 								help: __( 'Replaces the notice above the button for this embed only. Keep it honest: the notice tells visitors what loading the content does.', 'calucon-third-party-embed-gate' )
+							} ),
+							value === 'never' ? null : el( wp.components.TextControl, {
+								label: __( 'Alternative on this site (address)', 'calucon-third-party-embed-gate' ),
+								type: 'url',
+								value: props.attributes.caluconEmbedGateAltUrl || '',
+								placeholder: '/transcripts/…',
+								onChange: function ( next ) {
+									props.setAttributes( { caluconEmbedGateAltUrl: next } );
+								},
+								help: __( 'A page, file or section of your own site that offers this content without the provider: a transcript, a download, a copy you host yourself. Shown as a link in the placeholder. An address on another site is ignored.', 'calucon-third-party-embed-gate' )
+							} ),
+							value === 'never' || ! props.attributes.caluconEmbedGateAltUrl ? null : el( wp.components.TextControl, {
+								label: __( 'Link text for the alternative', 'calucon-third-party-embed-gate' ),
+								value: props.attributes.caluconEmbedGateAltText || '',
+								placeholder: __( 'View an alternative on this site', 'calucon-third-party-embed-gate' ),
+								onChange: function ( next ) {
+									props.setAttributes( { caluconEmbedGateAltText: next } );
+								},
+								help: __( 'Plain text, for example “Read the transcript”. Empty keeps the default.', 'calucon-third-party-embed-gate' )
 							} )
 						)
 					)

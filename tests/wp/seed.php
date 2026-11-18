@@ -106,6 +106,36 @@ $cg_seed_posts = array(
 			. '<p class="has-text-align-center">Cover text over a video</p>' . "\n"
 			. "<!-- /wp:paragraph --></div></div>\n<!-- /wp:cover -->",
 	),
+	// The per-embed alternative without the provider (1.1): a link that is
+	// shown only when its address is on this site. Five blocks, five
+	// addresses: a path with its own text, a fragment, a full URL on this
+	// site, and two that are somewhere else however they are spelled.
+	'alternative-link' => array(
+		'title'   => 'Alternative link',
+		'content' => implode(
+			"\n\n",
+			array_map(
+				static function ( array $attrs ): string {
+					return '<!-- wp:html ' . wp_json_encode( $attrs ) . " -->\n"
+						. '<iframe src="https://player.vimeo.com/video/76979871" title="Clip" width="640" height="360"></iframe>' . "\n<!-- /wp:html -->";
+				},
+				array(
+					array(
+						'caluconEmbedGateAltUrl'  => '/transcripts/clip/',
+						'caluconEmbedGateAltText' => 'Read the <b>transcript</b>',
+					),
+					array( 'caluconEmbedGateAltUrl' => '#transcript' ),
+					array( 'caluconEmbedGateAltUrl' => home_url( '/downloads/clip.mp4' ) ),
+					array(
+						'caluconEmbedGateAltUrl'  => 'https://elsewhere.example/clip/',
+						'caluconEmbedGateAltText' => 'Elsewhere',
+					),
+					array( 'caluconEmbedGateAltUrl' => '//elsewhere.example/clip/' ),
+					array( 'caluconEmbedGateAltUrl' => '/\\elsewhere.example/clip/' ),
+				)
+			)
+		),
+	),
 	'per-embed-text' => array(
 		'title'   => 'Per-embed text',
 		'content' => "<!-- wp:html {\"caluconEmbedGateAction\":\"Load <b>the trailer</b>\",\"caluconEmbedGateNote\":\"<em>Own notice.</em> " . str_repeat( 'x', 500 ) . "\"} -->\n"

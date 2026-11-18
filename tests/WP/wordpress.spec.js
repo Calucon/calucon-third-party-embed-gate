@@ -2008,3 +2008,45 @@ test( 'a provider\'s default poster: chosen on the Providers tab, shown for that
 	await page.goto( '/gated-classic/' );
 	await expect( page.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
 } );
+
+// The alternative without the provider: a second link in the placeholder to
+// the same content on the site itself — a transcript, a download, a
+// self-hosted copy. The whole value of the link is that it does not lead to
+// a third party, so an address that is not on this site is not shown, in
+// any spelling.
+test( 'the per-embed alternative link is shown only when its address is on this site', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+	await page.goto( '/alternative-link/' );
+	await page.waitForLoadState( 'networkidle' );
+	const panels = page.locator( '.cg-embed' );
+	await expect( panels ).toHaveCount( 6 );
+	const origin = new URL( page.url() ).origin;
+
+	// A path, with the owner's text — markup stripped.
+	const first = panels.nth( 0 ).locator( '.cg-embed__alternative a' );
+	await expect( first ).toHaveAttribute( 'href', '/transcripts/clip/' );
+	await expect( first ).toHaveText( 'Read the transcript' );
+	expect( await first.getAttribute( 'rel' ) ).toBeNull();
+	// A fragment, with the default text.
+	await expect( panels.nth( 1 ).locator( '.cg-embed__alternative a' ) ).toHaveAttribute( 'href', '#transcript' );
+	await expect( panels.nth( 1 ).locator( '.cg-embed__alternative a' ) ).toHaveText( 'View an alternative on this site' );
+	// A full URL on this site.
+	await expect( panels.nth( 2 ).locator( '.cg-embed__alternative a' ) ).toHaveAttribute( 'href', origin + '/downloads/clip.mp4' );
+	// Somewhere else: no link, and the panel is otherwise whole.
+	for ( const index of [ 3, 4, 5 ] ) {
+		await expect( panels.nth( index ).locator( '.cg-embed__alternative' ) ).toHaveCount( 0 );
+		await expect( panels.nth( index ).locator( '.cg-embed__button' ) ).toHaveCount( 1 );
+		await expect( panels.nth( index ).locator( '.cg-embed__fallback a' ) ).toHaveCount( 1 );
+	}
+	expect( await page.content() ).not.toContain( 'elsewhere.example' );
+	expect( offenders ).toEqual( [] );
+
+	// The link follows the panel's own link colour and underline.
+	const styles = await panels.nth( 0 ).evaluate( ( el ) => {
+		const alt = getComputedStyle( el.querySelector( '.cg-embed__alternative a' ) );
+		const fallback = getComputedStyle( el.querySelector( '.cg-embed__fallback a' ) );
+		return { same: alt.color === fallback.color, underline: alt.textDecorationLine };
+	} );
+	expect( styles ).toEqual( { same: true, underline: 'underline' } );
+} );
+
