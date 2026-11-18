@@ -1891,3 +1891,120 @@ test( 'compatibility: the theme scan is on demand, and says what it did not look
 	await expect( page.locator( '#cg-tab-status' ) ).toContainText( 'None found in your theme' );
 	await expect( page.locator( '#cg-tab-status' ) ).toContainText( 'builds its CSS into another directory is outside this check' );
 } );
+
+// ---- 1.1 -------------------------------------------------------------------
+
+/** The seeded poster attachment's ID, read off the media library's list view. */
+async function seededPosterId( page ) {
+	await page.goto( '/wp-admin/upload.php?mode=list' );
+	const row = page.locator( 'tr[id^="post-"]', { hasText: 'Poster image' } ).first();
+	await expect( row ).toHaveCount( 1 );
+	return Number( ( await row.getAttribute( 'id' ) ).replace( 'post-', '' ) );
+}
+
+/**
+ * A second, logged-out browser on the same site. A logged-in admin's page
+ * carries the admin bar and its avatar, so "what does a visitor get" has to
+ * be asked as a visitor.
+ */
+async function asVisitor( browser, baseURL, callback ) {
+	const context = await browser.newContext( { baseURL } );
+	const visitor = await context.newPage();
+	try {
+		await callback( visitor );
+	} finally {
+		await context.close();
+	}
+}
+
+// A default poster per provider (Providers tab): the image behind that
+// provider's placeholders when an embed has none of its own. The answer to
+// "the placeholder is an empty box" that does not fetch anything — every
+// competing plugin's answer is to download the provider's thumbnail, which
+// is a request to the provider (and, measured in their changelogs, a
+// recurring source of breakage and one CVE).
+test( 'a provider\'s default poster: chosen on the Providers tab, shown for that provider only, removable', async ( { page, browser, baseURL } ) => {
+	await login( page );
+	const posterId = await seededPosterId( page );
+
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	const row = page.locator( '.cg-provider[data-cg-provider-row="youtube"]' );
+	await row.evaluate( ( el ) => {
+		el.closest( 'details' ).open = true;
+		el.querySelector( 'details' ).open = true;
+	} );
+	const field = row.locator( '[data-cg-poster]' );
+	// With JavaScript the attachment-ID input is out of sight and the media
+	// library takes its place.
+	await expect( field.locator( '[data-cg-poster-id]' ) ).toBeHidden();
+	await expect( field.locator( '[data-cg-poster-choose]' ) ).toBeVisible();
+	await expect( field.locator( '[data-cg-poster-choose]' ) ).toHaveAttribute( 'aria-label', 'Choose a poster image for YouTube' );
+	await expect( field.locator( '[data-cg-poster-remove]' ) ).toBeHidden();
+	await expect( field.locator( '[data-cg-poster-preview]' ) ).toBeHidden();
+	// The button opens the media library — WordPress's own, on this site.
+	await field.locator( '[data-cg-poster-choose]' ).click();
+	await expect( page.locator( '.media-modal' ) ).toBeVisible();
+	await expect( page.locator( '.media-modal .media-frame-title' ) ).toContainText( 'Choose a poster image' );
+	await page.locator( '.media-modal .media-modal-close' ).click();
+	// The seeded attachment has no file behind it (metadata only), so it is
+	// picked by ID — the path a site without JavaScript uses anyway.
+	await field.locator( '[data-cg-poster-id]' ).evaluate( ( input, id ) => {
+		input.value = String( id );
+		input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+	}, posterId );
+	await page.click( '#submit' );
+	await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
+
+	// Saved: the row is open, shows the image, and offers to remove it.
+	await expect( row.locator( 'details' ) ).toHaveAttribute( 'open', '' );
+	await expect( row ).toHaveAttribute( 'data-cg-changed', '1' );
+	await expect( field.locator( '[data-cg-poster-preview]' ) ).toHaveAttribute( 'src', /cg-poster/ );
+	await expect( field.locator( '[data-cg-poster-remove]' ) ).toBeVisible();
+	await expect( field.locator( '.cg-provider__poster-warning' ) ).toHaveCount( 0 );
+
+	// Front end: both YouTube panels carry it, from this site; the unknown
+	// widget — another provider — does not.
+	await asVisitor( browser, baseURL, async ( visitor ) => {
+		const front = trackThirdPartyRequests( visitor );
+		await visitor.goto( '/gated-classic/' );
+		await visitor.waitForLoadState( 'networkidle' );
+		const youtube = visitor.locator( '.cg-embed[data-cg-provider="youtube"]' );
+		await expect( youtube ).toHaveCount( 2 );
+		await expect( youtube.locator( 'img.cg-embed__poster' ) ).toHaveCount( 2 );
+		const src = await youtube.locator( 'img.cg-embed__poster' ).first().getAttribute( 'src' );
+		expect( new URL( src ).hostname ).toBe( new URL( visitor.url() ).hostname );
+		await expect( visitor.locator( '.cg-embed[data-cg-provider="generic"] img.cg-embed__poster' ) ).toHaveCount( 0 );
+		// The image itself is asked of this site and nobody else. (The
+		// seeded attachment has no file, so the answer is a 404 — from here.)
+		expect( front ).toEqual( [] );
+	} );
+
+	// An ID that is not an image of this site is stored but never used, and
+	// the screen says so.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await row.evaluate( ( el ) => {
+		el.closest( 'details' ).open = true;
+	} );
+	await field.locator( '[data-cg-poster-id]' ).evaluate( ( input ) => {
+		input.value = '99999999';
+		input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+	} );
+	await page.click( '#submit' );
+	await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
+	await expect( field.locator( '.cg-provider__poster-warning' ) ).toContainText( 'This image is not used' );
+	await page.goto( '/gated-classic/' );
+	await expect( page.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
+
+	// Remove: back to the plain panel, and the row is no longer "changed".
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await row.evaluate( ( el ) => {
+		el.closest( 'details' ).open = true;
+	} );
+	await field.locator( '[data-cg-poster-remove]' ).click();
+	await expect( field.locator( '[data-cg-poster-id]' ) ).toHaveValue( '' );
+	await page.click( '#submit' );
+	await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
+	await expect( row ).toHaveAttribute( 'data-cg-changed', '0' );
+	await page.goto( '/gated-classic/' );
+	await expect( page.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
+} );

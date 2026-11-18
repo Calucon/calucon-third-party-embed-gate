@@ -329,6 +329,75 @@ final class PlaceholderRendererTest extends TestCase {
 		);
 	}
 
+	private function render_with_default_poster( callable $default, array $ctx = array() ): string {
+		$provider = Provider::normalize(
+			array(
+				'id'       => 'youtube',
+				'label'    => 'YouTube',
+				'note'     => 'n',
+				'action'   => 'a',
+				'fallback' => 'https://www.youtube.com/watch?v=x',
+			)
+		);
+		$renderer = new PlaceholderRenderer( null, null, null, null, array( 'poster' => $default ) );
+
+		return $renderer->render( $provider, 'https://www.youtube.com/embed/x', array( 'title' => 'T' ), $ctx );
+	}
+
+	public function test_the_providers_default_poster_is_used_when_the_embed_has_none(): void {
+		$asked   = array();
+		$default = static function ( array $provider ) use ( &$asked ): string {
+			$asked[] = $provider['id'];
+			return 'https://example.test/wp-content/uploads/youtube-default.jpg';
+		};
+
+		$html = $this->render_with_default_poster( $default );
+		self::assertSame( array( 'youtube' ), $asked );
+		self::assertStringContainsString( 'class="cg-embed cg-embed--poster"', $html );
+		self::assertStringContainsString( '<img class="cg-embed__poster" src="https://example.test/wp-content/uploads/youtube-default.jpg" alt="" aria-hidden="true" loading="lazy">', $html );
+	}
+
+	public function test_an_embeds_own_poster_wins_over_the_providers_default(): void {
+		$default = static function (): string {
+			return 'https://example.test/wp-content/uploads/youtube-default.jpg';
+		};
+		$html = $this->render_with_default_poster( $default, array( 'poster' => 'https://example.test/wp-content/uploads/this-video.jpg' ) );
+
+		self::assertStringContainsString( 'this-video.jpg', $html );
+		self::assertStringNotContainsString( 'youtube-default.jpg', $html );
+	}
+
+	public function test_a_default_poster_that_is_not_a_plain_url_fails_closed(): void {
+		foreach ( array( '', 'javascript:alert(1)', "java\tscript:alert(1)", 'data:image/png;base64,AAAA' ) as $junk ) {
+			$html = $this->render_with_default_poster(
+				static function () use ( $junk ): string {
+					return $junk;
+				}
+			);
+			self::assertStringNotContainsString( 'cg-embed__poster', $html, var_export( $junk, true ) );
+			self::assertStringNotContainsString( 'cg-embed--poster', $html, var_export( $junk, true ) );
+		}
+		// Not a string at all (a filter returning the attachment ID, say).
+		$html = $this->render_with_default_poster(
+			static function () {
+				return 42;
+			}
+		);
+		self::assertStringNotContainsString( 'cg-embed__poster', $html );
+	}
+
+	public function test_a_noscript_panel_gets_no_default_poster(): void {
+		$called  = false;
+		$default = static function () use ( &$called ): string {
+			$called = true;
+			return 'https://example.test/wp-content/uploads/youtube-default.jpg';
+		};
+		$html = $this->render_with_default_poster( $default, array( 'noscript' => true ) );
+
+		self::assertFalse( $called );
+		self::assertStringNotContainsString( 'cg-embed__poster', $html );
+	}
+
 	public function test_poster_renders_decorative_site_origin_image(): void {
 		$html = $this->render_with_ctx( array( 'poster' => 'https://example.test/wp-content/uploads/p.jpg' ) );
 

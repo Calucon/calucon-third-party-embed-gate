@@ -51,15 +51,19 @@ final class SettingsPage {
 	/** @var callable|null Returns sample placeholder HTML for the live preview. */
 	private $preview_source;
 
+	/** @var callable|null fn( int $attachment_id ): string — a usable (site-origin) poster URL, or ''. */
+	private $poster_source;
+
 	/**
 	 * @param callable      $providers_source fn(): array[] — builtins + filtered.
 	 * @param callable|null $scanner_source   fn(): \CaluconEmbedGate\Support\ContentScan.
 	 * @param callable|null $preview_source   fn(): string — rendered sample placeholder.
 	 */
-	public function __construct( callable $providers_source, ?callable $scanner_source = null, ?callable $preview_source = null ) {
+	public function __construct( callable $providers_source, ?callable $scanner_source = null, ?callable $preview_source = null, ?callable $poster_source = null ) {
 		$this->providers_source = $providers_source;
 		$this->scanner_source   = $scanner_source;
 		$this->preview_source   = $preview_source;
+		$this->poster_source    = $poster_source;
 	}
 
 	/**
@@ -212,11 +216,16 @@ final class SettingsPage {
 			'window.caluconEmbedGateProvidersI18n = ' . wp_json_encode(
 				array(
 					/* translators: %d: number of providers matching the filter. */
-					'matches' => __( '%d shown', 'calucon-third-party-embed-gate' ),
+					'matches'      => __( '%d shown', 'calucon-third-party-embed-gate' ),
+					'posterTitle'  => __( 'Choose a poster image', 'calucon-third-party-embed-gate' ),
+					'posterButton' => __( 'Use this image', 'calucon-third-party-embed-gate' ),
 				)
 			) . ';',
 			'before'
 		);
+		// The media library, for the per-provider poster image. The site's
+		// own script and the site's own images: nothing leaves the admin.
+		wp_enqueue_media();
 		wp_enqueue_script(
 			'calucon-embed-gate-admin-custom-providers',
 			plugins_url( 'assets/js/admin-custom-providers.js', CALUCON_EMBED_GATE_FILE ),
@@ -516,7 +525,8 @@ final class SettingsPage {
 							$label       = isset( $descriptor['label'] ) && '' !== $descriptor['label'] ? (string) $descriptor['label'] : $id;
 							$field_id    = 'cg-p-' . preg_replace( '/[^a-z0-9-]/', '-', $id );
 							$builtin_url = isset( $descriptor['privacy_url'] ) && is_string( $descriptor['privacy_url'] ) ? $descriptor['privacy_url'] : '';
-							$texts_set   = '' !== ( $row['note'] ?? '' ) || '' !== ( $row['action'] ?? '' ) || '' !== ( $row['privacy_url'] ?? '' );
+							$poster_id   = isset( $row['poster'] ) ? (int) $row['poster'] : 0;
+							$texts_set   = '' !== ( $row['note'] ?? '' ) || '' !== ( $row['action'] ?? '' ) || '' !== ( $row['privacy_url'] ?? '' ) || $poster_id > 0;
 							$changed     = $this->provider_row_is_customised( $row );
 							/* translators: %s: provider label. */
 							$aria_gate = sprintf( __( 'Gate %s embeds', 'calucon-third-party-embed-gate' ), $label );
@@ -544,7 +554,7 @@ final class SettingsPage {
 									</span>
 								</div>
 								<details class="cg-provider__more" <?php echo $texts_set ? 'open' : ''; ?>>
-									<summary><?php esc_html_e( 'Wording and privacy link', 'calucon-third-party-embed-gate' ); ?></summary>
+									<summary><?php esc_html_e( 'Wording, privacy link and poster image', 'calucon-third-party-embed-gate' ); ?></summary>
 									<div class="cg-provider__fields">
 										<p>
 											<label for="<?php echo esc_attr( $field_id ); ?>-note"><?php esc_html_e( 'Notice text', 'calucon-third-party-embed-gate' ); ?></label>
@@ -558,6 +568,7 @@ final class SettingsPage {
 											<label for="<?php echo esc_attr( $field_id ); ?>-privacy"><?php esc_html_e( 'Privacy policy URL', 'calucon-third-party-embed-gate' ); ?></label>
 											<input type="url" id="<?php echo esc_attr( $field_id ); ?>-privacy" name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>[privacy_url]" value="<?php echo esc_attr( $row['privacy_url'] ?? '' ); ?>" placeholder="<?php echo esc_attr( $builtin_url ); ?>" pattern="https://.*" inputmode="url">
 										</p>
+										<?php $this->render_provider_poster_field( $field_id, $name_prefix, $poster_id, $label ); ?>
 									</div>
 								</details>
 							</li>
@@ -595,7 +606,48 @@ final class SettingsPage {
 				return true;
 			}
 		}
-		return false;
+		return ! empty( $row['poster'] );
+	}
+
+	/**
+	 * The default poster of one provider: a media-library image shown behind
+	 * that provider's placeholders when an embed has no poster of its own.
+	 *
+	 * The field is a plain number input — the attachment ID — so it works
+	 * without JavaScript. admin-providers.js hides it and offers the media
+	 * library instead.
+	 *
+	 * @param string $field_id    Sanitised id prefix of the provider's fields.
+	 * @param string $name_prefix Escaped name prefix of the provider's fields.
+	 * @param int    $poster_id   Stored attachment ID, 0 for none.
+	 * @param string $label       Provider label.
+	 * @return void
+	 */
+	private function render_provider_poster_field( string $field_id, string $name_prefix, int $poster_id, string $label ): void {
+		$thumb  = $poster_id > 0 ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : '';
+		$thumb  = is_string( $thumb ) ? $thumb : '';
+		$usable = $poster_id > 0 && null !== $this->poster_source && '' !== (string) call_user_func( $this->poster_source, $poster_id );
+		?>
+		<div class="cg-provider__poster" data-cg-poster>
+			<label for="<?php echo esc_attr( $field_id ); ?>-poster"><?php esc_html_e( 'Poster image', 'calucon-third-party-embed-gate' ); ?></label>
+			<span class="cg-provider__poster-controls">
+				<img class="cg-provider__poster-preview" data-cg-poster-preview src="<?php echo esc_url( $thumb ); ?>" alt="" <?php echo '' === $thumb ? 'hidden' : ''; ?>>
+				<input type="number" class="small-text" min="0" step="1" id="<?php echo esc_attr( $field_id ); ?>-poster" data-cg-poster-id name="<?php echo $name_prefix; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped by the caller. ?>[poster]" value="<?php echo $poster_id > 0 ? esc_attr( (string) $poster_id ) : ''; ?>" aria-describedby="<?php echo esc_attr( $field_id ); ?>-poster-help">
+				<?php /* translators: %s: provider label. */ ?>
+				<button type="button" class="button" data-cg-poster-choose hidden aria-label="<?php echo esc_attr( sprintf( __( 'Choose a poster image for %s', 'calucon-third-party-embed-gate' ), $label ) ); ?>"><?php esc_html_e( 'Choose image', 'calucon-third-party-embed-gate' ); ?></button>
+				<?php /* translators: %s: provider label. */ ?>
+				<button type="button" class="button-link" data-cg-poster-remove hidden aria-label="<?php echo esc_attr( sprintf( __( 'Remove the poster image for %s', 'calucon-third-party-embed-gate' ), $label ) ); ?>"><?php esc_html_e( 'Remove', 'calucon-third-party-embed-gate' ); ?></button>
+			</span>
+			<span class="description" id="<?php echo esc_attr( $field_id ); ?>-poster-help">
+				<?php esc_html_e( 'Shown behind the placeholder when an embed has no poster of its own. An image from your media library — never fetched from the provider. Without JavaScript, enter the image’s attachment ID.', 'calucon-third-party-embed-gate' ); ?>
+			</span>
+			<?php if ( $poster_id > 0 && ! $usable ) : ?>
+				<span class="cg-provider__poster-warning" role="status">
+					<?php esc_html_e( 'This image is not used: it no longer exists, or it is not served from this site. If your media library is on a CDN, add its host under Detection → Additional own hosts.', 'calucon-third-party-embed-gate' ); ?>
+				</span>
+			<?php endif; ?>
+		</div>
+		<?php
 	}
 
 	/**

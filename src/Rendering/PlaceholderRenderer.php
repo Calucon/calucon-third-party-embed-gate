@@ -93,6 +93,9 @@ final class PlaceholderRenderer {
 	 *            'note'     fn( string $note, array $provider, array $ctx ): string
 	 *            'action'   fn( string $action, array $provider, array $ctx ): string
 	 *            'fallback' fn( string $url, array $provider, array $ctx ): string
+	 *            'poster'   fn( array $provider, array $ctx ): string — the
+	 *                       owner's default poster for this provider, used
+	 *                       when the embed brings none of its own
 	 */
 	private array $bridges;
 
@@ -182,7 +185,7 @@ final class PlaceholderRenderer {
 		// consenting to one unknown third party never activates another.
 		$host = $this->host_of( '' !== $src ? $src : $fallback_url );
 
-		$poster = $this->poster_of( $ctx );
+		$poster = $this->poster_of( $ctx, $provider );
 
 		// The provider's privacy policy, linked before any click (§5.1):
 		// only for described providers (generic descriptors carry none),
@@ -323,14 +326,27 @@ final class PlaceholderRenderer {
 	 * that could not be a same-origin image URL at all, so a template or
 	 * filter passing junk fails closed to "no poster" (invariant 1).
 	 *
-	 * @param array $ctx Integration context.
+	 * An embed's own poster wins. Without one, the owner's default for the
+	 * provider (Providers tab, 1.1) is asked for — also a media-library
+	 * image, also validated as site-origin by the integration layer, also
+	 * guarded here. A <noscript> panel gets neither: it has no button, and
+	 * an image behind a bare notice is decoration for nobody.
+	 *
+	 * @param array $ctx      Integration context.
+	 * @param array $provider Provider descriptor.
 	 * @return string Poster URL, '' for none.
 	 */
-	private function poster_of( array $ctx ): string {
-		if ( ! isset( $ctx['poster'] ) || ! is_string( $ctx['poster'] ) ) {
-			return '';
+	private function poster_of( array $ctx, array $provider = array() ): string {
+		if ( isset( $ctx['poster'] ) && is_string( $ctx['poster'] ) && '' !== $ctx['poster'] ) {
+			return HostMatcher::navigable( $ctx['poster'] );
 		}
-		return HostMatcher::navigable( $ctx['poster'] );
+		if ( isset( $this->bridges['poster'] ) && empty( $ctx['noscript'] ) ) {
+			$default = call_user_func( $this->bridges['poster'], $provider, $ctx );
+			if ( is_string( $default ) && '' !== $default ) {
+				return HostMatcher::navigable( $default );
+			}
+		}
+		return '';
 	}
 
 	/**

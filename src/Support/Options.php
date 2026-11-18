@@ -43,6 +43,9 @@ final class Options {
 				//     'note'            => '',     override panel note text
 				//     'action'          => '',     override button text
 				//     'privacy_url'     => '',     override the linked privacy policy (https only)
+				//     'poster'          => 0,      media-library attachment ID: the poster
+				//                                  behind this provider's placeholders when
+				//                                  an embed has none of its own (1.1)
 				// ),
 			),
 			// Owner-defined providers (Providers tab). Each row: a stable id
@@ -226,6 +229,13 @@ final class Options {
 						&& false !== filter_var( $url, FILTER_VALIDATE_URL ) ) {
 						$entry['privacy_url'] = $url;
 					}
+				}
+				// Default poster: an attachment ID and nothing else. The URL is
+				// resolved — and refused unless it is the site's own — at
+				// render time (Plugin::poster_url), so a stored ID can never
+				// become a third-party request.
+				if ( isset( $row['poster'] ) && is_scalar( $row['poster'] ) && preg_match( '/^[1-9][0-9]{0,11}$/', trim( (string) $row['poster'] ) ) ) {
+					$entry['poster'] = (int) trim( (string) $row['poster'] );
 				}
 				if ( array() !== $entry ) {
 					$clean['providers'][ $id ] = $entry;

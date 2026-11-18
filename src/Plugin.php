@@ -77,6 +77,9 @@ final class Plugin {
 	/** @var bool True while render_ungated() runs; see should_bail(). */
 	private bool $gating_suspended = false;
 
+	/** @var array<string,string> Resolved default posters, by provider id. */
+	private array $provider_posters = array();
+
 	/**
 	 * Bootstraps the plugin once, on plugins_loaded.
 	 *
@@ -173,6 +176,9 @@ final class Plugin {
 			},
 			function (): string {
 				return $this->preview_placeholder_html();
+			},
+			function ( int $attachment_id ): string {
+				return $this->poster_url( $attachment_id );
 			}
 		) )->register();
 		( new ResourceHintsIntegration(
@@ -455,6 +461,9 @@ final class Plugin {
 				'fallback' => static function ( string $url, array $provider, array $ctx ): string {
 					return (string) apply_filters( 'calucon_embed_gate_fallback_url', $url, $provider, $ctx );
 				},
+				'poster'   => function ( array $provider, array $ctx ): string {
+					return $this->provider_poster_url( isset( $provider['id'] ) ? (string) $provider['id'] : '' );
+				},
 			),
 			! empty( $this->options['display']['privacy_link'] )
 		);
@@ -692,6 +701,25 @@ final class Plugin {
 			return '';
 		}
 		return $url;
+	}
+
+	/**
+	 * The owner's default poster for a provider (Providers tab): the image
+	 * behind that provider's placeholders when an embed has none of its own.
+	 * Same source and same rule as a per-embed poster — a media-library
+	 * attachment, and only if it is served from the site itself.
+	 *
+	 * @param string $provider_id Provider id.
+	 * @return string Poster URL, '' when none or unusable.
+	 */
+	public function provider_poster_url( string $provider_id ): string {
+		if ( '' === $provider_id || empty( $this->options['providers'][ $provider_id ]['poster'] ) ) {
+			return '';
+		}
+		if ( ! array_key_exists( $provider_id, $this->provider_posters ) ) {
+			$this->provider_posters[ $provider_id ] = $this->poster_url( (int) $this->options['providers'][ $provider_id ]['poster'] );
+		}
+		return $this->provider_posters[ $provider_id ];
 	}
 
 	/**
