@@ -151,6 +151,14 @@ final class GlossaryTest extends TestCase {
 		// out for "permission" only: nothing prescribes the German for "allow",
 		// and a future string about what a policy permits may well want it.
 		array( 'Erlaubnis', 'permission', 'Berechtigung', 'permission' ),
+		// "create" is erstellen. The 1.1 listing's first draft said „Manche
+		// Builder erzeugen einen Player"; the advisory report caught it.
+		// CONDITIONAL because "erzeugt" is right elsewhere in this corpus —
+		// for "makes" and "produces". The escape is the stem, so a string
+		// that says both stays quiet; the English trigger is "creat…", so
+		// "creating" and "created" count.
+		array( 'erzeug', 'create', 'erstell', 'creat' ),
+		array( 'Erzeug', 'create', 'Erstell', 'creat' ),
 	);
 
 	/**
