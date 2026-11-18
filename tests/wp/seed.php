@@ -152,6 +152,10 @@ $cg_seed_posts = array(
 	),
 );
 
+// The feed test reads the oldest seeded post out of /feed/. The default
+// of ten items was enough until the seed grew past ten posts.
+update_option( 'posts_per_rss', 50 );
+
 foreach ( $cg_seed_posts as $cg_slug => $cg_post ) {
 	if ( null !== get_page_by_path( $cg_slug, OBJECT, 'post' ) ) {
 		continue;
