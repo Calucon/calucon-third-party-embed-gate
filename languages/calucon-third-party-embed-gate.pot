@@ -493,7 +493,7 @@ msgstr ""
 msgid "Every third-party embed is gated, listed here or not. These entries add the provider's name, icon and privacy-policy link, and let you word the panel yourself. Turning one off stops gating its embeds — they then load exactly as WordPress renders them."
 msgstr ""
 
-#: src/Plugin.php:576
+#: src/Plugin.php:581
 msgid "Example embed"
 msgstr ""
 

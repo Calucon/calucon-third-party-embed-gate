@@ -1,6 +1,6 @@
 # readme.txt auf Deutsch (de_DE_formal, „Sie“)
 
-<!-- readme.txt: 62d0ac1a72f01248 -->
+<!-- readme.txt: 8d85238873e90fc4 -->
 
 <!-- Dieser Stempel bindet die Übersetzung an den englischen Stand.
      tests/Unit/ReadmeTranslationTest.php schlägt fehl, sobald readme.txt sich ändert. -->
@@ -83,13 +83,21 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Lädt von datenschutzfreundlichen Adressen, wo es sie gibt: `youtube-nocookie.com`, Vimeo mit `dnt=1`. Baut jede Einbettung aus einer Freigabeliste von Attributen neu auf – `sandbox` bleibt erhalten, `autoplay` überlebt nie – und entfernt Resource Hints wie `preconnect` und `dns-prefetch`, die den Anbieter vorzeitig kontaktieren würden.
 
-**EN:** Looks like your site, without CSS: quick styles, colours that follow your theme's palette, corners, borders, shadows, button styles and dark-mode colours, with a live preview and an automatic readability check — plus a poster image per embed from your own media library, never fetched from the provider, and per-embed button and notice text in the block editor.
+**EN:** Looks like your site, without CSS: quick styles, colours that follow your theme's palette, corners, borders, shadows, button styles and dark-mode colours, with a live preview and an automatic readability check — plus a poster image per embed or per provider from your own media library, never fetched from the provider, and per-embed button and notice text in the block editor.
 
-**DE:** Passt sich ohne CSS an Ihre Website an: Schnellstile, Farben, die der Palette Ihres Themes folgen, Ecken, Ränder, Schatten, Button-Stile und eigene Farben für den Dunkelmodus. Eine Live-Vorschau zeigt das Ergebnis, eine automatische Lesbarkeitsprüfung achtet auf den Kontrast. Dazu kommen ein Posterbild pro Einbettung aus Ihrer eigenen Mediathek – nie beim Anbieter geholt – sowie Button- und Hinweistext pro Einbettung im Block-Editor.
+**DE:** Passt sich ohne CSS an Ihre Website an: Schnellstile, Farben, die der Palette Ihres Themes folgen, Ecken, Ränder, Schatten, Button-Stile und eigene Farben für den Dunkelmodus. Eine Live-Vorschau zeigt das Ergebnis, eine automatische Lesbarkeitsprüfung achtet auf den Kontrast. Dazu kommen ein Posterbild pro Einbettung oder pro Anbieter aus Ihrer eigenen Mediathek – nie beim Anbieter geholt – sowie Button- und Hinweistext pro Einbettung im Block-Editor.
+
+**EN:** An alternative without the provider: per embed, a link to the same content on your own site — a transcript, a download, a copy you host yourself — shown in the placeholder next to the link to the provider.
+
+**DE:** Eine Alternative ohne den Anbieter: pro Einbettung ein Link zum selben Inhalt auf Ihrer eigenen Website – etwa ein Transkript, ein Download oder eine selbst gehostete Kopie. Der Platzhalter zeigt ihn neben dem Link zum Anbieter an.
 
 **EN:** Speaks German: the plugin ships translated for all five German locales (Germany du and Sie, Austria, Switzerland), and the texts you type are registered for WPML and Polylang.
 
 **DE:** Deutsch ist dabei: Das Plugin wird für alle fünf deutschen Sprachvarianten übersetzt mitgeliefert (Deutschland du und Sie, Österreich, Schweiz), und die Texte, die Sie selbst eingeben, sind für WPML und Polylang zur Übersetzung angemeldet.
+
+**EN:** Exceptions where you decide them, and never out of sight: let a provider through, exempt a host, one embed or one page — and the settings screen lists every page where gating is switched off.
+
+**DE:** Ausnahmen dort, wo Sie sie festlegen, und nie aus dem Blick: einen Anbieter durchlassen oder einen Host, eine einzelne Einbettung oder eine einzelne Seite ausnehmen – und die Einstellungsansicht listet jede Seite auf, auf der die Sperre ausgeschaltet ist.
 
 **EN:** Optional and off by default: remember the visitor's choice in their browser (per embed, per provider or for all; for the session or a number of days) with a withdrawal block and shortcode — and a bridge to your consent platform, so a consent given there loads the embeds and a withdrawal there re-gates them.
 
@@ -109,17 +117,17 @@ machen. Diese Zurückhaltung muss die Übersetzung halten.
 
 **DE:** Consent-Plattformen über die optionale Brücke: WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner. Die Brücke liest nur die Antwort der Plattform; bei jeder anderen Plattform und ohne Antwort bleibt die Sperre bestehen.
 
-**EN:** Page builders: Elementor's HTML and video widgets are gated out of the box. For a builder that renders outside WordPress's content filters, "Gate the whole page output" under Detection reads the finished page instead.
+**EN:** Page builders: Elementor's HTML widget, its video widget and element, and the video elements and video "facades" of Enfold and Avada are gated out of the box. Background videos from YouTube or Vimeo — Elementor, Enfold, WPBakery, Flatsome and the Cover block — are not loaded at all, because a placeholder behind a section's content cannot be pressed. For a builder that renders outside WordPress's content filters, "Gate the whole page output" under Detection reads the finished page instead.
 
-**DE:** Page-Builder: Die HTML- und Video-Widgets von Elementor werden von Haus aus gesperrt. Rendert ein Builder außerhalb der Inhaltsfilter von WordPress, liest das Plugin mit der Option „Die gesamte Seitenausgabe sperren“ unter Erkennung stattdessen die fertige Seite.
+**DE:** Page-Builder: Das HTML-Widget von Elementor, sein Video-Widget und -Element sowie die Video-Elemente und sogenannten Video-Fassaden von Enfold und Avada werden von Haus aus gesperrt. Hintergrundvideos von YouTube oder Vimeo – in Elementor, Enfold, WPBakery, Flatsome und im Cover-Block – werden gar nicht erst geladen, denn einen Platzhalter hinter dem Inhalt eines Abschnitts kann niemand anklicken. Rendert ein Builder außerhalb der Inhaltsfilter von WordPress, liest das Plugin mit der Option „Die gesamte Seitenausgabe sperren“ unter Erkennung stattdessen die fertige Seite.
 
 **EN:** Multilingual sites: WPML, Polylang, TranslatePress, Weglot.
 
 **DE:** Mehrsprachige Websites: WPML, Polylang, TranslatePress, Weglot.
 
-**EN:** Every month those claims are re-tested on a real WordPress against the current versions of the plugins that are free to install; the ones that are not (WP Rocket, Borlabs Cookie, WPML, Weglot, Cookiebot's banner) are tested against simulations of their documented behaviour.
+**EN:** Every month those claims are re-tested on a real WordPress against the current versions of the plugins that are free to install; the ones that are not (WP Rocket, Borlabs Cookie, WPML, Weglot, Cookiebot's banner) are tested against simulations of their documented behaviour. Enfold, Avada, WPBakery and Flatsome cannot be installed without a licence either: their rules were written from the markup on their makers' own demo sites and, where a demo page exists, checked against it with the maker's real scripts running — not against an installed copy.
 
-**DE:** Diese Angaben werden monatlich auf einem echten WordPress mit den aktuellen Versionen der frei installierbaren Plugins nachgeprüft. Die übrigen – WP Rocket, Borlabs Cookie, WPML, Weglot und das Banner von Cookiebot – werden anhand von Simulationen ihres dokumentierten Verhaltens geprüft.
+**DE:** Diese Angaben werden monatlich auf einem echten WordPress mit den aktuellen Versionen der frei installierbaren Plugins nachgeprüft. Die übrigen – WP Rocket, Borlabs Cookie, WPML, Weglot und das Banner von Cookiebot – werden anhand von Simulationen ihres dokumentierten Verhaltens geprüft. Enfold, Avada, WPBakery und Flatsome lassen sich ebenfalls nicht ohne Lizenz installieren: Die Regeln für diese Produkte wurden anhand des Markups auf den Demo-Websites ihrer Hersteller geschrieben und, wo es eine Demo-Seite gibt, dort überprüft, während die echten Skripte des Herstellers liefen – nicht an einer installierten Kopie.
 
 ### Was es nicht ist
 
@@ -195,7 +203,15 @@ Und wenn der Platzhalter nach einem Update ungestylt aussieht: Liefert Ihre Mini
 
 **DE:** Eine Einbettung aus meinem Page-Builder wird nicht gesperrt
 
-**DE (Antwort):** Die HTML- und Video-Widgets von Elementor werden von Haus aus gesperrt. Andere Page-Builder rendern außerhalb der Inhaltsfilter von WordPress, an denen das Plugin standardmäßig ansetzt: Aktivieren Sie „Die gesamte Seitenausgabe sperren“ unter Einstellungen → Calucon Third-Party Embed Gate → Erkennung, dann liest das Plugin stattdessen die fertige Seite. Die Option ist standardmäßig aus, weil das Puffern der gesamten Seite mit anderen puffernden Plugins kollidieren kann.
+**DE (Antwort):** Das HTML-Widget von Elementor sowie sein Video-Widget und -Element werden von Haus aus gesperrt, ebenso das Video-Element von Enfold, die per Lazy Loading geladenen Videos von Avada und die Vorschau-Elemente `lite-youtube` und `lite-vimeo`, die viele Themes und Performance-Plugins verwenden. Andere Page-Builder rendern außerhalb der Inhaltsfilter von WordPress, an denen das Plugin standardmäßig ansetzt: Aktivieren Sie „Die gesamte Seitenausgabe sperren“ unter Einstellungen → Calucon Third-Party Embed Gate → Erkennung, dann liest das Plugin stattdessen die fertige Seite. Die Option ist standardmäßig aus, weil das Puffern der gesamten Seite mit anderen puffernden Plugins kollidieren kann.
+
+**DE (Antwort, 2. Absatz):** Lädt ein Builder trotzdem etwas vor dem Klick, melden Sie das bitte mit dem Namen des Elements: Manche Builder erstellen einen Player erst im Browser des Besuchers aus einer Einstellung heraus, ohne dass in der Seite etwas steht, das ein Scanner finden könnte. Für jeden dieser Fälle muss einmal eine eigene Regel ergänzt werden.
+
+**EN:** My background video no longer plays
+
+**DE:** Mein Hintergrundvideo wird nicht mehr abgespielt
+
+**DE (Antwort):** Das ist Absicht, wenn es von YouTube oder Vimeo stammt. Ein Hintergrundvideo kontaktiert den Anbieter, sobald die Seite geöffnet wird – wie jede andere Einbettung auch. Ein Platzhalter muss aber angeklickt werden, und hinter dem Text und dem Overlay eines Abschnitts lässt sich nichts anklicken. Deshalb wird das Video weggelassen; der Abschnitt behält sein Overlay, seinen Inhalt und sein Ersatzbild. Das gilt für den Cover-Block und für die Hintergrundvideos von Elementor, Enfold, WPBakery und Flatsome. Eine Videodatei aus Ihrer eigenen Mediathek ist nicht betroffen: Laden Sie den Clip hoch und verwenden Sie ihn. Soll das Video des Anbieters lieber für jeden Besucher laden, schalten Sie diesen Anbieter unter „Anbieter“ aus.
 
 **EN:** Something on my site is gated and I want it to load normally
 
@@ -216,6 +232,26 @@ Und wenn der Platzhalter nach einem Update ungestylt aussieht: Liefert Ihre Mini
 **DE:** Kann ich einen Anbieter ergänzen, der nicht in der Liste steht?
 
 **DE (Antwort):** Ja, ohne Code: Anbieter → *Eigene Anbieter* nimmt einen Namen, die Einbettungs-Hosts (einen pro Zeile) und optional Skript-Hosts sowie die Art der Einbettung entgegen, die das Button-Symbol bestimmt. Nach dem Speichern erscheint der Eintrag in der Anbietertabelle mit eigenem Hinweistext, Button-Text und Datenschutz-Link. Unbekannte Hosts werden ohnehin gesperrt – ein eigener Anbieter gibt einem solchen Host nur einen richtigen Namen und eigene Texte. Hosts, um die sich die mitgelieferten Anbieter kümmern, bleiben bei diesen, und eigene Anbieter sind immer gesperrt; um einen Host durchzulassen, ist die Liste „Diese Hosts nie sperren“ unter Erkennung der richtige Ort.
+
+**EN:** Can the placeholder show a preview image instead of an empty box?
+
+**DE:** Kann der Platzhalter statt einer leeren Fläche ein Vorschaubild zeigen?
+
+**DE (Antwort):** Ja – eines, das Sie auswählen. Im Block-Editor hat jede Einbettung das Steuerelement „Posterbild festlegen“, und unter „Anbieter“ kann jeder Anbieter ein Standard-Posterbild für alle seine Einbettungen bekommen, die kein eigenes haben – etwa in älteren Beiträgen, Widgets oder Page-Builder-Elementen. In beiden Fällen stammt das Bild aus Ihrer eigenen Mediathek.
+
+**DE (Antwort, 2. Absatz):** Das Vorschaubild des Videos ruft das Plugin dagegen bewusst nicht beim Anbieter ab. Das wäre eine Anfrage an den Anbieter in Ihrem Namen – genau das, was der Platzhalter verhindern soll –, und eine heruntergeladene Kopie veraltet, ohne dass es jemand bemerkt.
+
+**EN:** Can I offer the content without the provider?
+
+**DE:** Kann ich den Inhalt auch ohne den Anbieter bereitstellen?
+
+**DE (Antwort):** Ja. Im Block-Editor finden Sie in den Einstellungen der Einbettung den Bereich „Calucon Third-Party Embed Gate“ mit dem Feld „Alternative auf dieser Website“. Dort tragen Sie die Adresse ein, unter der Ihre eigene Website denselben Inhalt bereitstellt – etwa als Transkript, als Download oder als Kopie des Videos, die Sie selbst hosten; das kann eine Seite, eine Datei oder ein Abschnitt sein. Der Platzhalter zeigt dann neben dem Link „Auf … öffnen“ einen zweiten Link – für Besucher, die die Einbettung lieber gar nicht laden möchten. Die Adresse muss auf Ihrer eigenen Website liegen; ein Link zu einer anderen Website wird nicht angezeigt, denn er wäre keine Alternative ohne Drittanbieter.
+
+**EN:** Can I switch gating off for a single page?
+
+**DE:** Kann ich die Sperre für eine einzelne Seite ausschalten?
+
+**DE (Antwort):** Ja. Im Editor gibt es in den Einstellungen der Seite den Schalter „Einbettungen auf dieser Seite nicht sperren“ (im klassischen Editor ist es eine Box in der seitlichen Spalte). Wird die Seite unter ihrer eigenen Adresse aufgerufen, lädt dann jede Einbettung, sobald die Seite geöffnet wird, und zwar für jeden Besucher – nutzen Sie das also dort, wo Sie einen Grund dafür haben. In Listen, Feeds und Suchergebnissen bleiben die Einbettungen derselben Seite gesperrt, und unter Einstellungen → Calucon Third-Party Embed Gate → Erkennung stehen alle Seiten, bei denen dieser Schalter eingeschaltet ist.
 
 **EN:** Can I change how the placeholder looks without writing CSS?
 
@@ -284,6 +320,12 @@ Und wenn der Platzhalter nach einem Update ungestylt aussieht: Liefert Ihre Mini
 
 ---
 
+## Upgrade Notice (1.1.0)
+
+**DE:** Neu und optional: ein Standard-Posterbild pro Anbieter, ein Link zu einer Alternative ohne den Anbieter, ein Schalter, der die Sperre auf einer einzelnen Seite aufhebt, und Unterstützung für die Video-Elemente von Enfold, Avada, WPBakery und Flatsome. Hintergrundvideos von YouTube oder Vimeo werden nicht mehr geladen. Enthält die Korrekturen aus 1.0.2 für das neue YouTube-Element und die Hintergrundvideos von Elementor, die beide nicht gesperrt wurden. Leeren Sie nach dem Update einmal Ihren Seiten-Cache.
+
+---
+
 ## Upgrade Notice (1.0.0)
 
 **DE:** Behebt einen Fall, in dem ein CDN vor Ihren Assets zusammen mit der Sperre der gesamten Seitenausgabe dazu führen konnte, dass das Plugin die eigenen Skripte Ihrer Website sperrte. In einer bestimmten Konfiguration wurde dabei auch das Skript des Plugins selbst gesperrt – dann war jeder Platzhalter nur noch ein Button, der nichts bewirkte. Unter Status und Werkzeuge steht jetzt, welche Dateien Sie in Ihrem Caching- oder Minifizierungs-Plugin ausnehmen sollten und wo dieses Plugin seine Ausschlussliste führt. An den Einstellungen ändert sich nichts.
@@ -325,7 +367,7 @@ Plugin-Name und bleibt unübersetzt.
 
 ---
 
-## Für Entwickler (die fünf Aufzählungspunkte)
+## Für Entwickler (die sieben Aufzählungspunkte)
 
 **EN:** Theme override: copy `templates/placeholder.php` to `{your-theme}/calucon-embed-gate/placeholder.php`.
 
@@ -341,7 +383,15 @@ Plugin-Name und bleibt unübersetzt.
 
 **EN:** Documented filters: `calucon_embed_gate_providers`, … Adding a provider is a ten-line filter in `functions.php`.
 
-**DE:** Dokumentierte Filter: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority` sowie die Aktionen `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` und `calucon_embed_gate_flush_caches`. Zu jedem Hook sind Signatur, Auslösezeitpunkt und Rückgabewert in `docs/customizing.md` dokumentiert, die im Plugin mitgeliefert wird (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) und auf GitHub lesbar ist. Einen Anbieter hinzuzufügen ist ein Filter von zehn Zeilen in der `functions.php`.
+**DE:** Dokumentierte Filter: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_alternative_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority` sowie die Aktionen `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` und `calucon_embed_gate_flush_caches`. Zu jedem Hook sind Signatur, Auslösezeitpunkt und Rückgabewert in `docs/customizing.md` dokumentiert, die im Plugin mitgeliefert wird (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) und auf GitHub lesbar ist. Einen Anbieter hinzuzufügen ist ein Filter von zehn Zeilen in der `functions.php`.
+
+**EN:** A `calucon-embed-gate:loaded` event in the browser once an embed has loaded, saying which provider and whether a click, a remembered consent or the consent platform asked for it — for your own layout, a player API or first-party statistics.
+
+**DE:** Ein `calucon-embed-gate:loaded`-Event im Browser, sobald eine Einbettung geladen ist. Es nennt den Anbieter und ob ein Klick, eine gemerkte Einwilligung oder die Consent-Plattform das Laden angefordert hat – für Ihr eigenes Layout, eine Player-API oder eigene Statistiken.
+
+**EN:** On WordPress 6.9 and later, the two WP-CLI reports are also abilities (`calucon-embed-gate/scan`, `calucon-embed-gate/providers`): read-only, for administrators.
+
+**DE:** Ab WordPress 6.9 stehen die beiden WP-CLI-Berichte auch als Fähigkeiten bereit (`calucon-embed-gate/scan`, `calucon-embed-gate/providers`): nur lesend, für Administratoren.
 
 **EN:** Stable since 1.0: the markup contract (`cg-` classes, `data-cg-*` attributes, `--cg-*` custom properties), the documented hooks, the template variables, the settings keys and the WP-CLI commands do not change across minor releases; provider descriptors and the tested-platform lists are data and may. `docs/customizing.md` ships inside the plugin and is written for developers and AI coding agents alike.
 
