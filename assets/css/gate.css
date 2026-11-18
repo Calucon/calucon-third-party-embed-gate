@@ -367,3 +367,34 @@
 	height: auto;
 	padding-bottom: 0;
 }
+
+/* A loaded player with nothing left to size it (BuilderEmbedRule): where
+   the gate replaced the element that used to do that — a facade component,
+   a <video>, a builder's player box — the rebuilt frame carries this class
+   and takes the panel's width at the embed's own ratio. Opt-in per frame:
+   every other embed keeps the size its own markup and its theme give it. */
+.cg-embed--active > iframe.cg-embed__frame--fluid {
+	width: 100%;
+	height: auto;
+	aspect-ratio: var( --cg-aspect, 16 / 9 );
+}
+
+/* Elementor's video widget with an image overlay, for a provider whose
+   player is a real iframe (Vimeo, Dailymotion, VideoPress): Elementor
+   paints the owner's image over the wrapper and removes it on the first
+   click. With a panel underneath, that first click was spent on the image
+   and the button needed a second one. The panel is what the visitor is
+   meant to see; the image stands aside while it is there. The same for
+   Essential Addons' Sticky Video and its overlay. */
+.elementor-wrapper:has( .cg-embed:not( .cg-embed--active ) ) > .elementor-custom-embed-image-overlay,
+.eael-sticky-video-wrapper:has( .cg-embed:not( .cg-embed--active ) ) > .eaelsv-overlay {
+	display: none;
+}
+
+/* WordPress's [video] shortcode wraps its player in an element with a
+   fixed inline width, which the player's own stylesheet caps at the
+   container — a stylesheet that is not on the page when the player became
+   a panel (BuilderEmbedRule, a <video> whose source is a provider's page). */
+.wp-video:has( > .cg-embed ) {
+	max-width: 100%;
+}

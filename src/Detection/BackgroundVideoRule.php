@@ -57,6 +57,13 @@ use CaluconEmbedGate\Providers\Registry;
  * video FILE becomes a <video> element, which is media, not an embed — the
  * same line the rest of the plugin draws.
  *
+ * The free builders, measured on the real plugins (2026-11-18): Kadence's
+ * row layout, Beaver Builder's "embedded code" background and Brizy's
+ * section background render a real iframe in a wrapper of their own, like
+ * the Cover block; Beaver's YouTube/Vimeo row background and Visual
+ * Composer's are an element with a data attribute that their scripts turn
+ * into a player (28 to 39 requests before a click).
+ *
  * Three more of the same kind, from commercial themes this project cannot
  * install — read off the vendors' own demo sites and front-end scripts on
  * 2026-11-18 (see BuilderEmbedRule for what that evidence is worth):
@@ -67,6 +74,15 @@ use CaluconEmbedGate\Providers\Registry;
  * WordPress-free: strings and arrays in, strings out.
  */
 final class BackgroundVideoRule {
+
+	/**
+	 * Elements that hold a background player as a real iframe and nothing
+	 * else: WordPress's Cover block (7.0+), Kadence's row layout, Beaver
+	 * Builder's "embedded code" row background, Brizy's section background.
+	 * The iframe rule would gate each of them — and leave a panel under the
+	 * section's content, clipped and covered (measured on all four).
+	 */
+	private const FRAME_WRAPPERS = array( 'wp-block-cover__embed-background', 'kb-bg-video-iframe', 'fl-bg-embed-code', 'brz-bg-video' );
 
 	/** Tags an Elementor section or container can be rendered as. */
 	private const ELEMENTOR_TAGS = array( 'div', 'section', 'header', 'footer', 'main', 'article', 'aside', 'nav', 'a' );
@@ -105,8 +121,13 @@ final class BackgroundVideoRule {
 	 */
 	public function apply( string $html, array $ctx = array() ): string {
 		// Cheap probes before any parsing (PLAN.md §9.16).
-		if ( false !== strpos( $html, 'wp-block-cover__embed-background' ) ) {
-			$html = $this->strip_cover_backgrounds( $html, $ctx );
+		foreach ( self::FRAME_WRAPPERS as $wrapper ) {
+			if ( false !== strpos( $html, $wrapper ) ) {
+				$html = $this->strip_background_frames( $html, $ctx, $wrapper );
+			}
+		}
+		if ( false !== strpos( $html, 'fl-bg-video' ) || false !== strpos( $html, 'data-vce-assets-video-' ) ) {
+			$html = $this->remove_background_elements( $html, $ctx );
 		}
 		if ( false !== strpos( $html, 'background_video_link' ) ) {
 			$html = $this->empty_elementor_backgrounds( $html, $ctx );
@@ -117,6 +138,77 @@ final class BackgroundVideoRule {
 		if ( false !== strpos( $html, 'ux-youtube' ) || false !== strpos( $html, 'av_youtube_frame' ) || false !== strpos( $html, 'av_vimeo_frame' ) ) {
 			$html = $this->remove_player_stubs( $html, $ctx );
 		}
+		return $html;
+	}
+
+	/**
+	 * Background players that are an element with children — a player
+	 * slot, play and mute controls — found by an attribute:
+	 *
+	 * - Beaver Builder's row background: `<div class="fl-bg-video"
+	 *   data-youtube="…" data-video-id="…">` (or data-vimeo). Its layout
+	 *   script builds the player once the provider's API is there; with the
+	 *   element gone it has nothing to build. (The API itself is a script
+	 *   tag Beaver enqueues — Integration\PlayerApiScripts holds that back.)
+	 * - Visual Composer's row background: `<div data-vce-assets-video-yt=
+	 *   "…">` (or -vimeo). Its bundle injects the provider's API the moment
+	 *   it is evaluated, whether or not the element is there, UNLESS an
+	 *   element with the id it gives its own script tag already exists. So
+	 *   a hidden, empty element with that id is left in its place.
+	 *
+	 * Both measured on the real plugins, 2026-11-18: 28–39 requests before
+	 * a click, with or without whole-page gating.
+	 *
+	 * @param string $html Fragment.
+	 * @param array  $ctx  Integration context.
+	 * @return string
+	 */
+	private function remove_background_elements( string $html, array $ctx ): string {
+		$divs = $this->scanner->find_tags( $html, 'div' );
+
+		for ( $i = count( $divs ) - 1; $i >= 0; $i-- ) {
+			$attrs = $divs[ $i ]['attributes'];
+			$stub  = '';
+			$link  = '';
+			$url   = null;
+
+			if ( self::has_class( $attrs, 'fl-bg-video' ) ) {
+				if ( isset( $attrs['data-youtube'] ) && is_string( $attrs['data-youtube'] ) && '' !== trim( $attrs['data-youtube'] ) ) {
+					$link = trim( $attrs['data-youtube'] );
+					$id   = ElementorVideoRule::youtube_id( $link );
+					$url  = 'https://www.youtube.com/embed/' . ( '' !== $id ? rawurlencode( $id ) : '0' );
+				} elseif ( isset( $attrs['data-vimeo'] ) && is_string( $attrs['data-vimeo'] ) && '' !== trim( $attrs['data-vimeo'] ) ) {
+					$link = trim( $attrs['data-vimeo'] );
+					$url  = 'https://player.vimeo.com/video/' . ( preg_match( '#vimeo\.com/(?:[^?\#]*/)?([0-9]+)#', $link, $m ) ? $m[1] : '0' );
+				}
+			} elseif ( isset( $attrs['data-vce-assets-video-yt'] ) && is_string( $attrs['data-vce-assets-video-yt'] ) && '' !== trim( $attrs['data-vce-assets-video-yt'] ) ) {
+				$link = trim( $attrs['data-vce-assets-video-yt'] );
+				$url  = 'https://www.youtube.com/embed/' . rawurlencode( $link );
+				$stub = '<span id="vcv-asset-youtube-iframe-api" hidden></span>';
+			} elseif ( isset( $attrs['data-vce-assets-video-vimeo'] ) && is_string( $attrs['data-vce-assets-video-vimeo'] ) && '' !== trim( $attrs['data-vce-assets-video-vimeo'] ) ) {
+				$link = trim( $attrs['data-vce-assets-video-vimeo'] );
+				$url  = 'https://player.vimeo.com/video/' . rawurlencode( $link );
+				$stub = '<span id="vcv-asset-vimeo-player-api" hidden></span>';
+			}
+			if ( null === $url || ! $this->is_gated( $link, $url, $ctx ) ) {
+				continue;
+			}
+			$open_end = $this->scanner->start_tag_end( $html, $divs[ $i ]['start'] );
+			if ( null === $open_end ) {
+				continue;
+			}
+			$close = $this->scanner->closing_tag_offset( $html, $open_end, 'div' );
+			if ( null === $close || ! preg_match( '#\G</div\s*>#i', $html, $end, 0, $close ) ) {
+				continue;
+			}
+			// One stub per page is enough, and two elements with one id are
+			// not valid HTML: only where this fragment has none yet.
+			if ( '' !== $stub && false !== strpos( $html, $stub ) ) {
+				$stub = '';
+			}
+			$html = substr( $html, 0, $divs[ $i ]['start'] ) . $stub . substr( $html, $close + strlen( $end[0] ) );
+		}
+
 		return $html;
 	}
 
@@ -224,37 +316,47 @@ final class BackgroundVideoRule {
 	}
 
 	/**
-	 * The Cover block's embedded background: the wrapper and its iframe.
+	 * A background that is a real iframe in a wrapper of its own (see
+	 * FRAME_WRAPPERS): the wrapper and its iframe.
 	 *
-	 * @param string $html Fragment.
-	 * @param array  $ctx  Integration context.
+	 * @param string $html    Fragment.
+	 * @param array  $ctx     Integration context.
+	 * @param string $wrapper The wrapper's class name.
 	 * @return string
 	 */
-	private function strip_cover_backgrounds( string $html, array $ctx ): string {
+	private function strip_background_frames( string $html, array $ctx, string $wrapper ): string {
 		$divs = $this->scanner->find_tags( $html, 'div' );
 
 		// Back to front so earlier offsets stay valid.
 		for ( $i = count( $divs ) - 1; $i >= 0; $i-- ) {
-			$wrapper = $divs[ $i ];
-			if ( ! self::has_class( $wrapper['attributes'], 'wp-block-cover__embed-background' ) ) {
+			$element = $divs[ $i ];
+			if ( ! self::has_class( $element['attributes'], $wrapper ) ) {
 				continue;
 			}
-			$open_end = $this->scanner->start_tag_end( $html, $wrapper['start'] );
+			$open_end = $this->scanner->start_tag_end( $html, $element['start'] );
 			if ( null === $open_end ) {
 				continue;
 			}
-			// The wrapper holds exactly one thing, the iframe core wrote.
-			// Anything else in there is not core's markup: leave it to the
-			// iframe rule, which gates whatever it finds.
+			// The wrapper holds exactly one thing, the player's iframe.
+			// Anything else in there is not the markup this rule knows:
+			// leave it to the iframe rule, which gates whatever it finds.
 			$iframe = $this->iframe_at( $html, $open_end );
 			if ( null === $iframe || ! preg_match( '#\G\s*</div\s*>#i', $html, $close, 0, $iframe['end'] ) ) {
 				continue;
 			}
-			$src = isset( $iframe['attributes']['src'] ) && is_string( $iframe['attributes']['src'] ) ? trim( $iframe['attributes']['src'] ) : '';
+			// Its address — or, behind a lazy loader, the one parked for it.
+			$src = '';
+			foreach ( array( 'src', 'data-src', 'data-lazy-src', 'data-orig-src' ) as $name ) {
+				if ( isset( $iframe['attributes'][ $name ] ) && is_string( $iframe['attributes'][ $name ] )
+					&& HostMatcher::FOREIGN === $this->hosts->classify( trim( $iframe['attributes'][ $name ] ) ) ) {
+					$src = trim( $iframe['attributes'][ $name ] );
+					break;
+				}
+			}
 			if ( ! $this->is_gated( $src, $src, $ctx ) ) {
 				continue;
 			}
-			$html = substr( $html, 0, $wrapper['start'] ) . substr( $html, $iframe['end'] + strlen( $close[0] ) );
+			$html = substr( $html, 0, $element['start'] ) . substr( $html, $iframe['end'] + strlen( $close[0] ) );
 		}
 
 		return $html;

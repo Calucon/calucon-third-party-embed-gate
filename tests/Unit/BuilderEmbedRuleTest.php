@@ -176,6 +176,183 @@ final class BuilderEmbedRuleTest extends TestCase {
 		}
 	}
 
+	// ---- Players of the free builders, measured on the real plugins ---------
+
+	/** @dataProvider provider_pages */
+	public function test_a_providers_page_as_a_video_source( string $page, ?string $expected ): void {
+		self::assertSame( $expected, BuilderEmbedRule::provider_page_embed( $page ) );
+	}
+
+	public static function provider_pages(): array {
+		return array(
+			'youtube watch'     => array( 'https://www.youtube.com/watch?v=y_pjE_p1HwE&_=1', 'https://www.youtube.com/embed/y_pjE_p1HwE' ),
+			'youtu.be'          => array( 'https://youtu.be/y_pjE_p1HwE', 'https://www.youtube.com/embed/y_pjE_p1HwE' ),
+			'protocol-relative' => array( '//www.youtube.com/watch?v=y_pjE_p1HwE', 'https://www.youtube.com/embed/y_pjE_p1HwE' ),
+			'vimeo'             => array( 'https://vimeo.com/76979871', 'https://player.vimeo.com/video/76979871' ),
+			'vimeo channel'     => array( 'https://vimeo.com/channels/staffpicks/76979871', 'https://player.vimeo.com/video/76979871' ),
+			// Media, or nothing a player is built for: left to be a <video>.
+			'a file'            => array( 'https://cdn.example.net/clip.mp4', null ),
+			'a file on youtube' => array( 'https://www.youtube.com/not-a-video.jpg', null ),
+			'a channel'         => array( 'https://www.youtube.com/@calucon', null ),
+			'a lookalike host'  => array( 'https://www.youtube.com.example.net/watch?v=y_pjE_p1HwE', null ),
+			'the name in a path' => array( 'https://cdn.example.net/youtube.com/watch?v=y_pjE_p1HwE', null ),
+			'vimeo in a path'    => array( 'https://cdn.example.net/vimeo.com/76979871', null ),
+			'empty'             => array( '', null ),
+		);
+	}
+
+	public function test_a_video_element_with_a_provider_page_becomes_a_panel_and_a_file_stays_media(): void {
+		$html = '<div style="width: 640px;" class="wp-video"><video class="wp-video-shortcode" width="640" height="360" controls="controls"><source type="video/youtube" src="https://www.youtube.com/watch?v=y_pjE_p1HwE&#038;_=1" /><a href="https://www.youtube.com/watch?v=y_pjE_p1HwE">link</a></video></div>';
+		$once = self::rule()->apply( $html );
+
+		self::assertStringNotContainsString( '<video', $once );
+		self::assertStringNotContainsString( '<source', $once );
+		self::assertStringContainsString( '"src":"https://www.youtube-nocookie.com/embed/y_pjE_p1HwE"', $once );
+		self::assertStringContainsString( '"width":"640","height":"360","class":"' . BuilderEmbedRule::FLUID . '"', $once, 'the loaded player is sized by the gate: the <video> that did it is gone' );
+		self::assertStringStartsWith( '<div style="width: 640px;" class="wp-video"><div class="cg-embed"', $once );
+		self::assertSame( $once, self::rule()->apply( $once ), 'idempotent' );
+
+		foreach ( array(
+			'<video src="https://cdn.example.net/clip.mp4" controls></video>',
+			'<video controls><source src="https://example.test/wp-content/uploads/clip.webm"><source src="https://cdn.example.net/clip.mp4"></video>',
+			'<video poster="https://www.youtube.com/watch?v=y_pjE_p1HwE" src="/clip.mp4"></video>',
+		) as $media ) {
+			self::assertSame( $media, self::rule()->apply( $media ), $media );
+		}
+
+		self::assertSame( $html, self::rule( self::without( 'youtube' ) )->apply( $html ) );
+		$asked = array();
+		$veto  = static function ( bool $gate, string $url ) use ( &$asked ): bool {
+			$asked[] = $url;
+			return false;
+		};
+		self::assertSame( $html, self::rule( null, $veto )->apply( $html ) );
+		self::assertSame( array( 'https://www.youtube.com/watch?v=y_pjE_p1HwE&_=1' ), $asked, 'the veto is asked with the address in the markup' );
+	}
+
+	public function test_a_plyr_embed_keeps_its_element_and_loses_what_plyr_reads(): void {
+		$html = '<div class="wrap"><div id="eaelsv-player-1" data-plyr-provider="youtube" data-plyr-embed-id="y_pjE_p1HwE" data-plyr-config="{&quot;autoplay&quot;:0}"><p>old content</p><div>nested</div></div><span class="close"></span></div>';
+		$once = self::rule()->apply( $html );
+
+		// The element and its id stay — scripts address it — and Plyr's two
+		// attributes go, so `new Plyr()` finds a plain div.
+		self::assertStringContainsString( '<div id="eaelsv-player-1" data-plyr-config="{&quot;autoplay&quot;:0}"><div class="cg-embed"', $once );
+		self::assertStringNotContainsString( 'data-plyr-provider', $once );
+		self::assertStringNotContainsString( 'data-plyr-embed-id', $once );
+		self::assertStringNotContainsString( 'old content', $once );
+		self::assertStringEndsWith( '</div></div><span class="close"></span></div>', $once, 'the element is closed where it closed, nested divs and all' );
+		self::assertSame( $once, self::rule()->apply( $once ), 'idempotent' );
+
+		// Plyr takes a URL as the id, too.
+		self::assertStringContainsString( 'player.vimeo.com/video/76979871', self::rule()->apply( '<div data-plyr-provider="vimeo" data-plyr-embed-id="https://vimeo.com/76979871"></div>' ) );
+		self::assertStringContainsString( 'youtube-nocookie.com/embed/y_pjE_p1HwE', self::rule()->apply( '<div data-plyr-provider="YouTube" data-plyr-embed-id="https://youtu.be/y_pjE_p1HwE"></div>' ) );
+
+		foreach ( array(
+			'<div data-plyr-provider="html5" data-plyr-embed-id="x"></div>',
+			'<div data-plyr-provider="youtube"></div>',
+			'<div data-plyr-provider="youtube" data-plyr-embed-id=""></div>',
+		) as $other ) {
+			self::assertSame( $other, self::rule()->apply( $other ), $other );
+		}
+		self::assertSame( $html, self::rule( self::without( 'youtube' ) )->apply( $html ) );
+	}
+
+	private static function video_box( string $attributes, string $src, string $image = 'transparent' ): string {
+		return '<div id="premium-video-box-container-1" class="premium-video-box-container" ' . $attributes . '><div><div class="premium-video-box-inner-wrap"><div data-src="' . htmlspecialchars( $src ) . '" class="premium-video-box-video-container"></div><div style="background-image:' . htmlspecialchars( $image, ENT_QUOTES ) . '" class="premium-video-box-image-container none"></div><div class="premium-video-box-play-icon-container"><svg></svg></div></div></div></div><p>After.</p>';
+	}
+
+	public function test_a_premium_addons_video_box_becomes_the_panel_whole(): void {
+		$src  = 'https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed&rel=0&autoplay=1';
+		$once = self::rule()->apply( self::video_box( 'data-type="youtube" data-thumbnail=""', $src ) );
+
+		// Nothing of the box is left: with its container gone the add-on's
+		// script finds no element; a container without its data-src throws.
+		self::assertStringNotContainsString( 'premium-video-box', $once );
+		self::assertStringContainsString( '"src":"https://www.youtube-nocookie.com/embed/y_pjE_p1HwE?rel=0"', $once );
+		self::assertStringEndsWith( '</div><p>After.</p>', $once );
+		self::assertStringStartsWith( '<div class="cg-embed"', $once );
+		self::assertSame( $once, self::rule()->apply( $once ), 'idempotent' );
+
+		// The owner's own image becomes the poster; the provider's never.
+		$own = self::rule()->apply( self::video_box( 'data-type="youtube" data-thumbnail="1"', $src, "url('https://example.test/wp-content/uploads/cover.png')" ) );
+		self::assertStringContainsString( 'cg-embed__poster" src="https://example.test/wp-content/uploads/cover.png"', $own );
+		$theirs = self::rule()->apply( self::video_box( 'data-type="youtube" data-thumbnail="1"', $src, "url('https://i.ytimg.com/vi/y_pjE_p1HwE/maxresdefault.jpg')" ) );
+		self::assertStringContainsString( 'class="cg-embed"', $theirs );
+		self::assertStringNotContainsString( 'ytimg', $theirs );
+	}
+
+	public function test_a_video_box_that_loads_nothing_by_itself_is_left_alone(): void {
+		$src = 'https://www.youtube.com/embed/y_pjE_p1HwE';
+		foreach ( array(
+			'a file'              => self::video_box( 'data-type="self" data-thumbnail="1"', $src ),
+			'the lightbox'        => self::video_box( 'data-lightbox="{&quot;type&quot;:&quot;elementor&quot;}" data-type="youtube"', $src ),
+			'own-host player'     => self::video_box( 'data-type="youtube"', 'https://example.test/player/1' ),
+			'no address'          => '<div class="premium-video-box-container" data-type="youtube"><div class="premium-video-box-video-container"></div></div>',
+			'the owner said no'   => null,
+		) as $name => $html ) {
+			if ( null === $html ) {
+				$html = self::video_box( 'data-type="youtube"', $src );
+				self::assertSame( $html, self::rule( self::without( 'youtube' ) )->apply( $html ), $name );
+				continue;
+			}
+			self::assertSame( $html, self::rule()->apply( $html ), $name );
+		}
+	}
+
+	public function test_backgrounds_that_are_an_element_with_children_go_whole(): void {
+		$beaver = '<div class="fl-row-content-wrap"><div class="fl-bg-video" data-fallback="" data-youtube="https://www.youtube.com/watch?v=y_pjE_p1HwE" data-video-id="y_pjE_p1HwE"><div class="fl-bg-video-player"></div><div class="fl-bg-video-play-pause"><span><i></i></span></div></div><div class="fl-row-content"><p>Text.</p></div></div>';
+		self::assertSame( '<div class="fl-row-content-wrap"><div class="fl-row-content"><p>Text.</p></div></div>', self::background()->apply( $beaver ) );
+
+		$vimeo = str_replace( 'data-youtube="https://www.youtube.com/watch?v=y_pjE_p1HwE"', 'data-vimeo="https://vimeo.com/76979871"', $beaver );
+		self::assertStringNotContainsString( 'fl-bg-video', self::background()->apply( $vimeo ) );
+		self::assertSame( $beaver, self::background( self::without( 'youtube' ) )->apply( $beaver ) );
+		self::assertStringNotContainsString( 'fl-bg-video', self::background( self::without( 'youtube' ) )->apply( $vimeo ) );
+
+		$file = '<div class="fl-bg-video" data-mp4="https://cdn.example.net/bg.mp4" data-youtube=""><div class="fl-bg-video-play-pause"></div></div>';
+		self::assertSame( $file, self::background()->apply( $file ), 'a video file is media' );
+
+		// Visual Composer injects the provider's API the moment its bundle
+		// runs, unless an element with its script's id is already there.
+		$composer = '<div class="vce-content-background-container"><div class="vce-asset-video-yt-wrapper"><div class="vce-asset-video-yt-background" data-vce-assets-video-yt="y_pjE_p1HwE"><svg width="640" height="360"></svg><div class="vce-asset-video-yt-player"></div></div></div></div>';
+		$out      = self::background()->apply( $composer . $composer );
+		self::assertStringNotContainsString( 'data-vce-assets-video-yt', $out );
+		self::assertSame( 1, substr_count( $out, '<span id="vcv-asset-youtube-iframe-api" hidden></span>' ), 'one stub, not one per row: an id is unique' );
+		self::assertSame( $out, self::background()->apply( $out ) );
+		$vc_vimeo = str_replace( array( 'video-yt', '"y_pjE_p1HwE"' ), array( 'video-vimeo', '"76979871"' ), $composer );
+		self::assertStringContainsString( '<span id="vcv-asset-vimeo-player-api" hidden></span>', self::background()->apply( $vc_vimeo ) );
+		$veto = static function (): bool {
+			return false;
+		};
+		self::assertSame( $composer, self::background( null, $veto )->apply( $composer ) );
+	}
+
+	public function test_background_frames_in_a_builders_own_wrapper_go_with_it(): void {
+		$frame = '<iframe frameborder="0" class="kb-blocks-bg-video youtube" src="https://www.youtube.com/embed/y_pjE_p1HwE?autoplay=1&amp;mute=1" autoplay></iframe>';
+		foreach ( array( 'kb-bg-video-iframe kb-bg-video-ratio-16-9', 'fl-bg-embed-code', 'brz-bg-video' ) as $classes ) {
+			$html = '<div class="row"><div class="' . $classes . '">' . $frame . '</div><div class="content"><p>Text.</p></div></div>';
+			self::assertSame( '<div class="row"><div class="content"><p>Text.</p></div></div>', self::background()->apply( $html ), $classes );
+			self::assertStringNotContainsString( 'cg-embed', PipelineFactory::gate( $html ), $classes . ': no panel behind the row' );
+		}
+		// Parked by a lazy loader: still the address that will be asked for.
+		$lazy = '<div class="kb-bg-video-iframe"><iframe class="lazyload" src="about:blank" data-src="https://www.youtube.com/embed/y_pjE_p1HwE"></iframe></div>';
+		self::assertSame( '', self::background()->apply( $lazy ) );
+		// Not a frame in such a wrapper: the iframe rule's, with a panel.
+		$plain = '<div class="kb-video"><iframe src="https://www.youtube.com/embed/y_pjE_p1HwE"></iframe></div>';
+		self::assertSame( $plain, self::background()->apply( $plain ) );
+		self::assertStringContainsString( 'cg-embed', PipelineFactory::gate( $plain ) );
+	}
+
+	public function test_where_an_element_ends(): void {
+		$scanner = new HtmlScanner();
+		$html    = '<div id="a"><div>one</div><script type="text/html"></div></div></script><div data-x="</div>">two<div>deep</div></div></div><p>after</p>';
+		$from    = strlen( '<div id="a">' );
+		$close   = $scanner->closing_tag_offset( $html, $from, 'div' );
+
+		self::assertSame( '</div><p>after</p>', substr( $html, (int) $close ) );
+		self::assertNull( $scanner->closing_tag_offset( '<div><div>never closed</div>', 5, 'div' ) );
+		self::assertSame( 4, $scanner->closing_tag_offset( '<p>x</p><p>y</p>', 3, 'p' ) );
+	}
+
 	// ---- Theme backgrounds (BackgroundVideoRule) ----------------------------
 
 	/** @dataProvider wpbakery_links */

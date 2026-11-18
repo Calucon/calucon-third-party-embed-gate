@@ -34,6 +34,7 @@ use CaluconEmbedGate\Detection\ScriptRule;
 use CaluconEmbedGate\Detection\StylesheetRule;
 use CaluconEmbedGate\Integration\Abilities;
 use CaluconEmbedGate\Integration\Assets;
+use CaluconEmbedGate\Integration\PlayerApiScripts;
 use CaluconEmbedGate\Integration\Comments;
 use CaluconEmbedGate\Integration\Descriptions;
 use CaluconEmbedGate\Integration\Excerpt;
@@ -171,6 +172,7 @@ final class Plugin {
 		$withdraw->register();
 		( new BlockEditor( $withdraw ) )->register();
 		( new PageSwitch() )->register();
+		( new PlayerApiScripts( $this ) )->register();
 		( new SettingsPage(
 			function (): array {
 				return $this->providers();
@@ -640,7 +642,10 @@ final class Plugin {
 	 * for the <lite-youtube>/<lite-vimeo> facade elements; and for the
 	 * background players of WPBakery, Flatsome and Enfold, which are an
 	 * attribute or a class on a <div>. (Enfold's video element needs no
-	 * entry: its template is a <script>.)
+	 * entry: its template is a <script>.) The same for a <video> whose
+	 * source is a provider's page (MediaElement builds the provider's
+	 * player for it), Plyr's embed divs, Premium Addons' video box, and the
+	 * row backgrounds of Beaver Builder and Visual Composer.
 	 *
 	 * @param string $html Content.
 	 * @return bool
@@ -652,8 +657,8 @@ final class Plugin {
 		// alternation scans the string once instead of once per tag name
 		// (measured ~4x on a 60 KB text-only post).
 		$pattern = $this->options['detection']['images']
-			? '/<(?:iframe|script|embed|object|img)|elementor-widget-video|e-youtube|background_video_link|<lite-(?:youtube|vimeo)|data-vc-video-bg|ux-youtube|av_(?:youtube|vimeo)_frame/i'
-			: '/<(?:iframe|script|embed|object)|elementor-widget-video|e-youtube|background_video_link|<lite-(?:youtube|vimeo)|data-vc-video-bg|ux-youtube|av_(?:youtube|vimeo)_frame/i';
+			? '/<(?:iframe|script|embed|object|img)|<(?:video|lite-youtube|lite-vimeo)|elementor-widget-video|e-youtube|background_video_link|data-vc-video-bg|ux-youtube|av_(?:youtube|vimeo)_frame|fl-bg-video|data-vce-assets-video-|data-plyr-provider|premium-video-box-container/i'
+			: '/<(?:iframe|script|embed|object)|<(?:video|lite-youtube|lite-vimeo)|elementor-widget-video|e-youtube|background_video_link|data-vc-video-bg|ux-youtube|av_(?:youtube|vimeo)_frame|fl-bg-video|data-vce-assets-video-|data-plyr-provider|premium-video-box-container/i';
 		return 1 === preg_match( $pattern, $html );
 	}
 
@@ -730,6 +735,35 @@ final class Plugin {
 			return '';
 		}
 		return $url;
+	}
+
+	/**
+	 * Would an embed with this address be gated on this site: is it a third
+	 * party's, is the iframe rule on, has the owner neither let its provider
+	 * through nor vetoed it? For an integration that has no markup to hand
+	 * to gate() but must make the same decision.
+	 *
+	 * @param string $url Embed URL.
+	 * @param array  $ctx Integration context.
+	 * @return bool
+	 */
+	public function gates_url( string $url, array $ctx = array() ): bool {
+		if ( ! $this->options['detection']['iframes'] ) {
+			return false;
+		}
+		$pipeline = $this->pipeline();
+		if ( HostMatcher::FOREIGN !== $pipeline->host_matcher->classify( $url ) ) {
+			return false;
+		}
+		$host = $pipeline->host_matcher->host_of( $url );
+		if ( null === $host ) {
+			return false;
+		}
+		$provider = $pipeline->registry->resolve_for_url( $url, $host );
+		if ( false === $provider['enabled'] ) {
+			return false;
+		}
+		return (bool) apply_filters( 'calucon_embed_gate_should_gate', true, $url, $ctx );
 	}
 
 	/**
