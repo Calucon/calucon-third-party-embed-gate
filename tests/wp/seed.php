@@ -136,6 +136,15 @@ $cg_seed_posts = array(
 			)
 		),
 	),
+	// WordPress's own [video] shortcode with a provider's PAGE as its
+	// source: MediaElement, core's player, builds the provider's player for
+	// it. And the same shortcode with a file, which is media.
+	'video-shortcode'  => array(
+		'title'   => 'Video shortcode',
+		'content' => '[video src="https://www.youtube.com/watch?v=y_pjE_p1HwE" width="640" height="360"]' . "\n\n"
+			. '[video src="https://vimeo.com/76979871"]' . "\n\n"
+			. '[video mp4="/wp-content/uploads/2026/08/cg-clip.mp4"]',
+	),
 	'per-embed-text' => array(
 		'title'   => 'Per-embed text',
 		'content' => "<!-- wp:html {\"caluconEmbedGateAction\":\"Load <b>the trailer</b>\",\"caluconEmbedGateNote\":\"<em>Own notice.</em> " . str_repeat( 'x', 500 ) . "\"} -->\n"

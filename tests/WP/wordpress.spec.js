@@ -75,6 +75,45 @@ test( 'block content: gated via render_block', async ( { page } ) => {
 	expect( await page.locator( 'iframe' ).count() ).toBe( 0 );
 } );
 
+// WordPress's [video] shortcode takes a YouTube or Vimeo PAGE as its source,
+// and MediaElement — core's own player — then builds the provider's player:
+//   <video class="wp-video-shortcode"><source type="video/youtube"
+//   src="https://www.youtube.com/watch?v=…">
+// No rule read <video> until 1.1 (measured on the same mechanism in
+// SiteOrigin's widget: 20 to 25 third-party requests before a click). A
+// <video> with a file is media and stays a <video>.
+test( 'a [video] shortcode with a YouTube or Vimeo address is gated; one with a file stays a video', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+	await page.goto( '/video-shortcode/' );
+	await page.waitForLoadState( 'networkidle' );
+	await page.waitForTimeout( 1500 );
+	expect( offenders ).toEqual( [] );
+	await expect( page.locator( '.wp-video' ) ).toHaveCount( 3 );
+	await expect( page.locator( '.wp-video > .cg-embed[data-cg-provider="youtube"]' ) ).toHaveCount( 1 );
+	await expect( page.locator( '.wp-video > .cg-embed[data-cg-provider="vimeo"]' ) ).toHaveCount( 1 );
+	// The file: still a <video>, played by core's player, no panel.
+	await expect( page.locator( '.wp-video video' ) ).toHaveCount( 1 );
+	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
+
+	await abortThirdParty( page );
+	await page.setViewportSize( { width: 390, height: 800 } );
+	await page.locator( '.cg-embed[data-cg-provider="youtube"] .cg-embed__button' ).click();
+	const frame = page.locator( '.cg-embed[data-cg-provider="youtube"] iframe' );
+	await expect( frame ).toHaveAttribute( 'src', /youtube-nocookie\.com\/embed\/y_pjE_p1HwE/ );
+	// Core's wrapper is 640 pixels wide by inline style; on a phone the
+	// loaded player must still fit the screen. (Asked of the player itself:
+	// core's own player for the FILE on this page is 640 pixels wide in
+	// some themes, which is core's business.)
+	const box = await frame.evaluate( ( el ) => {
+		const r = el.getBoundingClientRect();
+		return { width: r.width, ratio: r.width / r.height, sideways: r.right > document.documentElement.clientWidth + 1 };
+	} );
+	expect( box.sideways, 'the loaded player is wider than the screen' ).toBe( false );
+	expect( box.width ).toBeGreaterThan( 250 );
+	expect( box.ratio ).toBeGreaterThan( 1.6 );
+	expect( box.ratio ).toBeLessThan( 1.9 );
+} );
+
 // WordPress 7.0 gave the Cover block an embedded video background: core's
 // render callback writes an autoplaying YouTube/Vimeo iframe behind the
 // overlay. Until BackgroundVideoRule, the iframe rule gated it like any
