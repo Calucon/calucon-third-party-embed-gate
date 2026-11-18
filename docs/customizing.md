@@ -247,6 +247,34 @@ block theme's constrained layout can place it — auto margins do nothing to a
 bare inline-level button, which then hugs the page edge. Style the button
 with `.cg-withdraw`; the wrapper only carries layout.
 
+## Switching gating off for one page
+
+Since 1.1 the editor has a switch for it: **Do not gate embeds on this
+page**, in the page's own settings panel (a meta box in the classic editor).
+It is the per-block "Never gate" one level up, with the same price — on that
+page every embed contacts its provider as soon as the page opens, for every
+visitor.
+
+- It is one post meta, `_calucon_embed_gate`, with the value `never`; any
+  other value means "site default". Only someone who may edit the post can
+  set it.
+- It applies to the post's **own address** (`is_singular()`), and there to
+  everything on the page. In an archive, a Query Loop on another page, a
+  feed, a search result or a REST response the same post's embeds stay
+  gated: the decision is about a page, not about wherever its content
+  travels.
+- It is never out of sight: **Settings → Detection** lists every page that
+  has it on, with a link to edit it.
+
+```sh
+wp post meta update 123 _calucon_embed_gate never   # off on page 123
+wp post meta delete 123 _calucon_embed_gate         # gated again
+wp post list --post_type=any --meta_key=_calucon_embed_gate --meta_value=never --fields=ID,post_title
+```
+
+For anything finer — a role, a query parameter, a template — the filter is
+still the tool: `calucon_embed_gate_should_gate` receives `$ctx['post_id']`.
+
 ## An alternative without the provider
 
 Since 1.1 a placeholder can carry a second link: the same content **on your
@@ -455,8 +483,8 @@ the browser.
 | The **first** click on "Load" does nothing; the second works | "Delay JavaScript until interaction" — the first interaction is spent switching scripts on | Exclude `gate.js` from that setting specifically, not just from minification |
 | The button does nothing **at all**, ever | `gate.js` never executed. Usually a combined bundle threw earlier: a top-level error aborts the rest of *that file*, and anything bundled after it never runs | Open the console, find the throwing file, exclude `gate.js` from combining so it is not downstream of somebody else's error |
 | The panel appears but is unstyled | `gate.css` was combined, deferred or stripped | Exclude `gate.css` |
-| Embeds load **without** a click | Gating is server-side, so this means the plugin never saw that markup — typically a page builder rendering outside the WordPress content filters | Settings → Detection → enable whole-page buffering |
-| A **background video** (Cover block, Elementor section or container) no longer plays, and there is no placeholder for it | Deliberate. A YouTube or Vimeo background contacts the provider on page load, and a placeholder behind a section's content cannot be pressed, so the video is left out and the section keeps its overlay, its content and its fallback image | Upload the video to your media library (a file from your own site is not gated), or let the provider through under Providers if that is what you want for every visitor |
+| Embeds load **without** a click | Gating is server-side, so this means the plugin never saw that markup. Either a page builder rendering outside the WordPress content filters — or a player the builder creates **in the visitor's browser** from a setting, with no iframe in the page at all (the cases the plugin knows: Elementor's video widget and atomic YouTube element, Enfold's video element, the `lite-youtube` / `lite-vimeo` preview elements) | Settings → Detection → enable whole-page buffering. If it still loads, it is a browser-built player the plugin has not been taught: report it with the element's name and the page's HTML |
+| A **background video** (Cover block; Elementor section or container; WPBakery row; Flatsome banner; Enfold slide or section) no longer plays, and there is no placeholder for it | Deliberate. A YouTube or Vimeo background contacts the provider on page load, and a placeholder behind a section's content cannot be pressed, so the video is left out and the section keeps its overlay, its content and its fallback image | Upload the video to your media library (a file from your own site is not gated), or let the provider through under Providers if that is what you want for every visitor |
 | Your **own** scripts and styles were replaced by placeholders | An asset CDN plus whole-page buffering, on a build older than 1.0 | Update; if it persists, add the CDN hostname under Detection → "Additional own hosts" |
 | Console errors about `wp-i18n`, `wp-data`, `lodash`, `moment` | Not this plugin — those are WordPress core packages whose inline snippets got separated from them by combining | Check the page **logged out** first: these are often enqueued only for logged-in admins, so no visitor ever sees them |
 
@@ -560,6 +588,29 @@ means the third party is contacted on page load, for every visitor.
 | `calucon_embed_gate_before_render` | `( array $provider, array $ctx )` | just before a placeholder is rendered |
 | `calucon_embed_gate_embed_gated` | `( array $provider, array $ctx )` | after an embed has been replaced — counting, logging |
 | `calucon_embed_gate_flush_caches` | `()` | whenever the plugin flushes caches; hook your own cache here |
+
+## Abilities: the two reports without a shell
+
+On WordPress 6.9 and later the plugin registers its two read-only reports
+with the Abilities API, under the names of the WP-CLI commands:
+
+| Ability | Input | Returns |
+|---|---|---|
+| `calucon-embed-gate/scan` | `posts` (1–500, default 50) | the rows of `wp calucon-embed-gate scan --format=json`: `host`, `tag`, `label`, `provider`, `status`, `count`, `first_seen`, `url` |
+| `calucon-embed-gate/providers` | none | the rows of `wp calucon-embed-gate providers --format=json`: `id`, `label`, `enabled`, `strategy`, `hosts`, `load_host`, `controller`, `privacy_url` |
+
+Both require `manage_options`, are annotated `readonly` and are exposed over
+REST for whoever has that capability:
+
+```sh
+curl -u admin:APPLICATION_PASSWORD \
+  'https://example.org/wp-json/wp-abilities/v1/abilities/calucon-embed-gate/scan/run?input[posts]=100'
+```
+
+An assistant connected to the site through the MCP adapter sees them as
+tools. There is deliberately no ability that changes anything: letting a
+host through or switching a provider off is the decision this plugin exists
+for, and it stays with a person on the settings screen.
 
 ## The consent platform bridge
 

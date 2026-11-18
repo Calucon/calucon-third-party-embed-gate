@@ -132,3 +132,43 @@ test( 'the trigger says who asked: the consent platform', async ( { page } ) => 
 	await expect.poll( async () => ( await events( page ) ).map( ( e ) => e.trigger ) ).toContain( 'bridge' );
 	expect( ( await events( page ) ).every( ( e ) => 'bridge' === e.trigger ) ).toBe( true );
 } );
+
+// The 1.1 panel: the owner's alternative link, and the players a builder
+// or a facade component would have built in the browser.
+test( 'the alternative link is a real link to this page, and builder-built players load on the click like any other', async ( { page } ) => {
+	const seen = [];
+	await page.route( '**', ( route ) => {
+		const url = route.request().url();
+		if ( OWN_HOSTS.includes( new URL( url ).hostname ) ) {
+			return route.continue();
+		}
+		seen.push( url );
+		return route.fulfill( { contentType: 'text/html', body: '<!doctype html><p>frame</p>' } );
+	} );
+	await recordEvents( page );
+	await page.goto( '/page/alternative' );
+	await page.waitForLoadState( 'networkidle' );
+
+	// Three panels (a block embed, Enfold's templated video, a facade
+	// element), nothing requested, nothing left for a builder's script.
+	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 3 );
+	await expect( page.locator( 'lite-youtube, .av-video-tmpl, .av-click-to-play-overlay' ) ).toHaveCount( 0 );
+	expect( seen ).toEqual( [] );
+
+	// The alternative: a link, in every panel, that goes nowhere but here.
+	const alternative = page.locator( '.cg-embed__alternative a' );
+	await expect( alternative ).toHaveCount( 3 );
+	await expect( alternative.first() ).toHaveText( 'Read the transcript on this page' );
+	await alternative.first().click();
+	await expect( page ).toHaveURL( /\/page\/alternative#transcript$/ );
+	expect( seen, 'following the alternative must not load the embed' ).toEqual( [] );
+	await expect( page.locator( '.cg-embed__panel' ) ).toHaveCount( 3 );
+
+	// Enfold's video: the click loads Vimeo into Enfold's own element.
+	await page.locator( '.avia-video .cg-embed__button' ).click();
+	await expect( page.locator( '.avia-video > .cg-embed--active > iframe' ) ).toHaveAttribute( 'src', /player\.vimeo\.com\/video\/76979871\?dnt=1$/ );
+	// The facade: YouTube, from the cookieless host.
+	await page.locator( '.cg-embed[data-cg-provider="youtube"]:not(.cg-embed--active) .cg-embed__button' ).last().click();
+	await expect.poll( async () => ( await events( page ) ).map( ( e ) => e.provider ).sort() ).toEqual( [ 'vimeo', 'youtube' ] );
+	expect( seen.every( ( url ) => /^https:\/\/(player\.vimeo\.com|www\.youtube-nocookie\.com)\//.test( url ) ), seen.join( ' ' ) ).toBe( true );
+} );

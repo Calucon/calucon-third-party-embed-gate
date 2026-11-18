@@ -85,11 +85,59 @@ it says so on the same issue.
 ### Not field-validated (emulated only)
 
 These cannot be installed without a licence or an account, so their rows
-are still produced by the emulators in `tests/wp/seed.php`: **WP Rocket,
-Borlabs Cookie, WPBakery, Divi, Bricks, Oxygen, WPML, Weglot**, the
+on the Compatibility screen are still produced by the emulators in
+`tests/wp/seed.php`: **WP Rocket, Borlabs Cookie, WPBakery, Divi, Bricks,
+Oxygen, WPML, Weglot**, the
 **Cookiebot banner** itself (the plugin installs; the banner needs a Domain
 Group ID), **Usercentrics** and **iubenda** (detected as untested; that is
 all the plugin claims for them).
+
+### Commercial builders: checked against the vendor's own page (1.1)
+
+Enfold, Avada, WPBakery, Flatsome and Bricks cannot be installed here, and
+an emulator written from memory is exactly what the first field run taught
+this project to distrust. There is a third kind of evidence between "ran
+the real plugin" and "wrote a simulation": **the vendor's demo site**. Its
+pages are the product's real output, and its scripts and stylesheets are
+the product's real front end. `tests/bin/vendor-page-gate.php` runs a saved
+demo page through the pipeline; `tests/bin/vendor-page-run.js` serves the
+result as that page in a headless browser, lets the vendor's own assets
+load from the vendor, and records what else is contacted before a click.
+
+Measured 2026-11-18, as saved and through the gate:
+
+| Vendor page | As it is | Through the gate |
+|---|---|---|
+| Enfold, video element (two videos, "immediate" load) | youtube.com ×2, player.vimeo.com | none; two panels, buttons reachable by mouse, the loaded player fills Enfold's box |
+| Enfold, slideshow with video slides | player.vimeo.com ×3 | none |
+| Avada, Vimeo element (lazy-loaded frame) | player.vimeo.com ×2 | none; one panel |
+| Avada, YouTube element with Avada's Privacy Consent on | none | untouched, none — no second placeholder on top of Avada's |
+
+What that proves and what it does not:
+
+- It proves the rule against the markup and the scripts the vendor ships
+  **on that page, that day, with the options that demo uses**. It says
+  nothing about an option the demo does not show, about the builder's
+  editor, or about anything the product does server-side for a logged-in
+  user. It is one run by hand, not a monthly job: the pages are the
+  vendors', they are never committed, and a vendor may change them.
+- Two rules have **no** live page behind them: WPBakery's row background
+  (`data-vc-video-bg`) and Flatsome's banner background
+  (`.ux-youtube[data-videoid]`). Neither appeared on a demo page that
+  could be fetched; both are written from the vendors' published
+  front-end scripts, which name the attribute, the class and what they do
+  with them. Treat a field report against either as likely to be right.
+- Divi needed no rule: its video modules render a real iframe (the iframe
+  rule's job) and its section backgrounds are video files. Its map module,
+  like Flatsome's and Enfold's, loads the Google Maps script from the page
+  footer — outside the content filters; whole-page gating reads it, the
+  default does not, and none of the three is handled by a dedicated rule.
+- Bricks' lazy frame (`<iframe data-src>`) was already gated; its
+  background video was not found on a live page and has no rule.
+
+The readme says the same in one sentence. Do not let "works with Enfold"
+grow out of this: what is claimed is the video element, the slide and
+section frames, and nothing else.
 
 ## What the first run found (2026-08-28)
 

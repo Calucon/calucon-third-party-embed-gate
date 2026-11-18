@@ -28,7 +28,7 @@ const VIEWPORTS = [
 const PAGES = [
 	'/page/gated', '/page/scripts', '/page/scripts-multi', '/page/memory', '/page/light',
 	'/page/aspect', '/page/shapes', '/page/poster', '/page/poster-mismatch',
-	'/page/custom-provider', '/page/companions', '/page/inline-write',
+	'/page/custom-provider', '/page/companions', '/page/inline-write', '/page/alternative',
 	'/page/narrow', '/page/companion-hole', '/page/collision',
 ];
 const PAGES_WITH_AUTHORED_FIXED_WIDTH = [ '/page/aspect' ];
