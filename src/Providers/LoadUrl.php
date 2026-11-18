@@ -35,7 +35,13 @@ final class LoadUrl {
 				? $provider['load_path']
 				// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2); wp_parse_url() is unavailable in the no-WordPress fixture suite.
 				: (string) parse_url( 0 === strpos( $src, '//' ) ? 'https:' . $src : $src, PHP_URL_PATH );
-			return 'https://' . $provider['load_host'] . $path;
+			// The embed's own parameters come along. Rebuilding from the path
+			// alone dropped all of them: a playlist (`/embed/videoseries
+			// ?list=…`) loaded as an error page, and a start time, captions,
+			// `rel=0` or the JS API's `enablejsapi` were silently gone after
+			// the click (until 1.0.2).
+			$query = self::carried_query( $src );
+			return 'https://' . $provider['load_host'] . $path . ( '' !== $query ? '?' . $query : '' );
 		}
 
 		if ( array() !== $provider['load_query'] && is_array( $provider['load_query'] ) ) {
@@ -43,6 +49,30 @@ final class LoadUrl {
 		}
 
 		return $src;
+	}
+
+	/**
+	 * The query string an embed URL carries over to its privacy-preserving
+	 * host: everything the owner (or their embed code) set, minus two kinds
+	 * of parameter. Autoplay flags, as everywhere (invariant 8). And the
+	 * attribution markers that say where an embed code came from —
+	 * `feature=oembed`, the `si` share id — which change nothing about
+	 * playback and are one more thing told to the provider.
+	 *
+	 * @param string $src Original embed URL (may be protocol-relative).
+	 * @return string Query string without the leading '?', '' when none.
+	 */
+	private static function carried_query( string $src ): string {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress-free layer (PLAN.md §2.2); wp_parse_url() is unavailable in the no-WordPress fixture suite.
+		$query = parse_url( 0 === strpos( $src, '//' ) ? 'https:' . $src : $src, PHP_URL_QUERY );
+		if ( ! is_string( $query ) || '' === $query ) {
+			return '';
+		}
+		$params = array();
+		parse_str( $query, $params );
+		unset( $params['autoplay'], $params['auto_play'], $params['feature'], $params['si'] );
+
+		return http_build_query( $params, '', '&', PHP_QUERY_RFC3986 );
 	}
 
 	/**

@@ -494,7 +494,10 @@ final class PlaceholderRenderer {
 			return (int) $attrs['width'] . '/' . (int) $attrs['height'];
 		}
 
-		if ( is_string( $provider['aspect'] ) && preg_match( '/^([0-9]+):([0-9]+)$/', $provider['aspect'], $m ) ) {
+		// '16:9', as the built-ins write it — and '16/9', which is how CSS
+		// writes a ratio and how docs/customizing.md showed it until 1.0.2:
+		// a descriptor copied from that example reserved no space at all.
+		if ( is_string( $provider['aspect'] ) && preg_match( '#^([1-9][0-9]*)[:/]([1-9][0-9]*)$#', $provider['aspect'], $m ) ) {
 			return $m[1] . '/' . $m[2];
 		}
 

@@ -52,12 +52,31 @@ use CaluconEmbedGate\Rendering\PlaceholderRenderer;
  * media library becomes the panel's poster (§5.4), because it is the
  * site's own image; a foreign one is dropped.
  *
+ * The atomic element (Elementor 4's "Editor V4", on by default for sites
+ * first installed at 4.0 or later) is the same problem in a new shape:
+ *
+ *   <div data-e-type="e-youtube" class="e-youtube-base …" data-settings=
+ *   "{&quot;source&quot;:&quot;https://www.youtube.com/watch?v=…&quot;,…}">
+ *   </div>
+ *
+ * An empty div — no widget wrapper, no elementor-widget-video class — and
+ * its own handler script (youtube-handler.js) that loads youtube.com/
+ * iframe_api and builds the player: 19 third-party requests before any
+ * click (measured 2026-11-17, Elementor 4.4.1), with or without whole-page
+ * gating. The panel becomes the div's content, and `source` is emptied —
+ * emptied, never removed: the handler calls source.match(), and a missing
+ * key throws inside Elementor's own script. With an empty source it finds
+ * no video id and returns before it loads anything.
+ *
  * WordPress-free: strings and arrays in, strings out.
  */
 final class ElementorVideoRule {
 
 	/** The video_type the rewritten settings carry; Elementor ignores it, we recognise it. */
 	public const GATED_TYPE = 'calucon-embed-gate';
+
+	/** The data-e-type of Elementor's atomic YouTube element. */
+	public const ATOMIC_TYPE = 'e-youtube';
 
 	/** @var HtmlScanner */
 	private $scanner;
@@ -109,8 +128,14 @@ final class ElementorVideoRule {
 	 * @return string
 	 */
 	public function apply( string $html, array $ctx = array() ): string {
-		// Cheap probe before any parsing (PLAN.md §9.16).
-		if ( false === strpos( $html, 'elementor-widget-video' ) || false === stripos( $html, 'data-settings' ) ) {
+		// Cheap probes before any parsing (PLAN.md §9.16).
+		if ( false === stripos( $html, 'data-settings' ) ) {
+			return $html;
+		}
+		if ( false !== strpos( $html, self::ATOMIC_TYPE ) ) {
+			$html = $this->apply_atomic( $html, $ctx );
+		}
+		if ( false === strpos( $html, 'elementor-widget-video' ) ) {
 			return $html;
 		}
 
@@ -205,6 +230,113 @@ final class ElementorVideoRule {
 		}
 
 		return $html;
+	}
+
+	/**
+	 * Gate every atomic YouTube element (data-e-type="e-youtube") in the
+	 * fragment. See the class comment for the markup and the stand-down.
+	 *
+	 * @param string $html Fragment.
+	 * @param array  $ctx  Integration context.
+	 * @return string
+	 */
+	private function apply_atomic( string $html, array $ctx ): string {
+		$divs = $this->scanner->find_tags( $html, 'div' );
+
+		// Back to front so earlier offsets stay valid.
+		for ( $i = count( $divs ) - 1; $i >= 0; $i-- ) {
+			$element = $divs[ $i ];
+			$attrs   = $element['attributes'];
+			if ( ! isset( $attrs['data-e-type'], $attrs['data-settings'] )
+				|| ! is_string( $attrs['data-e-type'] ) || ! is_string( $attrs['data-settings'] )
+				|| self::ATOMIC_TYPE !== strtolower( trim( $attrs['data-e-type'] ) ) ) {
+				continue;
+			}
+			$settings = json_decode( $attrs['data-settings'], true );
+			if ( ! is_array( $settings ) || ! isset( $settings['source'] ) || ! is_string( $settings['source'] ) ) {
+				continue; // Nothing Elementor's handler can build a player from.
+			}
+			$watch = trim( $settings['source'] );
+			$id    = self::atomic_youtube_id( $watch );
+			if ( '' === $id ) {
+				continue; // Emptied by an earlier pass, or not a video for Elementor either.
+			}
+			$src = 'https://www.youtube.com/embed/' . rawurlencode( $id );
+
+			if ( empty( $ctx['force_gate'] ) && null !== $this->should_gate
+				&& ! call_user_func( $this->should_gate, true, $src, $ctx ) ) {
+				continue;
+			}
+
+			$open_end = $this->scanner->start_tag_end( $html, $element['start'] );
+			if ( null === $open_end ) {
+				continue;
+			}
+			$close = self::closing_div( $html, $open_end );
+			if ( null === $close ) {
+				continue;
+			}
+
+			$host = $this->hosts->host_of( $src );
+			if ( null === $host ) {
+				continue;
+			}
+			$provider = $this->providers->resolve_for_url( $src, $host );
+			if ( empty( $ctx['force_gate'] ) && false === $provider['enabled'] ) {
+				continue; // The owner let this provider through; their call.
+			}
+			$provider['strategy'] = 'iframe';
+			// Same rule as the classic widget: the owner's URL is the no-JS
+			// link only when it IS a page on someone else's host.
+			$provider['fallback'] = HostMatcher::FOREIGN === $this->hosts->classify( $watch ) ? $watch : $src;
+
+			$placeholder = $this->renderer->render(
+				$provider,
+				LoadUrl::for_provider( $provider, $src ),
+				array(),
+				$ctx
+			);
+
+			// The element's contents (empty as Elementor renders it) → the panel.
+			$html = substr( $html, 0, $open_end ) . $placeholder . substr( $html, $close );
+
+			// Then the settings, so Elementor's handler stands down.
+			$settings['source'] = '';
+			$tag                = substr( $html, $element['start'], $open_end - $element['start'] );
+			$rewrite            = self::replace_data_settings( $tag, (string) json_encode( $settings, JSON_UNESCAPED_SLASHES ) );
+			$html               = substr( $html, 0, $element['start'] ) . $rewrite . substr( $html, $open_end );
+
+			if ( null !== $this->on_gated ) {
+				call_user_func( $this->on_gated, $provider, $ctx );
+			}
+		}
+
+		return $html;
+	}
+
+	/**
+	 * The video id Elementor's atomic handler would play, or '' when it
+	 * would play nothing.
+	 *
+	 * The handler has its own URL pattern (youtube-handler.js,
+	 * getYoutubeVideoIdFromUrl), and the question that matters is not "is
+	 * this a tidy YouTube URL" but "will Elementor contact YouTube for it".
+	 * So the id is ours where ours finds one, and otherwise whatever their
+	 * pattern captures — a `source` only they understand must still be
+	 * gated, because they load the player API for it all the same.
+	 *
+	 * @param string $url The element's `source` setting.
+	 * @return string
+	 */
+	public static function atomic_youtube_id( string $url ): string {
+		$id = self::youtube_id( $url );
+		if ( '' !== $id ) {
+			return $id;
+		}
+		if ( preg_match( '#^(?:https?://)?(?:www\.)?(?:m\.)?(?:youtu\.be/|youtube\.com/(?:(?:watch)?\?(?:.*&)?vi?=|(?:embed|v|vi|user|shorts)/))([^?&"\'>]+)#', $url, $m ) ) {
+			return $m[1];
+		}
+		return '';
 	}
 
 	/**
@@ -318,7 +450,7 @@ final class ElementorVideoRule {
 	 * @param string $json New settings JSON.
 	 * @return string
 	 */
-	private static function replace_data_settings( string $tag, string $json ): string {
+	public static function replace_data_settings( string $tag, string $json ): string {
 		$encoded = htmlspecialchars( $json, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 		// Both characters PCRE reads in a replacement string: '$' (a group
 		// reference) and '\' (an escape — a JSON "a\\z" lost one backslash and
