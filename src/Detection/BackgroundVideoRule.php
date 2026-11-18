@@ -57,6 +57,13 @@ use CaluconEmbedGate\Providers\Registry;
  * video FILE becomes a <video> element, which is media, not an embed — the
  * same line the rest of the plugin draws.
  *
+ * Three more of the same kind, from commercial themes this project cannot
+ * install — read off the vendors' own demo sites and front-end scripts on
+ * 2026-11-18 (see BuilderEmbedRule for what that evidence is worth):
+ * WPBakery's row background (`data-vc-video-bg`), Flatsome's banner and
+ * section background (`.ux-youtube[data-videoid]`) and Enfold's slide and
+ * section-background frames (`.av_youtube_frame`, `.av_vimeo_frame`).
+ *
  * WordPress-free: strings and arrays in, strings out.
  */
 final class BackgroundVideoRule {
@@ -104,6 +111,115 @@ final class BackgroundVideoRule {
 		if ( false !== strpos( $html, 'background_video_link' ) ) {
 			$html = $this->empty_elementor_backgrounds( $html, $ctx );
 		}
+		if ( false !== strpos( $html, 'data-vc-video-bg' ) ) {
+			$html = $this->strip_wpbakery_backgrounds( $html, $ctx );
+		}
+		if ( false !== strpos( $html, 'ux-youtube' ) || false !== strpos( $html, 'av_youtube_frame' ) || false !== strpos( $html, 'av_vimeo_frame' ) ) {
+			$html = $this->remove_player_stubs( $html, $ctx );
+		}
+		return $html;
+	}
+
+	/**
+	 * WPBakery's row background: `data-vc-video-bg="<YouTube URL>"` on the
+	 * row, turned into a YT.Player by js_composer_front.js. The attribute
+	 * goes; the row and its content stay.
+	 *
+	 * @param string $html Fragment.
+	 * @param array  $ctx  Integration context.
+	 * @return string
+	 */
+	private function strip_wpbakery_backgrounds( string $html, array $ctx ): string {
+		foreach ( self::ELEMENTOR_TAGS as $tag_name ) {
+			if ( false === stripos( $html, '<' . $tag_name ) ) {
+				continue;
+			}
+			$tags = $this->scanner->find_tags( $html, $tag_name );
+			for ( $i = count( $tags ) - 1; $i >= 0; $i-- ) {
+				$attrs = $tags[ $i ]['attributes'];
+				if ( ! isset( $attrs['data-vc-video-bg'] ) || ! is_string( $attrs['data-vc-video-bg'] ) ) {
+					continue;
+				}
+				$link      = trim( $attrs['data-vc-video-bg'] );
+				$canonical = self::wpbakery_player_url( $link );
+				if ( null === $canonical || ! $this->is_gated( $link, $canonical, $ctx ) ) {
+					continue;
+				}
+				$open_end = $this->scanner->start_tag_end( $html, $tags[ $i ]['start'] );
+				if ( null === $open_end ) {
+					continue;
+				}
+				$tag     = substr( $html, $tags[ $i ]['start'], $open_end - $tags[ $i ]['start'] );
+				$rewrite = preg_replace( '#\sdata-vc-video-bg\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+)#i', '', $tag, 1 );
+				if ( ! is_string( $rewrite ) || $rewrite === $tag ) {
+					continue;
+				}
+				$html = substr( $html, 0, $tags[ $i ]['start'] ) . $rewrite . substr( $html, $open_end );
+			}
+		}
+		return $html;
+	}
+
+	/**
+	 * The player WPBakery would build for a row background, or null when
+	 * its own test (vcExtractYoutubeId in js_composer_front.js) finds no
+	 * video in the value.
+	 *
+	 * @param string $link The data-vc-video-bg value.
+	 * @return string|null
+	 */
+	public static function wpbakery_player_url( string $link ): ?string {
+		if ( ! preg_match( '#(?:https?://)?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:/watch\?v=|/)([^\s&]+)#', $link, $m ) ) {
+			return null;
+		}
+		$id = ElementorVideoRule::youtube_id( $link );
+		return 'https://www.youtube.com/embed/' . rawurlencode( '' !== $id ? $id : $m[1] );
+	}
+
+	/**
+	 * Empty elements a theme's script turns into a background or slide
+	 * player, found by class:
+	 *
+	 * - Flatsome: `<div class="ux-youtube …" data-videoid="…">` — one such
+	 *   element on the page and flatsome.js loads youtube.com/player_api.
+	 * - Enfold: `<div class='av_youtube_frame' data-videoid=…>` and
+	 *   `<div class='av_vimeo_frame' data-src='//player.vimeo.com/…'>` in a
+	 *   slideshow slide or a section background; its video API reads
+	 *   exactly those two classes.
+	 *
+	 * The element is removed. What it sat in — the banner, the slide, its
+	 * fallback image and its text — stays.
+	 *
+	 * @param string $html Fragment.
+	 * @param array  $ctx  Integration context.
+	 * @return string
+	 */
+	private function remove_player_stubs( string $html, array $ctx ): string {
+		$divs = $this->scanner->find_tags( $html, 'div' );
+
+		for ( $i = count( $divs ) - 1; $i >= 0; $i-- ) {
+			$attrs   = $divs[ $i ]['attributes'];
+			$classes = isset( $attrs['class'] ) && is_string( $attrs['class'] ) ? preg_split( '/\s+/', trim( $attrs['class'] ) ) : array();
+			$classes = is_array( $classes ) ? $classes : array();
+			$id      = isset( $attrs['data-videoid'] ) && is_string( $attrs['data-videoid'] ) ? trim( $attrs['data-videoid'] ) : '';
+			$url     = null;
+
+			if ( '' !== $id && ( in_array( 'ux-youtube', $classes, true ) || in_array( 'av_youtube_frame', $classes, true ) ) ) {
+				$url = 'https://www.youtube.com/embed/' . rawurlencode( $id );
+			} elseif ( in_array( 'av_vimeo_frame', $classes, true ) && isset( $attrs['data-src'] ) && is_string( $attrs['data-src'] ) && '' !== trim( $attrs['data-src'] ) ) {
+				$url = trim( $attrs['data-src'] );
+			}
+			if ( null === $url || ! $this->is_gated( $url, $url, $ctx ) ) {
+				continue;
+			}
+			// An empty element by construction: start tag, then its end tag.
+			$open_end = $this->scanner->start_tag_end( $html, $divs[ $i ]['start'] );
+			if ( null === $open_end || ! preg_match( '#\G\s*</div\s*>#i', $html, $close, 0, $open_end ) ) {
+				continue;
+			}
+			$html = substr( $html, 0, $divs[ $i ]['start'] ) . substr( $html, $open_end + strlen( $close[0] ) );
+		}
+
 		return $html;
 	}
 

@@ -22,6 +22,7 @@ use CaluconEmbedGate\Cli\Commands as CliCommands;
 use CaluconEmbedGate\Cmp\BridgeConfig;
 use CaluconEmbedGate\Cmp\Detector;
 use CaluconEmbedGate\Detection\BackgroundVideoRule;
+use CaluconEmbedGate\Detection\BuilderEmbedRule;
 use CaluconEmbedGate\Detection\EmbedObjectRule;
 use CaluconEmbedGate\Detection\EmbedStripper;
 use CaluconEmbedGate\Detection\HostMatcher;
@@ -534,10 +535,12 @@ final class Plugin {
 			do_action( 'calucon_embed_gate_embed_gated', $provider, $ctx );
 		};
 
+		$iframe_rule    = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
 		$this->pipeline = new Pipeline(
 			new BackgroundVideoRule( $scanner, $hosts, $registry, $should_gate ),
 			new ElementorVideoRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
-			new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
+			new BuilderEmbedRule( $scanner, $hosts, $registry, $renderer, $iframe_rule, $should_gate, $on_gated ),
+			$iframe_rule,
 			new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate_script, $on_gated ),
 			new ImageRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
@@ -633,7 +636,11 @@ final class Plugin {
 	 * on the the_content path while the buffered page, which always carries
 	 * a <script>, passed. The same goes for Elementor's atomic YouTube
 	 * element (data-e-type="e-youtube") and its background videos, which
-	 * are a `background_video_link` setting on a section and nothing else.
+	 * are a `background_video_link` setting on a section and nothing else;
+	 * for the <lite-youtube>/<lite-vimeo> facade elements; and for the
+	 * background players of WPBakery, Flatsome and Enfold, which are an
+	 * attribute or a class on a <div>. (Enfold's video element needs no
+	 * entry: its template is a <script>.)
 	 *
 	 * @param string $html Content.
 	 * @return bool
@@ -645,8 +652,8 @@ final class Plugin {
 		// alternation scans the string once instead of once per tag name
 		// (measured ~4x on a 60 KB text-only post).
 		$pattern = $this->options['detection']['images']
-			? '/<(?:iframe|script|embed|object|img)|elementor-widget-video|e-youtube|background_video_link/i'
-			: '/<(?:iframe|script|embed|object)|elementor-widget-video|e-youtube|background_video_link/i';
+			? '/<(?:iframe|script|embed|object|img)|elementor-widget-video|e-youtube|background_video_link|<lite-(?:youtube|vimeo)|data-vc-video-bg|ux-youtube|av_(?:youtube|vimeo)_frame/i'
+			: '/<(?:iframe|script|embed|object)|elementor-widget-video|e-youtube|background_video_link|<lite-(?:youtube|vimeo)|data-vc-video-bg|ux-youtube|av_(?:youtube|vimeo)_frame/i';
 		return 1 === preg_match( $pattern, $html );
 	}
 
@@ -678,6 +685,7 @@ final class Plugin {
 			// as JSON into a panel, and must not leave an iframe behind for
 			// the next rule to gate twice.
 			$html = $pipeline->elementor_video_rule->apply( $html, $ctx );
+			$html = $pipeline->builder_embed_rule->apply( $html, $ctx );
 			$html = $pipeline->iframe_rule->apply( $html, $ctx );
 			// <embed>/<object> are frame-shaped embeds under the same toggle:
 			// Flash-era markup requests third-party content on load too.

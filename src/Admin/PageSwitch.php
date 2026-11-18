@@ -54,7 +54,7 @@ final class PageSwitch {
 	public function register(): void {
 		add_action( 'init', array( $this, 'register_meta' ) );
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_box' ) );
-		add_action( 'save_post', array( $this, 'save_meta_box' ), 10, 2 );
+		add_action( 'save_post', array( $this, 'save_meta_box' ) );
 	}
 
 	/**
@@ -145,11 +145,10 @@ final class PageSwitch {
 	}
 
 	/**
-	 * @param int      $post_id Post ID.
-	 * @param \WP_Post $post    Post.
+	 * @param int $post_id Post ID.
 	 * @return void
 	 */
-	public function save_meta_box( $post_id, $post ): void {
+	public function save_meta_box( $post_id ): void {
 		// Only a save that came from this box: the block editor saves through
 		// REST and never sends the field, and its absence must not be read as
 		// "unchecked".

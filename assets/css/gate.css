@@ -354,3 +354,16 @@
 	width: 100%;
 	height: 100%;
 }
+
+/* Enfold's video element (BuilderEmbedRule): the element is Enfold's ratio
+   box — height 0 and a percentage padding — and the panel is its content.
+   While gated that box must not size anything: the panel would hang out of
+   a zero-height element over whatever follows, and where the element's
+   ratio is taller than the video's a black band shows beneath it. The
+   panel reserves its own ratio. After the click the selector stops
+   matching, Enfold's box is back, and its own rule stretches the player
+   over it. */
+.avia-video:has( > .cg-embed:not( .cg-embed--active ) ) {
+	height: auto;
+	padding-bottom: 0;
+}

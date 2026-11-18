@@ -28,9 +28,10 @@ final class IframeRule {
 	/**
 	 * Attributes lazy-load plugins park the real URL in while leaving src
 	 * empty, about:blank or a data: shim. Deferred is still without consent
-	 * (§9.8) — the parked URL is the one that fires on scroll.
+	 * (§9.8) — the parked URL is the one that fires on scroll. data-orig-src
+	 * is Avada's (lazysizes swaps it in when the frame scrolls into view).
 	 */
-	private const LAZY_SRC_ATTRIBUTES = array( 'data-src', 'data-lazy-src', 'data-original' );
+	private const LAZY_SRC_ATTRIBUTES = array( 'data-src', 'data-lazy-src', 'data-original', 'data-orig-src' );
 
 	/** @var HtmlScanner */
 	private HtmlScanner $scanner;
@@ -207,6 +208,15 @@ final class IframeRule {
 	 * @return string|null Null when nothing foreign would be requested.
 	 */
 	private function effective_src( array $attributes ) {
+		// Avada's own "Privacy Consent" option has already taken this frame
+		// out of circulation: src is empty, the URL is parked in
+		// data-privacy-src, and Avada's placeholder with its own button
+		// follows. Nothing is requested, and a second placeholder on top of
+		// theirs would be two consent steps for one embed.
+		if ( isset( $attributes['data-privacy-type'], $attributes['data-privacy-src'] )
+			&& ( ! isset( $attributes['src'] ) || '' === trim( (string) $attributes['src'] ) ) ) {
+			return null;
+		}
 		if ( isset( $attributes['src'] ) && is_string( $attributes['src'] ) ) {
 			$src = trim( $attributes['src'] );
 			if ( HostMatcher::FOREIGN === $this->hosts->classify( $src ) ) {

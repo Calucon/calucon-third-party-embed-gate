@@ -19,6 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use CaluconEmbedGate\Detection\BackgroundVideoRule;
+use CaluconEmbedGate\Detection\BuilderEmbedRule;
 use CaluconEmbedGate\Detection\ElementorVideoRule;
 use CaluconEmbedGate\Detection\EmbedObjectRule;
 use CaluconEmbedGate\Detection\EmbedStripper;
@@ -42,6 +43,9 @@ final class Pipeline {
 
 	/** @var ElementorVideoRule */
 	public ElementorVideoRule $elementor_video_rule;
+
+	/** @var BuilderEmbedRule */
+	public BuilderEmbedRule $builder_embed_rule;
 
 	/** @var IframeRule */
 	public IframeRule $iframe_rule;
@@ -79,6 +83,7 @@ final class Pipeline {
 	/**
 	 * @param BackgroundVideoRule $background_video_rule Third-party background videos, removed.
 	 * @param ElementorVideoRule  $elementor_video_rule  Elementor players that exist only as JSON.
+	 * @param BuilderEmbedRule    $builder_embed_rule    Other players built in the browser (Enfold, facades).
 	 * @param IframeRule          $iframe_rule       Cross-origin iframe gate.
 	 * @param EmbedObjectRule     $embed_object_rule Legacy embed/object gate.
 	 * @param ScriptRule          $script_rule       SDK-script gate.
@@ -94,6 +99,7 @@ final class Pipeline {
 	public function __construct(
 		BackgroundVideoRule $background_video_rule,
 		ElementorVideoRule $elementor_video_rule,
+		BuilderEmbedRule $builder_embed_rule,
 		IframeRule $iframe_rule,
 		EmbedObjectRule $embed_object_rule,
 		ScriptRule $script_rule,
@@ -108,6 +114,7 @@ final class Pipeline {
 	) {
 		$this->background_video_rule = $background_video_rule;
 		$this->elementor_video_rule  = $elementor_video_rule;
+		$this->builder_embed_rule    = $builder_embed_rule;
 		$this->iframe_rule           = $iframe_rule;
 		$this->embed_object_rule     = $embed_object_rule;
 		$this->script_rule           = $script_rule;
