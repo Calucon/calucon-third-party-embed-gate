@@ -80,6 +80,10 @@ it says so on the same issue.
 | `cache-wp-fastest-cache` | wp-fastest-cache | Reader "could not be read" + Exclude tab; cached page gated; a settings save flushes; click loads with minify + combine |
 | `cache-sg-cachepress` | sg-cachepress | Reader combine on/off; click loads with combine |
 | `builder-elementor` | elementor | Row text follows the buffer setting; HTML widget gated with the buffer off (Elementor renders through `the_content`) and on; the **video widget** — a player that exists only as a JSON attribute — gated by `ElementorVideoRule` on both paths, Load loads, Elementor's handler stands down without an error; the **atomic YouTube element** (Editor V4) the same, plus its panel not clipped on a phone and the loaded player filling Elementor's box; the atomic Google Maps element; a section's YouTube and a container's Vimeo **background video** — nothing requested, no panel, content intact |
+| `builder-elementor-addons` | elementor, essential-addons-for-elementor-lite, premium-addons-for-elementor | Essential Addons' Sticky Video (Plyr's data attributes): a panel, the element kept, one click loads, also with an image overlay; Premium Addons' Video Box without an image, with autoplay, with the provider's thumbnail, with the owner's image (which becomes the poster) and for Vimeo: the whole box is the panel, the player has a usable size; Elementor's own Vimeo widget with an image overlay takes one click |
+| `builder-beaver` | beaver-builder-lite-version | Row backgrounds from YouTube, Vimeo and an "embedded code": nothing requested, no panel behind the row, neither the background element nor the enqueued player API left, no script error; the video module gated and loading |
+| `builder-siteorigin` | siteorigin-panels, so-widgets-bundle | The video widget with oEmbed off (a provider's page as a `<video>` source) for YouTube and Vimeo, and WordPress's own `[video]` shortcode: a panel, nothing requested, the loaded player sized to its container on a phone |
+| `builder-kadence` | kadence-blocks | Row Layout with a YouTube and a Vimeo background: nothing requested, no panel left behind the row |
 | `detect-only` | cookiebot, cloudflare, polylang, translatepress-multilingual, beaver-builder-lite-version | Each row and its advice; zero third-party requests on a gated page with all five active |
 
 ### Not field-validated (emulated only)
@@ -236,6 +240,40 @@ section frames, and nothing else.
   question; "will their script contact the provider" is the right one. And
   give every such test a positive guard (the atomic element must be in the
   page) so a renamed element fails loudly instead of passing on nothing.
+- **Then the same question was asked of every free builder at once**
+  (2026-11-18, eleven plugins, one fresh WordPress each, every element that
+  can show third-party content seeded and measured). It found the pattern
+  again, five times over, and one case in WordPress itself:
+  - a `<video>` whose source is a YouTube or Vimeo **page** — MediaElement,
+    core's own player, builds the provider's player for it. SiteOrigin's
+    video widget with oEmbed off, and the `[video]` shortcode with such an
+    address (20–25 requests);
+  - Plyr's `data-plyr-provider` embeds — Essential Addons' Sticky Video
+    (21–26);
+  - Premium Addons' Video Box, an iframe built from `data-src` on page
+    load, or the provider's thumbnail as its automatic image (16–35);
+  - Beaver Builder's row background (28–31), half of which is an ordinary
+    enqueued script tag for the provider's player API — in the footer,
+    outside every content filter, which is why `Integration\PlayerApiScripts`
+    exists;
+  - Visual Composer's row background (39), whose bundle injects the API on
+    evaluation unless an element with its script's id already exists.
+  And three kinds of panel that were *there* and no use: behind a row's
+  content (Kadence, Beaver's embedded code, Brizy), under an image overlay
+  that took the first click (Elementor with Vimeo, Essential Addons), and
+  — the oldest — a loaded player 150 pixels tall in Elementor's 16:9 box,
+  because nothing had ever measured the player after the click. Every one
+  is fixed and has a test; the measurement's own table, with what it could
+  not reach, is the commit message of the fix.
+  What it also found and what is **not** fixed, because it is a different
+  problem: maps drawn by a plugin's script with Google's Maps JavaScript API
+  or Leaflet (Kadence in JavaScript mode, Otter, Stackable with a key,
+  SiteOrigin, Premium Addons), captchas, web fonts, Lottie files, and
+  players a builder loads on the visitor's own click on its lightbox or
+  popup. The readme's FAQ says so. Brizy's YouTube element still makes two
+  requests for the player API although its panel works; the stand-down
+  that was measured is a decoy script element, and that is not something
+  to ship without asking.
 - **WP Fastest Cache was promised a flush it never got.** The Compatibility
   row says "flushed automatically" for every detected cache, and
   `CacheFlush` had calls for six of the seven. The group had no flush test,
