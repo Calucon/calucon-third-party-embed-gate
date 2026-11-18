@@ -384,11 +384,25 @@
    paints the owner's image over the wrapper and removes it on the first
    click. With a panel underneath, that first click was spent on the image
    and the button needed a second one. The panel is what the visitor is
-   meant to see; the image stands aside while it is there. The same for
-   Essential Addons' Sticky Video and its overlay. */
-.elementor-wrapper:has( .cg-embed:not( .cg-embed--active ) ) > .elementor-custom-embed-image-overlay,
-.eael-sticky-video-wrapper:has( .cg-embed:not( .cg-embed--active ) ) > .eaelsv-overlay {
+   meant to see, and after the click the player is: the image stands aside
+   for both. The same for Essential Addons' Sticky Video and its overlay. */
+.elementor-wrapper:has( .cg-embed ) > .elementor-custom-embed-image-overlay,
+.eael-sticky-video-wrapper:has( .cg-embed ) > .eaelsv-overlay {
 	display: none;
+}
+
+/* …and the loaded player fills Elementor's box. Elementor sizes its own
+   iframe with height: 100% of the wrapper; ours sits one element deeper,
+   in a container of automatic height, where 100% means nothing and the
+   frame fell back to the browser's 150 pixels — a strip at the top of a
+   16:9 box. */
+.elementor-wrapper > .cg-embed--active {
+	height: 100%;
+}
+
+.elementor-wrapper > .cg-embed--active > iframe {
+	width: 100%;
+	height: 100%;
 }
 
 /* WordPress's [video] shortcode wraps its player in an element with a

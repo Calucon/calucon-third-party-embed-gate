@@ -110,6 +110,18 @@ for ( const buffer of [ false, true ] ) {
 		await expect( page.locator( '.cg-embed iframe' ) ).toHaveCount( 1 );
 		await expect( page.locator( '.cg-embed iframe' ).first() ).toHaveAttribute( 'src', /youtube-nocookie\.com/ );
 		expect( errors ).toEqual( [] );
+		// The loaded player fills Elementor's 16:9 box. Until 1.0.2 it did
+		// not: Elementor gives its own iframe height: 100% of the wrapper,
+		// ours sat one element deeper where that resolves to nothing, and
+		// the video was a 150-pixel strip at the top of the box.
+		const fills = await page.evaluate( () => {
+			const wrapper = document.querySelector( '.elementor-widget-video .elementor-wrapper' ).getBoundingClientRect();
+			const frame = document.querySelector( '.elementor-widget-video .cg-embed iframe' ).getBoundingClientRect();
+			return { wrapper: Math.round( wrapper.height ), frame: Math.round( frame.height ), width: Math.round( frame.width ) === Math.round( wrapper.width ) };
+		} );
+		expect( fills.frame, 'the loaded player does not fill Elementor\'s box' ).toBeGreaterThan( 200 );
+		expect( Math.abs( fills.frame - fills.wrapper ) ).toBeLessThanOrEqual( 1 );
+		expect( fills.width ).toBe( true );
 	} );
 }
 
