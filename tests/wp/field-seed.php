@@ -320,6 +320,58 @@ if ( 'builder-elementor' === $cg_field_group ) {
 // Addons looks Vimeo thumbnails up, SiteOrigin asks oEmbed) — the harness
 // must not contact a provider on the plugin's behalf.
 // ---------------------------------------------------------------------------
+// builder-kadence: a Row Layout block with a YouTube and one with a Vimeo
+// background, as the block editor saved them (Kadence Blocks 3.9.1.1). The
+// block is dynamic: Kadence's PHP renders the background as a real iframe
+// in <div class="kb-bg-video-iframe">, behind the row's columns.
+if ( 'builder-kadence' === $cg_field_group ) {
+	$cg_kadence_row = static function ( string $id, string $provider, string $video ): string {
+		$cg_background = array(
+			'youTube' => 'youtube' === $provider ? $video : '',
+			'local'   => '',
+			'localID' => '',
+			'vimeo'   => 'vimeo' === $provider ? $video : '',
+			'ratio'   => '16/9',
+			'btns'    => false,
+			'loop'    => true,
+			'mute'    => true,
+		);
+		return '<!-- wp:kadence/rowlayout ' . wp_json_encode(
+			array(
+				'uniqueID'             => $id . '_3c69b6-0a',
+				'columns'              => 1,
+				'colLayout'            => 'equal',
+				'backgroundSettingTab' => 'video',
+				'backgroundVideoType'  => $provider,
+				'backgroundVideo'      => array( $cg_background ),
+				'kbVersion'            => 2,
+			)
+		) . " -->\n"
+			. '<!-- wp:kadence/column {"borderWidth":["","","",""],"uniqueID":"' . $id . '_42c55e-01","kbVersion":2} -->' . "\n"
+			. '<div class="wp-block-kadence-column kadence-column' . $id . '_42c55e-01"><div class="kt-inside-inner-col"><!-- wp:kadence/advancedheading {"uniqueID":"' . $id . '_3e93b0-3f"} -->' . "\n"
+			. '<h2 class="kt-adv-heading' . $id . '_3e93b0-3f wp-block-kadence-advancedheading" data-kb-block="kb-adv-heading' . $id . '_3e93b0-3f">Over a background video</h2>' . "\n"
+			. '<!-- /wp:kadence/advancedheading --></div></div>' . "\n"
+			. '<!-- /wp:kadence/column -->' . "\n"
+			. '<!-- /wp:kadence/rowlayout -->';
+	};
+	foreach ( array(
+		'kadence-background-youtube' => $cg_kadence_row( '107', 'youtube', 'y_pjE_p1HwE' ),
+		'kadence-background-vimeo'   => $cg_kadence_row( '109', 'vimeo', '76979871' ),
+	) as $cg_slug => $cg_content ) {
+		if ( null === get_page_by_path( $cg_slug, OBJECT, 'page' ) ) {
+			wp_insert_post(
+				array(
+					'post_type'    => 'page',
+					'post_status'  => 'publish',
+					'post_name'    => $cg_slug,
+					'post_title'   => $cg_slug,
+					'post_content' => $cg_content,
+				)
+			);
+		}
+	}
+}
+
 if ( in_array( $cg_field_group, array( 'builder-elementor-addons', 'builder-beaver', 'builder-siteorigin' ), true ) ) {
 	$cg_guard = <<<'PHP'
 <?php
