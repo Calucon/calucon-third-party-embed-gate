@@ -273,6 +273,13 @@ add_action( 'wp_footer', function () {
 		echo '<span hidden data-cg-test-cover-background="1"></span>' . "\n";
 	}
 } );
+// The classic editor, on request (?cg_classic=1), without installing the
+// Classic Editor plugin: the per-page switch has a meta box for it, and a
+// meta box nobody ever renders is untested code.
+add_filter( 'use_block_editor_for_post', function ( $use ) {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- test harness switch.
+	return isset( $_GET['cg_classic'] ) ? false : $use;
+} );
 add_action( 'wp_head', function () {
 	echo '<link rel="preconnect" href="https://www.youtube.com">' . "\n";
 	echo '<link rel="preconnect" href="https://cdn.literal-safe.example">' . "\n";

@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use CaluconEmbedGate\Admin\BlockEditor;
+use CaluconEmbedGate\Admin\PageSwitch;
 use CaluconEmbedGate\Admin\SettingsPage;
 use CaluconEmbedGate\Cli\Commands as CliCommands;
 use CaluconEmbedGate\Cmp\BridgeConfig;
@@ -30,6 +31,7 @@ use CaluconEmbedGate\Detection\IframeRule;
 use CaluconEmbedGate\Detection\ImageRule;
 use CaluconEmbedGate\Detection\ScriptRule;
 use CaluconEmbedGate\Detection\StylesheetRule;
+use CaluconEmbedGate\Integration\Abilities;
 use CaluconEmbedGate\Integration\Assets;
 use CaluconEmbedGate\Integration\Comments;
 use CaluconEmbedGate\Integration\Descriptions;
@@ -167,6 +169,7 @@ final class Plugin {
 		);
 		$withdraw->register();
 		( new BlockEditor( $withdraw ) )->register();
+		( new PageSwitch() )->register();
 		( new SettingsPage(
 			function (): array {
 				return $this->providers();
@@ -203,6 +206,21 @@ final class Plugin {
 			);
 			\WP_CLI::add_command( 'calucon-embed-gate', $cli );
 		}
+
+		// The same two read-only reports as abilities (WordPress 6.9+), for
+		// owners without a shell. On an older WordPress this hooks an action
+		// that never fires.
+		( new Abilities(
+			function (): array {
+				return $this->providers();
+			},
+			function (): ContentScan {
+				return $this->content_scanner();
+			},
+			function ( string $content ): string {
+				return $this->render_ungated( $content );
+			}
+		) )->register();
 
 		if ( $this->options['detection']['output_buffer'] ) {
 			( new OutputBuffer( $this ) )->register();
@@ -449,22 +467,22 @@ final class Plugin {
 				}
 			),
 			array(
-				'before'   => static function ( array $provider, array $ctx ): void {
+				'before'      => static function ( array $provider, array $ctx ): void {
 					do_action( 'calucon_embed_gate_before_render', $provider, $ctx );
 				},
-				'note'     => static function ( string $note, array $provider, array $ctx ): string {
+				'note'        => static function ( string $note, array $provider, array $ctx ): string {
 					return (string) apply_filters( 'calucon_embed_gate_note_text', $note, $provider, $ctx );
 				},
-				'action'   => static function ( string $action, array $provider, array $ctx ): string {
+				'action'      => static function ( string $action, array $provider, array $ctx ): string {
 					return (string) apply_filters( 'calucon_embed_gate_action_text', $action, $provider, $ctx );
 				},
-				'fallback' => static function ( string $url, array $provider, array $ctx ): string {
+				'fallback'    => static function ( string $url, array $provider, array $ctx ): string {
 					return (string) apply_filters( 'calucon_embed_gate_fallback_url', $url, $provider, $ctx );
 				},
 				'alternative' => function ( string $url, array $provider, array $ctx ): string {
 					return $this->own_site_url( (string) apply_filters( 'calucon_embed_gate_alternative_url', $url, $provider, $ctx ) );
 				},
-				'poster'   => function ( array $provider, array $ctx ): string {
+				'poster'      => function ( array $provider ): string {
 					return $this->provider_poster_url( isset( $provider['id'] ) ? (string) $provider['id'] : '' );
 				},
 			),
@@ -821,6 +839,13 @@ final class Plugin {
 			return current_user_can( 'edit_posts' );
 		}
 		if ( is_feed() || is_embed() ) {
+			return true;
+		}
+		// The owner switched gating off for this page (PageSwitch): on the
+		// post's own address only. In an archive, a Query Loop or a REST
+		// response the same post's embeds stay gated — none of those is
+		// singular, or they were answered further up.
+		if ( is_singular() && PageSwitch::is_off( (int) get_queried_object_id() ) ) {
 			return true;
 		}
 		return false;

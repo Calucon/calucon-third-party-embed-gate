@@ -2050,3 +2050,179 @@ test( 'the per-embed alternative link is shown only when its address is on this 
 	expect( styles ).toEqual( { same: true, underline: 'underline' } );
 } );
 
+// The per-page switch, "Do not gate embeds on this page": the per-block
+// "Never gate" one level up. Three things matter about it and each has
+// gone wrong in some plugin: it must apply to that page's own address and
+// nowhere else, only someone who may edit the page may set it, and it must
+// not be invisible — the settings screen lists every page that has it on.
+test( 'the per-page switch ungates that page\'s own address only, is listed on the settings screen, and can be undone', async ( { page, browser, baseURL, request } ) => {
+	const [ { id } ] = await ( await request.get( '/wp-json/wp/v2/posts?slug=loop-older-embed' ) ).json();
+	const single = `/?p=${ id }`;
+
+	const visitorSees = async ( path ) => {
+		const seen = {};
+		await asVisitor( browser, baseURL, async ( visitor ) => {
+			await abortThirdParty( visitor );
+			await visitor.goto( path );
+			await visitor.waitForLoadState( 'networkidle' );
+			seen.panels = await visitor.locator( '.cg-embed' ).count();
+			seen.frames = await visitor.locator( 'iframe[src*="youtube.com/embed"]' ).count();
+		} );
+		return seen;
+	};
+
+	// Before: gated on its own page and inside the loop on another page.
+	expect( await visitorSees( single ) ).toEqual( { panels: 1, frames: 0 } );
+	expect( await visitorSees( '/loop-page/?query-7-page=2' ) ).toEqual( { panels: 1, frames: 0 } );
+
+	// A visitor cannot turn it on: the meta is writable only by someone who
+	// may edit the post.
+	const anonymous = await request.post( `/wp-json/wp/v2/posts/${ id }`, { data: { meta: { _calucon_embed_gate: 'never' } } } );
+	expect( [ 401, 403 ] ).toContain( anonymous.status() );
+	expect( await visitorSees( single ) ).toEqual( { panels: 1, frames: 0 } );
+
+	// The block editor: the panel is registered, the meta is in the post,
+	// and the switch saves with it.
+	await login( page );
+	await page.goto( `/wp-admin/post.php?post=${ id }&action=edit` );
+	await page.waitForFunction( () => window.wp && window.wp.data && window.wp.plugins && window.wp.data.select( 'core/editor' ) && window.wp.data.select( 'core/editor' ).getCurrentPostId() );
+	await expect.poll( () => page.evaluate( () => !! window.wp.plugins.getPlugin( 'calucon-embed-gate-page' ) ) ).toBe( true );
+	expect( await page.evaluate( () => window.wp.data.select( 'core/editor' ).getEditedPostAttribute( 'meta' )._calucon_embed_gate ) ).toBe( '' );
+	// Anything but the one value is read as "site default".
+	await page.evaluate( async () => {
+		window.wp.data.dispatch( 'core/editor' ).editPost( { meta: { _calucon_embed_gate: 'yes please' } } );
+		await window.wp.data.dispatch( 'core/editor' ).savePost();
+	} );
+	expect( await visitorSees( single ) ).toEqual( { panels: 1, frames: 0 } );
+	await page.evaluate( async () => {
+		window.wp.data.dispatch( 'core/editor' ).editPost( { meta: { _calucon_embed_gate: 'never' } } );
+		await window.wp.data.dispatch( 'core/editor' ).savePost();
+	} );
+
+	// On: the page's own address loads the embed with no placeholder …
+	expect( await visitorSees( single ) ).toEqual( { panels: 0, frames: 1 } );
+	// … and everywhere else the same post is still gated: in a loop on
+	// another page, and for a headless consumer.
+	expect( await visitorSees( '/loop-page/?query-7-page=2' ) ).toEqual( { panels: 1, frames: 0 } );
+	const rest = await ( await request.get( `/wp-json/wp/v2/posts/${ id }` ) ).json();
+	expect( rest.content.rendered ).toContain( 'cg-embed' );
+	expect( rest.content.rendered ).not.toContain( '<iframe' );
+
+	// The settings screen says so, where gating is configured, with a link.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-detection' );
+	const listed = page.locator( '#cg-pages-off' );
+	await expect( listed ).toContainText( 'Gating is switched off on these pages' );
+	await expect( listed.locator( 'li a' ) ).toHaveCount( 1 );
+	await expect( listed.locator( 'li a' ) ).toHaveText( 'Loop: older, with an embed' );
+	await expect( listed.locator( 'li a' ) ).toHaveAttribute( 'href', new RegExp( `post=${ id }` ) );
+
+	// The classic editor has the same control as a meta box. Unchecking it
+	// there gates the page again, and the list is gone.
+	await page.goto( `/wp-admin/post.php?post=${ id }&action=edit&cg_classic=1` );
+	const box = page.locator( '#calucon-embed-gate-page input[type="checkbox"]' );
+	await expect( box ).toBeChecked();
+	await box.uncheck();
+	await page.locator( '#publish' ).click();
+	// The classic form redirects with message=…; the block editor it lands
+	// in again has no classic notice to wait for.
+	await page.waitForURL( /[?&]message=\d/ );
+	expect( await visitorSees( single ) ).toEqual( { panels: 1, frames: 0 } );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-detection' );
+	await expect( page.locator( '#cg-pages-off' ) ).toHaveCount( 0 );
+
+	// And checking it there turns it on again (then off, to leave the site
+	// as the other tests expect it).
+	await page.goto( `/wp-admin/post.php?post=${ id }&action=edit&cg_classic=1` );
+	await page.locator( '#calucon-embed-gate-page input[type="checkbox"]' ).check();
+	await page.locator( '#publish' ).click();
+	// The classic form redirects with message=…; the block editor it lands
+	// in again has no classic notice to wait for.
+	await page.waitForURL( /[?&]message=\d/ );
+	expect( await visitorSees( single ) ).toEqual( { panels: 0, frames: 1 } );
+	await page.goto( `/wp-admin/post.php?post=${ id }&action=edit&cg_classic=1` );
+	await page.locator( '#calucon-embed-gate-page input[type="checkbox"]' ).uncheck();
+	await page.locator( '#publish' ).click();
+	// The classic form redirects with message=…; the block editor it lands
+	// in again has no classic notice to wait for.
+	await page.waitForURL( /[?&]message=\d/ );
+	expect( await visitorSees( single ) ).toEqual( { panels: 1, frames: 0 } );
+} );
+
+// The two read-only reports as WordPress abilities (6.9+): what the WP-CLI
+// commands print, for an owner without a shell — over REST, in the command
+// palette, or through an assistant connected with the MCP adapter. Read-only
+// and for administrators: the exposure flags are discovery hints, the
+// permission callback is the boundary.
+test( 'abilities: the scan and the provider list answer an administrator, and nobody else', async ( { page, request } ) => {
+	const index = await ( await request.get( '/wp-json/' ) ).json();
+	test.skip(
+		! Object.keys( index.routes ).some( ( route ) => route.startsWith( '/wp-abilities/v1/abilities' ) ),
+		'this WordPress has no Abilities API (6.9+)'
+	);
+
+	// Anonymous: neither runnable nor listed.
+	for ( const name of [ 'scan', 'providers' ] ) {
+		const run = await request.get( `/wp-json/wp-abilities/v1/abilities/calucon-embed-gate/${ name }/run` );
+		expect( [ 401, 403 ], `anonymous run of ${ name }` ).toContain( run.status() );
+	}
+
+	await login( page );
+	await page.goto( '/wp-admin/post-new.php' );
+	await page.waitForFunction( () => window.wp && window.wp.apiFetch );
+	const call = ( path ) => page.evaluate( async ( p ) => {
+		try {
+			return { ok: true, body: await window.wp.apiFetch( { path: p } ) };
+		} catch ( error ) {
+			return { ok: false, code: error && error.code, status: error && error.data && error.data.status };
+		}
+	}, path );
+
+	// Described the way a client needs to decide whether to call them.
+	for ( const name of [ 'scan', 'providers' ] ) {
+		const described = await call( `/wp-abilities/v1/abilities/calucon-embed-gate/${ name }` );
+		expect( described.ok, JSON.stringify( described ) ).toBe( true );
+		expect( described.body.name ).toBe( `calucon-embed-gate/${ name }` );
+		expect( described.body.category ).toBe( 'site' );
+		expect( described.body.meta.annotations ).toMatchObject( { readonly: true, destructive: false, idempotent: true } );
+		expect( described.body.description ).toContain( 'Read-only' );
+	}
+
+	// The provider list: every row has the eight keys the CLI prints.
+	const providers = await call( '/wp-abilities/v1/abilities/calucon-embed-gate/providers/run' );
+	expect( providers.ok, JSON.stringify( providers ) ).toBe( true );
+	expect( providers.body.length ).toBeGreaterThan( 30 );
+	const youtube = providers.body.find( ( row ) => 'youtube' === row.id );
+	expect( Object.keys( youtube ) ).toEqual( [ 'id', 'label', 'enabled', 'strategy', 'hosts', 'load_host', 'controller', 'privacy_url' ] );
+	expect( youtube ).toMatchObject( { label: 'YouTube', enabled: 'yes', strategy: 'iframe', load_host: 'www.youtube-nocookie.com' } );
+	// The provider registered from code (the seed's mu-plugin) is there too:
+	// this is the list as the gate resolves it, not the built-in table.
+	expect( providers.body.some( ( row ) => 'partner-code' === row.id ) ).toBe( true );
+
+	// The scan: the seeded unknown widget is found, and it is gated.
+	const scan = await call( '/wp-abilities/v1/abilities/calucon-embed-gate/scan/run' );
+	expect( scan.ok, JSON.stringify( scan ) ).toBe( true );
+	const widget = scan.body.find( ( row ) => 'widgets.example-partner.com' === row.host );
+	expect( Object.keys( widget ) ).toEqual( [ 'host', 'tag', 'label', 'provider', 'status', 'count', 'first_seen', 'url' ] );
+	expect( widget ).toMatchObject( { tag: 'iframe', status: 'gated' } );
+	expect( scan.body.every( ( row ) => 'string' === typeof row.status && 'number' === typeof row.count ) ).toBe( true );
+	// Its one input is bounded.
+	const one = await call( '/wp-abilities/v1/abilities/calucon-embed-gate/scan/run?input[posts]=1' );
+	expect( one.ok, JSON.stringify( one ) ).toBe( true );
+	expect( one.body.length ).toBeLessThanOrEqual( scan.body.length );
+	const tooMany = await call( '/wp-abilities/v1/abilities/calucon-embed-gate/scan/run?input[posts]=100000' );
+	expect( tooMany.ok ).toBe( false );
+	const unknown = await call( '/wp-abilities/v1/abilities/calucon-embed-gate/scan/run?input[hosts]=x' );
+	expect( unknown.ok ).toBe( false );
+
+	// Read-only is also a matter of method: a write request is refused.
+	const written = await page.evaluate( async () => {
+		try {
+			await window.wp.apiFetch( { path: '/wp-abilities/v1/abilities/calucon-embed-gate/providers/run', method: 'POST', data: {} } );
+			return 'accepted';
+		} catch ( error ) {
+			return 'refused';
+		}
+	} );
+	expect( written ).toBe( 'refused' );
+} );
+

@@ -584,6 +584,51 @@ final class SettingsPage {
 	}
 
 	/**
+	 * The pages on which somebody switched gating off (PageSwitch), listed
+	 * where the owner looks for what is and is not gated. Nothing is shown
+	 * while there are none — it is an exception, not a feature to advertise.
+	 *
+	 * @return void
+	 */
+	private function render_pages_switched_off(): void {
+		$limit = 50;
+		$pages = PageSwitch::pages_switched_off( $limit );
+		if ( array() === $pages ) {
+			return;
+		}
+		?>
+		<div class="notice notice-warning inline cg-pages-off" id="cg-pages-off">
+			<p><strong><?php esc_html_e( 'Gating is switched off on these pages', 'calucon-third-party-embed-gate' ); ?></strong></p>
+			<p><?php esc_html_e( 'Someone turned on “Do not gate embeds on this page” in the editor. On each of them, every embed loads as soon as the page opens. To gate a page again, open it and turn the switch off.', 'calucon-third-party-embed-gate' ); ?></p>
+			<ul class="cg-pages-off__list">
+				<?php foreach ( $pages as $page ) : ?>
+					<?php
+					$title = get_the_title( $page );
+					$title = '' !== $title ? $title : __( '(no title)', 'calucon-third-party-embed-gate' );
+					$edit  = get_edit_post_link( $page->ID );
+					$type  = get_post_type_object( $page->post_type );
+					?>
+					<li>
+						<?php if ( is_string( $edit ) && '' !== $edit ) : ?>
+							<a href="<?php echo esc_url( $edit ); ?>"><?php echo esc_html( $title ); ?></a>
+						<?php else : ?>
+							<?php echo esc_html( $title ); ?>
+						<?php endif; ?>
+						<span class="description">
+							<?php echo esc_html( null !== $type ? $type->labels->singular_name : $page->post_type ); ?><?php echo 'publish' !== $page->post_status ? esc_html( ' · ' . $page->post_status ) : ''; ?>
+						</span>
+					</li>
+				<?php endforeach; ?>
+			</ul>
+			<?php if ( count( $pages ) >= $limit ) : ?>
+				<?php /* translators: %d: number of pages listed. */ ?>
+				<p class="description"><?php echo esc_html( sprintf( __( 'Only the %d most recently changed are listed.', 'calucon-third-party-embed-gate' ), $limit ) ); ?></p>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Has the owner actually changed anything about this provider?
 	 *
 	 * Not the same as "a row exists": saving the settings form posts a value
@@ -813,6 +858,8 @@ final class SettingsPage {
 						<span class="description"><?php esc_html_e( 'You can undo it later under Status & tools.', 'calucon-third-party-embed-gate' ); ?></span>
 					</p>
 				</div>
+
+				<?php $this->render_pages_switched_off(); ?>
 
 				<table class="form-table" role="presentation">
 					<tr>

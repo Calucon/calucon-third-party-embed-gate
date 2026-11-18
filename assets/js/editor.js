@@ -199,6 +199,63 @@
 		}, 'withCaluconEmbedGateBadge' )
 	);
 
+	// The per-page switch (1.1): "Do not gate embeds on this page", in the
+	// post's own settings panel. Stored as post meta (Admin\PageSwitch); the
+	// server exposes it only to someone who may edit the post, and only for
+	// post types whose meta travels over REST — where it does not, the panel
+	// stays away and the classic meta box takes its place.
+	//
+	// Registered on DOM ready: the panel component belongs to the post
+	// editor (wp.editor from 6.6, wp.editPost before), which this script
+	// does not depend on — the same file also loads in the site and widget
+	// editors, where there is no post and no such panel.
+	function registerPageSwitch() {
+		var Panel = ( wp.editor && wp.editor.PluginDocumentSettingPanel )
+			|| ( wp.editPost && wp.editPost.PluginDocumentSettingPanel );
+		if ( ! Panel || ! wp.plugins || ! wp.data || ! wp.data.useSelect ) {
+			return;
+		}
+		var KEY = '_calucon_embed_gate';
+		wp.plugins.registerPlugin( 'calucon-embed-gate-page', {
+			render: function () {
+				var meta = wp.data.useSelect( function ( select ) {
+					var editor = select( 'core/editor' );
+					return editor && editor.getEditedPostAttribute ? editor.getEditedPostAttribute( 'meta' ) : undefined;
+				}, [] );
+				var dispatch = wp.data.useDispatch( 'core/editor' );
+				if ( ! meta || ! Object.prototype.hasOwnProperty.call( meta, KEY ) || ! dispatch || ! dispatch.editPost ) {
+					return null;
+				}
+				var off = 'never' === meta[ KEY ];
+				return el(
+					Panel,
+					{
+						name: 'calucon-embed-gate',
+						title: __( 'Calucon Third-Party Embed Gate', 'calucon-third-party-embed-gate' ),
+						className: 'cg-page-switch'
+					},
+					el( wp.components.ToggleControl, {
+						label: __( 'Do not gate embeds on this page', 'calucon-third-party-embed-gate' ),
+						checked: off,
+						onChange: function ( next ) {
+							var change = {};
+							change[ KEY ] = next ? 'never' : '';
+							dispatch.editPost( { meta: change } );
+						},
+						help: off
+							? __( 'Every embed on this page loads as soon as the page opens — for every visitor, without a click. It applies to this page’s own address only: in lists, feeds and search results its embeds stay gated.', 'calucon-third-party-embed-gate' )
+							: __( 'Embeds on this page ask the visitor first, like everywhere else on the site.', 'calucon-third-party-embed-gate' )
+					} )
+				);
+			}
+		} );
+	}
+	if ( wp.domReady ) {
+		wp.domReady( registerPageSwitch );
+	} else {
+		registerPageSwitch();
+	}
+
 	// The withdrawal control as a block (§6.2): same server-side renderer as
 	// the [calucon_embed_gate_withdraw] shortcode.
 	var withdrawBlock = {

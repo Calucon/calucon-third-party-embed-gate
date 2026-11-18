@@ -45,7 +45,7 @@ final class BlockEditor {
 		wp_enqueue_script(
 			'calucon-embed-gate-editor',
 			plugins_url( 'assets/js/editor.js', CALUCON_EMBED_GATE_FILE ),
-			array( 'wp-hooks', 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-compose', 'wp-i18n' ),
+			array( 'wp-hooks', 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-compose', 'wp-i18n', 'wp-plugins', 'wp-data', 'wp-dom-ready' ),
 			AssetVersion::of( 'assets/js/editor.js' ),
 			true
 		);
