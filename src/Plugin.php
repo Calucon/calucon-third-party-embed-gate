@@ -16,10 +16,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use CaluconEmbedGate\Admin\BlockEditor;
+use CaluconEmbedGate\Admin\PageSwitch;
 use CaluconEmbedGate\Admin\SettingsPage;
 use CaluconEmbedGate\Cli\Commands as CliCommands;
 use CaluconEmbedGate\Cmp\BridgeConfig;
 use CaluconEmbedGate\Cmp\Detector;
+use CaluconEmbedGate\Detection\BackgroundVideoRule;
+use CaluconEmbedGate\Detection\BuilderEmbedRule;
 use CaluconEmbedGate\Detection\EmbedObjectRule;
 use CaluconEmbedGate\Detection\EmbedStripper;
 use CaluconEmbedGate\Detection\HostMatcher;
@@ -29,7 +32,9 @@ use CaluconEmbedGate\Detection\IframeRule;
 use CaluconEmbedGate\Detection\ImageRule;
 use CaluconEmbedGate\Detection\ScriptRule;
 use CaluconEmbedGate\Detection\StylesheetRule;
+use CaluconEmbedGate\Integration\Abilities;
 use CaluconEmbedGate\Integration\Assets;
+use CaluconEmbedGate\Integration\PlayerApiScripts;
 use CaluconEmbedGate\Integration\Comments;
 use CaluconEmbedGate\Integration\Descriptions;
 use CaluconEmbedGate\Integration\Excerpt;
@@ -75,6 +80,9 @@ final class Plugin {
 
 	/** @var bool True while render_ungated() runs; see should_bail(). */
 	private bool $gating_suspended = false;
+
+	/** @var array<string,string> Resolved default posters, by provider id. */
+	private array $provider_posters = array();
 
 	/**
 	 * Bootstraps the plugin once, on plugins_loaded.
@@ -163,6 +171,8 @@ final class Plugin {
 		);
 		$withdraw->register();
 		( new BlockEditor( $withdraw ) )->register();
+		( new PageSwitch() )->register();
+		( new PlayerApiScripts( $this ) )->register();
 		( new SettingsPage(
 			function (): array {
 				return $this->providers();
@@ -172,6 +182,9 @@ final class Plugin {
 			},
 			function (): string {
 				return $this->preview_placeholder_html();
+			},
+			function ( int $attachment_id ): string {
+				return $this->poster_url( $attachment_id );
 			}
 		) )->register();
 		( new ResourceHintsIntegration(
@@ -196,6 +209,21 @@ final class Plugin {
 			);
 			\WP_CLI::add_command( 'calucon-embed-gate', $cli );
 		}
+
+		// The same two read-only reports as abilities (WordPress 6.9+), for
+		// owners without a shell. On an older WordPress this hooks an action
+		// that never fires.
+		( new Abilities(
+			function (): array {
+				return $this->providers();
+			},
+			function (): ContentScan {
+				return $this->content_scanner();
+			},
+			function ( string $content ): string {
+				return $this->render_ungated( $content );
+			}
+		) )->register();
 
 		if ( $this->options['detection']['output_buffer'] ) {
 			( new OutputBuffer( $this ) )->register();
@@ -442,17 +470,23 @@ final class Plugin {
 				}
 			),
 			array(
-				'before'   => static function ( array $provider, array $ctx ): void {
+				'before'      => static function ( array $provider, array $ctx ): void {
 					do_action( 'calucon_embed_gate_before_render', $provider, $ctx );
 				},
-				'note'     => static function ( string $note, array $provider, array $ctx ): string {
+				'note'        => static function ( string $note, array $provider, array $ctx ): string {
 					return (string) apply_filters( 'calucon_embed_gate_note_text', $note, $provider, $ctx );
 				},
-				'action'   => static function ( string $action, array $provider, array $ctx ): string {
+				'action'      => static function ( string $action, array $provider, array $ctx ): string {
 					return (string) apply_filters( 'calucon_embed_gate_action_text', $action, $provider, $ctx );
 				},
-				'fallback' => static function ( string $url, array $provider, array $ctx ): string {
+				'fallback'    => static function ( string $url, array $provider, array $ctx ): string {
 					return (string) apply_filters( 'calucon_embed_gate_fallback_url', $url, $provider, $ctx );
+				},
+				'alternative' => function ( string $url, array $provider, array $ctx ): string {
+					return $this->own_site_url( (string) apply_filters( 'calucon_embed_gate_alternative_url', $url, $provider, $ctx ) );
+				},
+				'poster'      => function ( array $provider ): string {
+					return $this->provider_poster_url( isset( $provider['id'] ) ? (string) $provider['id'] : '' );
 				},
 			),
 			! empty( $this->options['display']['privacy_link'] )
@@ -503,9 +537,12 @@ final class Plugin {
 			do_action( 'calucon_embed_gate_embed_gated', $provider, $ctx );
 		};
 
+		$iframe_rule    = new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated );
 		$this->pipeline = new Pipeline(
+			new BackgroundVideoRule( $scanner, $hosts, $registry, $should_gate ),
 			new ElementorVideoRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
-			new IframeRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
+			new BuilderEmbedRule( $scanner, $hosts, $registry, $renderer, $iframe_rule, $should_gate, $on_gated ),
+			$iframe_rule,
 			new EmbedObjectRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
 			new ScriptRule( $scanner, $hosts, $registry, $renderer, $should_gate_script, $on_gated ),
 			new ImageRule( $scanner, $hosts, $registry, $renderer, $should_gate, $on_gated ),
@@ -599,7 +636,16 @@ final class Plugin {
 	 * only in a data-settings JSON (ElementorVideoRule), so its class name
 	 * is part of the probe — the field suite found the rule silently skipped
 	 * on the the_content path while the buffered page, which always carries
-	 * a <script>, passed.
+	 * a <script>, passed. The same goes for Elementor's atomic YouTube
+	 * element (data-e-type="e-youtube") and its background videos, which
+	 * are a `background_video_link` setting on a section and nothing else;
+	 * for the <lite-youtube>/<lite-vimeo> facade elements; and for the
+	 * background players of WPBakery, Flatsome and Enfold, which are an
+	 * attribute or a class on a <div>. (Enfold's video element needs no
+	 * entry: its template is a <script>.) The same for a <video> whose
+	 * source is a provider's page (MediaElement builds the provider's
+	 * player for it), Plyr's embed divs, Premium Addons' video box, and the
+	 * row backgrounds of Beaver Builder and Visual Composer.
 	 *
 	 * @param string $html Content.
 	 * @return bool
@@ -611,9 +657,20 @@ final class Plugin {
 		// alternation scans the string once instead of once per tag name
 		// (measured ~4x on a 60 KB text-only post).
 		$pattern = $this->options['detection']['images']
-			? '/<(?:iframe|script|embed|object|img)|elementor-widget-video/i'
-			: '/<(?:iframe|script|embed|object)|elementor-widget-video/i';
+			? '/<(?:iframe|script|embed|object|img)|<(?:video|lite-youtube|lite-vimeo)|elementor-widget-video|e-youtube|background_video_link|data-vc-video-bg|ux-youtube|av_(?:youtube|vimeo)_frame|fl-bg-video|data-vce-assets-video-|data-plyr-provider|premium-video-box-container/i'
+			: '/<(?:iframe|script|embed|object)|<(?:video|lite-youtube|lite-vimeo)|elementor-widget-video|e-youtube|background_video_link|data-vc-video-bg|ux-youtube|av_(?:youtube|vimeo)_frame|fl-bg-video|data-vce-assets-video-|data-plyr-provider|premium-video-box-container/i';
 		return 1 === preg_match( $pattern, $html );
+	}
+
+	/**
+	 * Put the front-end script and stylesheet on this page although nothing
+	 * has been gated on it (yet) — for an integration that knows gated
+	 * content can still arrive without a page load.
+	 *
+	 * @return void
+	 */
+	public function enqueue_assets(): void {
+		$this->assets->enqueue_assets();
 	}
 
 	/**
@@ -626,10 +683,14 @@ final class Plugin {
 	public function gate( string $html, array $ctx ): string {
 		$pipeline = $this->pipeline();
 		if ( $this->options['detection']['iframes'] ) {
+			// First: a background video is removed, not given a panel, so the
+			// iframe rule must never see the Cover block's.
+			$html = $pipeline->background_video_rule->apply( $html, $ctx );
 			// Before the iframe rule: this one turns a player that exists only
 			// as JSON into a panel, and must not leave an iframe behind for
 			// the next rule to gate twice.
 			$html = $pipeline->elementor_video_rule->apply( $html, $ctx );
+			$html = $pipeline->builder_embed_rule->apply( $html, $ctx );
 			$html = $pipeline->iframe_rule->apply( $html, $ctx );
 			// <embed>/<object> are frame-shaped embeds under the same toggle:
 			// Flash-era markup requests third-party content on load too.
@@ -674,6 +735,84 @@ final class Plugin {
 			return '';
 		}
 		return $url;
+	}
+
+	/**
+	 * Would an embed with this address be gated on this site: is it a third
+	 * party's, is the iframe rule on, has the owner neither let its provider
+	 * through nor vetoed it? For an integration that has no markup to hand
+	 * to gate() but must make the same decision.
+	 *
+	 * @param string $url Embed URL.
+	 * @param array  $ctx Integration context.
+	 * @return bool
+	 */
+	public function gates_url( string $url, array $ctx = array() ): bool {
+		if ( ! $this->options['detection']['iframes'] ) {
+			return false;
+		}
+		$pipeline = $this->pipeline();
+		if ( HostMatcher::FOREIGN !== $pipeline->host_matcher->classify( $url ) ) {
+			return false;
+		}
+		$host = $pipeline->host_matcher->host_of( $url );
+		if ( null === $host ) {
+			return false;
+		}
+		$provider = $pipeline->registry->resolve_for_url( $url, $host );
+		if ( false === $provider['enabled'] ) {
+			return false;
+		}
+		return (bool) apply_filters( 'calucon_embed_gate_should_gate', true, $url, $ctx );
+	}
+
+	/**
+	 * An address on this site, or nothing.
+	 *
+	 * The alternative link in a placeholder promises the content WITHOUT a
+	 * third party. That promise is only as good as this check: a page on
+	 * the site's own host (or a path or #fragment, which cannot be anywhere
+	 * else) passes, everything else comes back empty and no link is shown.
+	 *
+	 * @param string $url Candidate address.
+	 * @return string The address, or '' when it is not on this site.
+	 */
+	public function own_site_url( string $url ): string {
+		$url = trim( $url );
+		if ( '' === $url || strlen( $url ) > 2000 ) {
+			return '';
+		}
+		// Path and fragment forms first: no host to check, and '//' is a
+		// host, so it does not count as a path.
+		if ( preg_match( '~^(?:/(?![/\\\\])|#)~', $url ) ) {
+			return HostMatcher::navigable( $url );
+		}
+		if ( ! preg_match( '~^https?://~i', $url ) ) {
+			return '';
+		}
+		if ( HostMatcher::OWN !== $this->pipeline()->host_matcher->classify( $url ) ) {
+			return '';
+		}
+		return HostMatcher::navigable( $url );
+	}
+
+	/**
+	 * The owner's default poster for a provider (Providers tab): the image
+	 * behind that provider's placeholders when an embed has none of its own.
+	 * Same source and same rule as a per-embed poster — a media-library
+	 * attachment, and only if it is served from the site itself.
+	 *
+	 * @param string $provider_id Provider id.
+	 * @return string Poster URL, '' when none or unusable.
+	 */
+	public function provider_poster_url( string $provider_id ): string {
+		if ( '' === $provider_id || empty( $this->options['providers'][ $provider_id ]['poster'] ) ) {
+			return '';
+		}
+		if ( ! array_key_exists( $provider_id, $this->provider_posters ) ) {
+			$this->provider_posters[ $provider_id ] = $this->poster_url( (int) $this->options['providers'][ $provider_id ]['poster'] );
+		}
+		return $this->provider_posters[ $provider_id ];
 	}
 
 	/**
@@ -742,6 +881,13 @@ final class Plugin {
 			return current_user_can( 'edit_posts' );
 		}
 		if ( is_feed() || is_embed() ) {
+			return true;
+		}
+		// The owner switched gating off for this page (PageSwitch): on the
+		// post's own address only. In an archive, a Query Loop or a REST
+		// response the same post's embeds stay gated — none of those is
+		// singular, or they were answered further up.
+		if ( is_singular() && PageSwitch::is_off( (int) get_queried_object_id() ) ) {
 			return true;
 		}
 		return false;

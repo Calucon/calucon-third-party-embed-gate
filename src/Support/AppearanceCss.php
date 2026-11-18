@@ -239,7 +239,7 @@ final class AppearanceCss {
 			$css .= '.cg-embed--poster:not(.cg-embed--active) .cg-embed__poster{filter:' . $dims[ $a['poster_dim'] ] . ';}';
 		}
 		if ( '' !== $a['link'] ) {
-			$css .= '.cg-embed .cg-embed__fallback a,.cg-embed .cg-embed__privacy a{color:' . self::color( $a['link'], $palette ) . ';}';
+			$css .= '.cg-embed .cg-embed__fallback a,.cg-embed .cg-embed__alternative a,.cg-embed .cg-embed__privacy a{color:' . self::color( $a['link'], $palette ) . ';}';
 		}
 
 		if ( $a['dark'] ) {

@@ -18,7 +18,7 @@ would be a bug. Everything not listed is internal, however tempting it looks.
   the eight CSS custom properties `--cg-bg`, `--cg-fg`, `--cg-accent`,
   `--cg-accent-fg`, `--cg-radius`, `--cg-gap`, `--cg-font` and `--cg-aspect`.
 - **The hooks** listed under "Every hook, with its signature" — filters
-  `calucon_embed_gate_action_text`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_note_text`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_payload`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_providers`, `calucon_embed_gate_render_block_priority`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_www_equivalence`; actions `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated`, `calucon_embed_gate_flush_caches` — and their signatures.
+  `calucon_embed_gate_action_text`, `calucon_embed_gate_alternative_url`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_note_text`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_payload`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_providers`, `calucon_embed_gate_render_block_priority`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_www_equivalence`; actions `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated`, `calucon_embed_gate_flush_caches` — and their signatures.
 - **The template variables** documented in `templates/placeholder.php`, and
   the override path `{theme}/calucon-embed-gate/placeholder.php`. One rule
   for overrides: `$payload_tag` is echoed raw as a direct child of the
@@ -33,6 +33,11 @@ would be a bug. Everything not listed is internal, however tempting it looks.
 - **The WP-CLI commands** `wp calucon-embed-gate scan` and `wp
   calucon-embed-gate providers`, and the shape of their `--format=json`
   output.
+- **The `calucon-embed-gate:loaded` DOM event** (since 1.1): its name, that
+  it bubbles from the `.cg-embed` container, and the five keys of its
+  `detail` — `provider`, `host`, `strategy`, `trigger`, `element` — with the
+  values listed under "When an embed has loaded". A key may be added, never
+  removed or given another meaning.
 
 Not promised, because it is data rather than API: the built-in provider
 descriptors (hosts, paths, load targets, privacy URLs — they follow the
@@ -200,7 +205,7 @@ add_filter( 'calucon_embed_gate_providers', function ( array $providers ): array
 		'kind'        => 'video', // video | map | audio | social | form | calendar | document | image | 3d | '' — picks the optional button glyph.
 		// Reserved: 'custom' (bool) marks owner-defined providers from the
 		// settings screen — never set it on a code-registered descriptor.
-		'aspect'      => '16/9',
+		'aspect'      => '16:9',
 	);
 	return $providers;
 } );
@@ -241,6 +246,120 @@ class="cg-withdraw__status">…</span></span>`. The wrapper is block-level so a
 block theme's constrained layout can place it — auto margins do nothing to a
 bare inline-level button, which then hugs the page edge. Style the button
 with `.cg-withdraw`; the wrapper only carries layout.
+
+## Switching gating off for one page
+
+Since 1.1 the editor has a switch for it: **Do not gate embeds on this
+page**, in the page's own settings panel (a meta box in the classic editor).
+It is the per-block "Never gate" one level up, with the same price — on that
+page every embed contacts its provider as soon as the page opens, for every
+visitor.
+
+- It is one post meta, `_calucon_embed_gate`, with the value `never`; any
+  other value means "site default". Only someone who may edit the post can
+  set it.
+- It applies to the post's **own address** (`is_singular()`), and there to
+  everything on the page. In an archive, a Query Loop on another page, a
+  feed, a search result or a REST response the same post's embeds stay
+  gated: the decision is about a page, not about wherever its content
+  travels.
+- It is never out of sight: **Settings → Detection** lists every page that
+  has it on, with a link to edit it.
+
+```sh
+wp post meta update 123 _calucon_embed_gate never   # off on page 123
+wp post meta delete 123 _calucon_embed_gate         # gated again
+wp post list --post_type=any --meta_key=_calucon_embed_gate --meta_value=never --fields=ID,post_title
+```
+
+For anything finer — a role, a query parameter, a template — the filter is
+still the tool: `calucon_embed_gate_should_gate` receives `$ctx['post_id']`.
+
+## An alternative without the provider
+
+Since 1.1 a placeholder can carry a second link: the same content **on your
+own site**, for a visitor who would rather not load the embed at all — a
+transcript, a download, a copy of the video you host yourself, the text of
+the form as a PDF. In the block editor it is the **Alternative on this site
+(address)** field of the Calucon Third-Party Embed Gate panel, with an
+optional link text; in the placeholder it is
+`<p class="cg-embed__alternative"><a href="…">…</a></p>`, after the "Open
+on …" link.
+
+The one rule: the address has to be on this site. A path (`/transcripts/42/`),
+a fragment (`#transcript`, for a transcript further down the same page) or a
+URL on one of the site's own hosts is shown; anything else is dropped and no
+link appears — the link says "without the provider", and pointing it at
+another third party would make that untrue. A CDN-offloaded file counts once
+its host is listed under **Detection → Additional own hosts**.
+
+For embeds that are not blocks — classic content, a shortcode, a widget — or
+to derive the address from your own data, use the filter. The same rule
+applies to what it returns:
+
+```php
+add_filter( 'calucon_embed_gate_alternative_url', function ( $url, $provider, $ctx ) {
+	if ( '' === $url && 'youtube' === $provider['id'] && ! empty( $ctx['post_id'] ) ) {
+		$transcript = get_post_meta( $ctx['post_id'], 'video_transcript_url', true );
+		return is_string( $transcript ) ? $transcript : '';
+	}
+	return $url;
+}, 10, 3 );
+```
+
+## A default poster per provider
+
+A poster is the image behind a placeholder. Per embed it is set in the block
+editor; since 1.1 each provider can also carry a default one — **Providers →
+(a provider) → Wording, privacy link and poster image → Poster image** —
+which is used wherever an embed of that provider has no poster of its own:
+classic content, widgets, page-builder elements, older posts. It is stored as
+`providers[<id>][poster]`, a media-library attachment ID:
+
+```sh
+wp option patch update calucon_embed_gate_options providers youtube poster 123
+```
+
+Same rule as every poster: an image from this site's media library, resolved
+when the page is rendered and refused unless it is served from one of the
+site's own hosts. Nothing is ever fetched from the provider — which is why
+this is a picture you choose and not the video's thumbnail.
+
+## When an embed has loaded
+
+Since 1.1 the placeholder says so. Once an embed has loaded, `gate.js`
+dispatches a `calucon-embed-gate:loaded` event on the placeholder's
+container (`.cg-embed`); it bubbles, so one listener on `document` hears
+every embed on the page — including placeholders that arrive later:
+
+```js
+document.addEventListener( 'calucon-embed-gate:loaded', function ( event ) {
+	var d = event.detail;
+	// d.provider  'youtube', 'vimeo', … or 'generic' / 'generic-script'
+	// d.host      the host the embed was loaded from ('www.youtube-nocookie.com')
+	// d.strategy  'iframe' or 'script'
+	// d.trigger   'click'  — the visitor pressed the button
+	//             'memory' — a consent remembered from an earlier click
+	//             'bridge' — the consent platform granted it
+	// d.element   the <iframe>, or null for a script embed (its SDK draws
+	//             its own nodes)
+	// event.target is the .cg-embed container the embed now lives in.
+} );
+```
+
+When it fires: for an iframe, on the frame's `load` — once, not again when
+the embed navigates inside its frame; for a script embed, after the
+provider's script has loaded and its ready hook (below) has run. It does not
+fire when the load failed — a blocked SDK shows the error link instead — and
+never for the loader scripts and stylesheets that accompany an embed.
+
+Two things it is good for, and one it is not. Good: adjusting your own
+layout around the loaded embed, and handing the frame to a provider's player
+API (`new YT.Player( event.detail.element )` — the embed's `id` survives the
+rebuild). Also good: counting views in your **own** first-party statistics;
+`trigger` tells a click from a restore. Not good: using it to load something
+else from a third party the visitor did not ask for. The click was consent
+for that one embed.
 
 ## After a script embed loads
 
@@ -364,7 +483,9 @@ the browser.
 | The **first** click on "Load" does nothing; the second works | "Delay JavaScript until interaction" — the first interaction is spent switching scripts on | Exclude `gate.js` from that setting specifically, not just from minification |
 | The button does nothing **at all**, ever | `gate.js` never executed. Usually a combined bundle threw earlier: a top-level error aborts the rest of *that file*, and anything bundled after it never runs | Open the console, find the throwing file, exclude `gate.js` from combining so it is not downstream of somebody else's error |
 | The panel appears but is unstyled | `gate.css` was combined, deferred or stripped | Exclude `gate.css` |
-| Embeds load **without** a click | Gating is server-side, so this means the plugin never saw that markup — typically a page builder rendering outside the WordPress content filters | Settings → Detection → enable whole-page buffering |
+| Embeds load **without** a click | Gating is server-side, so this means the plugin never saw that markup. Either a page builder rendering outside the WordPress content filters — or a player the builder creates **in the visitor's browser** from a setting, with no iframe in the page at all (the cases the plugin knows: Elementor's video widget and atomic YouTube element; a `<video>` whose source is a YouTube or Vimeo page — the `[video]` shortcode, SiteOrigin's video widget; Plyr's `data-plyr-provider` embeds — Essential Addons' Sticky Video; Premium Addons' Video Box; Enfold's video element; the `lite-youtube` / `lite-vimeo` preview elements) | Settings → Detection → enable whole-page buffering. If it still loads, it is a browser-built player the plugin has not been taught: report it with the element's name and the page's HTML |
+| A **background video** (Cover block; Elementor section or container; Beaver Builder, Kadence, Visual Composer or WPBakery row; Flatsome banner; Enfold slide or section) no longer plays, and there is no placeholder for it | Deliberate. A YouTube or Vimeo background contacts the provider on page load, and a placeholder behind a section's content cannot be pressed, so the video is left out and the section keeps its overlay, its content and its fallback image | Upload the video to your media library (a file from your own site is not gated), or let the provider through under Providers if that is what you want for every visitor |
+| A **map** loads without a click | It is drawn by the plugin's own script with Google's Maps JavaScript API or Leaflet (Kadence in "JavaScript" mode, Otter, Stackable with an API key, SiteOrigin, Premium Addons), not embedded as a frame. There is nothing in the page to replace | Use the block's "embed"/"iframe" mode where it has one. Whole-page buffering holds the Maps script back, with its placeholder where the script was. Not something this plugin gates element by element |
 | Your **own** scripts and styles were replaced by placeholders | An asset CDN plus whole-page buffering, on a build older than 1.0 | Update; if it persists, add the CDN hostname under Detection → "Additional own hosts" |
 | Console errors about `wp-i18n`, `wp-data`, `lodash`, `moment` | Not this plugin — those are WordPress core packages whose inline snippets got separated from them by combining | Check the page **logged out** first: these are often enqueued only for logged-in admins, so no visitor ever sees them |
 
@@ -411,8 +532,10 @@ add_filter( 'calucon_embed_gate_should_gate', fn( $gate, $url, $ctx ) =>
 (`the_content`, `render_block`, `widget`, `comment`, `description`,
 `output_buffer`, `admin-preview`), plus — where the integration knows them —
 `post_id`, `block` (block name), `force_gate` (the per-block "always" override),
-`poster`, `note_text` and `action_text` (the per-block texts), and `noscript`
-inside a `<noscript>` element. Treat a key as possibly absent.
+`poster`, `note_text` and `action_text` (the per-block texts),
+`alternative_url` and `alternative_text` (the per-block alternative, since
+1.1), and `noscript` inside a `<noscript>` element. Treat a key as possibly
+absent.
 
 `$provider` is the resolved descriptor (PLAN.md §4.1): `id`, `label`, `note`,
 `action`, `fallback`, `privacy_url`, `kind`, `match`, `strategy`, `enabled` …
@@ -441,6 +564,7 @@ means the third party is contacted on page load, for every visitor.
 | `calucon_embed_gate_note_text` | `( string $note, array $provider, array $ctx ): string` | per placeholder |
 | `calucon_embed_gate_action_text` | `( string $action, array $provider, array $ctx ): string` | per placeholder |
 | `calucon_embed_gate_fallback_url` | `( string $url, array $provider, array $ctx ): string` | per placeholder; a non-navigable scheme is rejected afterwards |
+| `calucon_embed_gate_alternative_url` | `( string $url, array $provider, array $ctx ): string` | per placeholder (since 1.1); `$url` is the block's "Alternative on this site" address or `''`. Whatever comes back is shown only if it is on this site — a path, a `#fragment` or an own-host URL — and dropped otherwise |
 
 **Markup and payload** — the §5.1 contract is public API; keep its shape.
 
@@ -465,6 +589,29 @@ means the third party is contacted on page load, for every visitor.
 | `calucon_embed_gate_before_render` | `( array $provider, array $ctx )` | just before a placeholder is rendered |
 | `calucon_embed_gate_embed_gated` | `( array $provider, array $ctx )` | after an embed has been replaced — counting, logging |
 | `calucon_embed_gate_flush_caches` | `()` | whenever the plugin flushes caches; hook your own cache here |
+
+## Abilities: the two reports without a shell
+
+On WordPress 6.9 and later the plugin registers its two read-only reports
+with the Abilities API, under the names of the WP-CLI commands:
+
+| Ability | Input | Returns |
+|---|---|---|
+| `calucon-embed-gate/scan` | `posts` (1–500, default 50) | the rows of `wp calucon-embed-gate scan --format=json`: `host`, `tag`, `label`, `provider`, `status`, `count`, `first_seen`, `url` |
+| `calucon-embed-gate/providers` | none | the rows of `wp calucon-embed-gate providers --format=json`: `id`, `label`, `enabled`, `strategy`, `hosts`, `load_host`, `controller`, `privacy_url` |
+
+Both require `manage_options`, are annotated `readonly` and are exposed over
+REST for whoever has that capability:
+
+```sh
+curl -u admin:APPLICATION_PASSWORD \
+  'https://example.org/wp-json/wp-abilities/v1/abilities/calucon-embed-gate/scan/run?input[posts]=100'
+```
+
+An assistant connected to the site through the MCP adapter sees them as
+tools. There is deliberately no ability that changes anything: letting a
+host through or switching a provider off is the decision this plugin exists
+for, and it stays with a person on the settings screen.
 
 ## The consent platform bridge
 

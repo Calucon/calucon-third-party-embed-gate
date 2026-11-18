@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use CaluconEmbedGate\Support\ContentScan;
+use CaluconEmbedGate\Support\Reports;
 
 /**
  * Inspect Calucon Third-Party Embed Gate: which embeds appear in content and whether each is
@@ -99,32 +99,12 @@ final class Commands {
 	 * @return void
 	 */
 	public function scan( $args, $assoc_args ) {
-		$limit = isset( $assoc_args['posts'] ) ? (int) $assoc_args['posts'] : 50;
-		$limit = max( 1, min( 500, $limit ) );
-
-		$scanner = call_user_func( $this->scanner_source );
-		$posts   = get_posts(
-			array(
-				'post_type'        => array( 'post', 'page' ),
-				'post_status'      => 'publish',
-				'numberposts'      => $limit,
-				'suppress_filters' => false,
-			)
-		);
-
-		$scanned = array();
-		foreach ( $posts as $post ) {
-			$rendered  = (string) call_user_func( $this->render_ungated, $post->post_content );
-			$scanned[] = array(
-				'source' => get_the_title( $post ),
-				'rows'   => $scanner->scan( $rendered ),
-			);
-		}
+		$limit = isset( $assoc_args['posts'] ) ? (int) $assoc_args['posts'] : Reports::SCAN_DEFAULT;
 
 		\WP_CLI\Utils\format_items(
 			isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table',
-			ContentScan::aggregate( $scanned ),
-			array( 'host', 'tag', 'label', 'provider', 'status', 'count', 'first_seen', 'url' )
+			Reports::scan( call_user_func( $this->scanner_source ), $this->render_ungated, $limit ),
+			Reports::SCAN_FIELDS
 		);
 	}
 
@@ -158,32 +138,10 @@ final class Commands {
 	 * @return void
 	 */
 	public function providers( $args, $assoc_args ) {
-		$rows = array();
-		foreach ( (array) call_user_func( $this->providers_source ) as $descriptor ) {
-			if ( ! isset( $descriptor['id'] ) ) {
-				continue;
-			}
-			$match  = isset( $descriptor['match'] ) ? (array) $descriptor['match'] : array();
-			$hosts  = array_merge(
-				isset( $match['iframe_host'] ) ? (array) $match['iframe_host'] : array(),
-				isset( $match['script_host'] ) ? (array) $match['script_host'] : array()
-			);
-			$rows[] = array(
-				'id'          => (string) $descriptor['id'],
-				'label'       => isset( $descriptor['label'] ) ? (string) $descriptor['label'] : '',
-				'enabled'     => ! isset( $descriptor['enabled'] ) || false !== $descriptor['enabled'] ? 'yes' : 'no',
-				'strategy'    => isset( $descriptor['strategy'] ) ? (string) $descriptor['strategy'] : 'iframe',
-				'hosts'       => implode( ',', $hosts ),
-				'load_host'   => isset( $descriptor['load_host'] ) ? (string) $descriptor['load_host'] : '',
-				'controller'  => isset( $descriptor['controller'] ) ? (string) $descriptor['controller'] : '',
-				'privacy_url' => isset( $descriptor['privacy_url'] ) ? (string) $descriptor['privacy_url'] : '',
-			);
-		}
-
 		\WP_CLI\Utils\format_items(
 			isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table',
-			$rows,
-			array( 'id', 'label', 'enabled', 'strategy', 'hosts', 'load_host', 'controller', 'privacy_url' )
+			Reports::providers( (array) call_user_func( $this->providers_source ) ),
+			Reports::PROVIDER_FIELDS
 		);
 	}
 }

@@ -48,6 +48,22 @@ final class RenderBlock {
 	public function filter( $content, $block ): string {
 		$content = (string) $content;
 
+		// A Query Loop with "enhanced pagination" (the Interactivity API's
+		// client-side navigation) fetches the next page and swaps only the
+		// loop's HTML in — and of that page's assets it loads stylesheets
+		// and script modules, never a classic script. So a placeholder can
+		// arrive on a page whose own first render had no embed and
+		// therefore no gate.js: a panel whose button does nothing. Any page
+		// that carries such a loop gets the assets up front. The click
+		// handler is delegated from the document, so it serves content
+		// that arrives later.
+		if ( isset( $block['blockName'], $block['attrs']['enhancedPagination'] )
+			&& 'core/query' === $block['blockName']
+			&& $block['attrs']['enhancedPagination']
+			&& ! $this->plugin->should_bail() ) {
+			$this->plugin->enqueue_assets();
+		}
+
 		if ( ! $this->plugin->has_gateable_markup( $content ) || $this->plugin->should_bail() ) {
 			return $content;
 		}
@@ -91,6 +107,24 @@ final class RenderBlock {
 				if ( '' !== $text ) {
 					$ctx[ $ctx_key ] = mb_substr( $text, 0, 'note_text' === $ctx_key ? 400 : 120 );
 				}
+			}
+		}
+
+		// Per-block alternative without the provider (1.1): an address on
+		// this site and, optionally, its link text. Only shape and length
+		// here — whether the address really is on this site is decided
+		// where the link is rendered (Plugin::own_site_url), for this
+		// attribute and for the filter alike.
+		if ( isset( $attrs['caluconEmbedGateAltUrl'] ) && is_string( $attrs['caluconEmbedGateAltUrl'] ) ) {
+			$alternative = trim( $attrs['caluconEmbedGateAltUrl'] );
+			if ( '' !== $alternative && strlen( $alternative ) <= 2000 ) {
+				$ctx['alternative_url'] = $alternative;
+			}
+		}
+		if ( isset( $attrs['caluconEmbedGateAltText'] ) && is_string( $attrs['caluconEmbedGateAltText'] ) ) {
+			$text = trim( wp_strip_all_tags( $attrs['caluconEmbedGateAltText'], true ) );
+			if ( '' !== $text ) {
+				$ctx['alternative_text'] = mb_substr( $text, 0, 120 );
 			}
 		}
 

@@ -112,6 +112,75 @@ final class HtmlScanner {
 	}
 
 	/**
+	 * Offset of the closing tag that ends the element whose start tag ended
+	 * at $from — counting nested elements of the same name, and only tags
+	 * this scanner would open: a `</div>` inside a script template or a
+	 * `<div` in an attribute value is text, not structure. Null when the
+	 * element never closes.
+	 *
+	 * find_tags() reports an element's end at the FIRST closing tag of its
+	 * name, which is right for elements that do not nest (iframe, script)
+	 * and wrong for a <div> with children. A rule that removes or refills a
+	 * container needs this instead.
+	 *
+	 * @param string $html     HTML.
+	 * @param int    $from     Offset just past the element's start tag.
+	 * @param string $tag_name Tag name, lowercase.
+	 * @return int|null Offset of the '<' of the closing tag.
+	 */
+	public function closing_tag_offset( string $html, int $from, string $tag_name ): ?int {
+		$opens = array();
+		// Stretches of the document where "</tag>" is text: the inside of a
+		// start tag (an attribute value may say anything), and below, the
+		// contents of raw-text elements.
+		$raw = array();
+		foreach ( $this->find_tags( $html, $tag_name ) as $tag ) {
+			if ( $tag['start'] >= $from ) {
+				$opens[] = $tag['start'];
+				$after   = $this->start_tag_end( $html, $tag['start'] );
+				if ( null !== $after ) {
+					$raw[] = array( $tag['start'], $after + 1 );
+				}
+			}
+		}
+		foreach ( array( 'script', 'style', 'textarea' ) as $container ) {
+			if ( $container === $tag_name || false === stripos( $html, '<' . $container ) ) {
+				continue;
+			}
+			foreach ( $this->find_tags( $html, $container ) as $tag ) {
+				if ( $tag['end'] > $from ) {
+					$raw[] = array( $tag['start'], $tag['end'] );
+				}
+			}
+		}
+
+		$depth   = 1;
+		$pos     = $from;
+		$next    = 0;
+		$count   = count( $opens );
+		$pattern = '#</' . preg_quote( $tag_name, '#' ) . '\s*>#i';
+		while ( preg_match( $pattern, $html, $m, PREG_OFFSET_CAPTURE, $pos ) ) {
+			$at = (int) $m[0][1];
+			foreach ( $raw as $span ) {
+				if ( $at > $span[0] && $at < $span[1] - strlen( $m[0][0] ) ) {
+					$pos = $at + strlen( $m[0][0] );
+					continue 2;
+				}
+			}
+			while ( $next < $count && $opens[ $next ] < $at ) {
+				++$depth;
+				++$next;
+			}
+			--$depth;
+			if ( 0 === $depth ) {
+				return $at;
+			}
+			$pos = $at + strlen( $m[0][0] );
+		}
+		return null;
+	}
+
+	/**
 	 * Parse attributes from just past the tag name to the closing '>'.
 	 *
 	 * Tolerates: any whitespace including newlines between name and attributes;

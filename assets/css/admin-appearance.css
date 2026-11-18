@@ -916,3 +916,30 @@
 	font-size: 12px;
 	line-height: 1.7;
 }
+
+/* The per-provider poster image (Providers tab). */
+.cg-provider__poster-controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5em;
+}
+
+.cg-provider__poster-preview {
+	width: 64px;
+	height: 36px;
+	object-fit: cover;
+	border-radius: 2px;
+	background: #f0f0f1;
+}
+
+.cg-provider__poster .description,
+.cg-provider__poster-warning {
+	display: block;
+	margin-top: 0.25em;
+}
+
+.cg-provider__poster-warning {
+	color: #b32d2e;
+}
+

@@ -77,19 +77,71 @@ it says so on the same issue.
 | `cache-wp-super-cache` | wp-super-cache | Cache row; the lone "nothing to exclude" sentence; the supercache **file WPSC writes** is the gated page (marker-matched to the live response) and a settings save deletes it; click loads (see the port note below) |
 | `cache-litespeed` | litespeed-cache | The **real option rows** (`litespeed.conf.optm-js_defer` / `optm-js_comb`): off → "nothing risky on", comb → "combine", 2 → "delay"; click loads with defer + combine; the delay symptom on touch (below) |
 | `cache-autoptimize` | autoptimize | Reader states; click loads with aggregation, and with the inline config folded into the bundle |
-| `cache-wp-fastest-cache` | wp-fastest-cache | Reader "could not be read" + Exclude tab; cached page gated; click loads with minify + combine |
+| `cache-wp-fastest-cache` | wp-fastest-cache | Reader "could not be read" + Exclude tab; cached page gated; a settings save flushes; click loads with minify + combine |
 | `cache-sg-cachepress` | sg-cachepress | Reader combine on/off; click loads with combine |
-| `builder-elementor` | elementor | Row text follows the buffer setting; HTML widget gated with the buffer off (Elementor renders through `the_content`) and on; the **video widget** — a player that exists only as a JSON attribute — gated by `ElementorVideoRule` on both paths, Load loads, Elementor's handler stands down without an error |
+| `builder-elementor` | elementor | Row text follows the buffer setting; HTML widget gated with the buffer off (Elementor renders through `the_content`) and on; the **video widget** — a player that exists only as a JSON attribute — gated by `ElementorVideoRule` on both paths, Load loads, Elementor's handler stands down without an error; the **atomic YouTube element** (Editor V4) the same, plus its panel not clipped on a phone and the loaded player filling Elementor's box; the atomic Google Maps element; a section's YouTube and a container's Vimeo **background video** — nothing requested, no panel, content intact |
+| `builder-elementor-addons` | elementor, essential-addons-for-elementor-lite, premium-addons-for-elementor | Essential Addons' Sticky Video (Plyr's data attributes): a panel, the element kept, one click loads, also with an image overlay; Premium Addons' Video Box without an image, with autoplay, with the provider's thumbnail, with the owner's image (which becomes the poster) and for Vimeo: the whole box is the panel, the player has a usable size; Elementor's own Vimeo widget with an image overlay takes one click |
+| `builder-beaver` | beaver-builder-lite-version | Row backgrounds from YouTube, Vimeo and an "embedded code": nothing requested, no panel behind the row, neither the background element nor the enqueued player API left, no script error; the video module gated and loading |
+| `builder-siteorigin` | siteorigin-panels, so-widgets-bundle | The video widget with oEmbed off (a provider's page as a `<video>` source) for YouTube and Vimeo, and WordPress's own `[video]` shortcode: a panel, nothing requested, the loaded player sized to its container on a phone |
+| `builder-kadence` | kadence-blocks | Row Layout with a YouTube and a Vimeo background: nothing requested, no panel left behind the row |
 | `detect-only` | cookiebot, cloudflare, polylang, translatepress-multilingual, beaver-builder-lite-version | Each row and its advice; zero third-party requests on a gated page with all five active |
 
 ### Not field-validated (emulated only)
 
 These cannot be installed without a licence or an account, so their rows
-are still produced by the emulators in `tests/wp/seed.php`: **WP Rocket,
-Borlabs Cookie, WPBakery, Divi, Bricks, Oxygen, WPML, Weglot**, the
+on the Compatibility screen are still produced by the emulators in
+`tests/wp/seed.php`: **WP Rocket, Borlabs Cookie, WPBakery, Divi, Bricks,
+Oxygen, WPML, Weglot**, the
 **Cookiebot banner** itself (the plugin installs; the banner needs a Domain
 Group ID), **Usercentrics** and **iubenda** (detected as untested; that is
 all the plugin claims for them).
+
+### Commercial builders: checked against the vendor's own page (1.1)
+
+Enfold, Avada, WPBakery, Flatsome and Bricks cannot be installed here, and
+an emulator written from memory is exactly what the first field run taught
+this project to distrust. There is a third kind of evidence between "ran
+the real plugin" and "wrote a simulation": **the vendor's demo site**. Its
+pages are the product's real output, and its scripts and stylesheets are
+the product's real front end. `tests/bin/vendor-page-gate.php` runs a saved
+demo page through the pipeline; `tests/bin/vendor-page-run.js` serves the
+result as that page in a headless browser, lets the vendor's own assets
+load from the vendor, and records what else is contacted before a click.
+
+Measured 2026-11-18, as saved and through the gate:
+
+| Vendor page | As it is | Through the gate |
+|---|---|---|
+| Enfold, video element (two videos, "immediate" load) | youtube.com ×2, player.vimeo.com | none; two panels, buttons reachable by mouse, the loaded player fills Enfold's box |
+| Enfold, slideshow with video slides | player.vimeo.com ×3 | none |
+| Avada, Vimeo element (lazy-loaded frame) | player.vimeo.com ×2 | none; one panel |
+| Avada, YouTube element with Avada's Privacy Consent on | none | untouched, none — no second placeholder on top of Avada's |
+
+What that proves and what it does not:
+
+- It proves the rule against the markup and the scripts the vendor ships
+  **on that page, that day, with the options that demo uses**. It says
+  nothing about an option the demo does not show, about the builder's
+  editor, or about anything the product does server-side for a logged-in
+  user. It is one run by hand, not a monthly job: the pages are the
+  vendors', they are never committed, and a vendor may change them.
+- Two rules have **no** live page behind them: WPBakery's row background
+  (`data-vc-video-bg`) and Flatsome's banner background
+  (`.ux-youtube[data-videoid]`). Neither appeared on a demo page that
+  could be fetched; both are written from the vendors' published
+  front-end scripts, which name the attribute, the class and what they do
+  with them. Treat a field report against either as likely to be right.
+- Divi needed no rule: its video modules render a real iframe (the iframe
+  rule's job) and its section backgrounds are video files. Its map module,
+  like Flatsome's and Enfold's, loads the Google Maps script from the page
+  footer — outside the content filters; whole-page gating reads it, the
+  default does not, and none of the three is handled by a dedicated rule.
+- Bricks' lazy frame (`<iframe data-src>`) was already gated; its
+  background video was not found on a live page and has no rule.
+
+The readme says the same in one sentence. Do not let "works with Enfold"
+grow out of this: what is claimed is the video element, the slide and
+section frames, and nothing else.
 
 ## What the first run found (2026-08-28)
 
@@ -162,6 +214,71 @@ all the plugin claims for them).
   rule was silently skipped on the `the_content` path while the buffered
   page — which always carries a `<script>` — passed. The widget's class name
   is part of the probe now; the buffer-off field test is the pin.
+- **The same defect, twice more, in the same plugin — and the group stayed
+  green for three months.** The video-widget tests above pin the *classic*
+  widget. Elementor 4 ships a second generation ("atomic" elements, Editor
+  V4), on by default for a site whose first Elementor was 4.0 or later, and
+  its YouTube element is a different element with a different script:
+  `<div data-e-type="e-youtube" data-settings="…source…">`, empty, filled
+  by `youtube-handler.js`. Measured 2026-11-17 on Elementor 4.4.1: 19
+  third-party requests before any click, no placeholder, buffer on or off.
+  A day later, looking at what else Elementor builds in the browser: a
+  section's or container's YouTube/Vimeo **background video** is a
+  `background_video_link` setting and an empty div — 30 to 39 requests. A
+  competitor's changelog pointed at the first; nothing pointed at the
+  second. `ElementorVideoRule` now reads the atomic element (the panel is
+  its content; `source` is emptied, not removed, because the handler calls
+  `source.match()`), and `BackgroundVideoRule` empties the background link
+  — no panel, because nothing behind a section's content can be clicked.
+  The lesson is about the suite, not the rule: **a field group covers the
+  shapes someone seeded, not "the plugin".** When a builder ships a new
+  generation of widgets, the old tests keep passing against the old ones.
+  Three habits follow. Seed by *what the builder can embed*, not by the
+  widget that was reported. Port the builder's own URL test rather than
+  writing a tidier one — Elementor loads YouTube's API for anything on
+  youtube.com, video id or not, so "is this a video URL" is the wrong
+  question; "will their script contact the provider" is the right one. And
+  give every such test a positive guard (the atomic element must be in the
+  page) so a renamed element fails loudly instead of passing on nothing.
+- **Then the same question was asked of every free builder at once**
+  (2026-11-18, eleven plugins, one fresh WordPress each, every element that
+  can show third-party content seeded and measured). It found the pattern
+  again, five times over, and one case in WordPress itself:
+  - a `<video>` whose source is a YouTube or Vimeo **page** — MediaElement,
+    core's own player, builds the provider's player for it. SiteOrigin's
+    video widget with oEmbed off, and the `[video]` shortcode with such an
+    address (20–25 requests);
+  - Plyr's `data-plyr-provider` embeds — Essential Addons' Sticky Video
+    (21–26);
+  - Premium Addons' Video Box, an iframe built from `data-src` on page
+    load, or the provider's thumbnail as its automatic image (16–35);
+  - Beaver Builder's row background (28–31), half of which is an ordinary
+    enqueued script tag for the provider's player API — in the footer,
+    outside every content filter, which is why `Integration\PlayerApiScripts`
+    exists;
+  - Visual Composer's row background (39), whose bundle injects the API on
+    evaluation unless an element with its script's id already exists.
+  And three kinds of panel that were *there* and no use: behind a row's
+  content (Kadence, Beaver's embedded code, Brizy), under an image overlay
+  that took the first click (Elementor with Vimeo, Essential Addons), and
+  — the oldest — a loaded player 150 pixels tall in Elementor's 16:9 box,
+  because nothing had ever measured the player after the click. Every one
+  is fixed and has a test; the measurement's own table, with what it could
+  not reach, is the commit message of the fix.
+  What it also found and what is **not** fixed, because it is a different
+  problem: maps drawn by a plugin's script with Google's Maps JavaScript API
+  or Leaflet (Kadence in JavaScript mode, Otter, Stackable with a key,
+  SiteOrigin, Premium Addons), captchas, web fonts, Lottie files, and
+  players a builder loads on the visitor's own click on its lightbox or
+  popup. The readme's FAQ says so. Brizy's YouTube element still makes two
+  requests for the player API although its panel works; the stand-down
+  that was measured is a decoy script element, and that is not something
+  to ship without asking.
+- **WP Fastest Cache was promised a flush it never got.** The Compatibility
+  row says "flushed automatically" for every detected cache, and
+  `CacheFlush` had calls for six of the seven. The group had no flush test,
+  so nothing noticed. It has one now (`wpfc_clear_all_cache()`, verified
+  against 1.5.5).
 - **Elementor fetches Google Fonts on every page** (`fonts.googleapis.com`,
   `fonts.gstatic.com`) — its typography, not an embed, and outside the
   plugin's remit; the harness turns it off the way an owner would

@@ -91,6 +91,21 @@ final class StabilityContractTest extends TestCase {
 		}
 	}
 
+	public function test_the_loaded_event_is_the_one_the_script_dispatches(): void {
+		$script  = (string) file_get_contents( self::root() . '/assets/js/gate.js' );
+		$section = self::promise_section();
+
+		self::assertStringContainsString( '`calucon-embed-gate:loaded`', $section, 'the event is not listed in the promise' );
+		self::assertSame( 2, substr_count( $script, "'calucon-embed-gate:loaded'" ), 'gate.js names the event in the constructor and in its fallback, and nowhere under another name' );
+		self::assertSame( 1, preg_match( '/var detail = \{(.*?)\};/s', $script, $m ), 'the event detail literal moved' );
+		preg_match_all( '/^\s*([a-z]+):/m', $m[1], $keys );
+		self::assertSame( array( 'provider', 'host', 'strategy', 'trigger', 'element' ), $keys[1], 'the detail keys differ from the five promised' );
+		foreach ( $keys[1] as $key ) {
+			self::assertStringContainsString( '`' . $key . '`', $section, "detail.$key is dispatched but not promised" );
+		}
+		self::assertStringContainsString( 'bubbles: true', $script );
+	}
+
 	public function test_the_version_is_one_point_something(): void {
 		$header = (string) file_get_contents( self::root() . '/calucon-third-party-embed-gate.php' );
 		self::assertMatchesRegularExpression( '/^\s*\*\s*Version:\s*[1-9]\d*\.\d+\.\d+\s*$/m', $header, 'the promise section describes a 1.x plugin' );

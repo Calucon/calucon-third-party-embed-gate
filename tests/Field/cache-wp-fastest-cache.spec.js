@@ -54,6 +54,26 @@ test( 'the cached page is the gated one, and it makes no third-party request', a
 	expect( offenders ).toEqual( [] );
 } );
 
+// The Compatibility row says "flushed automatically" for every cache it
+// detects. Until 1.0.2 that was not true of this one: CacheFlush had no
+// call for WP Fastest Cache, and a page cached before a settings change kept
+// being served — the stale-cache case the flush exists to prevent.
+test( 'saving the plugin settings flushes the page cache (the promise on the Compatibility row)', async ( { page }, testInfo ) => {
+	flush();
+	const before = await expectCachedAndGated( testInfo.project.use.baseURL );
+
+	await login( page );
+	await openStatusTab( page );
+	await expect( compatRow( page, 'WP Fastest Cache' ) ).toContainText( 'flushed automatically' );
+	// Saved from the first tab: the read-only Status tab has no Save button.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await page.click( 'form p.submit input[type="submit"], form input#submit' );
+	await page.waitForURL( /options-general\.php/ );
+
+	const after = await expectCachedAndGated( testInfo.project.use.baseURL );
+	expect( after.first.marker, 'the page cache was not flushed on save' ).not.toBe( before.second.marker );
+} );
+
 test( 'the load-bearing click: with minify + combine JS on, Load still loads', async ( { page } ) => {
 	flush();
 	await expectClickLoads( page );

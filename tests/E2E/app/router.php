@@ -311,6 +311,37 @@ if ( '/page/poster' === $uri ) {
 	return true;
 }
 
+if ( '/page/alternative' === $uri ) {
+	// The fullest panel there is (1.1): notice, button, the link to the
+	// provider, the owner's alternative on this site, the privacy link —
+	// over a poster. Plus the shapes BuilderEmbedRule gates: Enfold's
+	// templated video and a lite-youtube facade. Swept by the axe and the
+	// responsive specs.
+	$content = implode(
+		"\n",
+		array(
+			'<figure class="wp-block-embed is-type-video wp-block-embed-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">',
+			'<iframe title="Kolkja Cycling" width="500" height="281" src="https://www.youtube.com/embed/y_pjE_p1HwE?feature=oembed" frameborder="0" allowfullscreen></iframe>',
+			'</div></figure>',
+			"<div class='avia-video avia-video-16-9 av-no-preview-image av-lazyload-immediate av-lazyload-video-embed' data-original_url='http://vimeo.com/76979871'><script type='text/html' class='av-video-tmpl'><div class='avia-iframe-wrap'><iframe src=\"//player.vimeo.com/video/76979871?autoplay=0\" width=\"1280\" height=\"720\" title=\"The New Vimeo Player\" allowfullscreen></iframe></div></script><div class='av-click-to-play-overlay'><div class=\"avia_playpause_icon\"></div></div></div>",
+			'<lite-youtube videoid="y_pjE_p1HwE" playlabel="Play: Kolkja Cycling"></lite-youtube>',
+			'<h2 id="transcript">Transcript</h2><p>What is said in the video, as text on this page.</p>',
+		)
+	);
+
+	cg_e2e_page(
+		$content,
+		'',
+		'',
+		array(
+			'poster'           => '/assets/poster.svg',
+			'alternative_url'  => '#transcript',
+			'alternative_text' => 'Read the transcript on this page',
+		)
+	);
+	return true;
+}
+
 if ( '/page/custom-provider' === $uri ) {
 	// Owner-defined providers exactly as Plugin::providers() assembles them:
 	// built-ins first, then the option rows (sanitised, reserved hosts

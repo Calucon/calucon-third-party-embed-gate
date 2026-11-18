@@ -93,6 +93,13 @@ final class PlaceholderRenderer {
 	 *            'note'     fn( string $note, array $provider, array $ctx ): string
 	 *            'action'   fn( string $action, array $provider, array $ctx ): string
 	 *            'fallback' fn( string $url, array $provider, array $ctx ): string
+	 *            'alternative' fn( string $url, array $provider, array $ctx ): string —
+	 *                       the owner's alternative WITHOUT the provider for
+	 *                       this embed; must return '' unless the address
+	 *                       is on the site itself
+	 *            'poster'   fn( array $provider, array $ctx ): string — the
+	 *                       owner's default poster for this provider, used
+	 *                       when the embed brings none of its own
 	 */
 	private array $bridges;
 
@@ -182,7 +189,7 @@ final class PlaceholderRenderer {
 		// consenting to one unknown third party never activates another.
 		$host = $this->host_of( '' !== $src ? $src : $fallback_url );
 
-		$poster = $this->poster_of( $ctx );
+		$poster = $this->poster_of( $ctx, $provider );
 
 		// The provider's privacy policy, linked before any click (§5.1):
 		// only for described providers (generic descriptors carry none),
@@ -196,6 +203,24 @@ final class PlaceholderRenderer {
 				/* translators: %s: provider label (usually a company or host name). */
 				$privacy_label = sprintf( $t( '%s privacy policy' ), $label );
 			}
+		}
+
+		// An alternative that needs no third party (1.1): a transcript, a
+		// download, a self-hosted copy — whatever the owner offers on their
+		// own site for a visitor who would rather not load the embed. The
+		// integration layer vouches that the address is on this site; the
+		// guard here only rejects what could not be a link at all.
+		$alternative_url   = isset( $ctx['alternative_url'] ) && is_string( $ctx['alternative_url'] ) ? $ctx['alternative_url'] : '';
+		$alternative_label = '';
+		if ( isset( $this->bridges['alternative'] ) ) {
+			$bridged         = call_user_func( $this->bridges['alternative'], $alternative_url, $provider, $ctx );
+			$alternative_url = is_string( $bridged ) ? $bridged : '';
+		}
+		$alternative_url = $this->safe_url( $alternative_url );
+		if ( '' !== $alternative_url ) {
+			$alternative_label = isset( $ctx['alternative_text'] ) && is_string( $ctx['alternative_text'] ) && '' !== trim( $ctx['alternative_text'] )
+				? trim( $ctx['alternative_text'] )
+				: $t( 'View an alternative on this site' );
 		}
 
 		// Inside <noscript> the panel is shown ONLY to visitors with
@@ -216,11 +241,11 @@ final class PlaceholderRenderer {
 				. ( '' !== $host ? ' data-cg-host="' . $this->esc( $host ) . '"' : '' )
 				. '>' . $this->payload_tag( $payload ) . '</span>';
 		} else {
-			$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host, $poster, $privacy_url, $privacy_label, $show_button );
+			$html = $this->render_via_template( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $ctx, $host, $poster, $privacy_url, $privacy_label, $show_button, $alternative_url, $alternative_label );
 		}
 
 		if ( '' === $html ) {
-			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $host, $poster, $privacy_url, $privacy_label, $show_button );
+			$html = $this->render_builtin( $provider, $payload, $aria_label, $fallback_url, $fallback_label, $host, $poster, $privacy_url, $privacy_label, $show_button, $alternative_url, $alternative_label );
 		}
 
 		if ( null !== $this->filter_html ) {
@@ -240,9 +265,14 @@ final class PlaceholderRenderer {
 	 * @param string $fallback_label Fallback link text.
 	 * @param string $host           Host the embed will contact.
 	 * @param string $poster         Site-origin poster image URL, '' for none.
+	 * @param string $privacy_url    Provider privacy-policy URL, '' when off.
+	 * @param string $privacy_label  Link text for the privacy link.
+	 * @param bool   $show_button    False inside <noscript>.
+	 * @param string $alternative_url   The owner's own-site alternative, '' for none.
+	 * @param string $alternative_label Link text for the alternative.
 	 * @return string
 	 */
-	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '', bool $show_button = true ): string {
+	private function render_builtin( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '', bool $show_button = true, string $alternative_url = '', string $alternative_label = '' ): string {
 		$aspect = $this->aspect_of( $provider, $payload );
 
 		return '<div class="cg-embed' . ( '' !== $poster ? ' cg-embed--poster' : '' ) . '"'
@@ -261,6 +291,10 @@ final class PlaceholderRenderer {
 			. ( $show_button ? '<button type="button" class="cg-embed__button">' . $this->esc( $provider['action'] ) . '</button>' : '' )
 			. ( '' !== $fallback_url
 				? '<p class="cg-embed__fallback"><a href="' . $this->esc( $fallback_url ) . '" rel="noopener nofollow">' . $this->esc( $fallback_label ) . '</a></p>'
+				: '' )
+			// The site's own page: no rel, it is not somebody else's link.
+			. ( '' !== $alternative_url
+				? '<p class="cg-embed__alternative"><a href="' . $this->esc( $alternative_url ) . '">' . $this->esc( $alternative_label ) . '</a></p>'
 				: '' )
 			. ( '' !== $privacy_url
 				? '<p class="cg-embed__privacy"><a href="' . $this->esc( $privacy_url ) . '" rel="noopener nofollow">' . $this->esc( $privacy_label ) . '</a></p>'
@@ -284,9 +318,11 @@ final class PlaceholderRenderer {
 	 * @param string $privacy_label  Link text for the privacy link.
 	 * @param bool   $show_button    False inside <noscript>, where a button
 	 *                               could never work.
+	 * @param string $alternative_url   The owner's own-site alternative, '' for none.
+	 * @param string $alternative_label Link text for the alternative.
 	 * @return string '' when no template applies.
 	 */
-	private function render_via_template( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, array $ctx, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '', bool $show_button = true ): string {
+	private function render_via_template( array $provider, array $payload, string $aria_label, string $fallback_url, string $fallback_label, array $ctx, string $host = '', string $poster = '', string $privacy_url = '', string $privacy_label = '', bool $show_button = true, string $alternative_url = '', string $alternative_label = '' ): string {
 		if ( null === $this->templates ) {
 			return '';
 		}
@@ -298,20 +334,22 @@ final class PlaceholderRenderer {
 		return $this->templates->render(
 			$template,
 			array(
-				'provider'       => $provider,
-				'ctx'            => $ctx,
-				'aria_label'     => $aria_label,
-				'note'           => $provider['note'],
-				'action'         => $provider['action'],
-				'fallback_url'   => $fallback_url,
-				'fallback_label' => $fallback_label,
-				'privacy_url'    => $privacy_url,
-				'privacy_label'  => $privacy_label,
-				'payload_tag'    => $this->payload_tag( $payload ),
-				'aspect'         => $this->aspect_of( $provider, $payload ),
-				'host'           => $host,
-				'poster'         => $poster,
-				'show_button'    => $show_button,
+				'provider'          => $provider,
+				'ctx'               => $ctx,
+				'aria_label'        => $aria_label,
+				'note'              => $provider['note'],
+				'action'            => $provider['action'],
+				'fallback_url'      => $fallback_url,
+				'fallback_label'    => $fallback_label,
+				'privacy_url'       => $privacy_url,
+				'privacy_label'     => $privacy_label,
+				'payload_tag'       => $this->payload_tag( $payload ),
+				'aspect'            => $this->aspect_of( $provider, $payload ),
+				'host'              => $host,
+				'poster'            => $poster,
+				'show_button'       => $show_button,
+				'alternative_url'   => $alternative_url,
+				'alternative_label' => $alternative_label,
 			)
 		);
 	}
@@ -323,14 +361,27 @@ final class PlaceholderRenderer {
 	 * that could not be a same-origin image URL at all, so a template or
 	 * filter passing junk fails closed to "no poster" (invariant 1).
 	 *
-	 * @param array $ctx Integration context.
+	 * An embed's own poster wins. Without one, the owner's default for the
+	 * provider (Providers tab, 1.1) is asked for — also a media-library
+	 * image, also validated as site-origin by the integration layer, also
+	 * guarded here. A <noscript> panel gets neither: it has no button, and
+	 * an image behind a bare notice is decoration for nobody.
+	 *
+	 * @param array $ctx      Integration context.
+	 * @param array $provider Provider descriptor.
 	 * @return string Poster URL, '' for none.
 	 */
-	private function poster_of( array $ctx ): string {
-		if ( ! isset( $ctx['poster'] ) || ! is_string( $ctx['poster'] ) ) {
-			return '';
+	private function poster_of( array $ctx, array $provider = array() ): string {
+		if ( isset( $ctx['poster'] ) && is_string( $ctx['poster'] ) && '' !== $ctx['poster'] ) {
+			return HostMatcher::navigable( $ctx['poster'] );
 		}
-		return HostMatcher::navigable( $ctx['poster'] );
+		if ( isset( $this->bridges['poster'] ) && empty( $ctx['noscript'] ) ) {
+			$default = call_user_func( $this->bridges['poster'], $provider, $ctx );
+			if ( is_string( $default ) && '' !== $default ) {
+				return HostMatcher::navigable( $default );
+			}
+		}
+		return '';
 	}
 
 	/**
@@ -494,7 +545,10 @@ final class PlaceholderRenderer {
 			return (int) $attrs['width'] . '/' . (int) $attrs['height'];
 		}
 
-		if ( is_string( $provider['aspect'] ) && preg_match( '/^([0-9]+):([0-9]+)$/', $provider['aspect'], $m ) ) {
+		// '16:9', as the built-ins write it — and '16/9', which is how CSS
+		// writes a ratio and how docs/customizing.md showed it until 1.0.2:
+		// a descriptor copied from that example reserved no space at all.
+		if ( is_string( $provider['aspect'] ) && preg_match( '#^([1-9][0-9]*)[:/]([1-9][0-9]*)$#', $provider['aspect'], $m ) ) {
 			return $m[1] . '/' . $m[2];
 		}
 

@@ -75,6 +75,116 @@ test( 'block content: gated via render_block', async ( { page } ) => {
 	expect( await page.locator( 'iframe' ).count() ).toBe( 0 );
 } );
 
+// WordPress's [video] shortcode takes a YouTube or Vimeo PAGE as its source,
+// and MediaElement — core's own player — then builds the provider's player:
+//   <video class="wp-video-shortcode"><source type="video/youtube"
+//   src="https://www.youtube.com/watch?v=…">
+// No rule read <video> until 1.1 (measured on the same mechanism in
+// SiteOrigin's widget: 20 to 25 third-party requests before a click). A
+// <video> with a file is media and stays a <video>.
+test( 'a [video] shortcode with a YouTube or Vimeo address is gated; one with a file stays a video', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+	await page.goto( '/video-shortcode/' );
+	await page.waitForLoadState( 'networkidle' );
+	await page.waitForTimeout( 1500 );
+	expect( offenders ).toEqual( [] );
+	await expect( page.locator( '.wp-video' ) ).toHaveCount( 3 );
+	await expect( page.locator( '.wp-video > .cg-embed[data-cg-provider="youtube"]' ) ).toHaveCount( 1 );
+	await expect( page.locator( '.wp-video > .cg-embed[data-cg-provider="vimeo"]' ) ).toHaveCount( 1 );
+	// The file: still a <video>, played by core's player, no panel.
+	await expect( page.locator( '.wp-video video' ) ).toHaveCount( 1 );
+	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
+
+	await abortThirdParty( page );
+	await page.setViewportSize( { width: 390, height: 800 } );
+	await page.locator( '.cg-embed[data-cg-provider="youtube"] .cg-embed__button' ).click();
+	const frame = page.locator( '.cg-embed[data-cg-provider="youtube"] iframe' );
+	await expect( frame ).toHaveAttribute( 'src', /youtube-nocookie\.com\/embed\/y_pjE_p1HwE/ );
+	// Core's wrapper is 640 pixels wide by inline style; on a phone the
+	// loaded player must still fit the screen. (Asked of the player itself:
+	// core's own player for the FILE on this page is 640 pixels wide in
+	// some themes, which is core's business.)
+	const box = await frame.evaluate( ( el ) => {
+		const r = el.getBoundingClientRect();
+		return { width: r.width, ratio: r.width / r.height, sideways: r.right > document.documentElement.clientWidth + 1 };
+	} );
+	expect( box.sideways, 'the loaded player is wider than the screen' ).toBe( false );
+	expect( box.width ).toBeGreaterThan( 250 );
+	expect( box.ratio ).toBeGreaterThan( 1.6 );
+	expect( box.ratio ).toBeLessThan( 1.9 );
+} );
+
+// WordPress 7.0 gave the Cover block an embedded video background: core's
+// render callback writes an autoplaying YouTube/Vimeo iframe behind the
+// overlay. Until BackgroundVideoRule, the iframe rule gated it like any
+// other — nothing was contacted, but the panel sat UNDER the overlay, where
+// mouse and touch could reach neither the button nor the link (measured on
+// 7.2 beta 4: elementFromPoint() at the button was the overlay span). A
+// decoration has no honest two-click, so the background is removed.
+test( 'a Cover block with a YouTube background: the video is removed, not given a panel nobody can reach', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+	await page.goto( '/cover-background/' );
+	await page.waitForLoadState( 'networkidle' );
+	await expect( page.locator( '.wp-block-cover' ) ).toHaveCount( 1 );
+	// The seed's mu-plugin prints this marker when core really rendered the
+	// player — so on a WordPress without the feature the test says so
+	// instead of passing on a page with nothing to gate.
+	test.skip(
+		0 === ( await page.locator( '[data-cg-test-cover-background]' ).count() ),
+		'this WordPress has no embedded-video Cover background (7.0+)'
+	);
+
+	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
+	await expect( page.locator( '.wp-block-cover__embed-background' ) ).toHaveCount( 0 );
+	await expect( page.locator( '.wp-block-cover .cg-embed' ) ).toHaveCount( 0 );
+	expect( await page.content() ).not.toContain( 'youtube.com/embed' );
+	expect( offenders ).toEqual( [] );
+	// What the owner put ON the video is still there, and reachable.
+	const text = page.locator( '.wp-block-cover__inner-container p' );
+	await expect( text ).toHaveText( 'Cover text over a video' );
+	await expect( text ).toBeVisible();
+} );
+
+// A Query Loop with enhanced pagination swaps the next page's HTML into the
+// loop without a page load, and of that page's assets the Interactivity
+// router loads stylesheets and script modules — never a classic script. The
+// next page arrives gated (it is an ordinary request), but on a page whose
+// own render had nothing to gate there was no gate.js: the panel's button
+// did nothing. The plugin now ships its assets with any page that carries
+// such a loop.
+test( 'a placeholder that arrives through a Query Loop\'s client-side pagination has a working button', async ( { page } ) => {
+	await abortThirdParty( page );
+	await page.goto( '/loop-page/' );
+	await expect( page.locator( '.wp-block-query' ) ).toHaveCount( 1 );
+	await expect( page.getByText( 'Nothing embedded here.' ) ).toBeVisible();
+	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 0 );
+
+	// A marker on the window survives a client-side swap and dies with a
+	// full page load — it says which of the two this WordPress did.
+	await page.evaluate( () => {
+		window.__cgSamePage = true;
+	} );
+	await page.locator( '.wp-block-query-pagination-next' ).click();
+	await expect( page.locator( '.cg-embed' ) ).toHaveCount( 1 );
+	await expect( page.locator( 'iframe' ) ).toHaveCount( 0 );
+	const swapped = await page.evaluate( () => true === window.__cgSamePage );
+	test.info().annotations.push( { type: 'navigation', description: swapped ? 'client-side (Interactivity router)' : 'full page load' } );
+
+	// Either way the button must load the embed.
+	await page.locator( '.cg-embed__button' ).click();
+	await expect( page.locator( '.cg-embed iframe' ) ).toHaveCount( 1 );
+	await expect( page.locator( '.cg-embed iframe' ) ).toHaveAttribute( 'src', /youtube-nocookie\.com/ );
+	// And on a WordPress that does swap, that is what was tested.
+	const wpVersion = await page.evaluate( () => {
+		const generator = document.querySelector( 'meta[name="generator"][content^="WordPress"]' );
+		const found = /WordPress (\d+)\.(\d+)/.exec( generator ? generator.getAttribute( 'content' ) || '' : '' );
+		return found ? Number( found[ 1 ] ) + Number( found[ 2 ] ) / 100 : 0;
+	} );
+	if ( wpVersion >= 6.09 ) {
+		expect( swapped, 'this WordPress should have paginated client-side — the test did not exercise the case it exists for' ).toBe( true );
+	}
+} );
+
 test( 'click activates through the plugin-enqueued gate.js, loading the privacy-preserving host', async ( { page } ) => {
 	await abortThirdParty( page );
 	await page.goto( '/gated-blocks/' );
@@ -1820,3 +1930,338 @@ test( 'compatibility: the theme scan is on demand, and says what it did not look
 	await expect( page.locator( '#cg-tab-status' ) ).toContainText( 'None found in your theme' );
 	await expect( page.locator( '#cg-tab-status' ) ).toContainText( 'builds its CSS into another directory is outside this check' );
 } );
+
+// ---- 1.1 -------------------------------------------------------------------
+
+/** The seeded poster attachment's ID, read off the media library's list view. */
+async function seededPosterId( page ) {
+	await page.goto( '/wp-admin/upload.php?mode=list' );
+	const row = page.locator( 'tr[id^="post-"]', { hasText: 'Poster image' } ).first();
+	await expect( row ).toHaveCount( 1 );
+	return Number( ( await row.getAttribute( 'id' ) ).replace( 'post-', '' ) );
+}
+
+/**
+ * A second, logged-out browser on the same site. A logged-in admin's page
+ * carries the admin bar and its avatar, so "what does a visitor get" has to
+ * be asked as a visitor.
+ */
+async function asVisitor( browser, baseURL, callback ) {
+	const context = await browser.newContext( { baseURL } );
+	const visitor = await context.newPage();
+	try {
+		await callback( visitor );
+	} finally {
+		await context.close();
+	}
+}
+
+// A default poster per provider (Providers tab): the image behind that
+// provider's placeholders when an embed has none of its own. The answer to
+// "the placeholder is an empty box" that does not fetch anything — every
+// competing plugin's answer is to download the provider's thumbnail, which
+// is a request to the provider (and, measured in their changelogs, a
+// recurring source of breakage and one CVE).
+test( 'a provider\'s default poster: chosen on the Providers tab, shown for that provider only, removable', async ( { page, browser, baseURL } ) => {
+	await login( page );
+	const posterId = await seededPosterId( page );
+
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	const row = page.locator( '.cg-provider[data-cg-provider-row="youtube"]' );
+	await row.evaluate( ( el ) => {
+		el.closest( 'details' ).open = true;
+		el.querySelector( 'details' ).open = true;
+	} );
+	const field = row.locator( '[data-cg-poster]' );
+	// With JavaScript the attachment-ID input is out of sight and the media
+	// library takes its place.
+	await expect( field.locator( '[data-cg-poster-id]' ) ).toBeHidden();
+	await expect( field.locator( '[data-cg-poster-choose]' ) ).toBeVisible();
+	await expect( field.locator( '[data-cg-poster-choose]' ) ).toHaveAttribute( 'aria-label', 'Choose a poster image for YouTube' );
+	await expect( field.locator( '[data-cg-poster-remove]' ) ).toBeHidden();
+	await expect( field.locator( '[data-cg-poster-preview]' ) ).toBeHidden();
+	// The button opens the media library — WordPress's own, on this site.
+	await field.locator( '[data-cg-poster-choose]' ).click();
+	await expect( page.locator( '.media-modal' ) ).toBeVisible();
+	await expect( page.locator( '.media-modal .media-frame-title' ) ).toContainText( 'Choose a poster image' );
+	await page.locator( '.media-modal .media-modal-close' ).click();
+	// The seeded attachment has no file behind it (metadata only), so it is
+	// picked by ID — the path a site without JavaScript uses anyway.
+	await field.locator( '[data-cg-poster-id]' ).evaluate( ( input, id ) => {
+		input.value = String( id );
+		input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+	}, posterId );
+	await page.click( '#submit' );
+	await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
+
+	// Saved: the row is open, shows the image, and offers to remove it.
+	await expect( row.locator( 'details' ) ).toHaveAttribute( 'open', '' );
+	await expect( row ).toHaveAttribute( 'data-cg-changed', '1' );
+	await expect( field.locator( '[data-cg-poster-preview]' ) ).toHaveAttribute( 'src', /cg-poster/ );
+	await expect( field.locator( '[data-cg-poster-remove]' ) ).toBeVisible();
+	await expect( field.locator( '.cg-provider__poster-warning' ) ).toHaveCount( 0 );
+
+	// Front end: both YouTube panels carry it, from this site; the unknown
+	// widget — another provider — does not.
+	await asVisitor( browser, baseURL, async ( visitor ) => {
+		const front = trackThirdPartyRequests( visitor );
+		await visitor.goto( '/gated-classic/' );
+		await visitor.waitForLoadState( 'networkidle' );
+		const youtube = visitor.locator( '.cg-embed[data-cg-provider="youtube"]' );
+		await expect( youtube ).toHaveCount( 2 );
+		await expect( youtube.locator( 'img.cg-embed__poster' ) ).toHaveCount( 2 );
+		const src = await youtube.locator( 'img.cg-embed__poster' ).first().getAttribute( 'src' );
+		expect( new URL( src ).hostname ).toBe( new URL( visitor.url() ).hostname );
+		await expect( visitor.locator( '.cg-embed[data-cg-provider="generic"] img.cg-embed__poster' ) ).toHaveCount( 0 );
+		// The image itself is asked of this site and nobody else. (The
+		// seeded attachment has no file, so the answer is a 404 — from here.)
+		expect( front ).toEqual( [] );
+	} );
+
+	// An ID that is not an image of this site is stored but never used, and
+	// the screen says so.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await row.evaluate( ( el ) => {
+		el.closest( 'details' ).open = true;
+	} );
+	await field.locator( '[data-cg-poster-id]' ).evaluate( ( input ) => {
+		input.value = '99999999';
+		input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+	} );
+	await page.click( '#submit' );
+	await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
+	await expect( field.locator( '.cg-provider__poster-warning' ) ).toContainText( 'This image is not used' );
+	await page.goto( '/gated-classic/' );
+	await expect( page.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
+
+	// Remove: back to the plain panel, and the row is no longer "changed".
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate' );
+	await row.evaluate( ( el ) => {
+		el.closest( 'details' ).open = true;
+	} );
+	await field.locator( '[data-cg-poster-remove]' ).click();
+	await expect( field.locator( '[data-cg-poster-id]' ) ).toHaveValue( '' );
+	await page.click( '#submit' );
+	await expect( page.locator( '#setting-error-settings_updated, .notice-success' ).first() ).toBeVisible();
+	await expect( row ).toHaveAttribute( 'data-cg-changed', '0' );
+	await page.goto( '/gated-classic/' );
+	await expect( page.locator( 'img.cg-embed__poster' ) ).toHaveCount( 0 );
+} );
+
+// The alternative without the provider: a second link in the placeholder to
+// the same content on the site itself — a transcript, a download, a
+// self-hosted copy. The whole value of the link is that it does not lead to
+// a third party, so an address that is not on this site is not shown, in
+// any spelling.
+test( 'the per-embed alternative link is shown only when its address is on this site', async ( { page } ) => {
+	const offenders = trackThirdPartyRequests( page );
+	await page.goto( '/alternative-link/' );
+	await page.waitForLoadState( 'networkidle' );
+	const panels = page.locator( '.cg-embed' );
+	await expect( panels ).toHaveCount( 6 );
+	const origin = new URL( page.url() ).origin;
+
+	// A path, with the owner's text — markup stripped.
+	const first = panels.nth( 0 ).locator( '.cg-embed__alternative a' );
+	await expect( first ).toHaveAttribute( 'href', '/transcripts/clip/' );
+	await expect( first ).toHaveText( 'Read the transcript' );
+	expect( await first.getAttribute( 'rel' ) ).toBeNull();
+	// A fragment, with the default text.
+	await expect( panels.nth( 1 ).locator( '.cg-embed__alternative a' ) ).toHaveAttribute( 'href', '#transcript' );
+	await expect( panels.nth( 1 ).locator( '.cg-embed__alternative a' ) ).toHaveText( 'View an alternative on this site' );
+	// A full URL on this site.
+	await expect( panels.nth( 2 ).locator( '.cg-embed__alternative a' ) ).toHaveAttribute( 'href', origin + '/downloads/clip.mp4' );
+	// Somewhere else: no link, and the panel is otherwise whole.
+	for ( const index of [ 3, 4, 5 ] ) {
+		await expect( panels.nth( index ).locator( '.cg-embed__alternative' ) ).toHaveCount( 0 );
+		await expect( panels.nth( index ).locator( '.cg-embed__button' ) ).toHaveCount( 1 );
+		await expect( panels.nth( index ).locator( '.cg-embed__fallback a' ) ).toHaveCount( 1 );
+	}
+	expect( await page.content() ).not.toContain( 'elsewhere.example' );
+	expect( offenders ).toEqual( [] );
+
+	// The link follows the panel's own link colour and underline.
+	const styles = await panels.nth( 0 ).evaluate( ( el ) => {
+		const alt = getComputedStyle( el.querySelector( '.cg-embed__alternative a' ) );
+		const fallback = getComputedStyle( el.querySelector( '.cg-embed__fallback a' ) );
+		return { same: alt.color === fallback.color, underline: alt.textDecorationLine };
+	} );
+	expect( styles ).toEqual( { same: true, underline: 'underline' } );
+} );
+
+// The per-page switch, "Do not gate embeds on this page": the per-block
+// "Never gate" one level up. Three things matter about it and each has
+// gone wrong in some plugin: it must apply to that page's own address and
+// nowhere else, only someone who may edit the page may set it, and it must
+// not be invisible — the settings screen lists every page that has it on.
+test( 'the per-page switch ungates that page\'s own address only, is listed on the settings screen, and can be undone', async ( { page, browser, baseURL, request } ) => {
+	const [ { id } ] = await ( await request.get( '/wp-json/wp/v2/posts?slug=loop-older-embed' ) ).json();
+	const single = `/?p=${ id }`;
+
+	const visitorSees = async ( path ) => {
+		const seen = {};
+		await asVisitor( browser, baseURL, async ( visitor ) => {
+			await abortThirdParty( visitor );
+			await visitor.goto( path );
+			await visitor.waitForLoadState( 'networkidle' );
+			seen.panels = await visitor.locator( '.cg-embed' ).count();
+			seen.frames = await visitor.locator( 'iframe[src*="youtube.com/embed"]' ).count();
+		} );
+		return seen;
+	};
+
+	// Before: gated on its own page and inside the loop on another page.
+	expect( await visitorSees( single ) ).toEqual( { panels: 1, frames: 0 } );
+	expect( await visitorSees( '/loop-page/?query-7-page=2' ) ).toEqual( { panels: 1, frames: 0 } );
+
+	// A visitor cannot turn it on: the meta is writable only by someone who
+	// may edit the post.
+	const anonymous = await request.post( `/wp-json/wp/v2/posts/${ id }`, { data: { meta: { _calucon_embed_gate: 'never' } } } );
+	expect( [ 401, 403 ] ).toContain( anonymous.status() );
+	expect( await visitorSees( single ) ).toEqual( { panels: 1, frames: 0 } );
+
+	// The block editor: the panel is registered, the meta is in the post,
+	// and the switch saves with it.
+	await login( page );
+	await page.goto( `/wp-admin/post.php?post=${ id }&action=edit` );
+	await page.waitForFunction( () => window.wp && window.wp.data && window.wp.plugins && window.wp.data.select( 'core/editor' ) && window.wp.data.select( 'core/editor' ).getCurrentPostId() );
+	await expect.poll( () => page.evaluate( () => !! window.wp.plugins.getPlugin( 'calucon-embed-gate-page' ) ) ).toBe( true );
+	expect( await page.evaluate( () => window.wp.data.select( 'core/editor' ).getEditedPostAttribute( 'meta' )._calucon_embed_gate ) ).toBe( '' );
+	// Anything but the one value is read as "site default".
+	await page.evaluate( async () => {
+		window.wp.data.dispatch( 'core/editor' ).editPost( { meta: { _calucon_embed_gate: 'yes please' } } );
+		await window.wp.data.dispatch( 'core/editor' ).savePost();
+	} );
+	expect( await visitorSees( single ) ).toEqual( { panels: 1, frames: 0 } );
+	await page.evaluate( async () => {
+		window.wp.data.dispatch( 'core/editor' ).editPost( { meta: { _calucon_embed_gate: 'never' } } );
+		await window.wp.data.dispatch( 'core/editor' ).savePost();
+	} );
+
+	// On: the page's own address loads the embed with no placeholder …
+	expect( await visitorSees( single ) ).toEqual( { panels: 0, frames: 1 } );
+	// … and everywhere else the same post is still gated: in a loop on
+	// another page, and for a headless consumer.
+	expect( await visitorSees( '/loop-page/?query-7-page=2' ) ).toEqual( { panels: 1, frames: 0 } );
+	const rest = await ( await request.get( `/wp-json/wp/v2/posts/${ id }` ) ).json();
+	expect( rest.content.rendered ).toContain( 'cg-embed' );
+	expect( rest.content.rendered ).not.toContain( '<iframe' );
+
+	// The settings screen says so, where gating is configured, with a link.
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-detection' );
+	const listed = page.locator( '#cg-pages-off' );
+	await expect( listed ).toContainText( 'Gating is switched off on these pages' );
+	await expect( listed.locator( 'li a' ) ).toHaveCount( 1 );
+	await expect( listed.locator( 'li a' ) ).toHaveText( 'Loop: older, with an embed' );
+	await expect( listed.locator( 'li a' ) ).toHaveAttribute( 'href', new RegExp( `post=${ id }` ) );
+
+	// The classic editor has the same control as a meta box. Unchecking it
+	// there gates the page again, and the list is gone.
+	await page.goto( `/wp-admin/post.php?post=${ id }&action=edit&cg_classic=1` );
+	const box = page.locator( '#calucon-embed-gate-page input[type="checkbox"]' );
+	await expect( box ).toBeChecked();
+	await box.uncheck();
+	await page.locator( '#publish' ).click();
+	// The classic form redirects with message=…; the block editor it lands
+	// in again has no classic notice to wait for.
+	await page.waitForURL( /[?&]message=\d/ );
+	expect( await visitorSees( single ) ).toEqual( { panels: 1, frames: 0 } );
+	await page.goto( '/wp-admin/options-general.php?page=calucon-embed-gate#cg-tab-detection' );
+	await expect( page.locator( '#cg-pages-off' ) ).toHaveCount( 0 );
+
+	// And checking it there turns it on again (then off, to leave the site
+	// as the other tests expect it).
+	await page.goto( `/wp-admin/post.php?post=${ id }&action=edit&cg_classic=1` );
+	await page.locator( '#calucon-embed-gate-page input[type="checkbox"]' ).check();
+	await page.locator( '#publish' ).click();
+	// The classic form redirects with message=…; the block editor it lands
+	// in again has no classic notice to wait for.
+	await page.waitForURL( /[?&]message=\d/ );
+	expect( await visitorSees( single ) ).toEqual( { panels: 0, frames: 1 } );
+	await page.goto( `/wp-admin/post.php?post=${ id }&action=edit&cg_classic=1` );
+	await page.locator( '#calucon-embed-gate-page input[type="checkbox"]' ).uncheck();
+	await page.locator( '#publish' ).click();
+	// The classic form redirects with message=…; the block editor it lands
+	// in again has no classic notice to wait for.
+	await page.waitForURL( /[?&]message=\d/ );
+	expect( await visitorSees( single ) ).toEqual( { panels: 1, frames: 0 } );
+} );
+
+// The two read-only reports as WordPress abilities (6.9+): what the WP-CLI
+// commands print, for an owner without a shell — over REST, in the command
+// palette, or through an assistant connected with the MCP adapter. Read-only
+// and for administrators: the exposure flags are discovery hints, the
+// permission callback is the boundary.
+test( 'abilities: the scan and the provider list answer an administrator, and nobody else', async ( { page, request } ) => {
+	const index = await ( await request.get( '/wp-json/' ) ).json();
+	test.skip(
+		! Object.keys( index.routes ).some( ( route ) => route.startsWith( '/wp-abilities/v1/abilities' ) ),
+		'this WordPress has no Abilities API (6.9+)'
+	);
+
+	// Anonymous: neither runnable nor listed.
+	for ( const name of [ 'scan', 'providers' ] ) {
+		const run = await request.get( `/wp-json/wp-abilities/v1/abilities/calucon-embed-gate/${ name }/run` );
+		expect( [ 401, 403 ], `anonymous run of ${ name }` ).toContain( run.status() );
+	}
+
+	await login( page );
+	await page.goto( '/wp-admin/post-new.php' );
+	await page.waitForFunction( () => window.wp && window.wp.apiFetch );
+	const call = ( path ) => page.evaluate( async ( p ) => {
+		try {
+			return { ok: true, body: await window.wp.apiFetch( { path: p } ) };
+		} catch ( error ) {
+			return { ok: false, code: error && error.code, status: error && error.data && error.data.status };
+		}
+	}, path );
+
+	// Described the way a client needs to decide whether to call them.
+	for ( const name of [ 'scan', 'providers' ] ) {
+		const described = await call( `/wp-abilities/v1/abilities/calucon-embed-gate/${ name }` );
+		expect( described.ok, JSON.stringify( described ) ).toBe( true );
+		expect( described.body.name ).toBe( `calucon-embed-gate/${ name }` );
+		expect( described.body.category ).toBe( 'site' );
+		expect( described.body.meta.annotations ).toMatchObject( { readonly: true, destructive: false, idempotent: true } );
+		expect( described.body.description ).toContain( 'Read-only' );
+	}
+
+	// The provider list: every row has the eight keys the CLI prints.
+	const providers = await call( '/wp-abilities/v1/abilities/calucon-embed-gate/providers/run' );
+	expect( providers.ok, JSON.stringify( providers ) ).toBe( true );
+	expect( providers.body.length ).toBeGreaterThan( 30 );
+	const youtube = providers.body.find( ( row ) => 'youtube' === row.id );
+	expect( Object.keys( youtube ) ).toEqual( [ 'id', 'label', 'enabled', 'strategy', 'hosts', 'load_host', 'controller', 'privacy_url' ] );
+	expect( youtube ).toMatchObject( { label: 'YouTube', enabled: 'yes', strategy: 'iframe', load_host: 'www.youtube-nocookie.com' } );
+	// The provider registered from code (the seed's mu-plugin) is there too:
+	// this is the list as the gate resolves it, not the built-in table.
+	expect( providers.body.some( ( row ) => 'partner-code' === row.id ) ).toBe( true );
+
+	// The scan: the seeded unknown widget is found, and it is gated.
+	const scan = await call( '/wp-abilities/v1/abilities/calucon-embed-gate/scan/run' );
+	expect( scan.ok, JSON.stringify( scan ) ).toBe( true );
+	const widget = scan.body.find( ( row ) => 'widgets.example-partner.com' === row.host );
+	expect( Object.keys( widget ) ).toEqual( [ 'host', 'tag', 'label', 'provider', 'status', 'count', 'first_seen', 'url' ] );
+	expect( widget ).toMatchObject( { tag: 'iframe', status: 'gated' } );
+	expect( scan.body.every( ( row ) => 'string' === typeof row.status && 'number' === typeof row.count ) ).toBe( true );
+	// Its one input is bounded.
+	const one = await call( '/wp-abilities/v1/abilities/calucon-embed-gate/scan/run?input[posts]=1' );
+	expect( one.ok, JSON.stringify( one ) ).toBe( true );
+	expect( one.body.length ).toBeLessThanOrEqual( scan.body.length );
+	const tooMany = await call( '/wp-abilities/v1/abilities/calucon-embed-gate/scan/run?input[posts]=100000' );
+	expect( tooMany.ok ).toBe( false );
+	const unknown = await call( '/wp-abilities/v1/abilities/calucon-embed-gate/scan/run?input[hosts]=x' );
+	expect( unknown.ok ).toBe( false );
+
+	// Read-only is also a matter of method: a write request is refused.
+	const written = await page.evaluate( async () => {
+		try {
+			await window.wp.apiFetch( { path: '/wp-abilities/v1/abilities/calucon-embed-gate/providers/run', method: 'POST', data: {} } );
+			return 'accepted';
+		} catch ( error ) {
+			return 'refused';
+		}
+	} );
+	expect( written ).toBe( 'refused' );
+} );
+

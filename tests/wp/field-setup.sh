@@ -117,7 +117,7 @@ case "$GROUP" in
 	cache-sg-cachepress)
 		wpwww sg optimize combine-js enable || echo "::warning::sg optimize combine-js: command failed (verify on first run)"
 		;;
-	builder-elementor)
+	builder-elementor|builder-elementor-addons)
 		# The two things a theme's "skip Elementor onboarding" helper does.
 		wpwww transient delete elementor_activation_redirect || true
 		wpwww option update elementor_onboarded 1

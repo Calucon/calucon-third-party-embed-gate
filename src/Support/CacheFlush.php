@@ -47,6 +47,12 @@ final class CacheFlush {
 		if ( function_exists( 'sg_cachepress_purge_cache' ) ) {
 			sg_cachepress_purge_cache();
 		}
+		// WP Fastest Cache. Its public purge function; without an argument it
+		// clears the page cache and leaves the minified files alone, which
+		// is all a change to the gate needs.
+		if ( function_exists( 'wpfc_clear_all_cache' ) ) {
+			wpfc_clear_all_cache();
+		}
 		// Fired whenever this plugin flushes caches. Cloudflare's official
 		// plugin subscribes to it through its cloudflare_purge_everything_actions
 		// filter (registered in the plugin bootstrap), and site code may hook

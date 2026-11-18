@@ -9,6 +9,8 @@
 
 namespace CaluconEmbedGate\Tests\Support;
 
+use CaluconEmbedGate\Detection\BackgroundVideoRule;
+use CaluconEmbedGate\Detection\BuilderEmbedRule;
 use CaluconEmbedGate\Detection\EmbedObjectRule;
 use CaluconEmbedGate\Detection\HostMatcher;
 use CaluconEmbedGate\Detection\HtmlScanner;
@@ -48,13 +50,16 @@ final class PipelineFactory {
 		// for every page).
 		$renderer = new PlaceholderRenderer( null, null, null, null, array(), ! empty( $ctx['privacy_link'] ) );
 
-		$elementor = new ElementorVideoRule( $scanner, $hosts, $registry, $renderer );
-		$iframe = new IframeRule( $scanner, $hosts, $registry, $renderer );
-		$embed  = new EmbedObjectRule( $scanner, $hosts, $registry, $renderer );
-		$script = new ScriptRule( $scanner, $hosts, $registry, $renderer );
-		$styles = new StylesheetRule( $scanner, $hosts, $registry, $renderer );
+		$background = new BackgroundVideoRule( $scanner, $hosts, $registry );
+		$elementor  = new ElementorVideoRule( $scanner, $hosts, $registry, $renderer );
+		$iframe     = new IframeRule( $scanner, $hosts, $registry, $renderer );
+		$builder    = new BuilderEmbedRule( $scanner, $hosts, $registry, $renderer, $iframe );
+		$embed      = new EmbedObjectRule( $scanner, $hosts, $registry, $renderer );
+		$script     = new ScriptRule( $scanner, $hosts, $registry, $renderer );
+		$styles     = new StylesheetRule( $scanner, $hosts, $registry, $renderer );
 
-		return $styles->apply( $script->apply( $embed->apply( $iframe->apply( $elementor->apply( $html, $ctx ), $ctx ), $ctx ), $ctx ), $ctx );
+		$html = $builder->apply( $elementor->apply( $background->apply( $html, $ctx ), $ctx ), $ctx );
+		return $styles->apply( $script->apply( $embed->apply( $iframe->apply( $html, $ctx ), $ctx ), $ctx ), $ctx );
 	}
 
 	/**

@@ -483,7 +483,32 @@
 		setStatus( container, '' );
 	}
 
-	function activateScript( container, payload, focus ) {
+	// Tell the page that an embed has loaded (docs/customizing.md, "When an
+	// embed has loaded"): a bubbling DOM event on the container, so a site
+	// can resize a layout, start its own player API or count a view without
+	// polling for an iframe. Public surface since 1.1 — the name and the
+	// detail keys do not change in a minor release. Never for a silent
+	// companion: it is part of its panel's embed, not an embed of its own.
+	function announceLoaded( container, strategy, trigger, element ) {
+		var detail = {
+			provider: container.getAttribute( 'data-cg-provider' ) || '',
+			host: container.getAttribute( 'data-cg-host' ) || '',
+			strategy: strategy,
+			trigger: trigger,
+			element: element || null
+		};
+		var event;
+		try {
+			event = new CustomEvent( 'calucon-embed-gate:loaded', { bubbles: true, detail: detail } );
+		} catch ( e ) {
+			// Browsers without the constructor.
+			event = document.createEvent( 'CustomEvent' );
+			event.initCustomEvent( 'calucon-embed-gate:loaded', true, false, detail );
+		}
+		container.dispatchEvent( event );
+	}
+
+	function activateScript( container, payload, focus, trigger ) {
 		var providerId = container.getAttribute( 'data-cg-provider' ) || '';
 		var host = container.getAttribute( 'data-cg-host' ) || '';
 
@@ -498,6 +523,7 @@
 			runInline( payload.inline, container );
 			activateSilentSiblings( providerId );
 			runReadyHook( providerId );
+			announceLoaded( container, 'script', trigger, null );
 			return;
 		}
 
@@ -539,6 +565,7 @@
 			setStatus( container, '' );
 			activateSilentSiblings( providerId );
 			runReadyHook( providerId );
+			announceLoaded( container, 'script', trigger, null );
 		}, function () {
 			container.removeAttribute( 'data-cg-activated' );
 			showError( container );
@@ -614,9 +641,47 @@
 			}
 		}
 	}
+	// A prerendered page (Speculation Rules — WordPress's speculative
+	// loading can be switched to it, and since 7.1 a host can make it the
+	// default) runs its scripts BEFORE the visitor has gone there, and may
+	// never be visited at all. A consent the visitor gave earlier covers
+	// the pages they open, not the ones a browser guesses at: Chrome holds
+	// cross-origin iframes back until the page is shown, but a provider's
+	// script would load at once. So nothing activates while prerendering;
+	// it waits for the visitor to arrive. Only the unattended paths can get
+	// here — consent memory and the consent-platform bridge — since nobody
+	// can click a page that is not on screen.
+	var arrivalBound = false;
+
+	function activateDeferred() {
+		if ( ! document.querySelectorAll ) {
+			return;
+		}
+		var containers = document.querySelectorAll( '.cg-embed' );
+		for ( var i = 0; i < containers.length; i++ ) {
+			var options = containers[ i ]._cgDeferred;
+			if ( options ) {
+				containers[ i ]._cgDeferred = null;
+				activate( containers[ i ], options );
+			}
+		}
+	}
+
+	function deferUntilArrival( container, options ) {
+		container._cgDeferred = options;
+		if ( ! arrivalBound ) {
+			arrivalBound = true;
+			document.addEventListener( 'prerenderingchange', activateDeferred, false );
+		}
+	}
+
 	function activate( container, options ) {
 		options = options || {};
 		if ( container.getAttribute( 'data-cg-activated' ) === '1' ) {
+			return;
+		}
+		if ( document.prerendering === true ) {
+			deferUntilArrival( container, options );
 			return;
 		}
 
@@ -651,8 +716,12 @@
 			return;
 		}
 
+		// Who asked: the visitor's click, a remembered consent, or the
+		// consent platform. Reported with the loaded event.
+		var trigger = options.bridged ? 'bridge' : ( options.remember ? 'click' : 'memory' );
+
 		if ( payload.strategy === 'script' ) {
-			activateScript( container, payload, !! options.focus );
+			activateScript( container, payload, !! options.focus, trigger );
 			return;
 		}
 
@@ -669,6 +738,9 @@
 		setStatus( container, i18n( 'loading', 'Loading embedded content…' ) );
 		frame.onload = function () {
 			setStatus( container, '' );
+			// Once: an embed that navigates inside its frame fires load again.
+			frame.onload = null;
+			announceLoaded( container, 'iframe', trigger, frame );
 		};
 		frame.onerror = function () {
 			showError( container );
@@ -798,6 +870,16 @@
 	function bridgeRegate( predicate ) {
 		if ( ! document.querySelectorAll ) {
 			return;
+		}
+		// A grant that is still waiting for the visitor to arrive on a
+		// prerendered page is withdrawn like one that already loaded —
+		// otherwise it would load on arrival, after the platform said no.
+		var waiting = document.querySelectorAll( '.cg-embed' );
+		for ( var w = 0; w < waiting.length; w++ ) {
+			if ( waiting[ w ]._cgDeferred && waiting[ w ]._cgDeferred.bridged
+				&& ( ! predicate || predicate( waiting[ w ] ) ) ) {
+				waiting[ w ]._cgDeferred = null;
+			}
 		}
 		var bridged = document.querySelectorAll( '.cg-embed[data-cg-bridged="1"]' );
 		var reload  = false;

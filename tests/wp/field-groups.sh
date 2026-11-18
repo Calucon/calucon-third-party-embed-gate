@@ -30,6 +30,10 @@ cache-autoptimize         autoptimize
 cache-wp-fastest-cache    wp-fastest-cache
 cache-sg-cachepress       sg-cachepress
 builder-elementor         elementor
+builder-elementor-addons  elementor essential-addons-for-elementor-lite premium-addons-for-elementor
+builder-beaver            beaver-builder-lite-version
+builder-siteorigin        siteorigin-panels so-widgets-bundle
+builder-kadence           kadence-blocks
 detect-only               cookiebot cloudflare polylang translatepress-multilingual beaver-builder-lite-version
 EOF
 }

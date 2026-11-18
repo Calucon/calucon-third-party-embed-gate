@@ -34,8 +34,10 @@ A plain request to `www.youtube.com/embed/…` — no playback, no scripts run �
 * Finds the embeds your caching and optimisation plugins have already minified — attribute quotes stripped, newlines inside tags — which is where most implementations silently fail. Also lazy-loaded markup (`data-src`), the loader scripts and stylesheets some embeds bring along, and content delivered over AJAX and the REST API ("load more", infinite scroll).
 * Accessible and JavaScript-free by design: a named group, a real button, visible focus, sufficient contrast, focus kept after loading; zero axe-core violations in CI. Without JavaScript the link still works.
 * Loads from privacy-preserving endpoints where they exist: `youtube-nocookie.com`, Vimeo with `dnt=1`. Rebuilds every embed from an attribute safelist — `sandbox` preserved, `autoplay` never survives — and strips the `preconnect` and `dns-prefetch` hints that would contact the provider early.
-* Looks like your site, without CSS: quick styles, colours that follow your theme's palette, corners, borders, shadows, button styles and dark-mode colours, with a live preview and an automatic readability check — plus a poster image per embed from your own media library, never fetched from the provider, and per-embed button and notice text in the block editor.
+* Looks like your site, without CSS: quick styles, colours that follow your theme's palette, corners, borders, shadows, button styles and dark-mode colours, with a live preview and an automatic readability check — plus a poster image per embed or per provider from your own media library, never fetched from the provider, and per-embed button and notice text in the block editor.
+* An alternative without the provider: per embed, a link to the same content on your own site — a transcript, a download, a copy you host yourself — shown in the placeholder next to the link to the provider.
 * Speaks German: the plugin ships translated for all five German locales (Germany du and Sie, Austria, Switzerland), and the texts you type are registered for WPML and Polylang.
+* Exceptions where you decide them, and never out of sight: let a provider through, exempt a host, one embed or one page — and the settings screen lists every page where gating is switched off.
 * Optional and off by default: remember the visitor's choice in their browser (per embed, per provider or for all; for the session or a number of days) with a withdrawal block and shortcode — and a bridge to your consent platform, so a consent given there loads the embeds and a withdrawal there re-gates them.
 * Never phones home. No telemetry, no update check against a private server, no remote font or script — no outbound request from your server or your visitors' browsers, on any path, for any reason.
 
@@ -43,10 +45,10 @@ A plain request to `www.youtube.com/embed/…` — no playback, no scripts run �
 
 * Caching and optimisation plugins: W3 Total Cache, WP Super Cache, LiteSpeed Cache, Autoptimize, WP Fastest Cache, SiteGround Optimizer, WP Rocket. Gating happens on the server, so the cached page is the gated one; Status & tools names the files to exclude from "delay JavaScript" and where that plugin keeps its list.
 * Consent platforms, through the optional bridge: WP Consent API, Complianz, Cookiebot, CookieYes, Borlabs Cookie 3, Real Cookie Banner. The bridge only reads the platform's answer; with any other platform, or no answer, gating stands.
-* Page builders: Elementor's HTML and video widgets are gated out of the box. For a builder that renders outside WordPress's content filters, "Gate the whole page output" under Detection reads the finished page instead.
+* Page builders: the video players of Elementor, Beaver Builder, SiteOrigin, Essential Addons and Premium Addons are gated out of the box, and so are the video elements and video "facades" of Enfold and Avada. Background videos from YouTube or Vimeo — the Cover block, Elementor, Beaver Builder, Kadence, Visual Composer, Enfold, WPBakery and Flatsome — are not loaded at all, because a placeholder behind a section's content cannot be pressed. For a builder that renders outside WordPress's content filters, "Gate the whole page output" under Detection reads the finished page instead.
 * Multilingual sites: WPML, Polylang, TranslatePress, Weglot.
 
-Every month those claims are re-tested on a real WordPress against the current versions of the plugins that are free to install; the ones that are not (WP Rocket, Borlabs Cookie, WPML, Weglot, Cookiebot's banner) are tested against simulations of their documented behaviour.
+Every month those claims are re-tested on a real WordPress against the current versions of the plugins that are free to install; the ones that are not (WP Rocket, Borlabs Cookie, WPML, Weglot, Cookiebot's banner) are tested against simulations of their documented behaviour. Enfold, Avada, WPBakery and Flatsome cannot be installed without a licence either: their rules were written from the markup on their makers' own demo sites and, where a demo page exists, checked against it with the maker's real scripts running — not against an installed copy. Visual Composer's background video was measured against the real plugin once, not every month.
 
 = What it is not =
 
@@ -57,7 +59,9 @@ Calucon Third-Party Embed Gate is a technical measure, not a consent management 
 * Theme override: copy `templates/placeholder.php` to `{your-theme}/calucon-embed-gate/placeholder.php`.
 * CSS custom properties on `.cg-embed` (`--cg-bg`, `--cg-fg`, `--cg-accent`, …) for restyling without specificity wars.
 * WP-CLI: `wp calucon-embed-gate scan` (is every embed gated? `--format=json` for CI and automation) and `wp calucon-embed-gate providers`. Both read-only.
-* Documented filters: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority`, plus the `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` and `calucon_embed_gate_flush_caches` actions. Each one's signature, when it fires and what to return are documented in `docs/customizing.md`, which ships inside the plugin (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) and is readable on GitHub. Adding a provider is a ten-line filter in `functions.php`.
+* Documented filters: `calucon_embed_gate_providers`, `calucon_embed_gate_provider_for_url`, `calucon_embed_gate_should_gate`, `calucon_embed_gate_is_own_host`, `calucon_embed_gate_own_hosts`, `calucon_embed_gate_placeholder_html`, `calucon_embed_gate_payload`, `calucon_embed_gate_note_text`, `calucon_embed_gate_action_text`, `calucon_embed_gate_fallback_url`, `calucon_embed_gate_alternative_url`, `calucon_embed_gate_www_equivalence`, `calucon_embed_gate_cmp_config`, `calucon_embed_gate_asset_version`, `calucon_embed_gate_the_content_priority`, `calucon_embed_gate_render_block_priority`, plus the `calucon_embed_gate_before_render`, `calucon_embed_gate_embed_gated` and `calucon_embed_gate_flush_caches` actions. Each one's signature, when it fires and what to return are documented in `docs/customizing.md`, which ships inside the plugin (wp-content/plugins/calucon-third-party-embed-gate/docs/customizing.md) and is readable on GitHub. Adding a provider is a ten-line filter in `functions.php`.
+* A `calucon-embed-gate:loaded` event in the browser once an embed has loaded, saying which provider and whether a click, a remembered consent or the consent platform asked for it — for your own layout, a player API or first-party statistics.
+* On WordPress 6.9 and later, the two WP-CLI reports are also abilities (`calucon-embed-gate/scan`, `calucon-embed-gate/providers`): read-only, for administrators.
 * Stable since 1.0: the markup contract (`cg-` classes, `data-cg-*` attributes, `--cg-*` custom properties), the documented hooks, the template variables, the settings keys and the WP-CLI commands do not change across minor releases; provider descriptors and the tested-platform lists are data and may. `docs/customizing.md` ships inside the plugin and is written for developers and AI coding agents alike.
 
 == Installation ==
@@ -100,7 +104,13 @@ And if the placeholder looks unstyled after an update: a minification setup that
 
 = An embed from my page builder is not being gated =
 
-Elementor's HTML and video widgets are gated out of the box. Other builders render outside WordPress's content filters, where the plugin listens by default: enable "Gate the whole page output" under Settings → Calucon Third-Party Embed Gate → Detection and the plugin reads the finished page instead. It is off by default because whole-page buffering can conflict with other buffering plugins.
+Elementor's HTML widget and its video widget and element are gated out of the box, and so are the video widgets of SiteOrigin, Essential Addons (Sticky Video) and Premium Addons (Video Box), Enfold's video element, Avada's lazy-loaded videos and the `lite-youtube` and `lite-vimeo` preview elements many themes and performance plugins use — and WordPress's own `[video]` shortcode when it is given a YouTube or Vimeo address. Other builders render outside WordPress's content filters, where the plugin listens by default: enable "Gate the whole page output" under Settings → Calucon Third-Party Embed Gate → Detection and the plugin reads the finished page instead. It is off by default because whole-page buffering can conflict with other buffering plugins.
+
+If a builder still loads something before the click, please report it with the name of the element: some builders create a player in the visitor's browser from a setting, with nothing in the page for a scanner to find, and each of those needs to be taught once.
+
+= My background video no longer plays =
+
+On purpose, if it came from YouTube or Vimeo. A background video contacts the provider as soon as the page opens, like any other embed — but a placeholder has to be pressed, and nothing behind a section's text and overlay can be. So the video is left out and the section keeps its overlay, its content and its fallback image. This applies to the Cover block and to the background videos of Elementor, Beaver Builder, Kadence, Visual Composer, Enfold, WPBakery and Flatsome. A video file from your own media library is not affected: upload the clip and use that. If you would rather have the provider's video load for every visitor, switch that provider off under Providers.
 
 = Something on my site is gated and I want it to load normally =
 
@@ -117,6 +127,26 @@ Some embeds bring a loader script or stylesheets along with the player (VideoPre
 = Can I add a provider that is not in the list? =
 
 Yes, without code: Providers → *Your own providers* takes a name, the embed hosts (one per line) and, optionally, script hosts and a kind for the button icon. After saving it appears in the provider table with its own notice, button text and privacy-policy link. Unknown hosts are gated either way — a provider of your own only gives such a host a proper name and texts. Hosts the built-in providers handle stay with them, and your own providers are always gated; the never-gate list under Detection is the place to exempt a host.
+
+= Does it also gate maps, captchas and fonts? =
+
+A map that is embedded as a frame — Google Maps' "Embed a map", OpenStreetMap's — is gated like any other embed. A map that a plugin draws itself with Google's Maps JavaScript API or with Leaflet is not: there is no embed in the page to replace, only a script and the plugin's own code that depends on it. Where the plugin offers an "embed" or "iframe" mode for its map block, choosing it puts the map behind the placeholder. With "Gate the whole page output" on, the Maps script itself is held back, with a placeholder where the script was rather than where the map would be.
+
+Captchas (reCAPTCHA, hCaptcha, Turnstile), web fonts and animation files are not embeds, and this plugin leaves them alone. A form that needs its captcha to be sent cannot wait for a click on something else. Those belong to a consent platform, or to an option of the plugin that loads them.
+
+= Can the placeholder show a preview image instead of an empty box? =
+
+Yes — one that you choose. In the block editor every embed has a "Set poster image" control, and under Providers each provider can have a default poster for all its embeds that have none of their own: older posts, widgets, page-builder elements. Both take an image from your own media library.
+
+What the plugin will not do is fetch the video's thumbnail from the provider. That is a request to the provider on your behalf — the thing the placeholder exists to prevent — and a downloaded copy goes stale without anyone noticing.
+
+= Can I offer the content without the provider? =
+
+Yes. In the block editor, the embed's Calucon Third-Party Embed Gate panel has an "Alternative on this site (address)" field: the address of a page, a file or a section of your own site with the same content — a transcript, a download, a copy of the video you host yourself. The placeholder then shows a second link next to "Open on …", for visitors who would rather not load the embed at all. The address has to be on your own site; a link to another site is not shown, because it would not be an alternative without a third party.
+
+= Can I switch gating off for a single page? =
+
+Yes. In the editor, the page's own settings have a "Do not gate embeds on this page" switch (in the classic editor it is a box in the side column). On that page's own address every embed then loads as soon as the page opens, for every visitor — so use it where you have a reason. In lists, feeds and search results the same page's embeds stay gated, and Settings → Calucon Third-Party Embed Gate → Detection lists every page that has the switch on.
 
 = Can I change how the placeholder looks without writing CSS? =
 
@@ -163,6 +193,9 @@ Third-party content enters the picture only after a visitor clicks the "Load" bu
 
 == Upgrade Notice ==
 
+= 1.1.0 =
+Gates video players that several page builders and add-ons create in the visitor's browser and that were loading before the click: Beaver Builder, SiteOrigin, Essential Addons, Premium Addons, Enfold, Avada, and WordPress's own video shortcode with a YouTube or Vimeo address. Background videos from YouTube or Vimeo are no longer loaded. New and optional: a default poster image per provider, an alternative link without the provider, a switch to stop gating on a single page. Contains the fixes of 1.0.2 for Elementor. Clear your page cache once after updating.
+
 = 1.0.0 =
 Fixes a case where a CDN in front of your assets, together with whole-page gating, could make the plugin gate your site's own scripts — in one configuration including its own, which left every placeholder as a button that did nothing. Status & tools now names the files to exclude from your caching or minification plugin and where that plugin keeps its exclusion list. No settings change.
 
@@ -180,9 +213,32 @@ The panel looks and behaves as before unless you opt in: the privacy-policy link
 
 == Changelog ==
 
+= 1.1.0 =
+* New: a default poster image per provider. Under Providers, each provider can carry an image from your media library that is shown behind its placeholders wherever an embed has no poster of its own — older posts, classic content, widgets, page-builder elements. As with the per-embed poster, the image is yours and is never fetched from the provider.
+* New: an alternative without the provider. Per embed, the block editor takes the address of the same content on your own site — a transcript, a download, a self-hosted copy — and the placeholder shows it as a second link. Only an address on your own site is shown. For embeds that are not blocks there is a `calucon_embed_gate_alternative_url` filter.
+* New: "Do not gate embeds on this page" — a switch in the page's settings in the editor (a box in the classic editor). It applies to that page's own address only; in lists, feeds and search results its embeds stay gated. The Detection tab lists every page that has it on, so the exception cannot be forgotten.
+* New: players that page builders create in the visitor's browser, where no scanner can see them, for four commercial products. Enfold's video element (the player sits in a template and Enfold starts it by itself) and the `lite-youtube` / `lite-vimeo` preview elements (Avada and many performance plugins; they fetch the provider's thumbnail on page load) now get the placeholder. Avada's lazy-loaded frames are read too, and what Avada's own Privacy Consent option has already blocked is left to Avada. Background videos of WPBakery rows, Flatsome banners and Enfold slides are no longer loaded, like the other background videos. These products cannot be installed without a licence: the rules were written from their makers' demo sites and checked against those pages with the makers' own scripts running; the WPBakery and Flatsome backgrounds rest on their published scripts alone.
+* Fixed: more players that are created in the visitor's browser and were loading before any click, each measured on the real plugin. A `[video]` shortcode or a SiteOrigin video widget given a YouTube or Vimeo page as its source (WordPress's own player builds the provider's player for it: 20 to 25 requests). Essential Addons' Sticky Video (21 to 26). Premium Addons' Video Box, which loaded the video or, with its automatic image, the provider's thumbnail (16 to 35). All three get the placeholder now; Premium Addons' own image becomes its poster.
+* Fixed: background videos of Beaver Builder rows (28 to 31 requests before a click, including the player script Beaver adds to the page) and Visual Composer rows (39) are no longer loaded. Kadence rows and Beaver's "embedded code" background were gated before, but left a placeholder behind the row's content where nobody could press it; they are left out as well.
+* Fixed: in Elementor's video widget the loaded video was a 150-pixel strip at the top of its box, and an image overlay took the first click on the placeholder — and, in Essential Addons' Sticky Video, hid it. The player fills the box now and the overlay stands aside.
+* Tests: four more groups in the monthly check against the real plugins — Beaver Builder, SiteOrigin, Kadence Blocks, and Essential Addons with Premium Addons.
+* Not changed, and now said plainly in the FAQ: maps a plugin draws with Google's Maps JavaScript API or Leaflet, captchas, web fonts and animation files are not gated; neither is a video a builder loads only after the visitor clicks its own preview image or popup button.
+* New: a `calucon-embed-gate:loaded` event in the browser when an embed has loaded, with the provider, the host, and whether a click, a remembered consent or the consent platform asked for it. Part of the stable surface from here on.
+* New: on WordPress 6.9 and later, the two WP-CLI reports are also registered as abilities — `calucon-embed-gate/scan` and `calucon-embed-gate/providers`. Read-only, for administrators.
+* Changed: 1.0 said new features were not planned. This release adds some anyway; all of them are optional, and the stable surface promised at 1.0 is unchanged — everything here is an addition to it.
+
 = 1.0.2 =
+* Fixed: Elementor's new YouTube element was not gated at all. Elementor 4 has a second generation of widgets ("atomic" elements, Editor V4 — on by default for a site that first installed Elementor at 4.0 or later), and its YouTube element is an empty box that Elementor's own script fills by loading YouTube's player: 19 requests to YouTube, Google and DoubleClick before any click, measured on Elementor 4.4.1, with or without "Gate the whole page output". It now gets the same placeholder as every other embed. The classic video widget was and is gated; the monthly check against the real Elementor only knew that one, and now covers both.
+* Fixed: a YouTube or Vimeo background video on an Elementor section or container contacted the provider before any click (30 to 39 requests, same measurement). It is a setting on the section and nothing else in the page, so no rule saw it. The video is no longer loaded; the section keeps its content and its fallback image. There is no placeholder for it, on purpose: a button behind a section's content cannot be pressed.
+* Changed: the same goes for the Cover block's embedded video background (WordPress 7.0 and later). Nothing was contacted there before — the video was gated — but the placeholder sat under the block's overlay, where neither mouse nor touch could reach the button or the link, and a video loaded by keyboard stayed paused behind the overlay. The background is now left out and the Cover block shows its overlay and its content.
+* Fixed: a placeholder that arrives without a page load had a button that did nothing. A Query Loop block with enhanced pagination swaps the next page into the loop, and brings that page's stylesheets but not its scripts — so on a page that had no embed of its own, the plugin's script was missing. Pages with such a loop now carry it from the start.
+* Fixed: with consent memory or the consent-platform bridge on, an embed could load on a page the visitor had not opened. Browsers can prerender a page they expect to be visited next (WordPress's speculative loading can be set to do that, and since 7.1 a host can make it the default), and a prerendered page runs its scripts. Remembered and platform-granted embeds now wait until the visitor actually arrives; a consent withdrawn in the meantime cancels them.
+* Fixed: a YouTube embed lost its settings on the way to the cookieless address. After the click the video was loaded from `youtube-nocookie.com/embed/{id}` and nothing else, so a playlist (`/embed/videoseries?list=…`) loaded as an error, and a start time, captions, `rel=0` or the player API's `enablejsapi` were silently gone. The embed's own parameters now come along; `autoplay` still never does, and the two markers that only say where the embed code came from (`feature=oembed`, the `si` share id) are left behind.
+* Fixed: WP Fastest Cache was detected and promised a flush ("its page cache is flushed automatically") that never happened — there was no call for it. Saving the settings, activating, updating and deactivating now clear its page cache like the other caches'.
+* Fixed: `docs/customizing.md` showed `'aspect' => '16/9'` for a provider of your own, and only `16:9` worked — a provider copied from the example reserved no space for its embed. Both spellings are read now, and the example is corrected.
+* Changed: the Calucon Third-Party Embed Gate panel is gone from the Video and Audio blocks in the editor. Those blocks play a media file, which the plugin does not gate, so "Always gate" and the poster image there never did anything.
 * Fixed: on WordPress 7.2's new default theme, Ipsum, the Appearance preview showed near-invisible panel text and two "hard to read" warnings on an untouched site, and the theme's text colour was missing from the colour menus. Ipsum paints its text with a translucent colour (`#000000bf`), which the plugin's palette reader rejected as "not a colour". Theme colours with transparency are now read, previewed and measured like any other. The placeholder your visitors see was never affected: it follows the theme directly.
-* Tests: the unit suite and the WordPress integration suite also run on PHP 8.5.
+* Tests: the unit suite and the WordPress integration suite also run on PHP 8.5. The Elementor field group now seeds the atomic YouTube and Google Maps elements and both kinds of background video; the WP Fastest Cache group checks the flush.
 
 = 1.0.1 =
 * Changed: nothing that runs on your site. The files this release installs are the files 1.0.0 installed; it exists to carry two repository fixes onto the branch the scheduled workflows run from.

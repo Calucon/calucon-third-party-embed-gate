@@ -487,6 +487,34 @@ final class OptionsTest extends TestCase {
 		self::assertSame( $defaults['appearance'], Options::sanitize( $pristine )['appearance'] );
 	}
 
+	public function test_a_provider_poster_is_an_attachment_id_and_nothing_else(): void {
+		$clean = Options::sanitize(
+			array(
+				'providers' => array(
+					'youtube'    => array( 'poster' => '42' ),
+					'vimeo'      => array( 'poster' => 7 ),
+					// Everything a URL field would invite, and the edges of a number.
+					'spotify'    => array( 'poster' => 'https://i.ytimg.com/vi/x/hqdefault.jpg' ),
+					'soundcloud' => array( 'poster' => '0' ),
+					'ted'        => array( 'poster' => '-3' ),
+					'tiktok'     => array( 'poster' => '12abc' ),
+					'x'          => array( 'poster' => '' ),
+					'reddit'     => array( 'poster' => array( 5 ) ),
+					'tumblr'     => array( 'poster' => '1.5' ),
+					'imgur'      => array( 'poster' => '9999999999999' ),
+				),
+			)
+		);
+
+		self::assertSame( 42, $clean['providers']['youtube']['poster'] );
+		self::assertSame( 7, $clean['providers']['vimeo']['poster'] );
+		foreach ( array( 'spotify', 'soundcloud', 'ted', 'tiktok', 'x', 'reddit', 'tumblr', 'imgur' ) as $id ) {
+			self::assertArrayNotHasKey( 'poster', $clean['providers'][ $id ] ?? array(), $id );
+		}
+		// Idempotent: what comes out goes back in unchanged.
+		self::assertSame( $clean, Options::sanitize( $clean ) );
+	}
+
 	public function test_a_custom_colour_never_carries_alpha(): void {
 		// A THEME preset may be translucent (ThemePalette accepts #rrggbbaa);
 		// the owner's own hex may not: the picker has no alpha channel, and a

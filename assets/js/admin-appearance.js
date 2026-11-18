@@ -435,7 +435,7 @@
 		}
 
 		function applyLinkColor( value ) {
-			var links = sample ? sample.querySelectorAll( '.cg-embed__fallback a, .cg-embed__privacy a' ) : [];
+			var links = sample ? sample.querySelectorAll( '.cg-embed__fallback a, .cg-embed__alternative a, .cg-embed__privacy a' ) : [];
 			for ( var i = 0; i < links.length; i++ ) {
 				links[ i ].style.color = value || '';
 			}
@@ -613,7 +613,7 @@
 				if ( bundle[ 'cg-play-icon' ] ) {
 					scaler.classList.add( 'cg-preview--icon' );
 				}
-				var links = clone.querySelectorAll( '.cg-embed__fallback a, .cg-embed__privacy a' );
+				var links = clone.querySelectorAll( '.cg-embed__fallback a, .cg-embed__alternative a, .cg-embed__privacy a' );
 				for ( var l = 0; l < links.length; l++ ) {
 					links[ l ].style.color = c.link || '';
 				}
@@ -1122,7 +1122,7 @@
 		// Hover/focus a row → outline what it changes in the preview.
 		var HIGHLIGHT = {
 			bg: '.cg-embed', fg: '.cg-embed__note', accent: '.cg-embed__button', accent_fg: '.cg-embed__button',
-			link: '.cg-embed__fallback a, .cg-embed__privacy a', border_color: '.cg-embed', dark_bg: '.cg-embed',
+			link: '.cg-embed__fallback a, .cg-embed__alternative a, .cg-embed__privacy a', border_color: '.cg-embed', dark_bg: '.cg-embed',
 			dark_fg: '.cg-embed__note', dark_accent: '.cg-embed__button', dark_accent_fg: '.cg-embed__button',
 			preset: '.cg-embed', corners: '.cg-embed', radius: '.cg-embed', border_width: '.cg-embed', shadow: '.cg-embed',
 			density: '.cg-embed__panel', align: '.cg-embed__panel', note_size: '.cg-embed__note',
