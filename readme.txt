@@ -3,9 +3,9 @@ Contributors: calucon
 Donate link: https://ko-fi.com/calucon
 Tags: privacy, gdpr, embeds, youtube, cookies
 Requires at least: 5.9
-Tested up to: 7.1
+Tested up to: 7.2
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -183,6 +183,7 @@ The panel looks and behaves as before unless you opt in: the privacy-policy link
 = 1.0.2 =
 * Fixed: on WordPress 7.2's new default theme, Ipsum, the Appearance preview showed near-invisible panel text and two "hard to read" warnings on an untouched site, and the theme's text colour was missing from the colour menus. Ipsum paints its text with a translucent colour (`#000000bf`), which the plugin's palette reader rejected as "not a colour". Theme colours with transparency are now read, previewed and measured like any other. The placeholder your visitors see was never affected: it follows the theme directly.
 * Tests: the unit suite and the WordPress integration suite also run on PHP 8.5.
+* Tested up to WordPress 7.2.
 
 = 1.0.1 =
 * Changed: nothing that runs on your site. The files this release installs are the files 1.0.0 installed; it exists to carry two repository fixes onto the branch the scheduled workflows run from.
